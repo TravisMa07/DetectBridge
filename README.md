@@ -54,7 +54,7 @@ caps are planned; finite operational limits are still required.
 
 Directories and build tooling will be introduced by their owning PRs rather than
 populated with placeholder production services. Python uses `uv`; Java uses the
-Gradle Wrapper; TypeScript uses npm lockfiles. Exact versions are owned by P02.
+Gradle Wrapper; TypeScript uses npm lockfiles. Pinned versions and commands are in the [development guide](docs/development.md).
 
 ## Independence and licensing
 

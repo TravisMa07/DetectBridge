@@ -1,0 +1,78 @@
+[
+  {
+    "path": "windows-security-4688.raw.json",
+    "kind": "raw-record"
+  },
+  {
+    "path": "windows-security-4688.event.json",
+    "kind": "normalized-event"
+  },
+  {
+    "path": "windows-security-4688.missing.json",
+    "kind": "normalized-event"
+  },
+  {
+    "path": "windows-security-4688.unparseable.json",
+    "kind": "normalized-event"
+  },
+  {
+    "path": "windows-security-4688.timezone_ambiguous.json",
+    "kind": "normalized-event"
+  },
+  {
+    "path": "windows-security-4688.absent.json",
+    "kind": "normalized-event"
+  },
+  {
+    "path": "windows-security-4688.source.json",
+    "kind": "source-contract"
+  },
+  {
+    "path": "windows-sysmon-process.raw.json",
+    "kind": "raw-record"
+  },
+  {
+    "path": "windows-sysmon-process.event.json",
+    "kind": "normalized-event"
+  },
+  {
+    "path": "windows-sysmon-process.source.json",
+    "kind": "source-contract"
+  },
+  {
+    "path": "linux-audit-execution.raw.json",
+    "kind": "raw-record"
+  },
+  {
+    "path": "linux-audit-execution.event.json",
+    "kind": "normalized-event"
+  },
+  {
+    "path": "linux-audit-execution.partial.json",
+    "kind": "normalized-event"
+  },
+  {
+    "path": "linux-audit-execution.source.json",
+    "kind": "source-contract"
+  },
+  {
+    "path": "openssh-authentication.raw.json",
+    "kind": "raw-record"
+  },
+  {
+    "path": "openssh-authentication.event.json",
+    "kind": "normalized-event"
+  },
+  {
+    "path": "openssh-authentication.source.json",
+    "kind": "source-contract"
+  },
+  {
+    "path": "referenced.raw.json",
+    "kind": "raw-record"
+  },
+  {
+    "path": "binary.raw.json",
+    "kind": "raw-record"
+  }
+]

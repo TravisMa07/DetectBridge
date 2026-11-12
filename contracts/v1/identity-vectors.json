@@ -1,0 +1,18 @@
+[
+  {
+    "canonical_utf8": "[\"test\",\"host-a\",[\"native\",\"record-1\"]]",
+    "expected_id": "sha256:3d606532f7bf626c422f403be33259be90e017ed947c5a3dc8517d571e981d52"
+  },
+  {
+    "canonical_utf8": "[\"test\",\"host-a\",[\"dataset\",\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"0\"]]",
+    "expected_id": "sha256:7a88236b416b9e336330c48d9916ff02ae77f89e11ecd762d8bcc659632f8a9a"
+  },
+  {
+    "canonical_utf8": "[\"unicode-é\",\"host-a\",[\"capture\",\"00000000-0000-4000-8000-000000000001\"]]",
+    "expected_id": "sha256:0445ab99b34d65f1fc7e310e4375399b6a803a5ef5e1f3597ac3fb8729545c61"
+  },
+  {
+    "canonical_utf8": "[\"test\",\"host-a\",[\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"]]",
+    "expected_id": "sha256:114514637471ae8166555b1649c4f705ed4fa11376d6075b9cc6088a13fa9027"
+  }
+]

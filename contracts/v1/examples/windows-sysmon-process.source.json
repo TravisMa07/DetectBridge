@@ -1,0 +1,73 @@
+{
+  "contract_version": "1.0.0",
+  "id": "windows-sysmon-process",
+  "version": "1.0.0",
+  "ecs_version": "9.5.0",
+  "formats": [
+    "Sysmon Event ID 1 XML version 5"
+  ],
+  "provider_versions": [
+    "fixture scope: Sysmon Event ID 1 XML version 5"
+  ],
+  "references": [
+    "https://learn.microsoft.com/en-us/sysinternals/downloads/sysmon"
+  ],
+  "classification": {
+    "kind": "event",
+    "category": [
+      "process"
+    ],
+    "type": [
+      "start"
+    ]
+  },
+  "sigma": {
+    "product": "windows",
+    "category": "process_creation",
+    "service": "sysmon"
+  },
+  "framing": "one XML event",
+  "assembly_mode": "standalone",
+  "requires_host_id": true,
+  "required_fields": [
+    "host.id",
+    "process.executable"
+  ],
+  "mappings": [
+    {
+      "source_path": "/Image",
+      "target_path": "process.executable",
+      "capability": "available"
+    },
+    {
+      "source_path": "/CommandLine",
+      "target_path": "process.command_line",
+      "capability": "conditional"
+    }
+  ],
+  "quality_policy": {
+    "blocking_codes": [
+      "assembly_insufficient",
+      "extraction_failed",
+      "conflicting",
+      "identity_missing",
+      "unsupported_source"
+    ],
+    "warning_codes": [
+      "legitimately_absent",
+      "unmapped",
+      "truncated",
+      "capture_unavailable",
+      "timestamp_missing",
+      "timestamp_unparseable",
+      "timestamp_timezone_ambiguous"
+    ]
+  },
+  "fixtures": [
+    {
+      "path": "windows-sysmon-process.event.json",
+      "expected_integrity": "sufficient",
+      "expected_eligibility": "eligible"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "contract_version": "1.0.0",
+  "record_id": "sha256:e62fa699b83f7f4c3f2db882d3666771b230f8d56324e36051659be186a40bb9",
+  "source": {
+    "namespace": "synthetic-contract-tests",
+    "instance": "linux-audit-execution-host-a"
+  },
+  "cursor": {
+    "kind": "dataset",
+    "artifact_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "position": 2
+  },
+  "first_observed": "2026-11-12T12:00:01.123456789Z",
+  "evidence": {
+    "sha256": "ce2d8936baf975d087dfabd59ec8306ee318cbecb4c3f535e8dc7611fc50a012",
+    "media_type": "text/plain",
+    "encoding": "utf-8",
+    "inline": "SYNTHETIC linux-audit-execution fixture; not captured telemetry\n"
+  }
+}

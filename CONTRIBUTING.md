@@ -50,3 +50,11 @@ for targeted semantic/error behavior. Retain independent expected results.
 
 Do not open public issues containing sensitive events, credentials, or exploit
 details for a suspected project vulnerability; see [SECURITY.md](SECURITY.md).
+
+## Contract verification
+
+`uv run --locked python tools/check_contracts.py` validates local schemas, source
+profiles and synthetic examples; the developer check command includes it. See the
+[contract field reference](contracts/v1/README.md) for version, identity, evidence
+and time rules. Add positive and negative cases when changing a contract. Do not
+regenerate expected identity digests using the implementation being tested.

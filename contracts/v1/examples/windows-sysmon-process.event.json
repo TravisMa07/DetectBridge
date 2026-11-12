@@ -1,0 +1,86 @@
+{
+  "@timestamp": "2026-11-12T12:00:00.123456789Z",
+  "ecs": {
+    "version": "9.5.0"
+  },
+  "event": {
+    "kind": "event",
+    "category": [
+      "process"
+    ],
+    "type": [
+      "start"
+    ],
+    "id": "sha256:50f83124a551dc174d858e137fdd42cd8dd738559cda26c37a3c7aa264c8da20",
+    "code": "1",
+    "created": "2026-11-12T12:00:01.123456789Z",
+    "provider": "sysmon",
+    "dataset": "windows-sysmon-process"
+  },
+  "host": {
+    "id": "windows-sysmon-process-host-a",
+    "name": "example-host"
+  },
+  "user": {
+    "name": "example-user"
+  },
+  "source_fields": {
+    "Image": "example-value"
+  },
+  "detectbridge": {
+    "contract_version": "1.0.0",
+    "source": {
+      "namespace": "synthetic-contract-tests",
+      "instance": "windows-sysmon-process-host-a"
+    },
+    "source_contract": {
+      "id": "windows-sysmon-process",
+      "version": "1.0.0"
+    },
+    "processing": {
+      "parser": "fixture-only/1.0.0",
+      "mapping": "fixture-only/1.0.0",
+      "normalizer": "fixture-only/1.0.0"
+    },
+    "run_id": "00000000-0000-4000-8000-000000000001",
+    "time": {
+      "basis": "source",
+      "quality": "valid",
+      "first_observed": "2026-11-12T12:00:01.123456789Z",
+      "source_value": "2026-11-12T12:00:00.123456789Z",
+      "source_utc": "2026-11-12T12:00:00.123456789Z"
+    },
+    "assembly": {
+      "mode": "standalone",
+      "closure": "not_required",
+      "quality": "source_indicated",
+      "assembler_version": "1.0.0"
+    },
+    "quality": {
+      "integrity": "sufficient",
+      "eligibility": "eligible",
+      "diagnostics": []
+    },
+    "evidence": [
+      {
+        "record_id": "sha256:615211739a3cbd46f9093e9d2d3ec717a3c50207500f59dfdc36183f03cae8b7",
+        "evidence": {
+          "sha256": "031725121b34365690c7fdea015c54e7d6fca03d6266a82cf222ee92fe8eb72a",
+          "media_type": "text/plain",
+          "encoding": "utf-8",
+          "inline": "SYNTHETIC windows-sysmon-process fixture; not captured telemetry\n"
+        }
+      }
+    ]
+  },
+  "process": {
+    "pid": 100,
+    "name": "example",
+    "executable": "C:\\example.exe",
+    "args": [
+      "example",
+      "repeat",
+      "repeat"
+    ]
+  }
+}

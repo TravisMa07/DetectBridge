@@ -242,7 +242,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("command", choices=["doctor", "bootstrap", "check", "smoke", "verify"])
     args = parser.parse_args()
-    if sys.version_info < (3, 12):
+    if Path(sys.executable).parent.resolve() != (ROOT / ".venv/bin").resolve():
         return run(
             ["uv", "run", "--locked", "python", __file__, args.command], check=False
         ).returncode

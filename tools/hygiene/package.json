@@ -1,0 +1,14 @@
+{
+  "name": "detectbridge-hygiene",
+  "private": true,
+  "version": "0.0.0",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "devDependencies": {
+    "markdownlint-cli2": "0.24.1"
+  },
+  "overrides": {
+    "katex": "0.18.2"
+  }
+}

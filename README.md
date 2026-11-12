@@ -7,8 +7,9 @@ replay.
 
 ## Current status
 
-**Architecture and SDLC bootstrap only.** No ingestion service, detector, API, UI,
-containers, or executable pipeline has been implemented. There are no released
+**Repository foundation; application implementation pending.** No ingestion service, detector, API, UI,
+containers, or executable pipeline has been implemented. Repository hygiene tooling and
+contributor templates are introduced in P01. There are no released
 versions or demonstrated throughput claims. The first qualified release target is
 `v0.1.0`.
 

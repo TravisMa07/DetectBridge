@@ -9,8 +9,8 @@ before `v0.1.0`.
 ## Reporting a suspected vulnerability
 
 Do not post credentials, private telemetry, or sensitive vulnerability details in
-public issues or PRs. Once GitHub private vulnerability reporting is enabled, use
-the repository's Security tab to report privately.
+public issues or PRs. Use the repository's Security tab to report privately when private vulnerability
+reporting is available. Its remote enablement is verified during P01 setup.
 
 If that option is unavailable, open a public issue containing only a request for
 a private reporting channel, without vulnerability details or sensitive data.

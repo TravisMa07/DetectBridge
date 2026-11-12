@@ -1,0 +1,62 @@
+{
+  "name": "Planned deliverable",
+  "description": "Define bounded work and its acceptance evidence.",
+  "title": "[Pxx] ",
+  "body": [
+    {
+      "type": "textarea",
+      "id": "behavior",
+      "attributes": {
+        "label": "Behavior and exclusions",
+        "description": "Describe the deliverable and what is outside this issue."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "dependencies",
+      "attributes": {
+        "label": "Dependencies and interfaces",
+        "description": "List planning IDs, issue links, and affected interfaces; use None where appropriate."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "decisions",
+      "attributes": {
+        "label": "Decisions to resolve",
+        "description": "List implementation decisions owned by this work."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "acceptance",
+      "attributes": {
+        "label": "Acceptance evidence",
+        "description": "Describe tests and observable completion criteria."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "compatibility",
+      "attributes": {
+        "label": "Compatibility and recovery",
+        "description": "Describe migration/rollback implications, or explain why none apply."
+      },
+      "validations": {
+        "required": true
+      }
+    }
+  ]
+}

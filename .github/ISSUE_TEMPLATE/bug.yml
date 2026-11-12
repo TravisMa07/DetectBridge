@@ -1,0 +1,51 @@
+{
+  "name": "Bug report",
+  "description": "Report a reproducible defect without sensitive evidence.",
+  "title": "[Bug] ",
+  "body": [
+    {
+      "type": "textarea",
+      "id": "revision",
+      "attributes": {
+        "label": "Affected revision",
+        "description": "Provide commit/version and environment."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "expected",
+      "attributes": {
+        "label": "Expected behavior",
+        "description": "What should happen?"
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "actual",
+      "attributes": {
+        "label": "Actual behavior",
+        "description": "What actually happens?"
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "reproduction",
+      "attributes": {
+        "label": "Sanitized reproduction",
+        "description": "Provide minimal steps without secrets or private telemetry."
+      },
+      "validations": {
+        "required": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "manifest_version": "1.0.0",
+  "id": "linux-audit-whoami",
+  "upstream": {
+    "repository": "splunk/attack_data",
+    "revision": "4b19e4b6824a8ba91b0f5345a3a8de488619e823",
+    "path": "datasets/attack_techniques/T1033/linux_auditd_whoami/linux_auditd_whoami.log"
+  },
+  "payload": {
+    "url": "https://media.githubusercontent.com/media/splunk/attack_data/4b19e4b6824a8ba91b0f5345a3a8de488619e823/datasets/attack_techniques/T1033/linux_auditd_whoami/linux_auditd_whoami.log",
+    "sha256": "fef8907e640641740bddba145768e43423be04c14fee57fe9d19293b1e5ac921",
+    "size_bytes": 1510,
+    "compression": "none"
+  },
+  "provenance": [
+    {
+      "role": "license",
+      "path": "LICENSE",
+      "url": "https://raw.githubusercontent.com/splunk/attack_data/4b19e4b6824a8ba91b0f5345a3a8de488619e823/LICENSE",
+      "sha256": "8505946b2464fa90223996d99eecbc7639a86648ca071f0cac21695be2623a0a",
+      "size_bytes": 11344
+    },
+    {
+      "role": "scenario_metadata",
+      "path": "datasets/attack_techniques/T1033/linux_auditd_whoami/linux_auditd_whoami.yml",
+      "url": "https://raw.githubusercontent.com/splunk/attack_data/4b19e4b6824a8ba91b0f5345a3a8de488619e823/datasets/attack_techniques/T1033/linux_auditd_whoami/linux_auditd_whoami.yml",
+      "sha256": "1bddddf417ad95e5ef472e1c06fb570113bd8b4695d434de22c2fede715baad0",
+      "size_bytes": 413
+    },
+    {
+      "role": "lfs_pointer",
+      "path": "datasets/attack_techniques/T1033/linux_auditd_whoami/linux_auditd_whoami.log",
+      "url": "https://raw.githubusercontent.com/splunk/attack_data/4b19e4b6824a8ba91b0f5345a3a8de488619e823/datasets/attack_techniques/T1033/linux_auditd_whoami/linux_auditd_whoami.log",
+      "sha256": "1e485755d5cf1891af76deae6af7bbeffff486580ca443a920e04c76851ecf7f",
+      "size_bytes": 129
+    }
+  ],
+  "terms": {
+    "license": "Apache-2.0",
+    "review_status": "approved",
+    "attribution": "Copyright 2025 Splunk Inc.; dataset authors credited in scenario metadata.",
+    "ancestor_paths_checked": [
+      ".",
+      "datasets",
+      "datasets/attack_techniques",
+      "datasets/attack_techniques/T1033",
+      "datasets/attack_techniques/T1033/linux_auditd_whoami"
+    ],
+    "applicable_notice_paths": [],
+    "review_notes": "Pinned root LICENSE and applicable ancestor/artifact directories inspected: root Apache-2.0 terms; no additional terms or NOTICE found. Retain license and author metadata with local evidence."
+  },
+  "capture": {
+    "scenario_id": "77d03c0c-5e07-11ef-b158-acde48001122",
+    "environment": "attack_range",
+    "author": "Teoderick Contreras, Splunk",
+    "metadata_date": "2024-08-19",
+    "source_format": "Raw Linux audit records; not assembled events",
+    "techniques": [
+      "T1033"
+    ],
+    "record_labels": "unknown",
+    "timestamp_policy": "preserve_original_bytes",
+    "limitations": [
+      "Controlled attack simulation; scenario context is not a per-record verdict.",
+      "No false-positive-rate or source completeness claim.",
+      "Host identity/completeness is not established by these audit excerpts."
+    ]
+  },
+  "framing": {
+    "id": "lf-byte-records-v1",
+    "encoding": "utf-8",
+    "record_count": 3
+  },
+  "conversion_history": []
+}

@@ -77,3 +77,13 @@ Validation uses jsonschema 4.26.0 and its format dependencies, pinned in uv.lock
 package metadata retains dependency licenses. Examples are original synthetic
 fixtures, not third-party recordings. Authoritative source references live in the
 source-contract documents. P04 owns recorded dataset acquisition and licensing.
+
+## Recorded corpus catalog
+
+P04 pins four Splunk Attack Data artifacts at
+`4b19e4b6824a8ba91b0f5345a3a8de488619e823`. Manifests in `catalog/datasets/` record
+payload/LFS hashes, author metadata, root Apache 2.0 terms and applicable ancestor
+review. Verified license and metadata objects are retained with downloaded local
+evidence. No third-party log bytes are redistributed in Git. Scenario labels are
+not per-record verdicts; record labels remain unknown. See the
+[acquisition guide](docs/datasets.md) for limitations and integrity policy.

@@ -1,0 +1,249 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:dataset-manifest:1.0.0",
+  "type": "object",
+  "properties": {
+    "manifest_version": {
+      "const": "1.0.0"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "upstream": {
+      "type": "object",
+      "properties": {
+        "repository": {
+          "const": "splunk/attack_data"
+        },
+        "revision": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9_.\\-/]+$"
+        }
+      },
+      "required": [
+        "repository",
+        "revision",
+        "path"
+      ],
+      "additionalProperties": false
+    },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 33554432
+        },
+        "compression": {
+          "const": "none"
+        }
+      },
+      "required": [
+        "url",
+        "sha256",
+        "size_bytes",
+        "compression"
+      ],
+      "additionalProperties": false
+    },
+    "provenance": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "enum": [
+              "license",
+              "scenario_metadata",
+              "lfs_pointer"
+            ]
+          },
+          "path": {
+            "type": "string",
+            "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9_.\\-/]+$"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 33554432
+          }
+        },
+        "required": [
+          "role",
+          "path",
+          "url",
+          "sha256",
+          "size_bytes"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 3,
+      "uniqueItems": true
+    },
+    "terms": {
+      "type": "object",
+      "properties": {
+        "license": {
+          "const": "Apache-2.0"
+        },
+        "review_status": {
+          "const": "approved"
+        },
+        "attribution": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ancestor_paths_checked": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "applicable_notice_paths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9_.\\-/]+$"
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "review_notes": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "license",
+        "review_status",
+        "attribution",
+        "ancestor_paths_checked",
+        "applicable_notice_paths",
+        "review_notes"
+      ],
+      "additionalProperties": false
+    },
+    "capture": {
+      "type": "object",
+      "properties": {
+        "scenario_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "environment": {
+          "type": "string",
+          "minLength": 1
+        },
+        "author": {
+          "type": "string",
+          "minLength": 1
+        },
+        "metadata_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "source_format": {
+          "type": "string",
+          "minLength": 1
+        },
+        "techniques": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^T\\d{4}(?:\\.\\d{3})?$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "record_labels": {
+          "const": "unknown"
+        },
+        "timestamp_policy": {
+          "const": "preserve_original_bytes"
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "scenario_id",
+        "environment",
+        "author",
+        "metadata_date",
+        "source_format",
+        "techniques",
+        "record_labels",
+        "timestamp_policy",
+        "limitations"
+      ],
+      "additionalProperties": false
+    },
+    "framing": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "const": "lf-byte-records-v1"
+        },
+        "encoding": {
+          "const": "utf-8"
+        },
+        "record_count": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "id",
+        "encoding",
+        "record_count"
+      ],
+      "additionalProperties": false
+    },
+    "conversion_history": {
+      "const": []
+    }
+  },
+  "required": [
+    "manifest_version",
+    "id",
+    "upstream",
+    "payload",
+    "provenance",
+    "terms",
+    "capture",
+    "framing",
+    "conversion_history"
+  ],
+  "additionalProperties": false
+}

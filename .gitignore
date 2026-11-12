@@ -1,0 +1,50 @@
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+*.p12
+*.pfx
+.aws/
+credentials/
+secrets/
+
+# Downloaded telemetry, generated evidence, and mutable state
+/data/
+/datasets/
+/archives/
+/artifacts/
+/runs/
+/state/
+/reports/
+/tmp/
+*.evtx
+*.pcap
+*.pcapng
+
+# Dependencies, builds, and caches; retain dependency lockfiles
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+.gradle/
+build/
+out/
+node_modules/
+dist/
+coverage/
+.cache/
+
+# Local editor and operating-system files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.log

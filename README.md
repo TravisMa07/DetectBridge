@@ -1,0 +1,61 @@
+# DetectBridge
+
+DetectBridge is a personal, self-hosted detection-engineering project intended to
+sit between log collectors and a SIEM. It aims to normalize telemetry, evaluate
+Sigma rules in flight, enrich events, and preserve evidence for investigation and
+replay.
+
+## Current status
+
+**Architecture and SDLC bootstrap only.** No ingestion service, detector, API, UI,
+containers, or executable pipeline has been implemented. There are no released
+versions or demonstrated throughput claims. The first qualified release target is
+`v0.1.0`.
+
+## Accepted direction
+
+- Laptop-first, restartable development on ARM64; Linux AMD64 portability before release.
+- Apache Kafka for buffered transport and Java/Apache Flink for stream processing.
+- pySigma for parsing/validation, a DetectBridge compiler producing a versioned
+  execution plan, and an in-process Java evaluator. Python is outside per-event matching.
+- ECS common fields, preserved source evidence, and versioned source contracts.
+- Windows and Linux recorded public telemetry first; cloud sources later.
+- Python management API, React/TypeScript UI, PostgreSQL, and local OpenSearch.
+- Forward all events initially, with preservation-first failure behavior and
+  historical/current-rule replay.
+- Later milestones: deterministic attack chains, optional local/hosted AI,
+  selective forwarding, and distributed deployment.
+
+The initial deployment is not a highly available service. No vendor licensing
+caps are planned; finite operational limits are still required.
+
+## Project guide
+
+- [Architecture and accepted decisions](docs/architecture.md)
+- [SDLC and review policy](docs/sdlc.md)
+- [Milestones, PR ownership, and acceptance gates](docs/roadmap.md)
+- [Release and recovery policy](docs/releases.md)
+- [Development and contribution guide](CONTRIBUTING.md)
+- [Security reporting](SECURITY.md)
+- [Third-party content policy](THIRD_PARTY.md)
+
+## Planned repository layout
+
+| Area | Responsibility |
+| --- | --- |
+| Applications | Management API and React/TypeScript UI |
+| Detection processing | Python compiler, Java evaluator, Flink jobs |
+| Contracts | Event, source, execution-plan, and configuration definitions |
+| Development tools | Acquisition, replay, benchmarks, verification |
+| Deployment | Compose profiles and container definitions |
+| Tests and fixtures | Semantic cases, integration scenarios, dataset manifests |
+| Documentation | Decisions, roadmap, development guidance, runbooks |
+
+Directories and build tooling will be introduced by their owning PRs rather than
+populated with placeholder production services. Python uses `uv`; Java uses the
+Gradle Wrapper; TypeScript uses npm lockfiles. Exact versions are owned by P02.
+
+## Independence and licensing
+
+Original code and documentation are licensed under [Apache 2.0](LICENSE).
+Dependencies, rules, and datasets keep their own terms; see [THIRD_PARTY.md](THIRD_PARTY.md).

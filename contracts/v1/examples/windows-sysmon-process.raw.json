@@ -1,0 +1,20 @@
+{
+  "contract_version": "1.0.0",
+  "record_id": "sha256:615211739a3cbd46f9093e9d2d3ec717a3c50207500f59dfdc36183f03cae8b7",
+  "source": {
+    "namespace": "synthetic-contract-tests",
+    "instance": "windows-sysmon-process-host-a"
+  },
+  "cursor": {
+    "kind": "dataset",
+    "artifact_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "position": 1
+  },
+  "first_observed": "2026-11-12T12:00:01.123456789Z",
+  "evidence": {
+    "sha256": "031725121b34365690c7fdea015c54e7d6fca03d6266a82cf222ee92fe8eb72a",
+    "media_type": "text/plain",
+    "encoding": "utf-8",
+    "inline": "SYNTHETIC windows-sysmon-process fixture; not captured telemetry\n"
+  }
+}

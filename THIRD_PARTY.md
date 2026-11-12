@@ -67,3 +67,13 @@ third-party notices. Only the Wrapper is committed; JDK/Node archives are local.
 Origins and checksums are recorded in `tools/toolchains.json`. Development-only
 Python/npm packages retain their package licenses and locked provenance. No
 application framework or detection content is added in P02.
+
+## Event-contract definitions
+
+P03 follows selected field names/types and categorization values from ECS 9.5.0
+(Apache 2.0). Its applicable upstream notice is retained at `contracts/v1/NOTICE`;
+the schemas are a DetectBridge-specific subset, not a complete ECS redistribution.
+Validation uses jsonschema 4.26.0 and its format dependencies, pinned in uv.lock;
+package metadata retains dependency licenses. Examples are original synthetic
+fixtures, not third-party recordings. Authoritative source references live in the
+source-contract documents. P04 owns recorded dataset acquisition and licensing.

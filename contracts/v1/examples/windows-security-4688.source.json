@@ -1,0 +1,93 @@
+{
+  "contract_version": "1.0.0",
+  "id": "windows-security-4688",
+  "version": "1.0.0",
+  "ecs_version": "9.5.0",
+  "formats": [
+    "Windows Security XML event version 2"
+  ],
+  "provider_versions": [
+    "fixture scope: Windows Security XML event version 2"
+  ],
+  "references": [
+    "https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/auditing/event-4688"
+  ],
+  "classification": {
+    "kind": "event",
+    "category": [
+      "process"
+    ],
+    "type": [
+      "start"
+    ]
+  },
+  "sigma": {
+    "product": "windows",
+    "category": "process_creation",
+    "service": "security"
+  },
+  "framing": "one XML event",
+  "assembly_mode": "standalone",
+  "requires_host_id": true,
+  "required_fields": [
+    "host.id",
+    "process.executable"
+  ],
+  "mappings": [
+    {
+      "source_path": "/NewProcessName",
+      "target_path": "process.executable",
+      "capability": "available"
+    },
+    {
+      "source_path": "/CommandLine",
+      "target_path": "process.command_line",
+      "capability": "conditional"
+    }
+  ],
+  "quality_policy": {
+    "blocking_codes": [
+      "assembly_insufficient",
+      "extraction_failed",
+      "conflicting",
+      "identity_missing",
+      "unsupported_source"
+    ],
+    "warning_codes": [
+      "legitimately_absent",
+      "unmapped",
+      "truncated",
+      "capture_unavailable",
+      "timestamp_missing",
+      "timestamp_unparseable",
+      "timestamp_timezone_ambiguous"
+    ]
+  },
+  "fixtures": [
+    {
+      "path": "windows-security-4688.event.json",
+      "expected_integrity": "sufficient",
+      "expected_eligibility": "eligible"
+    },
+    {
+      "path": "windows-security-4688.missing.json",
+      "expected_integrity": "sufficient",
+      "expected_eligibility": "eligible"
+    },
+    {
+      "path": "windows-security-4688.unparseable.json",
+      "expected_integrity": "sufficient",
+      "expected_eligibility": "eligible"
+    },
+    {
+      "path": "windows-security-4688.timezone_ambiguous.json",
+      "expected_integrity": "sufficient",
+      "expected_eligibility": "eligible"
+    },
+    {
+      "path": "windows-security-4688.absent.json",
+      "expected_integrity": "sufficient",
+      "expected_eligibility": "eligible"
+    }
+  ]
+}

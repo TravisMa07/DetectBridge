@@ -1,0 +1,19 @@
+{
+  "contract_version": "1.0.0",
+  "record_id": "sha256:78588295625e285c7f2e4ce290b2560fca304e3489ca1badd55a9df6df3edf04",
+  "source": {
+    "namespace": "synthetic-contract-tests",
+    "instance": "openssh-authentication-host-a"
+  },
+  "cursor": {
+    "kind": "capture",
+    "id": "00000000-0000-4000-8000-000000000002"
+  },
+  "first_observed": "2026-11-12T12:00:01.123456789Z",
+  "evidence": {
+    "sha256": "06eb7d6a69ee19e5fbdf749018d3d2abfa04bcbd1365db312eb86dc7169389b8",
+    "media_type": "application/octet-stream",
+    "encoding": "base64",
+    "inline": "AP8="
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "contract_version": "1.0.0",
+  "id": "linux-audit-execution",
+  "version": "1.0.0",
+  "ecs_version": "9.5.0",
+  "formats": [
+    "Linux audit raw SYSCALL/EXECVE records"
+  ],
+  "provider_versions": [
+    "fixture scope: Linux audit raw SYSCALL/EXECVE records"
+  ],
+  "references": [
+    "https://github.com/linux-audit/audit-userspace"
+  ],
+  "classification": {
+    "kind": "event",
+    "category": [
+      "process"
+    ],
+    "type": [
+      "start"
+    ]
+  },
+  "sigma": {
+    "product": "linux",
+    "category": "process_creation",
+    "service": "auditd"
+  },
+  "framing": "audit records grouped by originating host, audit timestamp and serial",
+  "assembly_mode": "assembly_required",
+  "requires_host_id": true,
+  "required_fields": [
+    "host.id",
+    "process.executable"
+  ],
+  "mappings": [
+    {
+      "source_path": "/exe",
+      "target_path": "process.executable",
+      "capability": "available"
+    },
+    {
+      "source_path": "/a0",
+      "target_path": "process.args",
+      "capability": "conditional"
+    }
+  ],
+  "quality_policy": {
+    "blocking_codes": [
+      "assembly_insufficient",
+      "extraction_failed",
+      "conflicting",
+      "identity_missing",
+      "unsupported_source"
+    ],
+    "warning_codes": [
+      "legitimately_absent",
+      "unmapped",
+      "truncated",
+      "capture_unavailable",
+      "timestamp_missing",
+      "timestamp_unparseable",
+      "timestamp_timezone_ambiguous"
+    ]
+  },
+  "fixtures": [
+    {
+      "path": "linux-audit-execution.event.json",
+      "expected_integrity": "sufficient",
+      "expected_eligibility": "eligible"
+    },
+    {
+      "path": "linux-audit-execution.partial.json",
+      "expected_integrity": "insufficient",
+      "expected_eligibility": "skipped"
+    }
+  ]
+}

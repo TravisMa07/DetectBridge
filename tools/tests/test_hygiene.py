@@ -10,6 +10,7 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from check_gate import gate_passes
+from setup_github import contains_policy
 from check_repo import content_errors, form_errors, native, workflow_errors, yaml_load
 
 
@@ -56,6 +57,13 @@ class HygieneTests(unittest.TestCase):
         self.assertFalse(workflow_errors(data, 'test'))
         data['permissions'] = {'contents': 'write'}
         self.assertTrue(workflow_errors(data, 'test'))
+
+    def test_remote_policy_defaults_and_drift(self):
+        desired = {"rules": [{"type": "pull_request", "parameters": {"required_approving_review_count": 0}}]}
+        actual = {"rules": [{"type": "pull_request", "parameters": {"required_approving_review_count": 0, "server_default": True}}], "id": 1}
+        self.assertTrue(contains_policy(actual, desired))
+        actual["rules"][0]["parameters"]["required_approving_review_count"] = 1
+        self.assertFalse(contains_policy(actual, desired))
 
     def test_gate_fails_closed(self):
         statuses = ['success', 'failure', 'cancelled', 'skipped', 'timed_out', None]

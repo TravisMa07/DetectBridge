@@ -92,7 +92,7 @@ def policies():
     if rulesets:
         current = api(BASE + '/rulesets/' + str(rulesets[0]['id']))
         fields = ('name', 'target', 'enforcement', 'bypass_actors', 'conditions', 'rules')
-        if any(current.get(k) != POLICY['ruleset'].get(k) for k in fields):
+        if not contains_policy({k: current.get(k) for k in fields}, POLICY['ruleset']):
             raise RuntimeError('Existing ruleset differs; review user changes before updating it')
     else:
         api(BASE + '/rulesets', 'POST', POLICY['ruleset'])
@@ -107,15 +107,74 @@ def readback():
                       'rulesets': [api(BASE + '/rulesets/' + str(r['id'])) for r in pages(BASE + '/rulesets')]}, indent=2))
 
 
+def gh_json(*args):
+    return json.loads(subprocess.check_output(['gh', *args, '--format', 'json'], text=True))
+
+
+def contains_policy(actual, desired):
+    """GitHub adds server defaults: compare required keys without masking drift."""
+    if isinstance(desired, dict):
+        return isinstance(actual, dict) and all(k in actual and contains_policy(actual[k], v) for k, v in desired.items())
+    if isinstance(desired, list):
+        return isinstance(actual, list) and len(actual) == len(desired) and all(contains_policy(a, b) for a, b in zip(actual, desired))
+    return actual == desired
+
+
+def project():
+    owner = REPO.split('/')[0]
+    projects = gh_json('project', 'list', '--owner', owner, '--limit', '100')['projects']
+    matches = [p for p in projects if p['title'] == 'DetectBridge Roadmap']
+    if len(matches) > 1:
+        raise RuntimeError('Duplicate roadmap projects; resolve manually')
+    board = matches[0] if matches else gh_json('project', 'create', '--owner', owner, '--title', 'DetectBridge Roadmap')
+    number, project_id = str(board['number']), board['id']
+    fields = gh_json('project', 'field-list', number, '--owner', owner)['fields']
+    status = next(f for f in fields if f['name'] == 'Status')
+    names = ['Backlog', 'Ready', 'In progress', 'In review', 'Done']
+    existing_names = [o['name'] for o in status['options']]
+    if existing_names != names:
+        items = gh_json('project', 'item-list', number, '--owner', owner, '--limit', '100')['items']
+        if items:
+            raise RuntimeError('Project has items and different status options; review before changing')
+        options = [{'name': name, 'description': name, 'color': color} for name, color in zip(names, ['GRAY', 'BLUE', 'YELLOW', 'PURPLE', 'GREEN'])]
+        api('graphql', 'POST', {'query': 'mutation($input:UpdateProjectV2FieldInput!){updateProjectV2Field(input:$input){projectV2Field{... on ProjectV2SingleSelectField{id}}}}', 'variables': {'input': {'fieldId': status['id'], 'singleSelectOptions': options}}})
+        status = next(f for f in gh_json('project', 'field-list', number, '--owner', owner)['fields'] if f['name'] == 'Status')
+    option_ids = {o['name']: o['id'] for o in status['options']}
+    subprocess.run(['gh', 'project', 'link', number, '--owner', owner, '--repo', REPO], check=True)
+    subprocess.run(['gh', 'project', 'edit', number, '--owner', owner, '--visibility', 'PUBLIC'], check=True)
+    existing = gh_json('project', 'item-list', number, '--owner', owner, '--limit', '100')['items']
+    urls = {i.get('content', {}).get('url') for i in existing}
+    for issue in pages(BASE + '/issues?state=all'):
+        match = re.match(r'^\[(P\d{2})\]', issue['title'])
+        if not match or issue['html_url'] in urls:
+            continue
+        item = gh_json('project', 'item-add', number, '--owner', owner, '--url', issue['html_url'])
+        initial = 'In progress' if match[1] == 'P01' else 'Backlog'
+        subprocess.run(['gh', 'project', 'item-edit', '--id', item['id'], '--project-id', project_id,
+                        '--field-id', status['id'], '--single-select-option-id', option_ids[initial]], check=True)
+    info = api('graphql', 'POST', {'query': 'query($id:ID!){node(id:$id){... on ProjectV2{views(first:20){nodes{id name layout}} workflows(first:30){nodes{name enabled}}}}}', 'variables': {'id': project_id}})
+    workflows = info['data']['node']['workflows']['nodes']
+    active_status = [w['name'] for w in workflows if w['enabled'] and w['name'] != 'Auto-add sub-issues to project']
+    if active_status:
+        raise RuntimeError('Disable automatic status/closure workflows in project UI: ' + ', '.join(active_status))
+    views = info['data']['node']['views']['nodes']
+    if len(views) == 1 and views[0]['name'] == 'View 1':
+        api('graphql', 'POST', {'query': 'mutation($input:UpdateProjectV2ViewInput!){updateProjectV2View(input:$input){projectV2View{id name layout}}}', 'variables': {'input': {'viewId': views[0]['id'], 'name': 'Roadmap board', 'layout': 'BOARD_LAYOUT'}}})
+    print(json.dumps({'project': board['url'], 'fields': gh_json('project', 'field-list', number, '--owner', owner),
+                      'items': gh_json('project', 'item-list', number, '--owner', owner, '--limit', '100')}, indent=2))
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--apply', choices=('tracking', 'policies'))
+    parser.add_argument('--apply', choices=('tracking', 'policies', 'project'))
     args = parser.parse_args()
     try:
         if args.apply == 'tracking':
             tracking()
         elif args.apply == 'policies':
             policies()
+        elif args.apply == 'project':
+            project()
         else:
             readback()
     except (subprocess.CalledProcessError, RuntimeError) as exc:

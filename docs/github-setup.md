@@ -9,6 +9,7 @@ Existing tracking items are preserved; duplicate planning IDs stop setup.
 ```sh
 python3 tools/setup_github.py
 python3 tools/setup_github.py --apply tracking
+python3 tools/setup_github.py --apply project
 # Only after required-checks succeeds on the exact local HEAD:
 python3 tools/setup_github.py --apply policies
 python3 tools/setup_github.py
@@ -33,7 +34,8 @@ by deleting or force-pushing main.
 
 ## Project board access and owner-assisted setup
 
-The current CLI token lacks Projects scope. To grant it interactively:
+Projects setup needs the project scope. If the active CLI token lacks it, grant
+it interactively:
 
 ```sh
 gh auth refresh -s project
@@ -54,6 +56,11 @@ not desired, configure the board in GitHub's UI:
    in the P01 PR. After review readiness, move P01 to In review; do not mark Done
    until its full acceptance gate and authorized merge are complete.
 
+The project setup command preserves existing item statuses. It configures the
+public roadmap project and an initial board view; verify grouping by Status and
+disable any default automatic status workflows in the UI. It refuses to replace
+nonmatching Status options once items exist. It does not alter unrelated projects.
+
 P01 remains partially configured while the board is unavailable. Issue bodies
 retain initial workflow status as a fallback, not as a replacement for the board.
 
@@ -68,3 +75,25 @@ checks rather than interpreting all blocked states as proof of check enforcement
 Private reporting is enabled remotely during policy setup. Before that operation,
 the security reporting link may not yet be available. Templates on this branch
 become default repository templates only after authorized merge.
+
+## P01 verified state
+
+- Public [roadmap board](https://github.com/users/TravisMa07/projects/4) is linked
+  to DetectBridge and contains all 21 issues. The five Status columns were verified
+  visually; all existing automatic status/closure workflows are disabled.
+- The default auto-add-sub-issues workflow remains enabled. It does not change
+  statuses or close issues; no privileged Actions board automation was introduced.
+- Twelve milestones exist: M0–M7 and four expansion milestones. Only the blocked
+  marker was added to the existing labels.
+- Main governance ruleset is active with no bypass actors; merge settings are
+  squash-only with automatic merging disabled and merged branches deleted.
+- Workflow permissions are read-only and cannot approve PRs. Private vulnerability
+  reporting is enabled. The owner can still edit repository protections.
+- Initial CI success: [run 43231652914](https://github.com/TravisMa07/DetectBridge/actions/runs/43231652914).
+- Intentional broken-link failure: [run 43231921399](https://github.com/TravisMa07/DetectBridge/actions/runs/43231921399).
+  Both repository-hygiene and required-checks failed; secret-scan passed.
+- Reverted-link recovery: [run 43232125710](https://github.com/TravisMa07/DetectBridge/actions/runs/43232125710).
+  Later revisions are qualified by the PR's current checks, not these historical runs.
+
+P01 is not Done until owner-authorized merge and post-merge checks. Default-branch
+issue templates and Dependabot configuration take effect after that merge.

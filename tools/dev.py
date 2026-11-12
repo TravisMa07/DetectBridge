@@ -136,6 +136,7 @@ def doctor():
             "uv",
             "run",
             "--locked",
+            "--no-sync",
             "python",
             "-c",
             "import platform; print(platform.python_version())",
@@ -242,11 +243,14 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("command", choices=["doctor", "bootstrap", "check", "smoke", "verify"])
     args = parser.parse_args()
-    if Path(sys.executable).parent.resolve() != (ROOT / ".venv/bin").resolve():
-        return run(
-            ["uv", "run", "--locked", "python", __file__, args.command], check=False
-        ).returncode
     try:
+        if Path(sys.executable).parent.resolve() != (ROOT / ".venv/bin").resolve():
+            if args.command == "doctor" and not (ROOT / ".venv/bin/python").exists():
+                raise RuntimeError("Missing locked environment: python3 tools/dev.py bootstrap")
+            extra = ["--no-sync"] if args.command == "doctor" else []
+            return run(
+                ["uv", "run", "--locked", *extra, "python", __file__, args.command], check=False
+            ).returncode
         if args.command == "verify":
             check()
             smoke()

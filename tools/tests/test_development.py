@@ -11,7 +11,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from check_repo import content_errors
 from classify_changes import needs_toolchains
-from dev import checked_digest, expect_version
+from dev import checked_digest, expect_version, npm, run
 
 
 class DevelopmentTests(unittest.TestCase):
@@ -42,6 +42,27 @@ class DevelopmentTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("lock", result.stderr.lower())
             self.assertEqual(before, (dest / "uv.lock").read_bytes())
+
+    def test_stale_npm_lock_is_rejected(self):
+        root = Path(__file__).resolve().parents[2]
+        with tempfile.TemporaryDirectory() as tmp:
+            dest = Path(tmp)
+            (dest / "package.json").write_bytes((root / "package.json").read_bytes())
+            lock = json.loads((root / "package-lock.json").read_text())
+            lock["packages"].pop("node_modules/typescript")
+            (dest / "package-lock.json").write_text(json.dumps(lock))
+            (dest / "tools/hygiene").mkdir(parents=True)
+            (dest / "tools/hygiene/package.json").write_bytes(
+                (root / "tools/hygiene/package.json").read_bytes()
+            )
+            result = run(
+                npm("ci", "--offline", "--ignore-scripts", "--dry-run"),
+                cwd=dest,
+                capture=True,
+                check=False,
+            )
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("in sync", result.stderr)
 
     def test_binary_allowlist_requires_exact_checksum(self):
         with tempfile.TemporaryDirectory() as tmp:

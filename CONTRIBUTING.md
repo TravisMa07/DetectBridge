@@ -58,3 +58,11 @@ profiles and synthetic examples; the developer check command includes it. See th
 [contract field reference](contracts/v1/README.md) for version, identity, evidence
 and time rules. Add positive and negative cases when changing a contract. Do not
 regenerate expected identity digests using the implementation being tested.
+
+## Dataset catalog checks
+
+The developer check includes `uv run --locked python tools/check_datasets.py`.
+Use the [dataset guide](docs/datasets.md) to acquire selected recorded evidence.
+Normal tests use temporary synthetic bytes and loopback HTTP, not public download
+availability. Catalog updates require pinned provenance, artifact-specific terms
+review, and explicit payload/framing verification.

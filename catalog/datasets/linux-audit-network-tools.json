@@ -1,0 +1,75 @@
+{
+  "manifest_version": "1.0.0",
+  "id": "linux-audit-network-tools",
+  "upstream": {
+    "repository": "splunk/attack_data",
+    "revision": "4b19e4b6824a8ba91b0f5345a3a8de488619e823",
+    "path": "datasets/attack_techniques/T1016/linux_auditd_net_tool/linux_auditd_net_tool.log"
+  },
+  "payload": {
+    "url": "https://media.githubusercontent.com/media/splunk/attack_data/4b19e4b6824a8ba91b0f5345a3a8de488619e823/datasets/attack_techniques/T1016/linux_auditd_net_tool/linux_auditd_net_tool.log",
+    "sha256": "d416f83636399c4fc3d16e05cf8865ad4b37ad09b1e9b24b2c3edf3d02f13431",
+    "size_bytes": 12321,
+    "compression": "none"
+  },
+  "provenance": [
+    {
+      "role": "license",
+      "path": "LICENSE",
+      "url": "https://raw.githubusercontent.com/splunk/attack_data/4b19e4b6824a8ba91b0f5345a3a8de488619e823/LICENSE",
+      "sha256": "8505946b2464fa90223996d99eecbc7639a86648ca071f0cac21695be2623a0a",
+      "size_bytes": 11344
+    },
+    {
+      "role": "scenario_metadata",
+      "path": "datasets/attack_techniques/T1016/linux_auditd_net_tool/linux_auditd_net_tool.yml",
+      "url": "https://raw.githubusercontent.com/splunk/attack_data/4b19e4b6824a8ba91b0f5345a3a8de488619e823/datasets/attack_techniques/T1016/linux_auditd_net_tool/linux_auditd_net_tool.yml",
+      "sha256": "66b79ea598fb50ef0e4c0d36e4c5fca3e5acafcc2d44284e83c9b9f54f1b5749",
+      "size_bytes": 423
+    },
+    {
+      "role": "lfs_pointer",
+      "path": "datasets/attack_techniques/T1016/linux_auditd_net_tool/linux_auditd_net_tool.log",
+      "url": "https://raw.githubusercontent.com/splunk/attack_data/4b19e4b6824a8ba91b0f5345a3a8de488619e823/datasets/attack_techniques/T1016/linux_auditd_net_tool/linux_auditd_net_tool.log",
+      "sha256": "526089eb0816150ee642428a6c61ca81dff2e20f211c97b8ae1522f4552e3add",
+      "size_bytes": 130
+    }
+  ],
+  "terms": {
+    "license": "Apache-2.0",
+    "review_status": "approved",
+    "attribution": "Copyright 2025 Splunk Inc.; dataset authors credited in scenario metadata.",
+    "ancestor_paths_checked": [
+      ".",
+      "datasets",
+      "datasets/attack_techniques",
+      "datasets/attack_techniques/T1016",
+      "datasets/attack_techniques/T1016/linux_auditd_net_tool"
+    ],
+    "applicable_notice_paths": [],
+    "review_notes": "Pinned root LICENSE and applicable ancestor/artifact directories inspected: root Apache-2.0 terms; no additional terms or NOTICE found. Retain license and author metadata with local evidence."
+  },
+  "capture": {
+    "scenario_id": "4655b948-5ef9-11ef-8b94-acde48001122",
+    "environment": "attack_range",
+    "author": "Teoderick Contreras, Splunk",
+    "metadata_date": "2024-08-20",
+    "source_format": "Raw Linux audit records; not assembled events",
+    "techniques": [
+      "T1016"
+    ],
+    "record_labels": "unknown",
+    "timestamp_policy": "preserve_original_bytes",
+    "limitations": [
+      "Controlled attack simulation; scenario context is not a per-record verdict.",
+      "No false-positive-rate or source completeness claim.",
+      "Host identity/completeness is not established by these audit excerpts."
+    ]
+  },
+  "framing": {
+    "id": "lf-byte-records-v1",
+    "encoding": "utf-8",
+    "record_count": 25
+  },
+  "conversion_history": []
+}

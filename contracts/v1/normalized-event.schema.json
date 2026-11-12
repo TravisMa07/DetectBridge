@@ -1,0 +1,539 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:contracts:1.0.0:normalized-event",
+  "type": "object",
+  "properties": {
+    "@timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$"
+    },
+    "ecs": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": "9.5.0"
+        }
+      },
+      "required": [
+        "version"
+      ],
+      "additionalProperties": false
+    },
+    "event": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "alert",
+            "asset",
+            "enrichment",
+            "event",
+            "metric",
+            "state",
+            "pipeline_error",
+            "signal"
+          ]
+        },
+        "category": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "api",
+              "authentication",
+              "configuration",
+              "database",
+              "driver",
+              "email",
+              "file",
+              "host",
+              "iam",
+              "intrusion_detection",
+              "library",
+              "malware",
+              "network",
+              "package",
+              "process",
+              "registry",
+              "session",
+              "threat",
+              "vulnerability",
+              "web"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "type": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "access",
+              "admin",
+              "allowed",
+              "change",
+              "connection",
+              "creation",
+              "deletion",
+              "denied",
+              "device",
+              "end",
+              "error",
+              "group",
+              "indicator",
+              "info",
+              "installation",
+              "protocol",
+              "start",
+              "user"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "outcome": {
+          "enum": [
+            "success",
+            "failure",
+            "unknown"
+          ]
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$"
+        },
+        "ingested": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$"
+        },
+        "provider": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dataset": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "category",
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "host": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hostname": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ip": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "anyOf": [
+              {
+                "format": "ipv4"
+              },
+              {
+                "format": "ipv6"
+              }
+            ]
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "user": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "domain": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "process": {
+      "type": "object",
+      "properties": {
+        "pid": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "entity_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "executable": {
+          "type": "string",
+          "minLength": 1
+        },
+        "command_line": {
+          "type": "string",
+          "minLength": 1
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "working_directory": {
+          "type": "string",
+          "minLength": 1
+        },
+        "parent": {
+          "type": "object",
+          "properties": {
+            "pid": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "entity_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "executable": {
+              "type": "string",
+              "minLength": 1
+            },
+            "command_line": {
+              "type": "string",
+              "minLength": 1
+            },
+            "args": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "working_directory": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "source": {
+      "type": "object",
+      "properties": {
+        "ip": {
+          "type": "string",
+          "anyOf": [
+            {
+              "format": "ipv4"
+            },
+            {
+              "format": "ipv6"
+            }
+          ]
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "file": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "source_fields": {
+      "type": "object"
+    },
+    "detectbridge": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "1.0.0"
+        },
+        "source": {
+          "$ref": "urn:detectbridge:contracts:1.0.0:common#/$defs/source"
+        },
+        "source_contract": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version": {
+              "const": "1.0.0"
+            }
+          },
+          "required": [
+            "id",
+            "version"
+          ],
+          "additionalProperties": false
+        },
+        "processing": {
+          "type": "object",
+          "properties": {
+            "parser": {
+              "type": "string",
+              "minLength": 1
+            },
+            "mapping": {
+              "type": "string",
+              "minLength": 1
+            },
+            "normalizer": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "parser",
+            "mapping",
+            "normalizer"
+          ],
+          "additionalProperties": false
+        },
+        "run_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "time": {
+          "type": "object",
+          "properties": {
+            "basis": {
+              "enum": [
+                "source",
+                "first_observed"
+              ]
+            },
+            "quality": {
+              "enum": [
+                "valid",
+                "missing",
+                "unparseable",
+                "timezone_ambiguous"
+              ]
+            },
+            "first_observed": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$"
+            },
+            "source_value": {
+              "type": "string"
+            },
+            "source_utc": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$"
+            },
+            "received": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$"
+            },
+            "processed": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$"
+            }
+          },
+          "required": [
+            "basis",
+            "quality",
+            "first_observed"
+          ],
+          "additionalProperties": false
+        },
+        "assembly": {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "enum": [
+                "standalone",
+                "assembled"
+              ]
+            },
+            "closure": {
+              "enum": [
+                "not_required",
+                "source_boundary",
+                "timeout",
+                "dataset_end",
+                "resource_limit"
+              ]
+            },
+            "quality": {
+              "enum": [
+                "source_indicated",
+                "unknown",
+                "known_missing",
+                "conflicting"
+              ]
+            },
+            "assembler_version": {
+              "const": "1.0.0"
+            }
+          },
+          "required": [
+            "mode",
+            "closure",
+            "quality",
+            "assembler_version"
+          ],
+          "additionalProperties": false
+        },
+        "quality": {
+          "type": "object",
+          "properties": {
+            "integrity": {
+              "enum": [
+                "sufficient",
+                "insufficient",
+                "unknown"
+              ]
+            },
+            "eligibility": {
+              "enum": [
+                "eligible",
+                "skipped",
+                "undetermined"
+              ]
+            },
+            "diagnostics": {
+              "type": "array",
+              "items": {
+                "$ref": "urn:detectbridge:contracts:1.0.0:common#/$defs/diagnostic"
+              },
+              "minItems": 0,
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "integrity",
+            "eligibility",
+            "diagnostics"
+          ],
+          "additionalProperties": false
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "record_id": {
+                "type": "string",
+                "pattern": "^sha256:[0-9a-f]{64}$"
+              },
+              "evidence": {
+                "$ref": "urn:detectbridge:contracts:1.0.0:common#/$defs/evidence"
+              }
+            },
+            "required": [
+              "record_id",
+              "evidence"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "extensions": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_-]*\\.[a-z][a-z0-9_.-]*$"
+          },
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      },
+      "required": [
+        "contract_version",
+        "source",
+        "source_contract",
+        "processing",
+        "run_id",
+        "time",
+        "assembly",
+        "quality",
+        "evidence"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "@timestamp",
+    "ecs",
+    "event",
+    "source_fields",
+    "detectbridge"
+  ],
+  "additionalProperties": false
+}

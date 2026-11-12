@@ -1,0 +1,73 @@
+{
+  "contract_version": "1.0.0",
+  "id": "openssh-authentication",
+  "version": "1.0.0",
+  "ecs_version": "9.5.0",
+  "formats": [
+    "OpenSSH 9.x RFC5424 message body: Accepted/Failed password for USER from IP port PORT ssh2"
+  ],
+  "provider_versions": [
+    "OpenSSH 9.x"
+  ],
+  "references": [
+    "https://man.openbsd.org/sshd"
+  ],
+  "classification": {
+    "kind": "event",
+    "category": [
+      "authentication"
+    ],
+    "type": [
+      "start"
+    ]
+  },
+  "sigma": {
+    "product": "linux",
+    "category": "authentication",
+    "service": "sshd"
+  },
+  "framing": "one RFC5424-framed OpenSSH message",
+  "assembly_mode": "standalone",
+  "requires_host_id": true,
+  "required_fields": [
+    "host.id",
+    "user.name"
+  ],
+  "mappings": [
+    {
+      "source_path": "/user",
+      "target_path": "user.name",
+      "capability": "available"
+    },
+    {
+      "source_path": "/remote_address",
+      "target_path": "source.ip",
+      "capability": "available"
+    }
+  ],
+  "quality_policy": {
+    "blocking_codes": [
+      "assembly_insufficient",
+      "extraction_failed",
+      "conflicting",
+      "identity_missing",
+      "unsupported_source"
+    ],
+    "warning_codes": [
+      "legitimately_absent",
+      "unmapped",
+      "truncated",
+      "capture_unavailable",
+      "timestamp_missing",
+      "timestamp_unparseable",
+      "timestamp_timezone_ambiguous"
+    ]
+  },
+  "fixtures": [
+    {
+      "path": "openssh-authentication.event.json",
+      "expected_integrity": "sufficient",
+      "expected_eligibility": "eligible"
+    }
+  ]
+}

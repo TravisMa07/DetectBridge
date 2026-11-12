@@ -1,0 +1,20 @@
+{
+  "contract_version": "1.0.0",
+  "record_id": "sha256:c55cafc0faaeb34f70a0b8963ed70b6158843f2d08e4bd4fafd8a79b8911f779",
+  "source": {
+    "namespace": "synthetic-contract-tests",
+    "instance": "windows-security-4688-host-a"
+  },
+  "cursor": {
+    "kind": "dataset",
+    "artifact_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "position": 0
+  },
+  "first_observed": "2026-11-12T12:00:01.123456789Z",
+  "evidence": {
+    "sha256": "172123f69529756240d1c8eaf2075b38cf574575a8ad7dde07bcaeff36d60d9f",
+    "media_type": "text/plain",
+    "encoding": "utf-8",
+    "inline": "SYNTHETIC windows-security-4688 fixture; not captured telemetry\n"
+  }
+}

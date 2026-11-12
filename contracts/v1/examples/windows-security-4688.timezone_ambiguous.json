@@ -1,0 +1,90 @@
+{
+  "@timestamp": "2026-11-12T12:00:01.123456789Z",
+  "ecs": {
+    "version": "9.5.0"
+  },
+  "event": {
+    "kind": "event",
+    "category": [
+      "process"
+    ],
+    "type": [
+      "start"
+    ],
+    "id": "sha256:d11cea8e3a9db5c6b649b8790e807f3e7f070ed5586fd3cb3e7519acb5fb8ce5",
+    "code": "4688",
+    "created": "2026-11-12T12:00:01.123456789Z",
+    "provider": "security",
+    "dataset": "windows-security-4688"
+  },
+  "host": {
+    "id": "windows-security-4688-host-a",
+    "name": "example-host"
+  },
+  "user": {
+    "name": "example-user"
+  },
+  "source_fields": {
+    "NewProcessName": "example-value"
+  },
+  "detectbridge": {
+    "contract_version": "1.0.0",
+    "source": {
+      "namespace": "synthetic-contract-tests",
+      "instance": "windows-security-4688-host-a"
+    },
+    "source_contract": {
+      "id": "windows-security-4688",
+      "version": "1.0.0"
+    },
+    "processing": {
+      "parser": "fixture-only/1.0.0",
+      "mapping": "fixture-only/1.0.0",
+      "normalizer": "fixture-only/1.0.0"
+    },
+    "run_id": "00000000-0000-4000-8000-000000000001",
+    "time": {
+      "basis": "first_observed",
+      "quality": "timezone_ambiguous",
+      "first_observed": "2026-11-12T12:00:01.123456789Z",
+      "source_value": "2026-11-12 12:00:00"
+    },
+    "assembly": {
+      "mode": "standalone",
+      "closure": "not_required",
+      "quality": "source_indicated",
+      "assembler_version": "1.0.0"
+    },
+    "quality": {
+      "integrity": "sufficient",
+      "eligibility": "eligible",
+      "diagnostics": [
+        {
+          "code": "timestamp_timezone_ambiguous",
+          "field": "/@timestamp"
+        }
+      ]
+    },
+    "evidence": [
+      {
+        "record_id": "sha256:c55cafc0faaeb34f70a0b8963ed70b6158843f2d08e4bd4fafd8a79b8911f779",
+        "evidence": {
+          "sha256": "172123f69529756240d1c8eaf2075b38cf574575a8ad7dde07bcaeff36d60d9f",
+          "media_type": "text/plain",
+          "encoding": "utf-8",
+          "inline": "SYNTHETIC windows-security-4688 fixture; not captured telemetry\n"
+        }
+      }
+    ]
+  },
+  "process": {
+    "pid": 100,
+    "name": "example",
+    "executable": "C:\\example.exe",
+    "args": [
+      "example",
+      "repeat",
+      "repeat"
+    ]
+  }
+}

@@ -23,8 +23,7 @@
   },
   "sigma": {
     "product": "linux",
-    "category": "authentication",
-    "service": "sshd"
+    "service": "auth"
   },
   "framing": "one RFC5424-framed OpenSSH message",
   "assembly_mode": "standalone",

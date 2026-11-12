@@ -3,6 +3,7 @@
 import copy
 import json
 import socket
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -135,6 +136,7 @@ class ContractTests(unittest.TestCase):
             lambda e: e.update(unknown="value"),
             lambda e: e["detectbridge"].update(contract_version="1.1.0"),
             lambda e: e["ecs"].update(version="8.0.0"),
+            lambda e: e["detectbridge"].update(run_id="not-a-uuid"),
             lambda e: e["event"].update(category=["unknown"]),
             lambda e: e["event"].update(category="process"),
             lambda e: e["detectbridge"].update(extensions={"unqualified": {}}),
@@ -201,6 +203,31 @@ class ContractTests(unittest.TestCase):
         self.assertNotIn("SENSITIVE-PAYLOAD", repr(errors))
         self.assertEqual(errors[0].pointer, "/process/pid")
 
+    def test_cli_errors_are_value_free(self):
+        self.event["process"]["pid"] = "SENSITIVE-PAYLOAD"
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "input.json"
+            path.write_text(json.dumps(self.event))
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(CONTRACTS.parents[1] / "tools/check_contracts.py"),
+                    "--kind",
+                    "normalized-event",
+                    "--document",
+                    str(path),
+                    "--source-contract",
+                    str(CONTRACTS / "examples/windows-security-4688.source.json"),
+                ],
+                text=True,
+                capture_output=True,
+            )
+            self.assertEqual(result.returncode, 1)
+            self.assertNotIn("SENSITIVE-PAYLOAD", result.stdout + result.stderr)
+            diagnostic = json.loads(result.stdout.strip())
+            self.assertEqual(diagnostic["category"], "schema_type")
+            self.assertEqual(diagnostic["pointer"], "/process/pid")
+
     def test_remote_unknown_and_broken_refs_fail_without_network(self):
         for uri in ("https://example.invalid/schema", "urn:unknown:schema", "#/$defs/missing"):
             with tempfile.TemporaryDirectory() as tmp:
@@ -213,6 +240,7 @@ class ContractTests(unittest.TestCase):
                 path.write_text(json.dumps(value))
                 with patch.object(
                     socket, "create_connection", side_effect=AssertionError("network forbidden")
-                ):
+                ) as network:
                     with self.assertRaises(Exception):
                         ContractValidator(directory)
+                    network.assert_not_called()

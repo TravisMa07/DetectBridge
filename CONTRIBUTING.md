@@ -24,57 +24,23 @@ GitHub account's approval. Never interpret passing CI as permission to merge.
 
 ## Development environment
 
-P02 introduces pinned toolchains: Python/uv, Java/Gradle Wrapper, and
-TypeScript/npm lockfiles. P06 adds resource-limited Compose profiles. Commands
-must be documented when introduced and must match CI. Do not install floating
-versions as the project's reproducibility policy.
-
-The full local stack targets an ARM64 laptop with 24 GB host RAM. Container
-resource allocation is a P06 decision, not a verified bootstrap requirement.
-Local model execution is optional and competes for that same resource budget.
-
-## Repository hygiene
-
-Hygiene uses Python 3.12.12 and Node 24.22.3, independently of the future
-application toolchains. Create an isolated Python environment, then install:
+Use the [reproducible development guide](docs/development.md) for pinned tooling,
+bootstrap, lockfiles, local commands and CI applicability. Start with:
 
 ```sh
-python3 -m venv .venv
-. .venv/bin/activate
-python3 -m pip install -r tools/hygiene/requirements.txt
-npm ci --prefix tools/hygiene
-python3 tools/install_hygiene.py
-python3 tools/check_repo.py
+python3 tools/dev.py bootstrap
+python3 tools/dev.py verify
 ```
 
-Native downloads are SHA-256 checked against committed manifests; supported
-hygiene platforms are macOS ARM64 and Linux AMD64. Downloads require network
-access. Missing dependencies fail with installation instructions.
+The existing `python3 tools/check_repo.py` hygiene entrypoint remains available
+inside the locked Python environment. Stage new files before checks so tracked-file
+verification includes them. Original license text is exempt from rewriting;
+binary verification permits only the checksum-verified Gradle Wrapper JAR.
 
-Stage newly added files before verification: checks enumerate tracked files,
-including staged additions, and inspect their current working-tree contents.
-Use `--check content`, `--check markdown`, `--check workflows`, `--check secrets`,
-or `--check tests` to select checks; repeat the flag to combine them. CI runs the
-same commands. Secret scans cover reachable Git history and a temporary copy of
-tracked current files, with redacted output. Downloaded/ignored data is excluded.
-
-Markdown defaults apply except line-length and duplicate-heading limits. Local
-file links and heading anchors are checked; external network availability is not
-a merge gate. The link checker supports inline links and reference definitions,
-ATX headings and explicit HTML anchors; extend it with tests before introducing
-other Markdown constructs. LICENSE is exempt from whitespace rewriting.
-
-Tests create temporary invalid configuration, links, and a generated dummy secret.
-No live secret or intentionally failing fixture is committed. `required-checks`
-fails unless both hygiene and secret-scan jobs explicitly succeed. Check versions
-and suppression policies are reviewed in PRs; no broad scanner exclusions exist.
-
-Native tool upgrades require reviewed checksum updates; Dependabot covers Actions,
-npm, and Python dependency manifests. Actionlint's optional shellcheck/pyflakes
-integrations are disabled so local and CI checks use identical installed tools.
-
-See [GitHub setup and verification](docs/github-setup.md) for administrative work.
-These checks do not validate the future detection application.
+Documentation checks validate local file links and ATX heading anchors rather
+than external network availability. Temporary negative fixtures contain no live
+credentials. Follow [GitHub governance setup](docs/github-setup.md) for owner-run
+administrative operations; they never run in untrusted CI.
 
 ## Test and content expectations
 

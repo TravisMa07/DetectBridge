@@ -5,10 +5,10 @@ updates:
     schedule:
       interval: weekly
   - package-ecosystem: npm
-    directory: /tools/hygiene
+    directory: /
     schedule:
       interval: weekly
-  - package-ecosystem: pip
-    directory: /tools/hygiene
+  - package-ecosystem: uv
+    directory: /
     schedule:
       interval: weekly

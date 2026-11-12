@@ -11,7 +11,16 @@
         "main"
       ]
     },
-    "workflow_dispatch": null
+    "workflow_dispatch": {
+      "inputs": {
+        "acquire-datasets": {
+          "description": "Opt-in network qualification of the four pinned public datasets",
+          "type": "boolean",
+          "required": false,
+          "default": false
+        }
+      }
+    }
   },
   "permissions": {
     "contents": "read"
@@ -156,6 +165,33 @@
         "repository-hygiene",
         "secret-scan",
         "toolchain-verification"
+      ]
+    },
+    "dataset-acquisition": {
+      "if": "${{ github.event_name == 'workflow_dispatch' && inputs.acquire-datasets }}",
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 12,
+      "steps": [
+        {
+          "uses": "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "with": {
+            "persist-credentials": false
+          }
+        },
+        {
+          "uses": "actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0",
+          "with": {
+            "python-version": "3.12.12"
+          }
+        },
+        {
+          "name": "Install locked acquisition tooling",
+          "run": "python3 -m pip install uv==0.13.6\nuv sync --locked"
+        },
+        {
+          "name": "Acquire, repeat and verify pinned public artifacts",
+          "run": "uv run --locked python tools/datasets.py fetch --all\nuv run --locked python tools/datasets.py fetch --all\nuv run --locked python tools/datasets.py verify --all"
+        }
       ]
     }
   }

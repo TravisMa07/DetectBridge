@@ -43,7 +43,7 @@ artifacts being released.
 ## Repository hygiene dependencies
 
 P01 installs development-only tooling rather than bundling third-party application
-code: markdownlint-cli2 0.24.1 (npm lockfile), PyYAML 6.0.3 (requirements),
+code: markdownlint-cli2 0.24.1 (npm lockfile), PyYAML 6.0.3 (root uv.lock),
 actionlint 1.7.12 and Gitleaks 8.30.1 (checksum-verified release executables).
 Dependency package metadata and upstream license files remain authoritative;
 GitHub Actions are pinned by full commit revision in the workflow.
@@ -51,6 +51,19 @@ GitHub Actions are pinned by full commit revision in the workflow.
 The npm manifest overrides KaTeX to 0.18.2 to address
 [GHSA-238p-pmpm-9mq7](https://github.com/advisories/GHSA-238p-pmpm-9mq7),
 a transitive markdownlint dependency. Verification includes markdownlint and
-`npm audit --prefix tools/hygiene`; no vulnerability suppression was added.
+`npm audit`; no vulnerability suppression was added.
 Keep this override until upstream dependency constraints permit the patched
 version without it, then remove it in a reviewed dependency update.
+
+## Development toolchains
+
+The Gradle Wrapper and scripts originate from Gradle 9.9.1 (Apache 2.0).
+The Wrapper JAR and distribution SHA-256 are verified against Gradle's published
+checksums. Temurin 17.0.21+9 comes from Eclipse Adoptium official releases under
+GPLv2 with the Classpath Exception; downloaded archives retain their license and
+notice files locally. Node 24.22.3 official archives retain their MIT and bundled
+third-party notices. Only the Wrapper is committed; JDK/Node archives are local.
+
+Origins and checksums are recorded in `tools/toolchains.json`. Development-only
+Python/npm packages retain their package licenses and locked provenance. No
+application framework or detection content is added in P02.

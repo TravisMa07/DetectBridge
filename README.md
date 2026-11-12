@@ -60,5 +60,3 @@ Gradle Wrapper; TypeScript uses npm lockfiles. Exact versions are owned by P02.
 
 Original code and documentation are licensed under [Apache 2.0](LICENSE).
 Dependencies, rules, and datasets keep their own terms; see [THIRD_PARTY.md](THIRD_PARTY.md).
-
-[P01 intentional gate test](p01-intentional-missing-file.md)

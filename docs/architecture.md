@@ -30,6 +30,8 @@ defines mappings, integrity checks, and capability diagnostics.
 Separate event identity, source event code, replay identity, and detection
 identity. Separate occurrence, observation, ingestion, and processing timestamps;
 record fallback/quality explicitly. Pin schema and transformation versions.
+P03 implements the v1 contract baseline; see [ADR 0001](decisions/0001-event-source-contracts.md)
+and [field reference](../contracts/v1/README.md). Parsers remain P11/P12.
 Owner: P03, P11, P12.
 
 ## A03 — Source-specific assembly and quality

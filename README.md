@@ -9,7 +9,8 @@ replay.
 
 **Repository foundation; application implementation pending.** No ingestion service, detector, API, UI,
 containers, or executable pipeline has been implemented. Repository hygiene tooling and
-contributor templates are introduced in P01. There are no released
+contributor templates were introduced in P01; P02 adds reproducible build tools,
+and P03 adds versioned contracts and validation. There are no released
 versions or demonstrated throughput claims. The first qualified release target is
 `v0.1.0`.
 
@@ -33,6 +34,7 @@ caps are planned; finite operational limits are still required.
 ## Project guide
 
 - [Architecture and accepted decisions](docs/architecture.md)
+- [Event/source contract field reference](contracts/v1/README.md)
 - [SDLC and review policy](docs/sdlc.md)
 - [Milestones, PR ownership, and acceptance gates](docs/roadmap.md)
 - [Release and recovery policy](docs/releases.md)

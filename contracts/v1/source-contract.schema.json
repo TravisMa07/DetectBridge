@@ -1,0 +1,306 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:contracts:1.0.0:source-contract",
+  "type": "object",
+  "properties": {
+    "contract_version": {
+      "const": "1.0.0"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "const": "1.0.0"
+    },
+    "ecs_version": {
+      "const": "9.5.0"
+    },
+    "formats": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "provider_versions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "references": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uri"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "classification": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "alert",
+            "asset",
+            "enrichment",
+            "event",
+            "metric",
+            "state",
+            "pipeline_error",
+            "signal"
+          ]
+        },
+        "category": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "api",
+              "authentication",
+              "configuration",
+              "database",
+              "driver",
+              "email",
+              "file",
+              "host",
+              "iam",
+              "intrusion_detection",
+              "library",
+              "malware",
+              "network",
+              "package",
+              "process",
+              "registry",
+              "session",
+              "threat",
+              "vulnerability",
+              "web"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "type": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "access",
+              "admin",
+              "allowed",
+              "change",
+              "connection",
+              "creation",
+              "deletion",
+              "denied",
+              "device",
+              "end",
+              "error",
+              "group",
+              "indicator",
+              "info",
+              "installation",
+              "protocol",
+              "start",
+              "user"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "kind",
+        "category",
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "sigma": {
+      "type": "object",
+      "properties": {
+        "product": {
+          "type": "string",
+          "minLength": 1
+        },
+        "category": {
+          "type": "string",
+          "minLength": 1
+        },
+        "service": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "product"
+      ],
+      "additionalProperties": false
+    },
+    "framing": {
+      "type": "string",
+      "minLength": 1
+    },
+    "assembly_mode": {
+      "enum": [
+        "standalone",
+        "already_assembled",
+        "assembly_required"
+      ]
+    },
+    "requires_host_id": {
+      "type": "boolean"
+    },
+    "required_fields": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "mappings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "source_path": {
+            "type": "string",
+            "pattern": "^/(?:[^~/]|~[01])*(?:/(?:[^~/]|~[01])*)*$"
+          },
+          "target_path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "capability": {
+            "enum": [
+              "available",
+              "conditional",
+              "unsupported"
+            ]
+          }
+        },
+        "required": [
+          "source_path",
+          "target_path",
+          "capability"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "quality_policy": {
+      "type": "object",
+      "properties": {
+        "blocking_codes": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "legitimately_absent",
+              "extraction_failed",
+              "unmapped",
+              "truncated",
+              "conflicting",
+              "assembly_insufficient",
+              "identity_missing",
+              "unsupported_source",
+              "capture_unavailable",
+              "timestamp_missing",
+              "timestamp_unparseable",
+              "timestamp_timezone_ambiguous"
+            ]
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "warning_codes": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "legitimately_absent",
+              "extraction_failed",
+              "unmapped",
+              "truncated",
+              "conflicting",
+              "assembly_insufficient",
+              "identity_missing",
+              "unsupported_source",
+              "capture_unavailable",
+              "timestamp_missing",
+              "timestamp_unparseable",
+              "timestamp_timezone_ambiguous"
+            ]
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "blocking_codes",
+        "warning_codes"
+      ],
+      "additionalProperties": false
+    },
+    "fixtures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_.-]*\\.json$"
+          },
+          "expected_integrity": {
+            "enum": [
+              "sufficient",
+              "insufficient",
+              "unknown"
+            ]
+          },
+          "expected_eligibility": {
+            "enum": [
+              "eligible",
+              "skipped",
+              "undetermined"
+            ]
+          }
+        },
+        "required": [
+          "path",
+          "expected_integrity",
+          "expected_eligibility"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "contract_version",
+    "id",
+    "version",
+    "ecs_version",
+    "formats",
+    "provider_versions",
+    "references",
+    "classification",
+    "sigma",
+    "framing",
+    "assembly_mode",
+    "requires_host_id",
+    "required_fields",
+    "mappings",
+    "quality_policy",
+    "fixtures"
+  ],
+  "additionalProperties": false
+}

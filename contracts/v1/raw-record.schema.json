@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:contracts:1.0.0:raw-record",
+  "type": "object",
+  "properties": {
+    "contract_version": {
+      "const": "1.0.0"
+    },
+    "record_id": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "source": {
+      "$ref": "urn:detectbridge:contracts:1.0.0:common#/$defs/source"
+    },
+    "cursor": {
+      "$ref": "urn:detectbridge:contracts:1.0.0:common#/$defs/cursor"
+    },
+    "first_observed": {
+      "$ref": "urn:detectbridge:contracts:1.0.0:common#/$defs/timestamp"
+    },
+    "evidence": {
+      "$ref": "urn:detectbridge:contracts:1.0.0:common#/$defs/evidence"
+    }
+  },
+  "required": [
+    "contract_version",
+    "record_id",
+    "source",
+    "cursor",
+    "first_observed",
+    "evidence"
+  ],
+  "additionalProperties": false
+}

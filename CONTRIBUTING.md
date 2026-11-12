@@ -1,7 +1,7 @@
 # Development and contribution
 
-DetectBridge currently contains its architecture and SDLC seed. There is no
-application to start, dependency installation to run, or runtime test suite yet.
+DetectBridge currently contains its architecture, SDLC, and repository hygiene
+tooling. There is no application to start or detection-runtime test suite yet.
 
 ## Workflow
 
@@ -33,13 +33,48 @@ The full local stack targets an ARM64 laptop with 24 GB host RAM. Container
 resource allocation is a P06 decision, not a verified bootstrap requirement.
 Local model execution is optional and competes for that same resource budget.
 
-## Current documentation verification
+## Repository hygiene
 
-After initialization, run `git diff --check` for working changes and
-`git diff --cached --check` for staged changes. Check relative Markdown links,
-ensure status claims remain accurate, and review the staged file list before
-committing. These checks do not validate the future application. P01 will
-provide reproducible automated repository hygiene checks.
+Hygiene uses Python 3.12.12 and Node 24.22.3, independently of the future
+application toolchains. Create an isolated Python environment, then install:
+
+```sh
+python3 -m venv .venv
+. .venv/bin/activate
+python3 -m pip install -r tools/hygiene/requirements.txt
+npm ci --prefix tools/hygiene
+python3 tools/install_hygiene.py
+python3 tools/check_repo.py
+```
+
+Native downloads are SHA-256 checked against committed manifests; supported
+hygiene platforms are macOS ARM64 and Linux AMD64. Downloads require network
+access. Missing dependencies fail with installation instructions.
+
+Stage newly added files before verification: checks enumerate tracked files,
+including staged additions, and inspect their current working-tree contents.
+Use `--check content`, `--check markdown`, `--check workflows`, `--check secrets`,
+or `--check tests` to select checks; repeat the flag to combine them. CI runs the
+same commands. Secret scans cover reachable Git history and a temporary copy of
+tracked current files, with redacted output. Downloaded/ignored data is excluded.
+
+Markdown defaults apply except line-length and duplicate-heading limits. Local
+file links and heading anchors are checked; external network availability is not
+a merge gate. The link checker supports inline links and reference definitions,
+ATX headings and explicit HTML anchors; extend it with tests before introducing
+other Markdown constructs. LICENSE is exempt from whitespace rewriting.
+
+Tests create temporary invalid configuration, links, and a generated dummy secret.
+No live secret or intentionally failing fixture is committed. `required-checks`
+fails unless both hygiene and secret-scan jobs explicitly succeed. Check versions
+and suppression policies are reviewed in PRs; no broad scanner exclusions exist.
+
+Native tool upgrades require reviewed checksum updates; Dependabot covers Actions,
+npm, and Python dependency manifests. Actionlint's optional shellcheck/pyflakes
+integrations are disabled so local and CI checks use identical installed tools.
+
+See [GitHub setup and verification](docs/github-setup.md) for administrative work.
+These checks do not validate the future detection application.
 
 ## Test and content expectations
 

@@ -39,3 +39,18 @@ it actually applies; add applicable notices when introducing the material.
 
 Release qualification produces a license inventory and SBOM for the exact
 artifacts being released.
+
+## Repository hygiene dependencies
+
+P01 installs development-only tooling rather than bundling third-party application
+code: markdownlint-cli2 0.24.1 (npm lockfile), PyYAML 6.0.3 (requirements),
+actionlint 1.7.12 and Gitleaks 8.30.1 (checksum-verified release executables).
+Dependency package metadata and upstream license files remain authoritative;
+GitHub Actions are pinned by full commit revision in the workflow.
+
+The npm manifest overrides KaTeX to 0.18.2 to address
+[GHSA-238p-pmpm-9mq7](https://github.com/advisories/GHSA-238p-pmpm-9mq7),
+a transitive markdownlint dependency. Verification includes markdownlint and
+`npm audit --prefix tools/hygiene`; no vulnerability suppression was added.
+Keep this override until upstream dependency constraints permit the patched
+version without it, then remove it in a reviewed dependency update.

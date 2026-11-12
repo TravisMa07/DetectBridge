@@ -1,9 +1,9 @@
 # Delivery roadmap and decision ownership
 
-All milestones and PRs below are **planned**, not implemented. P numbers are
-planning IDs, not GitHub PR numbers. The seed records policy; P01 implements
-GitHub configuration, templates and CI. No milestone is complete merely because
-its documentation exists.
+P01 is merged. P02 implementation is under review; subsequent PRs remain
+planned. P numbers are planning IDs, not GitHub PR numbers. Milestones require
+their acceptance evidence and authorized merges; documentation alone does not
+complete a milestone.
 
 ## Milestones
 

@@ -1,0 +1,61 @@
+name: Repository hygiene
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: hygiene-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  repository-hygiene:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12.12'
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24.22.3'
+      - name: Install pinned hygiene dependencies
+        run: |
+          python3 -m pip install -r tools/hygiene/requirements.txt
+          npm ci --prefix tools/hygiene
+          python3 tools/install_hygiene.py
+      - name: Verify repository and negative fixtures
+        run: python3 tools/check_repo.py --check content --check markdown --check workflows --check tests
+  secret-scan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12.12'
+      - name: Install pinned secret scanner
+        run: python3 tools/install_hygiene.py --tool gitleaks
+      - name: Scan full history and tracked working tree
+        run: python3 tools/check_repo.py --check secrets
+  required-checks:
+    if: ${{ always() }}
+    needs: [repository-hygiene, secret-scan]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Require explicit success from every dependency
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+        run: python3 tools/check_gate.py

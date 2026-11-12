@@ -81,6 +81,14 @@ class ContractTests(unittest.TestCase):
         self.assertFalse(self.errors(self.event))
         self.assertEqual(self.event["event"]["id"], before)
 
+    def test_identity_rejects_floating_and_boolean_positions(self):
+        for value in (1.0, True, -1):
+            self.raw["cursor"]["position"] = value
+            self.assertTrue(self.errors(self.raw, "raw-record"))
+        for parts in ([1.0], [True], [{"key": "value"}]):
+            with self.assertRaises(ValueError):
+                identity_hash(parts)
+
     def test_identity_tampering_and_duplicate_membership(self):
         self.raw["record_id"] = "sha256:" + "0" * 64
         self.assertTrue(self.errors(self.raw, "raw-record"))
@@ -98,6 +106,9 @@ class ContractTests(unittest.TestCase):
         self.assertTrue(self.errors(self.raw, "raw-record"))
         del evidence["inline"]
         self.assertFalse(self.errors(self.raw, "raw-record"))
+        evidence["reference"]["object_sha256"] = "0" * 64
+        self.assertTrue(self.errors(self.raw, "raw-record"))
+        evidence["reference"]["object_sha256"] = evidence["sha256"]
         for uri in (
             "https://user:password@example.invalid/object",
             "https://example.invalid/object?token=private",
@@ -118,6 +129,8 @@ class ContractTests(unittest.TestCase):
         mutations = [
             lambda e: e.pop("ecs"),
             lambda e: e["process"].update(pid="100"),
+            lambda e: e["process"].update(pid=100.0),
+            lambda e: e["process"].update(pid=2**63),
             lambda e: e["process"].update(pid=None),
             lambda e: e.update(unknown="value"),
             lambda e: e["detectbridge"].update(contract_version="1.1.0"),

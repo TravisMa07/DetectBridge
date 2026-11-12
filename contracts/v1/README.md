@@ -43,7 +43,8 @@ envelope can explicitly carry insufficient-integrity evidence that is skipped.
 
 All defined objects reject unknown properties unless identified as extension
 containers. No coercion is performed. Optional ECS fields are absent rather than
-null; raw vendor fields and extension contents can retain JSON nulls.
+null. Integer fields use integer JSON values (not integral floats/booleans) and
+are bounded to signed 64-bit maximum for JVM interoperability; raw vendor fields and extension contents can retain JSON nulls.
 
 | Document/field | Meaning |
 | --- | --- |

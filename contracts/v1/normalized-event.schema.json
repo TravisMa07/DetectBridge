@@ -196,7 +196,8 @@
       "properties": {
         "pid": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "maximum": 9223372036854775807
         },
         "entity_id": {
           "type": "string",
@@ -229,7 +230,8 @@
           "properties": {
             "pid": {
               "type": "integer",
-              "minimum": 0
+              "minimum": 0,
+              "maximum": 9223372036854775807
             },
             "entity_id": {
               "type": "string",
@@ -301,7 +303,8 @@
         },
         "size": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "maximum": 9223372036854775807
         }
       },
       "required": [],

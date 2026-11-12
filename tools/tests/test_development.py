@@ -1,9 +1,11 @@
 """Toolchain policy regressions without downloading runtimes in unit tests."""
 
 import hashlib
+import io
 import json
 import subprocess
 import sys
+import tarfile
 import tempfile
 import unittest
 from pathlib import Path
@@ -44,23 +46,28 @@ class DevelopmentTests(unittest.TestCase):
             self.assertEqual(before, (dest / "uv.lock").read_bytes())
 
     def test_stale_npm_lock_is_rejected(self):
-        root = Path(__file__).resolve().parents[2]
         with tempfile.TemporaryDirectory() as tmp:
             dest = Path(tmp)
-            (dest / "package.json").write_bytes((root / "package.json").read_bytes())
-            lock = json.loads((root / "package-lock.json").read_text())
-            lock["packages"].pop("node_modules/typescript")
+            metadata = json.dumps({"name": "lock-smoke", "version": "1.0.0"}).encode()
+            with tarfile.open(dest / "smoke.tgz", "w:gz") as archive:
+                member = tarfile.TarInfo("package/package.json")
+                member.size = len(metadata)
+                archive.addfile(member, io.BytesIO(metadata))
+            (dest / "package.json").write_text(
+                json.dumps(
+                    {
+                        "name": "test-lock",
+                        "version": "1.0.0",
+                        "dependencies": {"lock-smoke": "file:smoke.tgz"},
+                    }
+                )
+            )
+            options = ["--offline", "--ignore-scripts", "--cache", str(dest / "cache")]
+            run(npm("install", "--package-lock-only", *options), cwd=dest, capture=True)
+            lock = json.loads((dest / "package-lock.json").read_text())
+            lock["packages"].pop("node_modules/lock-smoke")
             (dest / "package-lock.json").write_text(json.dumps(lock))
-            (dest / "tools/hygiene").mkdir(parents=True)
-            (dest / "tools/hygiene/package.json").write_bytes(
-                (root / "tools/hygiene/package.json").read_bytes()
-            )
-            result = run(
-                npm("ci", "--offline", "--ignore-scripts", "--dry-run"),
-                cwd=dest,
-                capture=True,
-                check=False,
-            )
+            result = run(npm("ci", "--dry-run", *options), cwd=dest, capture=True, check=False)
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("in sync", result.stderr)
 

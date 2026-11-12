@@ -10,12 +10,19 @@ from urllib.parse import urldefrag, urlsplit
 
 from contract_identity import event_id, record_id
 from jsonschema import Draft202012Validator, FormatChecker
+from jsonschema.validators import extend
 from referencing import Registry, Resource
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTRACTS = ROOT / "contracts/v1"
 BASE = "urn:detectbridge:contracts:1.0.0:"
 KINDS = ("raw-record", "normalized-event", "source-contract")
+StrictValidator = extend(
+    Draft202012Validator,
+    type_checker=Draft202012Validator.TYPE_CHECKER.redefine(
+        "integer", lambda checker, value: type(value) is int
+    ),
+)
 
 
 @dataclass(frozen=True)
@@ -88,7 +95,7 @@ class ContractValidator:
         errors = []
         if kind not in KINDS:
             return [Diagnostic(document, "", "unknown_contract_kind")]
-        validator = Draft202012Validator(
+        validator = StrictValidator(
             self.schemas[BASE + kind], registry=self.registry, format_checker=FormatChecker()
         )
         for error in validator.iter_errors(data):
@@ -115,6 +122,11 @@ class ContractValidator:
                 if hashlib.sha256(raw).hexdigest() != value["sha256"]:
                     report(path + "/sha256", "inline_digest_mismatch")
             else:
+                if (
+                    "byte_range" not in value["reference"]
+                    and value["reference"]["object_sha256"] != value["sha256"]
+                ):
+                    report(path + "/reference/object_sha256", "whole_object_digest_mismatch")
                 try:
                     uri = value["reference"]["uri"]
                     parsed = urlsplit(uri)
@@ -255,12 +267,25 @@ def main():
                 )
         else:
             index = load_json(CONTRACTS / "examples/index.json")
+            paths = [entry["path"] for entry in index]
+            expected = {
+                p.name for p in (CONTRACTS / "examples").glob("*.json") if p.name != "index.json"
+            }
+            if (
+                len(paths) != len(set(paths))
+                or set(paths) != expected
+                or any(entry["kind"] not in KINDS for entry in index)
+            ):
+                raise ValueError("invalid_example_index")
             profiles = {}
             for entry in index:
                 if entry["kind"] == "source-contract":
                     data = load_json(CONTRACTS / "examples" / entry["path"])
                     errors += validator.validate(entry["kind"], data, entry["path"])
-                    profiles[(data["id"], data["version"])] = data
+                    key = (data["id"], data["version"])
+                    if key in profiles:
+                        raise ValueError("duplicate_source_contract")
+                    profiles[key] = data
             for entry in index:
                 if entry["kind"] == "source-contract":
                     continue

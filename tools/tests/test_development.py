@@ -3,6 +3,7 @@
 import hashlib
 import io
 import json
+import os
 import subprocess
 import sys
 import tarfile
@@ -27,12 +28,16 @@ class DevelopmentTests(unittest.TestCase):
     def test_stale_python_lock_is_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
             dest = Path(tmp)
+            env = {**os.environ, "UV_CACHE_DIR": str(dest / "cache")}
             project = dest / "pyproject.toml"
             project.write_text(
                 '[project]\nname="lock-smoke"\nversion="0.0.0"\nrequires-python=">=3.12"\n[tool.uv]\npackage=false\n'
             )
             subprocess.run(
-                ["uv", "lock", "--offline", "--project", tmp], check=True, capture_output=True
+                ["uv", "lock", "--offline", "--project", tmp],
+                check=True,
+                capture_output=True,
+                env=env,
             )
             before = (dest / "uv.lock").read_bytes()
             project.write_text(project.read_text().replace("0.0.0", "0.1.0"))
@@ -40,6 +45,7 @@ class DevelopmentTests(unittest.TestCase):
                 ["uv", "lock", "--check", "--offline", "--project", tmp],
                 capture_output=True,
                 text=True,
+                env=env,
             )
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("lock", result.stderr.lower())

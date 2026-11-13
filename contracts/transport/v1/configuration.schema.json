@@ -1,0 +1,254 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:transport:1.0.0:configuration",
+  "type": "object",
+  "properties": {
+    "contract_version": {
+      "const": "1.0.0"
+    },
+    "project": {
+      "type": "string",
+      "minLength": 1
+    },
+    "pipeline_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "bundle": {
+      "type": "object",
+      "properties": {
+        "jar_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "publisher_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "bundle_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "image": {
+          "type": "string",
+          "minLength": 1
+        },
+        "image_id": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "platform": {
+          "enum": [
+            "linux/arm64",
+            "linux/amd64"
+          ]
+        }
+      },
+      "required": [
+        "jar_sha256",
+        "publisher_sha256",
+        "bundle_sha256",
+        "image",
+        "image_id",
+        "platform"
+      ],
+      "additionalProperties": false
+    },
+    "broker": {
+      "type": "object",
+      "properties": {
+        "cluster_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "topics": {
+          "type": "object",
+          "properties": {
+            "detectbridge.replay.input.v1": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "partitions": {
+                  "const": 1
+                },
+                "replicas": {
+                  "const": 1
+                },
+                "config": {
+                  "type": "object",
+                  "properties": {
+                    "retention.ms": {
+                      "const": "-1"
+                    },
+                    "retention.bytes": {
+                      "const": "-1"
+                    },
+                    "min.insync.replicas": {
+                      "const": "1"
+                    },
+                    "cleanup.policy": {
+                      "const": "delete"
+                    },
+                    "max.message.bytes": {
+                      "const": "2097152"
+                    }
+                  },
+                  "required": [
+                    "retention.ms",
+                    "retention.bytes",
+                    "min.insync.replicas",
+                    "cleanup.policy",
+                    "max.message.bytes"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "id",
+                "partitions",
+                "replicas",
+                "config"
+              ],
+              "additionalProperties": false
+            },
+            "detectbridge.replay.output.v1": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "partitions": {
+                  "const": 1
+                },
+                "replicas": {
+                  "const": 1
+                },
+                "config": {
+                  "type": "object",
+                  "properties": {
+                    "retention.ms": {
+                      "const": "-1"
+                    },
+                    "retention.bytes": {
+                      "const": "-1"
+                    },
+                    "min.insync.replicas": {
+                      "const": "1"
+                    },
+                    "cleanup.policy": {
+                      "const": "delete"
+                    },
+                    "max.message.bytes": {
+                      "const": "2097152"
+                    }
+                  },
+                  "required": [
+                    "retention.ms",
+                    "retention.bytes",
+                    "min.insync.replicas",
+                    "cleanup.policy",
+                    "max.message.bytes"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "id",
+                "partitions",
+                "replicas",
+                "config"
+              ],
+              "additionalProperties": false
+            },
+            "detectbridge.replay.quarantine.v1": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "partitions": {
+                  "const": 1
+                },
+                "replicas": {
+                  "const": 1
+                },
+                "config": {
+                  "type": "object",
+                  "properties": {
+                    "retention.ms": {
+                      "const": "-1"
+                    },
+                    "retention.bytes": {
+                      "const": "-1"
+                    },
+                    "min.insync.replicas": {
+                      "const": "1"
+                    },
+                    "cleanup.policy": {
+                      "const": "delete"
+                    },
+                    "max.message.bytes": {
+                      "const": "2097152"
+                    }
+                  },
+                  "required": [
+                    "retention.ms",
+                    "retention.bytes",
+                    "min.insync.replicas",
+                    "cleanup.policy",
+                    "max.message.bytes"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "id",
+                "partitions",
+                "replicas",
+                "config"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "detectbridge.replay.input.v1",
+            "detectbridge.replay.output.v1",
+            "detectbridge.replay.quarantine.v1"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "cluster_id",
+        "topics"
+      ],
+      "additionalProperties": false
+    },
+    "consumer_group": {
+      "type": "string",
+      "minLength": 1
+    },
+    "replay_contract": {
+      "const": "1.0.0"
+    },
+    "raw_contract": {
+      "const": "1.0.0"
+    }
+  },
+  "required": [
+    "contract_version",
+    "project",
+    "pipeline_id",
+    "bundle",
+    "broker",
+    "consumer_group",
+    "replay_contract",
+    "raw_contract"
+  ],
+  "additionalProperties": false
+}

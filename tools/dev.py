@@ -198,10 +198,23 @@ def check():
     run(["uv", "run", "--locked", "python", "tools/check_contracts.py"])
     run(["uv", "run", "--locked", "python", "tools/check_replay.py"])
     run(["uv", "run", "--locked", "python", "tools/check_stack.py"])
+    run(["uv", "run", "--locked", "python", "tools/check_transport.py"])
     run(["uv", "run", "--locked", "python", "tools/check_repo.py"])
     run(["uv", "run", "--locked", "ruff", "check", "tools"])
     run(["uv", "run", "--locked", "ruff", "format", "--check", "tools"])
     run(["uv", "run", "--locked", "mypy"])
+
+
+def java():
+    run(
+        [
+            ROOT / "gradlew",
+            "--console=plain",
+            ":transport-contracts:test",
+            ":transport-publisher:shadowJar",
+            ":transport-job:shadowJar",
+        ]
+    )
 
 
 def smoke():
@@ -245,7 +258,9 @@ def smoke():
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=["doctor", "bootstrap", "check", "smoke", "verify"])
+    parser.add_argument(
+        "command", choices=["doctor", "bootstrap", "check", "smoke", "java", "verify"]
+    )
     args = parser.parse_args()
     try:
         if Path(sys.executable).parent.resolve() != (ROOT / ".venv/bin").resolve():
@@ -258,6 +273,7 @@ def main():
         if args.command == "verify":
             check()
             smoke()
+            java()
         else:
             globals()[args.command]()
     except (RuntimeError, OSError, subprocess.CalledProcessError) as exc:

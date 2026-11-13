@@ -98,3 +98,13 @@ notices; retain those distributions and their license material. The images are
 consumed from upstream without committing their binaries or copied configuration
 to this repository. Runtime-generated security configuration preserves upstream
 files locally; original wrapper scripts in this repository use the project license.
+
+## Java transport dependencies
+
+P07 uses Apache Flink 2.2.1 and Kafka Connector 5.0.0-2.2, Kafka Clients 4.2.0,
+NetworkNT JSON Schema Validator 3.0.9 (Apache-2.0), Jackson 3.1.8 (Apache-2.0),
+Shadow 9.6.1 (Apache-2.0), and JUnit Jupiter 5.13.4 (EPL-2.0). Dependency locks
+and Gradle verification metadata record exact transitive artifacts. Shaded JARs
+merge service entries and retain combined upstream license/notice material.
+The transport image derives from the existing locked Flink image and uses its
+bundled Prometheus plugin; no additional upstream runtime image is introduced.

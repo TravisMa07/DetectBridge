@@ -98,13 +98,14 @@ class StackTests(unittest.TestCase):
                 base: dict[str, Any] = {
                     "classify-changes": {
                         "result": "success",
-                        "outputs": {"toolchains": tools, "stack": selected},
+                        "outputs": {"toolchains": tools, "stack": selected, "transport": "false"},
                     },
                     "repository-hygiene": {"result": "success"},
                     "secret-scan": {"result": "success"},
                     "toolchain-verification": {
                         "result": "success" if tools == "true" else "skipped"
                     },
+                    "transport-verification": {"result": "skipped"},
                     "local-stack-verification": {
                         "result": "success" if selected == "true" else "skipped"
                     },

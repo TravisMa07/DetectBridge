@@ -35,6 +35,43 @@ def needs_stack(paths):
     )
 
 
+def needs_transport(paths):
+    shared = {
+        "pyproject.toml",
+        "uv.lock",
+        "settings.gradle.kts",
+        "build.gradle.kts",
+        "gradle.properties",
+        "tools/dev.py",
+        "tools/toolchains.json",
+        "tools/check_gate.py",
+        "tools/classify_changes.py",
+        "tools/stack.py",
+        "tools/replay.py",
+        "tools/check_contracts.py",
+        "tools/check_replay.py",
+    }
+    return any(
+        p in shared
+        or p.startswith(
+            (
+                "packages/transport-",
+                "gradle/",
+                "contracts/v1/",
+                "contracts/replay/",
+                "contracts/transport/",
+                "tools/transport",
+                "tools/check_transport",
+                "tools/tests/test_transport",
+                "deploy/local/",
+                ".github/workflows/",
+            )
+        )
+        for p in paths
+        if not (p.endswith(".md") or p == "LICENSE")
+    )
+
+
 if __name__ == "__main__":
     base = os.environ.get("CHANGE_BASE", "")
     head = os.environ.get("CHANGE_HEAD", "HEAD")
@@ -50,3 +87,4 @@ if __name__ == "__main__":
     with open(os.environ["GITHUB_OUTPUT"], "a") as output:
         output.write(f"toolchains={value}\n")
         output.write(f"stack={str(needs_stack([p for p in paths if p])).lower()}\n")
+        output.write(f"transport={str(needs_transport([p for p in paths if p])).lower()}\n")

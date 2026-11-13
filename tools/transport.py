@@ -736,6 +736,24 @@ class Transport:
             time.sleep(1)
         raise StackError("input_checkpoint_progress_timeout")
 
+    def wait_quarantine_retry_limit(self, job_id, timeout=120):
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            state = self.rest("/jobs/" + job_id)["state"]
+            if state == "FAILED":
+                # Examine known fault signatures in memory; never print exception text.
+                detail = json.dumps(self.rest("/jobs/" + job_id + "/exceptions"))
+                if not any(
+                    signature in detail
+                    for signature in ("topic_config_mismatch", "NotEnoughReplicas")
+                ):
+                    raise StackError("unrelated_failure_during_quarantine_fault")
+                return
+            if state in ("CANCELED", "FINISHED"):
+                raise StackError("unexpected_termination_during_quarantine_fault")
+            time.sleep(1)
+        raise StackError("bounded_quarantine_retries_not_exhausted")
+
     def await_accounted(self, expected, quarantine, timeout=180):
         deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
@@ -902,7 +920,7 @@ class Transport:
                 test.wait_input_checkpoint(probe["offset"])
                 test.await_accounted(expected, rejected)
                 phase = stage("quarantine_backpressure")
-                test.wait_checkpoint(submitted["job_id"])
+                recovery_checkpoint = test.wait_checkpoint(submitted["job_id"])
                 try:
                     test.stack.exec(
                         "kafka",
@@ -929,6 +947,9 @@ class Transport:
                     )["offset"]
                     if committed > invalid_offset:
                         raise StackError("checkpoint_advanced_past_unavailable_quarantine")
+                    # Keep the declared fault active until the finite retry policy stops
+                    # the job. Both retained backlog and explicit recovery are qualified.
+                    test.wait_quarantine_retry_limit(submitted["job_id"])
                 finally:
                     test.stack.exec(
                         "kafka",
@@ -943,7 +964,7 @@ class Transport:
                         "--add-config",
                         "min.insync.replicas=1",
                     )
-                test.wait_checkpoint(submitted["job_id"])
+                submitted = test.start(restore=recovery_checkpoint["external_path"])
                 test.await_accounted(expected, rejected)
                 phase = stage("jobmanager_restore")
                 checkpoint = test.wait_checkpoint(submitted["job_id"])
@@ -975,6 +996,7 @@ class Transport:
                     "jobmanager_explicit_restore": True,
                     "broker_outage": True,
                     "quarantine_backpressure": True,
+                    "quarantine_recovery": "explicit_checkpoint_after_bounded_retries",
                 }
             except Exception as exc:
                 category = str(exc) if isinstance(exc, StackError) else type(exc).__name__

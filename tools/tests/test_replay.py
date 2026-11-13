@@ -264,6 +264,42 @@ class ReplayTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.execute(result["run_id"])
 
+    def test_frozen_index_inputs_and_stale_checkpoint(self):
+        index = self.index({self.ids[0]: [(0, "2020-01-01T00:00:00Z")]})
+        result = self.start(timing_path=index)
+        folder = self.runs / result["run_id"]
+        (folder / "timing-index.json").write_bytes(b"{}")
+        with self.assertRaises(ValueError):
+            self.execute(result["run_id"])
+        result = self.start()
+        payload = replay.object_path(self.cache, self.catalog[self.ids[0]]["payload"])
+        original = payload.read_bytes()
+        payload.write_bytes(b"changed")
+        with self.assertRaises(Exception):
+            self.execute(result["run_id"])
+        payload.write_bytes(original)
+        folder = self.runs / result["run_id"]
+        checkpoint = load_json(folder / "checkpoint.json")
+        checkpoint.update(next_sequence=0, segments=0, bytes=0, status="completed")
+        replay.atomic_json(folder / "checkpoint.json", checkpoint)
+        with self.assertRaises(ValueError):
+            self.execute(result["run_id"])
+
+    def test_segment_byte_limit_and_safe_cli_errors(self):
+        with patch.object(replay, "MAX_SEGMENT", 1800):
+            result = self.start()
+            self.assertGreater(result["segments"], 1)
+            for path in (self.runs / result["run_id"] / "segments").glob("*/records.ndjson"):
+                self.assertLessEqual(path.stat().st_size, 1800)
+        command = subprocess.run(
+            [sys.executable, str(replay.ROOT / "tools/replay.py"), "start", "private-event-body"],
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(command.returncode, 1)
+        self.assertNotIn("private-event-body", command.stdout + command.stderr)
+        self.assertEqual(json.loads(command.stdout)["category"], "replay_validation_or_io_failure")
+
     def test_pacer_does_not_catch_up(self):
         now = [0.0]
         waits = []

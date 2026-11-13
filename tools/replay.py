@@ -386,7 +386,7 @@ def scan_segments(folder, config, lookup, data_cache, validator):
             or prefix >= len(states)
             or (value["next_sequence"], value["bytes"]) != states[prefix]
             or value["status"] == "completed"
-            and not completed
+            and (not completed or prefix != len(segments))
         ):
             raise ValueError("checkpoint_inconsistent")
     return {
@@ -460,7 +460,12 @@ def execute(
                 raise ValueError("unsafe_partial_segment")
             shutil.rmtree(path)
         if state["status"] == "completed":
-            checkpoint(folder, config, state)
+            desired = {"contract_version": VERSION, "manifest_sha256": digest(config), **state}
+            if (
+                not (folder / "checkpoint.json").exists()
+                or bounded_json(folder / "checkpoint.json", 65536) != desired
+            ):
+                checkpoint(folder, config, state)
             return {"run_id": run_id, **state}
         pacer = pacer_factory(config["rate"])
         committed = state["next_sequence"]
@@ -584,6 +589,7 @@ def start(
             stream.flush()
             os.fsync(stream.fileno())
     sync_directory(folder)
+    sync_directory(runs)
     checkpoint(
         folder, config, {"next_sequence": 0, "segments": 0, "bytes": 0, "status": "prepared"}
     )

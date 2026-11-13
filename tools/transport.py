@@ -950,6 +950,7 @@ class Transport:
                     # Keep the declared fault active until the finite retry policy stops
                     # the job. Both retained backlog and explicit recovery are qualified.
                     test.wait_quarantine_retry_limit(submitted["job_id"])
+                    phase = stage("quarantine_retry_exhausted")
                 finally:
                     test.stack.exec(
                         "kafka",
@@ -964,6 +965,7 @@ class Transport:
                         "--add-config",
                         "min.insync.replicas=1",
                     )
+                phase = stage("quarantine_checkpoint_restore")
                 submitted = test.start(restore=recovery_checkpoint["external_path"])
                 test.await_accounted(expected, rejected)
                 phase = stage("jobmanager_restore")

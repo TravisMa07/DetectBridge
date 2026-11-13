@@ -144,3 +144,7 @@ license caps; explicit operational limits protect resources. Owner: P17–P20.
   services later. Scaling and high availability need separate qualification.
 
 Owner: post-v0.1.0 milestones, with contracts prepared in earlier PRs.
+
+The local replay boundary is specified in [ADR 0002](decisions/0002-local-replay.md)
+and the [replay guide](replay.md). It preserves P03 evidence inside a separate
+run envelope; committed local files do not establish downstream delivery.

@@ -1,0 +1,8 @@
+{
+  "contract_version": "1.0.0",
+  "dataset_id": "linux-audit-whoami",
+  "record_count": 3,
+  "run_id": "cf31c277-8944-4544-bbf8-052baee01464",
+  "sequence": 3,
+  "type": "dataset_end"
+}

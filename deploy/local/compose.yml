@@ -165,7 +165,8 @@
         "full"
       ],
       "networks": [
-        "internal"
+        "internal",
+        "access"
       ],
       "mem_limit": "2g",
       "cpus": 1.5,
@@ -216,6 +217,12 @@
   "networks": {
     "internal": {
       "internal": true
+    },
+    "access": {
+      "driver": "bridge",
+      "driver_opts": {
+        "com.docker.network.bridge.host_binding_ipv4": "127.0.0.1"
+      }
     }
   },
   "volumes": {

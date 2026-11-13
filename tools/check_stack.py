@@ -32,9 +32,18 @@ def validate(compose, lock):
             errors.append("invalid_image_provenance")
     if set(compose.get("services", {})) != set(EXPECTED):
         return [*errors, "invalid_service_set"]
-    if compose.get("networks") != {"internal": {"internal": True}} or set(
-        compose.get("volumes", {})
-    ) != {"kafka-data", "flink-state", "opensearch-data", "opensearch-config"}:
+    if compose.get("networks") != {
+        "internal": {"internal": True},
+        "access": {
+            "driver": "bridge",
+            "driver_opts": {"com.docker.network.bridge.host_binding_ipv4": "127.0.0.1"},
+        },
+    } or set(compose.get("volumes", {})) != {
+        "kafka-data",
+        "flink-state",
+        "opensearch-data",
+        "opensearch-config",
+    }:
         errors.append("invalid_network_or_volumes")
     for name, (image, memory, cpus) in EXPECTED.items():
         service = compose["services"][name]
@@ -65,9 +74,9 @@ def validate(compose, lock):
             )
         ):
             errors.append("unsafe_container_policy")
-        if service.get("networks") != ["internal"] or service.get("profiles") != (
-            ["full"] if name == "opensearch" else ["core", "full"]
-        ):
+        if service.get("networks") != (
+            ["internal", "access"] if name == "opensearch" else ["internal"]
+        ) or service.get("profiles") != (["full"] if name == "opensearch" else ["core", "full"]):
             errors.append("invalid_profile_or_network")
         wanted = ["127.0.0.1:${OPENSEARCH_PORT:-9200}:9200"] if name == "opensearch" else []
         if service.get("ports", []) != wanted:

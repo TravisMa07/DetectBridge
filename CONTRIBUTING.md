@@ -74,3 +74,11 @@ synthetic timing/recovery tests. See the [replay guide](docs/replay.md) for the
 separate opt-in recorded-data qualification. Normal PR checks do not download
 public evidence or wait for real-time replay pacing. Keep P03 raw contracts
 unchanged when extending replay-specific envelopes.
+
+## Local infrastructure checks
+
+The developer check includes offline deployment policy validation. For service
+changes, run both isolated core/full qualification commands from the
+[local stack guide](docs/local-stack.md). CI runs the same commands on Linux
+AMD64. Never use runtime qualification against the development project or commit
+generated credentials/configuration.

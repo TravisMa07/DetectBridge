@@ -145,7 +145,9 @@ checkpoint and three retained completed checkpoints. Externalized checkpoints
 remain after cancellation. Retained old job state consumes disk until reviewed
 cleanup; do not remove state still referenced by a checkpoint.
 
-Task recovery has three automatic attempts separated by ten seconds. JobManager
+Task recovery has three automatic attempts separated by ten seconds. Exhausting
+that finite budget stops the job; after fixing the cause, explicitly restore a
+compatible retained checkpoint. There is no unbounded retry loop. JobManager
 loss has no automatic resubmission or HA coordinator. Capture a completed
 checkpoint's external path through status before planned interruption. Restore
 with the same configuration/bundle and retained checkpoint files:
@@ -183,7 +185,8 @@ Ordinary qualification uses invented, temporary acquisition objects and complete
 replay runs. Their copied catalog shapes are test scaffolding, not attested
 upstream acquisitions. It verifies ambiguous publication, completed no-op,
 finite Kafka outage, invalid-input quarantine, TaskManager recovery, unavailable
-quarantine backpressure, explicit JobManager restore, complete byte accounting,
+quarantine backpressure through retry-budget exhaustion and explicit checkpoint
+recovery, explicit JobManager restore, complete byte accounting,
 metrics and value-free logs. Exclusive test projects are cleaned on failure or
 interrupt; development state is never the target.
 

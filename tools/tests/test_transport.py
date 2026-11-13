@@ -203,6 +203,23 @@ class TransportTests(unittest.TestCase):
             self.value.publish(self.run_id)
         self.process.assert_not_called()
 
+    def test_quarantine_retry_limit_accepts_only_the_injected_failure(self):
+        self.value.rest = Mock(
+            side_effect=[
+                {"state": "FAILED"},
+                {"root-exception": "topic_config_mismatch"},
+            ]
+        )
+        self.value.wait_quarantine_retry_limit("a" * 32)
+        self.value.rest = Mock(
+            side_effect=[{"state": "FAILED"}, {"root-exception": "unrelated_failure"}]
+        )
+        with self.assertRaisesRegex(transport.StackError, "unrelated_failure"):
+            self.value.wait_quarantine_retry_limit("a" * 32)
+        self.value.rest = Mock(return_value={"state": "CANCELED"})
+        with self.assertRaisesRegex(transport.StackError, "unexpected_termination"):
+            self.value.wait_quarantine_retry_limit("a" * 32)
+
     def test_unknown_transport_versions_and_refs_rejected(self):
         with self.assertRaises(ValueError):
             require("publication", {"contract_version": "9.0.0"})

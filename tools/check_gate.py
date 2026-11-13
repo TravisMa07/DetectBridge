@@ -1,23 +1,26 @@
-"""Fail closed unless required jobs and classified applicability agree."""
+"""Fail closed unless all required jobs and classified applicability agree."""
 
 import json
 import os
 
-EXPECTED = {"classify-changes", "repository-hygiene", "secret-scan", "toolchain-verification"}
+CONDITIONAL = {"toolchain-verification": "toolchains", "local-stack-verification": "stack"}
+EXPECTED = {"classify-changes", "repository-hygiene", "secret-scan", *CONDITIONAL}
 
 
 def gate_passes(needs):
     if not isinstance(needs, dict) or set(needs) != EXPECTED:
         return False
-    for name in EXPECTED - {"toolchain-verification"}:
+    for name in EXPECTED - CONDITIONAL.keys():
         if not isinstance(needs[name], dict) or needs[name].get("result") != "success":
             return False
-    value = needs["classify-changes"].get("outputs", {}).get("toolchains")
-    if value not in ("true", "false"):
-        return False
-    return needs["toolchain-verification"].get("result") == (
-        "success" if value == "true" else "skipped"
-    )
+    outputs = needs["classify-changes"].get("outputs", {})
+    for job, field in CONDITIONAL.items():
+        applicable = outputs.get(field)
+        if applicable not in ("true", "false") or not isinstance(needs[job], dict):
+            return False
+        if needs[job].get("result") != ("success" if applicable == "true" else "skipped"):
+            return False
+    return True
 
 
 if __name__ == "__main__":

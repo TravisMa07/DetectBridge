@@ -197,6 +197,7 @@ def check():
     run(["uv", "run", "--locked", "python", "tools/check_datasets.py"])
     run(["uv", "run", "--locked", "python", "tools/check_contracts.py"])
     run(["uv", "run", "--locked", "python", "tools/check_replay.py"])
+    run(["uv", "run", "--locked", "python", "tools/check_stack.py"])
     run(["uv", "run", "--locked", "python", "tools/check_repo.py"])
     run(["uv", "run", "--locked", "ruff", "check", "tools"])
     run(["uv", "run", "--locked", "ruff", "format", "--check", "tools"])

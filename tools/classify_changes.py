@@ -8,6 +8,33 @@ def needs_toolchains(paths):
     return any(not (p.endswith(".md") or p == "LICENSE") for p in paths)
 
 
+def needs_stack(paths):
+    shared = {
+        "pyproject.toml",
+        "uv.lock",
+        "tools/toolchains.json",
+        "tools/dev.py",
+        "tools/check_gate.py",
+        "tools/classify_changes.py",
+        "tools/tests/test_hygiene.py",
+        "tools/tests/test_development.py",
+    }
+    return any(
+        p in shared
+        or p.startswith(
+            (
+                "deploy/",
+                ".github/workflows/",
+                "tools/stack",
+                "tools/check_stack",
+                "tools/tests/test_stack",
+            )
+        )
+        for p in paths
+        if not p.endswith(".md")
+    )
+
+
 if __name__ == "__main__":
     base = os.environ.get("CHANGE_BASE", "")
     head = os.environ.get("CHANGE_HEAD", "HEAD")
@@ -22,3 +49,4 @@ if __name__ == "__main__":
     value = str(needs_toolchains([p for p in paths if p])).lower()
     with open(os.environ["GITHUB_OUTPUT"], "a") as output:
         output.write(f"toolchains={value}\n")
+        output.write(f"stack={str(needs_stack([p for p in paths if p])).lower()}\n")

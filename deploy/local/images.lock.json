@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "images": {
+    "kafka": {
+      "tag": "apache/kafka:4.2.1",
+      "index": "9916d60eca5d599550e2c320230808fda342124ba550bb4ac4ea8591803262a0",
+      "platforms": {
+        "linux/amd64": "2d2f77837385f202b1947fc3ed62421de344f0ced47dde360ca5afdad11b51fa",
+        "linux/arm64": "6de248515931c5f5c1188df8aabae0947e982642fc6f7695e6e5e23b121a0712"
+      },
+      "source": "https://github.com/apache/kafka",
+      "license": "Apache-2.0"
+    },
+    "flink": {
+      "tag": "flink:2.2.1-scala_2.12-java17",
+      "index": "55ccb2ad4b98362c3f3503c5a6d7cd00b92eb25e38815ddaf0be5903ade54ffe",
+      "platforms": {
+        "linux/amd64": "c6bf9385634fce6bb9ae65e025bc9fdd4844e130e7d68112f4abdcadcca5870d",
+        "linux/arm64": "1a5622fce2d58170bae1d0b92584b27f13ef3f607a75d5ba9617750743f66d9c"
+      },
+      "source": "https://github.com/apache/flink-docker/tree/983be3455636eb12cd1d3dee1efc8e32c4b875db",
+      "license": "Apache-2.0"
+    },
+    "opensearch": {
+      "tag": "opensearchproject/opensearch:3.9.0",
+      "index": "3b55f6b6249cfdb92b52ee59adc8a266203ba9ef9f5d82544fad6f1af2f3609e",
+      "platforms": {
+        "linux/amd64": "5c20af6b5cb472a74ba99f663bee3dd03afbeced14b3897b220a87fc75278445",
+        "linux/arm64": "bbdf65cb3d35c61a8ba495f22c1a42d7d7f0df23412e3419bf1e6cfca3ba4774"
+      },
+      "source": "https://github.com/opensearch-project/OpenSearch/tree/3.9.0",
+      "license": "Apache-2.0"
+    }
+  },
+  "compatibility": {
+    "java": 17,
+    "future_kafka_connector": "5.0.0",
+    "reference": "https://flink.apache.org/downloads/",
+    "note": "Connector 5.0.0 lists Flink 2.1/2.2; no connector installed in P06. Image JVM patch levels are supplied by the locked upstream images, independently of the host JDK."
+  }
+}

@@ -110,11 +110,12 @@ class HygieneTests(unittest.TestCase):
                 needs: dict[str, Any] = {
                     "classify-changes": {
                         "result": "success",
-                        "outputs": {"toolchains": applicable},
+                        "outputs": {"toolchains": applicable, "stack": applicable},
                     },
                     "repository-hygiene": {"result": "success"},
                     "secret-scan": {"result": "success"},
                     "toolchain-verification": {"result": status},
+                    "local-stack-verification": {"result": status},
                 }
                 self.assertEqual(
                     gate_passes(needs), status == ("success" if applicable == "true" else "skipped")

@@ -87,3 +87,14 @@ review. Verified license and metadata objects are retained with downloaded local
 evidence. No third-party log bytes are redistributed in Git. Scenario labels are
 not per-record verdicts; record labels remain unknown. See the
 [acquisition guide](docs/datasets.md) for limitations and integrity policy.
+
+## Local infrastructure images
+
+P06 uses Apache Kafka 4.2.1, Apache Flink 2.2.1 (Java 17), and OpenSearch 3.9.0,
+each Apache-2.0 for its primary project. The [image lock](deploy/local/images.lock.json)
+records upstream sources, multiarchitecture digests and compatibility references.
+Image contents also include their upstream base OS/JVM and transitive license
+notices; retain those distributions and their license material. The images are
+consumed from upstream without committing their binaries or copied configuration
+to this repository. Runtime-generated security configuration preserves upstream
+files locally; original wrapper scripts in this repository use the project license.

@@ -1,0 +1,39 @@
+{
+  "contract_version": "1.0.0",
+  "dataset_id": "linux-audit-whoami",
+  "record": {
+    "contract_version": "1.0.0",
+    "cursor": {
+      "artifact_sha256": "fef8907e640641740bddba145768e43423be04c14fee57fe9d19293b1e5ac921",
+      "kind": "dataset",
+      "position": 0
+    },
+    "evidence": {
+      "encoding": "utf-8",
+      "media_type": "text/plain",
+      "reference": {
+        "byte_range": {
+          "length": 507,
+          "offset": 0
+        },
+        "object_sha256": "fef8907e640641740bddba145768e43423be04c14fee57fe9d19293b1e5ac921",
+        "uri": "urn:sha256:fef8907e640641740bddba145768e43423be04c14fee57fe9d19293b1e5ac921"
+      },
+      "sha256": "48ab6257e6b46174e10ce5fb01790cd5e9a9b37625b492a4b55337a9265763d0"
+    },
+    "first_observed": "2026-11-13T00:11:27.635116Z",
+    "record_id": "sha256:3bc813ba093fcc71be8af3de17cd5164581165e381ea2cbfe3bce003b02e8a14",
+    "source": {
+      "instance": "77d03c0c-5e07-11ef-b158-acde48001122:lf-byte-records-v1",
+      "namespace": "dataset:splunk/attack_data"
+    }
+  },
+  "run_id": "cf31c277-8944-4544-bbf8-052baee01464",
+  "sequence": 0,
+  "timing": {
+    "basis": "first_observed",
+    "effective_time": "2026-11-13T00:11:27.635116Z",
+    "original_time": "2026-11-13T00:11:27.635116Z"
+  },
+  "type": "record"
+}

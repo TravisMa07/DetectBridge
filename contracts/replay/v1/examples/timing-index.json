@@ -1,0 +1,16 @@
+{
+  "contract_version": "1.0.0",
+  "datasets": [
+    {
+      "dataset_id": "linux-audit-whoami",
+      "artifact_sha256": "fef8907e640641740bddba145768e43423be04c14fee57fe9d19293b1e5ac921",
+      "framing": "lf-byte-records-v1",
+      "timestamps": [
+        {
+          "position": 0,
+          "timestamp": "2020-01-01T00:00:00.123456789Z"
+        }
+      ]
+    }
+  ]
+}

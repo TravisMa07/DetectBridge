@@ -137,6 +137,55 @@ backpressure/recovery, not intentional dropping. Output visibility can precede a
 completed checkpoint. Neither end markers nor metrics prove completeness: verify
 the full expected unique envelope set, hashes and quarantine locations.
 
+## Retrieving quarantined evidence
+
+Quarantine offsets and input offsets are different. Inspect the quarantine topic
+through the internal Java reader, then verify the referenced input against its
+frozen cluster/topic identity, size, null flag and checksum. The administrative
+Python helper below retrieves one quarantine offset into an exclusive, private,
+ignored file. It prints no key or event body. Run from the repository root; change
+the project and quarantine offset deliberately. A missing reference or mismatch
+is an error, not permission to search a recreated topic for similar content.
+
+```python
+# Run with: uv run --locked python
+import base64
+import json
+import os
+import sys
+
+sys.path.insert(0, "tools")
+from check_transport import require
+from transport import INPUT, QUARANTINE, Transport, sha
+
+t = Transport("detectbridge-dev")
+quarantine_offset = 0
+broker = t.verify_destination()
+items = t.read_records(QUARANTINE, quarantine_offset, quarantine_offset + 1)
+assert len(items) == 1
+q = json.loads(base64.b64decode(items[0]["value"]))
+require("quarantine", q)
+location = q["input"]
+assert location["cluster_id"] == broker["cluster_id"]
+assert location["topic"] == INPUT and location["partition"] == 0
+assert location["topic_id"] == broker["topics"][INPUT]["id"]
+items = t.read_records(INPUT, location["offset"], location["offset"] + 1)
+assert len(items) == 1 and items[0]["offset"] == location["offset"]
+encoded = items[0]["value"]
+raw = b"" if encoded is None else base64.b64decode(encoded)
+assert (encoded is None) == q["value_is_null"]
+assert len(raw) == q["value_size"] and sha(raw) == q["value_sha256"]
+folder = t.folder / "retrieved"
+folder.mkdir(mode=0o700, exist_ok=True)
+path = folder / (q["quarantine_id"] + ".json")
+with os.fdopen(os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), "w") as out:
+    json.dump({"diagnostic": q, "retained_value_base64": encoded}, out)
+```
+
+This is an explicit local forensic copy, not the P14 archive or an operator API
+compatibility promise. Preserve its access restrictions and do not commit it.
+The Kafka quarantine record itself continues to contain references only.
+
 ## Checkpoints and explicit recovery
 
 The job uses parallelism one, stable operator UIDs, filesystem checkpoints in

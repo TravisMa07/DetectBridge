@@ -208,3 +208,101 @@ class TransportTests(unittest.TestCase):
             require("publication", {"contract_version": "9.0.0"})
         with self.assertRaises(ValueError):
             require("unknown", {})
+
+    def test_payload_ipc_is_unlogged_and_helpers_have_explicit_lifetime(self):
+        args = transport.Transport.process_args(
+            self.value,
+            "read",
+            transport.INPUT,
+            0,
+            1,
+            config={"bundle": {"image_id": "sha256:" + "a" * 64}},
+        )
+        self.assertEqual(args[args.index("--log-driver") + 1], "none")
+        self.assertNotIn("--rm", args)
+        self.assertEqual(args[args.index("--network") + 1], self.value.project + "_internal")
+        self.assertEqual(args[args.index("--user") + 1], "9999:9999")
+        self.assertEqual(args[args.index("--memory") + 1], "512m")
+        self.assertTrue(args[args.index("--name") + 1].startswith(self.value.project + "-helper-"))
+
+    def test_versioned_job_history_rejects_bundle_mismatch(self):
+        path = self.value.folder / "jobs.json"
+        job = {
+            "job_id": "a" * 32,
+            "bundle_sha256": "b" * 64,
+            "restored_from": None,
+            "from_beginning": False,
+        }
+        path.write_text(json.dumps({"contract_version": "1.0.0", "jobs": [job]}))
+        with self.assertRaises(transport.StackError):
+            self.value.jobs()
+        job["bundle_sha256"] = "a" * 64
+        path.write_text(json.dumps({"contract_version": "1.0.0", "jobs": [job]}))
+        self.assertEqual(self.value.jobs()["jobs"], [job])
+        path.write_text(json.dumps({"contract_version": "9.0.0", "jobs": [job]}))
+        with self.assertRaises(ValueError):
+            self.value.jobs()
+
+    def test_transport_classification_and_gate_fail_closed(self):
+        from check_gate import gate_passes
+        from classify_changes import needs_transport
+
+        self.assertFalse(needs_transport(["docs/transport.md", "README.md"]))
+        for path in (
+            "packages/transport-job/src/main/java/RelayJob.java",
+            "contracts/v1/common.schema.json",
+            "contracts/replay/v1/envelope.schema.json",
+            "gradle/libs.versions.toml",
+            "tools/transport.py",
+            ".github/workflows/hygiene.yml",
+        ):
+            self.assertTrue(needs_transport([path]), path)
+        for applicable in ("true", "false"):
+            for result in ("success", "failure", "cancelled", "skipped", None):
+                needs = {
+                    "classify-changes": {
+                        "result": "success",
+                        "outputs": {
+                            "toolchains": "false",
+                            "stack": "false",
+                            "transport": applicable,
+                        },
+                    },
+                    "repository-hygiene": {"result": "success"},
+                    "secret-scan": {"result": "success"},
+                    "toolchain-verification": {"result": "skipped"},
+                    "local-stack-verification": {"result": "skipped"},
+                    "transport-verification": {"result": result},
+                }
+                self.assertEqual(
+                    gate_passes(needs), result == ("success" if applicable == "true" else "skipped")
+                )
+
+    def test_restore_accepts_flink_file_uri_and_rejects_foreign_state(self):
+        job = {
+            "job_id": "a" * 32,
+            "bundle_sha256": "a" * 64,
+            "restored_from": None,
+            "from_beginning": False,
+        }
+        self.value.jobs = Mock(return_value={"contract_version": "1.0.0", "jobs": [job]})
+        self.value.rest = Mock(return_value={"jobs": []})
+        self.value.config.return_value["consumer_group"] = "synthetic-group"
+        self.value.config.return_value["broker"]["topics"] = {
+            topic: {"id": "synthetic-topic"} for topic in transport.TOPICS
+        }
+        self.value.stack.exec = Mock(
+            side_effect=["", "Job has been submitted with JobID " + "b" * 32]
+        )
+        self.value.wait_checkpoint = Mock()
+        result = self.value.start(restore="file:/state/checkpoints/" + "a" * 32 + "/chk-1")
+        self.assertEqual(
+            result["restored_from"], "file:///state/checkpoints/" + "a" * 32 + "/chk-1"
+        )
+        for path in (
+            "file://foreign/state/checkpoints/" + "a" * 32 + "/chk-1",
+            "file:///state/checkpoints/" + "c" * 32 + "/chk-1",
+            "file:///state/checkpoints/" + "a" * 32 + "/../outside",
+        ):
+            with self.assertRaises(transport.StackError):
+                self.value.start(restore=path)

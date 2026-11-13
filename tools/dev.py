@@ -199,6 +199,7 @@ def check():
     run(["uv", "run", "--locked", "python", "tools/check_replay.py"])
     run(["uv", "run", "--locked", "python", "tools/check_stack.py"])
     run(["uv", "run", "--locked", "python", "tools/check_transport.py"])
+    run(["uv", "run", "--locked", "python", "tools/dependency_inventory.py"])
     run(["uv", "run", "--locked", "python", "tools/check_repo.py"])
     run(["uv", "run", "--locked", "ruff", "check", "tools"])
     run(["uv", "run", "--locked", "ruff", "format", "--check", "tools"])
@@ -215,6 +216,8 @@ def java():
             ":transport-job:shadowJar",
         ]
     )
+
+    run(["uv", "run", "--locked", "python", "tools/check_transport.py", "--artifacts"])
 
 
 def smoke():

@@ -260,3 +260,21 @@ class StackTests(unittest.TestCase):
         ):
             with self.assertRaisesRegex(stack.StackError, "service_exited_before_readiness"):
                 value.up("core")
+
+    def test_daemon_read_retry_never_retries_mutating_execution(self):
+        import subprocess
+
+        failed = subprocess.CompletedProcess(
+            [], 1, "", "request returned 500 Internal Server Error for API route and version"
+        )
+        success = subprocess.CompletedProcess([], 0, "{}", "")
+        with (
+            patch.object(stack.subprocess, "run", side_effect=[failed, success]) as execute,
+            patch.object(stack.time, "sleep"),
+        ):
+            self.assertEqual(stack.run(["docker", "info"]).returncode, 0)
+            self.assertEqual(execute.call_count, 2)
+        with patch.object(stack.subprocess, "run", return_value=failed) as execute:
+            with self.assertRaisesRegex(stack.StackError, "docker_daemon_api_failure"):
+                stack.run(["docker", "exec", "owned-container", "operation"])
+            execute.assert_called_once()

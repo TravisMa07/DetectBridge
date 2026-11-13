@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:transport:1.0.0:job-history",
+  "type": "object",
+  "properties": {
+    "contract_version": {
+      "const": "1.0.0"
+    },
+    "jobs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{32}$"
+          },
+          "bundle_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "restored_from": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "from_beginning": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "job_id",
+          "bundle_sha256",
+          "restored_from",
+          "from_beginning"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "contract_version",
+    "jobs"
+  ],
+  "additionalProperties": false
+}

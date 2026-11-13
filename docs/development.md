@@ -1,6 +1,6 @@
 # Reproducible local development
 
-P02 establishes build infrastructure, not application services. Supported development
+P02 established build infrastructure; P07 adds real Java transport modules. Supported development
 platforms are macOS ARM64 and Linux AMD64. Network access is needed for bootstrap;
 Java smoke verification uses the populated Gradle cache offline afterward.
 
@@ -22,9 +22,11 @@ and populates Gradle caches. It does not replace system tools. Older bootstrap
 Python delegates through uv to pinned Python 3.12.12. Downloads require network access.
 
 `doctor` reports effective versions and pin drift; `check` runs repository hygiene,
-Ruff lint/format checks and mypy; `smoke` compiles/runs temporary Java and compiles
-TypeScript, also requiring invalid programs to fail. `verify` combines check and
-smoke. No smoke program is shipped as a service or detection test.
+Ruff lint/format checks, mypy, offline contracts/catalog checks and Python regressions.
+`smoke` compiles/runs temporary Java and compiles TypeScript, also requiring invalid
+programs to fail. `java` builds/tests/packages the actual transport modules with
+strict dependency verification. `verify` combines check, smoke and java. Smoke
+programs establish tooling compatibility; they are not detection tests.
 
 The authoritative pins and download checksums are in `tools/toolchains.json`.
 Python uses root `pyproject.toml`, `.python-version` and `uv.lock`. npm uses one
@@ -53,11 +55,12 @@ incremental annotations; this is not strict typing coverage.
 Use the committed Wrapper exclusively, with `JAVA_HOME` pointing to `.cache/jdk`
 and `GRADLE_USER_HOME` to `.cache/gradle`, as the command runner does. Gradle checks
 Java 17, disables automatic JDK downloads, and configures future Java modules for
-Java 17. Root build has no application modules. Use Kotlin DSL for future builds.
+Java 17. The Kotlin DSL root includes shared transport validation, publisher and
+Flink job modules; no unused application modules are introduced.
 
 The distribution and Wrapper JAR have independent official SHA-256 pins. The JAR
 is the only allowed tracked binary and is still included in secret scanning.
-Future modules must commit resolved dependency locks and Gradle verification
+All modules must commit resolved dependency locks and Gradle verification
 metadata after reviewing dependency origins/checksums. No empty dependency lock
 or application library is created just to make a check pass.
 
@@ -71,4 +74,6 @@ or its explicit inapplicability and skipped status.
 
 Workflow setup pins must agree with the manifest. Retain read-only credentials,
 SHA-pinned actions and owner merge authorization. Linux AMD64 CI and local macOS
-ARM64 checks qualify tooling only, not future runtime compatibility or throughput.
+ARM64 checks qualify tooling. Applicable runtime checks additionally qualify local
+infrastructure and [transport recovery](transport.md); none establish throughput.
+See the [reviewed Java inventory](transport-dependencies.md) for dependency findings.

@@ -16,6 +16,7 @@ import subprocess
 import time
 import uuid
 from contextlib import contextmanager
+from functools import wraps
 from pathlib import Path
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
@@ -42,22 +43,69 @@ class StackError(Exception):
 
 
 def run(args, *, env=None, data=None, timeout=120, check=True):
-    try:
-        result = subprocess.run(
-            [str(a) for a in args],
-            input=data,
-            capture_output=True,
-            text=True,
-            env=env,
-            timeout=timeout,
+    command = [str(a) for a in args]
+    read_only = command[:2] in (
+        ["docker", "info"],
+        ["docker", "inspect"],
+        ["docker", "ps"],
+        ["docker", "logs"],
+        ["docker", "stats"],
+    ) or command[:3] in (
+        ["docker", "image", "inspect"],
+        ["docker", "network", "inspect"],
+        ["docker", "network", "ls"],
+        ["docker", "volume", "inspect"],
+    )
+    for attempt in range(2):
+        try:
+            result = subprocess.run(
+                command, input=data, capture_output=True, text=True, env=env, timeout=timeout
+            )
+        except subprocess.TimeoutExpired as exc:
+            raise StackError("command_timeout") from exc
+        except OSError as exc:
+            raise StackError("docker_unavailable") from exc
+        daemon_error = (
+            result.returncode and "Internal Server Error for API route and version" in result.stderr
         )
-    except subprocess.TimeoutExpired as exc:
-        raise StackError("command_timeout") from exc
-    except OSError as exc:
-        raise StackError("docker_unavailable") from exc
-    if check and result.returncode:
-        raise StackError("command_failed")
-    return result
+        if daemon_error and read_only and attempt == 0:
+            time.sleep(1)
+            continue
+        if check and result.returncode:
+            category = "docker_daemon_api_failure" if daemon_error else "command_failed"
+            if not daemon_error and "io.detectbridge.transport.Publisher" in command:
+                operation = command[command.index("io.detectbridge.transport.Publisher") + 2]
+                if operation in ("init", "describe", "read", "publish", "inject", "group-offset"):
+                    category += "_broker_" + operation.replace("-", "_")
+                try:
+                    detail = json.loads(result.stdout.splitlines()[-1])
+                    reason = detail.get("reason_type", "")
+                    if detail.get("status") == "failed" and re.fullmatch(
+                        r"[A-Za-z0-9_]{1,80}", reason
+                    ):
+                        category += "_" + reason
+                except (ValueError, IndexError):
+                    pass
+            raise StackError(category)
+        return result
+    raise StackError("docker_daemon_api_failure")
+
+
+def retry_daemon_control(function):
+    """Only convergent, ownership-checked cleanup may retry an ambiguous daemon API 500."""
+
+    @wraps(function)
+    def wrapped(*args, **kwargs):
+        for attempt in range(2):
+            try:
+                return function(*args, **kwargs)
+            except StackError as exc:
+                if str(exc) != "docker_daemon_api_failure" or attempt:
+                    raise
+                time.sleep(1)
+        raise StackError("docker_daemon_api_failure")
+
+    return wrapped
 
 
 def project_name(value):
@@ -699,6 +747,7 @@ class Stack:
             "opensearch_port": state["port"] if state["security"] else None,
         }
 
+    @retry_daemon_control
     def down(self):
         self.load()
         values = self.containers()  # validates exact project/service ownership
@@ -731,6 +780,7 @@ class Stack:
             run(["docker", "network", "rm", *networks])
         return {"project": self.project, "status": "stopped", "volumes": "retained"}
 
+    @retry_daemon_control
     def cleanup_helpers(self):
         ids = run(
             [
@@ -744,6 +794,7 @@ class Stack:
         if ids:
             run(["docker", "rm", "-f", *ids])
 
+    @retry_daemon_control
     def reset(self, confirm):
         if confirm != self.project:
             raise StackError("reset_requires_exact_project_confirmation")

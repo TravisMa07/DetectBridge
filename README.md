@@ -7,10 +7,11 @@ replay.
 
 ## Current status
 
-**Repository foundation; application implementation pending.** No ingestion service, detector, API, UI,
-or executable detection pipeline has been implemented. P06 introduces local Kafka/Flink
-infrastructure and optional authenticated OpenSearch containers. P07 adds a
-checkpointed replay transport and validation job; it performs no detection. Repository hygiene tooling and
+**Local replay and checkpointed Kafka/Flink transport implemented; detection is pending.**
+The transport validates replay envelopes and forwards unchanged bytes or quarantine
+references. No detector, management API, UI or OpenSearch writer is implemented.
+P06 provides local Kafka/Flink infrastructure and optional authenticated OpenSearch.
+Repository hygiene tooling and
 contributor templates were introduced in P01; P02 adds reproducible build tools,
 P03 adds versioned contracts and validation, and P04 adds selective recorded-data
 acquisition. P05 adds isolated, resumable local replay with explicit timing. There are no released

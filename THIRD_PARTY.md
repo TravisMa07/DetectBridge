@@ -108,3 +108,8 @@ and Gradle verification metadata record exact transitive artifacts. Shaded JARs
 merge service entries and retain combined upstream license/notice material.
 The transport image derives from the existing locked Flink image and uses its
 bundled Prometheus plugin; no additional upstream runtime image is introduced.
+
+The [reviewed dependency inventory](docs/transport-dependencies.md) records
+transitive security patches, their provenance and the unresolved shaded-Jackson
+finding in the pinned upstream Flink image. LZ4 Java retains its Apache-2.0
+license; Snappy Java retains Apache-2.0 and bundled native-library notices.

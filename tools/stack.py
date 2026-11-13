@@ -141,6 +141,8 @@ class Stack:
             "docker",
             "run",
             "--rm",
+            "--label",
+            f"io.detectbridge.helper.project={self.project}",
             "--network",
             network,
             "--memory",
@@ -285,7 +287,12 @@ class Stack:
             errors.append("docker_cannot_enforce_resource_limits")
         if errors and strict:
             raise StackError(",".join(errors))
-        if profile == "full" and check_port and not self.containers():
+        own_listener = any(
+            v["Config"]["Labels"]["com.docker.compose.service"] == "opensearch"
+            and v["State"]["Status"] == "running"
+            for v in self.containers()
+        )
+        if profile == "full" and check_port and not own_listener:
             port = self.port or (
                 self.load()["port"] if (self.folder / "state.json").exists() else 9200
             )
@@ -337,6 +344,8 @@ class Stack:
                     "docker",
                     "run",
                     "--rm",
+                    "--label",
+                    f"io.detectbridge.helper.project={self.project}",
                     "--network",
                     "none",
                     "--memory",
@@ -432,10 +441,8 @@ class Stack:
                 "tenant_permissions": [],
             },
             "detectbridge_operator": {
-                "cluster_permissions": ["cluster_all"],
-                "index_permissions": [
-                    {"index_patterns": ["*"], "allowed_actions": ["indices_all"]}
-                ],
+                "cluster_permissions": ["cluster:*"],
+                "index_permissions": [{"index_patterns": ["*"], "allowed_actions": ["indices:*"]}],
                 "tenant_permissions": [],
             },
         }
@@ -495,6 +502,8 @@ class Stack:
                 "docker",
                 "run",
                 "--rm",
+                "--label",
+                f"io.detectbridge.helper.project={self.project}",
                 "--network",
                 "none",
                 "--memory",
@@ -662,12 +671,26 @@ class Stack:
         self.compose("down", "--timeout", "30", profile="full")
         return {"project": self.project, "status": "stopped", "volumes": "retained"}
 
+    def cleanup_helpers(self):
+        ids = run(
+            [
+                "docker",
+                "ps",
+                "-aq",
+                "--filter",
+                f"label=io.detectbridge.helper.project={self.project}",
+            ]
+        ).stdout.split()
+        if ids:
+            run(["docker", "rm", "-f", *ids])
+
     def reset(self, confirm):
         if confirm != self.project:
             raise StackError("reset_requires_exact_project_confirmation")
         self.load()
         for name in VOLUMES:
             self.owned_volume(name)
+        self.cleanup_helpers()
         self.down()
         for name in VOLUMES:
             if self.owned_volume(name):
@@ -712,14 +735,18 @@ class Stack:
         test = Stack(test_project, port)
         report = {"project": test_project, "profile": profile, "status": "failed"}
         with project_lock(test_project):
+            phase = "preflight"
             try:
                 test.doctor(profile)
+                phase = "initialization"
                 test.init(profile)
                 before = (test.folder / "state.json").read_bytes()
                 test.init(profile)
                 if before != (test.folder / "state.json").read_bytes():
                     raise StackError("initialization_not_idempotent")
+                phase = "startup"
                 ready = test.up(profile)
+                phase = "synthetic_writes"
                 token = uuid.uuid4().hex
                 topic = "p06-" + token
                 test.exec(
@@ -764,6 +791,7 @@ class Stack:
                     "printf '%s' " + token + " > /state/savepoints/p06-marker",
                 )
                 if profile == "full":
+                    phase = "tls_authentication"
                     if any(
                         test.request("GET", "/", credential=c)[0] != 401 for c in (None, "wrong")
                     ):
@@ -773,8 +801,10 @@ class Stack:
                     )
                     if code not in (200, 201):
                         raise StackError("opensearch_authenticated_write_failed")
+                phase = "recreation"
                 test.down()
                 restart = test.up(profile)
+                phase = "persistence"
                 consumed = test.exec(
                     "kafka",
                     "/opt/kafka/bin/kafka-console-consumer.sh",
@@ -800,6 +830,7 @@ class Stack:
                     code, value = test.request("GET", "/p06-proof/_doc/1")
                     if code != 200 or value.get("_source", {}).get("marker") != token:
                         raise StackError("opensearch_persistence_failure")
+                phase = "inspection"
                 ids = [v["Id"] for v in test.containers()]
                 idle = run(
                     ["docker", "stats", "--no-stream", "--format", "{{json .}}", *ids]
@@ -817,6 +848,9 @@ class Stack:
                         "opensearch": profile == "full",
                     },
                 )
+            except Exception as exc:
+                category = str(exc) if isinstance(exc, StackError) else type(exc).__name__
+                raise StackError("qualification_" + phase + "_" + category) from exc
             finally:
                 # SIGINT/TERM are deferred only during bounded cleanup of this unique project.
                 old = {
@@ -824,6 +858,7 @@ class Stack:
                     for sig in (signal.SIGINT, signal.SIGTERM)
                 }
                 try:
+                    test.cleanup_helpers()
                     if (test.folder / "state.json").exists():
                         test.reset(test_project)
                 finally:

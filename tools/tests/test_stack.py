@@ -212,3 +212,26 @@ class StackTests(unittest.TestCase):
             with self.assertRaises(stack.StackError):
                 value.up("core")
             reset.assert_not_called()
+
+    def test_occupied_loopback_port_fails_preflight(self):
+        from unittest.mock import Mock
+
+        value = stack.Stack("detectbridge-test-a", 19200)
+        info = {
+            "ServerVersion": "28.0.4",
+            "Architecture": "aarch64",
+            "OSType": "linux",
+            "MemTotal": 8 * stack.GIB,
+            "MemoryLimit": True,
+            "CpuCfsQuota": True,
+        }
+        results = [Mock(stdout=json.dumps(info)), Mock(stdout="2.38.2")]
+        with (
+            patch.object(stack, "run", side_effect=results),
+            patch.object(value, "containers", return_value=[]),
+            patch.object(value, "helper", return_value=str(30 * stack.GIB // 1024) + "\n262144\n"),
+            patch.object(stack.socket, "socket") as sock,
+        ):
+            sock.return_value.__enter__.return_value.bind.side_effect = OSError()
+            with self.assertRaisesRegex(stack.StackError, "loopback_port_in_use"):
+                value.doctor("full")

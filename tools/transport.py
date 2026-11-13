@@ -748,7 +748,12 @@ class Transport:
                     for signature in ("topic_config_mismatch", "NotEnoughReplicas")
                 ):
                     raise StackError("unrelated_failure_during_quarantine_fault")
-                return
+                checkpoint = (
+                    self.rest("/jobs/" + job_id + "/checkpoints").get("latest", {}).get("completed")
+                )
+                if not checkpoint or not checkpoint.get("external_path"):
+                    raise StackError("no_retained_checkpoint_after_quarantine_fault")
+                return checkpoint
             if state in ("CANCELED", "FINISHED"):
                 raise StackError("unexpected_termination_during_quarantine_fault")
             time.sleep(1)
@@ -920,7 +925,7 @@ class Transport:
                 test.wait_input_checkpoint(probe["offset"])
                 test.await_accounted(expected, rejected)
                 phase = stage("quarantine_backpressure")
-                recovery_checkpoint = test.wait_checkpoint(submitted["job_id"])
+                test.wait_checkpoint(submitted["job_id"])
                 try:
                     test.stack.exec(
                         "kafka",
@@ -949,7 +954,15 @@ class Transport:
                         raise StackError("checkpoint_advanced_past_unavailable_quarantine")
                     # Keep the declared fault active until the finite retry policy stops
                     # the job. Both retained backlog and explicit recovery are qualified.
-                    test.wait_quarantine_retry_limit(submitted["job_id"])
+                    recovery_checkpoint = test.wait_quarantine_retry_limit(submitted["job_id"])
+                    final_committed = json.loads(
+                        test.private_read(
+                            test.process_args("group-offset", test.config()["consumer_group"]),
+                            timeout=45,
+                        ).stdout
+                    )["offset"]
+                    if final_committed > invalid_offset:
+                        raise StackError("checkpoint_advanced_past_unavailable_quarantine")
                     phase = stage("quarantine_retry_exhausted")
                 finally:
                     test.stack.exec(

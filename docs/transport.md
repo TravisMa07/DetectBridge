@@ -149,7 +149,10 @@ Task recovery has three automatic attempts separated by ten seconds. Exhausting
 that finite budget stops the job; after fixing the cause, explicitly restore a
 compatible retained checkpoint. There is no unbounded retry loop. JobManager
 loss has no automatic resubmission or HA coordinator. Capture a completed
-checkpoint's external path through status before planned interruption. Restore
+checkpoint's external path through status before planned interruption. A running
+job can evict an earlier path as newer checkpoints complete; after a terminal
+failure, inspect its latest completed checkpoint rather than reusing a stale
+pre-fault path. Verify that the selected metadata and state remain present. Restore
 with the same configuration/bundle and retained checkpoint files:
 
 ```sh

@@ -204,13 +204,17 @@ class TransportTests(unittest.TestCase):
         self.process.assert_not_called()
 
     def test_quarantine_retry_limit_accepts_only_the_injected_failure(self):
+        newest = {"id": 9, "external_path": "file:///state/checkpoints/" + "a" * 32 + "/chk-9"}
+        # An earlier cached path can have been evicted while the job was still running.
+        (self.value.folder / "checkpoint.json").write_text(json.dumps({"checkpoint": {"id": 1}}))
         self.value.rest = Mock(
             side_effect=[
                 {"state": "FAILED"},
                 {"root-exception": "topic_config_mismatch"},
+                {"latest": {"completed": newest}},
             ]
         )
-        self.value.wait_quarantine_retry_limit("a" * 32)
+        self.assertEqual(self.value.wait_quarantine_retry_limit("a" * 32), newest)
         self.value.rest = Mock(
             side_effect=[{"state": "FAILED"}, {"root-exception": "unrelated_failure"}]
         )

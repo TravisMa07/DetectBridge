@@ -86,6 +86,16 @@ def run(args, *, env=None, data=None, timeout=120, check=True):
                         category += "_" + reason
                 except (ValueError, IndexError):
                     pass
+            if not daemon_error and "exec" in command:
+                if "/opt/flink/bin/flink" in command:
+                    category += "_job_submission"
+                elif "test" in command and "-s" in command:
+                    category += "_checkpoint_metadata"
+                elif "curl" in command:
+                    category += "_internal_http"
+                elif "/opt/kafka/bin/kafka-configs.sh" in command:
+                    category += "_topic_configuration"
+                category += "_exit_" + str(result.returncode)
             raise StackError(category)
         return result
     raise StackError("docker_daemon_api_failure")

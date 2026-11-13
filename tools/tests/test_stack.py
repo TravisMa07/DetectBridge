@@ -261,6 +261,22 @@ class StackTests(unittest.TestCase):
             with self.assertRaisesRegex(stack.StackError, "service_exited_before_readiness"):
                 value.up("core")
 
+    def test_administrative_failures_identify_operation_without_values(self):
+        import subprocess
+
+        cases = [
+            (["test", "-s", "/private/checkpoint"], "checkpoint_metadata"),
+            (["curl", "https://private/value"], "internal_http"),
+            (["/opt/flink/bin/flink", "run"], "job_submission"),
+            (["/opt/kafka/bin/kafka-configs.sh"], "topic_configuration"),
+        ]
+        for args, category in cases:
+            failed = subprocess.CompletedProcess([], 22, "sensitive-output", "sensitive-error")
+            with patch.object(stack.subprocess, "run", return_value=failed):
+                with self.assertRaises(stack.StackError) as raised:
+                    stack.run(["docker", "exec", "owned-container", *args])
+                self.assertEqual(str(raised.exception), "command_failed_" + category + "_exit_22")
+
     def test_daemon_read_retry_never_retries_mutating_execution(self):
         import subprocess
 

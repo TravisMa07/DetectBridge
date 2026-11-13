@@ -297,6 +297,11 @@ class TransportTests(unittest.TestCase):
             "contracts/v1/common.schema.json",
             "contracts/replay/v1/envelope.schema.json",
             "gradle/libs.versions.toml",
+            "settings-gradle.lockfile",
+            "gradlew",
+            "tools/datasets.py",
+            "tools/check_datasets.py",
+            "catalog/datasets/example.json",
             "tools/transport.py",
             ".github/workflows/hygiene.yml",
         ):

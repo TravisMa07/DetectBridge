@@ -11,7 +11,7 @@ replay.
 containers, or executable pipeline has been implemented. Repository hygiene tooling and
 contributor templates were introduced in P01; P02 adds reproducible build tools,
 P03 adds versioned contracts and validation, and P04 adds selective recorded-data
-acquisition. There are no released
+acquisition. P05 adds isolated, resumable local replay with explicit timing. There are no released
 versions or demonstrated throughput claims. The first qualified release target is
 `v0.1.0`.
 
@@ -37,6 +37,7 @@ caps are planned; finite operational limits are still required.
 - [Architecture and accepted decisions](docs/architecture.md)
 - [Event/source contract field reference](contracts/v1/README.md)
 - [Recorded dataset acquisition](docs/datasets.md)
+- [Local replay, timing and recovery](docs/replay.md)
 - [SDLC and review policy](docs/sdlc.md)
 - [Milestones, PR ownership, and acceptance gates](docs/roadmap.md)
 - [Release and recovery policy](docs/releases.md)

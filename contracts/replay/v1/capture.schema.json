@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:replay:1.0.0:capture",
+  "type": "object",
+  "properties": {
+    "contract_version": {
+      "const": "1.0.0"
+    },
+    "source": {
+      "type": "object",
+      "properties": {
+        "namespace": {
+          "const": "dataset:splunk/attack_data"
+        },
+        "instance": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "namespace",
+        "instance"
+      ],
+      "additionalProperties": false
+    },
+    "artifact_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "framing": {
+      "const": "lf-byte-records-v1"
+    },
+    "first_observed": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,9})?Z$"
+    }
+  },
+  "required": [
+    "contract_version",
+    "source",
+    "artifact_sha256",
+    "framing",
+    "first_observed"
+  ],
+  "additionalProperties": false
+}

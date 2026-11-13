@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:replay:1.0.0:checkpoint",
+  "type": "object",
+  "properties": {
+    "contract_version": {
+      "const": "1.0.0"
+    },
+    "manifest_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "next_sequence": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "segments": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "bytes": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "status": {
+      "enum": [
+        "prepared",
+        "running",
+        "interrupted",
+        "completed"
+      ]
+    }
+  },
+  "required": [
+    "contract_version",
+    "manifest_sha256",
+    "next_sequence",
+    "segments",
+    "bytes",
+    "status"
+  ],
+  "additionalProperties": false
+}

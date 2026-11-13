@@ -18,6 +18,12 @@
           "type": "boolean",
           "required": false,
           "default": false
+        },
+        "qualify-replay": {
+          "description": "Opt-in recorded replay qualification using all four pinned datasets",
+          "type": "boolean",
+          "required": false,
+          "default": false
         }
       }
     }
@@ -193,6 +199,33 @@
           "run": "uv run --locked python tools/datasets.py fetch --all\nuv run --locked python tools/datasets.py fetch --all\nuv run --locked python tools/datasets.py verify --all"
         }
       ]
+    },
+    "replay-qualification": {
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 15,
+      "steps": [
+        {
+          "uses": "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "with": {
+            "persist-credentials": false
+          }
+        },
+        {
+          "uses": "actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0",
+          "with": {
+            "python-version": "3.12.12"
+          }
+        },
+        {
+          "name": "Install locked acquisition tooling",
+          "run": "python3 -m pip install uv==0.13.6\nuv sync --locked"
+        },
+        {
+          "name": "Acquire pinned evidence and qualify isolated replay",
+          "run": "uv run --locked python tools/datasets.py fetch --all\nuv run --locked python tools/qualify_replay.py"
+        }
+      ],
+      "if": "${{ github.event_name == 'workflow_dispatch' && inputs.qualify-replay }}"
     }
   }
 }

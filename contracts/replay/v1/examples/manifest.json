@@ -1,0 +1,363 @@
+{
+  "anchor": null,
+  "contract_version": "1.0.0",
+  "datasets": [
+    {
+      "capture": {
+        "artifact_sha256": "fef8907e640641740bddba145768e43423be04c14fee57fe9d19293b1e5ac921",
+        "contract_version": "1.0.0",
+        "first_observed": "2026-11-13T00:11:27.635116Z",
+        "framing": "lf-byte-records-v1",
+        "source": {
+          "instance": "77d03c0c-5e07-11ef-b158-acde48001122:lf-byte-records-v1",
+          "namespace": "dataset:splunk/attack_data"
+        }
+      },
+      "manifest": {
+        "capture": {
+          "author": "Teoderick Contreras, Splunk",
+          "environment": "attack_range",
+          "limitations": [
+            "Controlled attack simulation; scenario context is not a per-record verdict.",
+            "No false-positive-rate or source completeness claim.",
+            "Host identity/completeness is not established by these audit excerpts."
+          ],
+          "metadata_date": "2024-08-19",
+          "record_labels": "unknown",
+          "scenario_id": "77d03c0c-5e07-11ef-b158-acde48001122",
+          "source_format": "Raw Linux audit records; not assembled events",
+          "techniques": [
+            "T1033"
+          ],
+          "timestamp_policy": "preserve_original_bytes"
+        },
+        "conversion_history": [],
+        "framing": {
+          "encoding": "utf-8",
+          "id": "lf-byte-records-v1",
+          "record_count": 3
+        },
+        "id": "linux-audit-whoami",
+        "manifest_version": "1.0.0",
+        "payload": {
+          "compression": "none",
+          "sha256": "fef8907e640641740bddba145768e43423be04c14fee57fe9d19293b1e5ac921",
+          "size_bytes": 1510,
+          "url": "https://media.githubusercontent.com/media/splunk/attack_data/4b19e4b6824a8ba91b0f5345a3a8de488619e823/datasets/attack_techniques/T1033/linux_auditd_whoami/linux_auditd_whoami.log"
+        },
+        "provenance": [
+          {
+            "path": "LICENSE",
+            "role": "license",
+            "sha256": "8505946b2464fa90223996d99eecbc7639a86648ca071f0cac21695be2623a0a",
+            "size_bytes": 11344,
+            "url": "https://raw.githubusercontent.com/splunk/attack_data/4b19e4b6824a8ba91b0f5345a3a8de488619e823/LICENSE"
+          },
+          {
+            "path": "datasets/attack_techniques/T1033/linux_auditd_whoami/linux_auditd_whoami.yml",
+            "role": "scenario_metadata",
+            "sha256": "1bddddf417ad95e5ef472e1c06fb570113bd8b4695d434de22c2fede715baad0",
+            "size_bytes": 413,
+            "url": "https://raw.githubusercontent.com/splunk/attack_data/4b19e4b6824a8ba91b0f5345a3a8de488619e823/datasets/attack_techniques/T1033/linux_auditd_whoami/linux_auditd_whoami.yml"
+          },
+          {
+            "path": "datasets/attack_techniques/T1033/linux_auditd_whoami/linux_auditd_whoami.log",
+            "role": "lfs_pointer",
+            "sha256": "1e485755d5cf1891af76deae6af7bbeffff486580ca443a920e04c76851ecf7f",
+            "size_bytes": 129,
+            "url": "https://raw.githubusercontent.com/splunk/attack_data/4b19e4b6824a8ba91b0f5345a3a8de488619e823/datasets/attack_techniques/T1033/linux_auditd_whoami/linux_auditd_whoami.log"
+          }
+        ],
+        "terms": {
+          "ancestor_paths_checked": [
+            ".",
+            "datasets",
+            "datasets/attack_techniques",
+            "datasets/attack_techniques/T1033",
+            "datasets/attack_techniques/T1033/linux_auditd_whoami"
+          ],
+          "applicable_notice_paths": [],
+          "attribution": "Copyright 2025 Splunk Inc.; dataset authors credited in scenario metadata.",
+          "license": "Apache-2.0",
+          "review_notes": "Pinned root LICENSE and applicable ancestor/artifact directories inspected: root Apache-2.0 terms; no additional terms or NOTICE found. Retain license and author metadata with local evidence.",
+          "review_status": "approved"
+        },
+        "upstream": {
+          "path": "datasets/attack_techniques/T1033/linux_auditd_whoami/linux_auditd_whoami.log",
+          "repository": "splunk/attack_data",
+          "revision": "4b19e4b6824a8ba91b0f5345a3a8de488619e823"
+        }
+      },
+      "manifest_sha256": "87b5d2c6ee3bf584369e97f3535b9f939744142986dd4e12551e93d0e67ce5b9"
+    },
+    {
+      "capture": {
+        "artifact_sha256": "81e1d4e381f4dc38b97c48f9fa5b0ab0b098810c321b7d4599029a9f22530259",
+        "contract_version": "1.0.0",
+        "first_observed": "2026-11-13T00:11:27.635562Z",
+        "framing": "lf-byte-records-v1",
+        "source": {
+          "instance": "cc9b25e1-efc9-11eb-926b-550bf0943fbb:lf-byte-records-v1",
+          "namespace": "dataset:splunk/attack_data"
+        }
+      },
+      "manifest": {
+        "capture": {
+          "author": "Patrick Bareiss",
+          "environment": "attack_range",
+          "limitations": [
+            "Controlled attack simulation; scenario context is not a per-record verdict.",
+            "No false-positive-rate or source completeness claim."
+          ],
+          "metadata_date": "2020-10-08",
+          "record_labels": "unknown",
+          "scenario_id": "cc9b25e1-efc9-11eb-926b-550bf0943fbb",
+          "source_format": "Windows Security XML; one complete event per LF record",
+          "techniques": [
+            "T1003.003"
+          ],
+          "timestamp_policy": "preserve_original_bytes"
+        },
+        "conversion_history": [],
+        "framing": {
+          "encoding": "utf-8",
+          "id": "lf-byte-records-v1",
+          "record_count": 8
+        },
+        "id": "windows-security-4688",
+        "manifest_version": "1.0.0",
+        "payload": {
+          "compression": "none",
+          "sha256": "81e1d4e381f4dc38b97c48f9fa5b0ab0b098810c321b7d4599029a9f22530259",
+          "size_bytes": 11176,
+          "url": "https://media.githubusercontent.com/media/splunk/attack_data/4b19e4b6824a8ba91b0f5345a3a8de488619e823/datasets/attack_techniques/T1003.003/atomic_red_team/4688_windows-security.log"
+        },
+        "provenance": [
+          {
+            "path": "LICENSE",
+            "role": "license",
+            "sha256": "8505946b2464fa90223996d99eecbc7639a86648ca071f0cac21695be2623a0a",
+            "size_bytes": 11344,
+            "url": "https://raw.githubusercontent.com/splunk/attack_data/4b19e4b6824a8ba91b0f5345a3a8de488619e823/LICENSE"
+          },
+          {
+            "path": "datasets/attack_techniques/T1003.003/atomic_red_team/atomic_red_team.yml",
+            "role": "scenario_metadata",
+            "sha256": "eebac0c9661cabf3b1bf36f200880516e19db43a1c3680ef17e6db43c78ac4f8",
+            "size_bytes": 1259,
+            "url": "https://raw.githubusercontent.com/splunk/attack_data/4b19e4b6824a8ba91b0f5345a3a8de488619e823/datasets/attack_techniques/T1003.003/atomic_red_team/atomic_red_team.yml"
+          },
+          {
+            "path": "datasets/attack_techniques/T1003.003/atomic_red_team/4688_windows-security.log",
+            "role": "lfs_pointer",
+            "sha256": "06126201367df42134ac4dffce205b7b6f00dfdcb34a98f9ba71ed0da16a6c47",
+            "size_bytes": 130,
+            "url": "https://raw.githubusercontent.com/splunk/attack_data/4b19e4b6824a8ba91b0f5345a3a8de488619e823/datasets/attack_techniques/T1003.003/atomic_red_team/4688_windows-security.log"
+          }
+        ],
+        "terms": {
+          "ancestor_paths_checked": [
+            ".",
+            "datasets",
+            "datasets/attack_techniques",
+            "datasets/attack_techniques/T1003.003",
+            "datasets/attack_techniques/T1003.003/atomic_red_team"
+          ],
+          "applicable_notice_paths": [],
+          "attribution": "Copyright 2025 Splunk Inc.; dataset authors credited in scenario metadata.",
+          "license": "Apache-2.0",
+          "review_notes": "Pinned root LICENSE and applicable ancestor/artifact directories inspected: root Apache-2.0 terms; no additional terms or NOTICE found. Retain license and author metadata with local evidence.",
+          "review_status": "approved"
+        },
+        "upstream": {
+          "path": "datasets/attack_techniques/T1003.003/atomic_red_team/4688_windows-security.log",
+          "repository": "splunk/attack_data",
+          "revision": "4b19e4b6824a8ba91b0f5345a3a8de488619e823"
+        }
+      },
+      "manifest_sha256": "3d8b04c33c20093d1ac7d11a0a4f9132e40e2973ca535cedccbf025efa79cea0"
+    },
+    {
+      "capture": {
+        "artifact_sha256": "ee1c7cd9fa20013c82da17f8cb1998197c117ab4c209ab56203290bc90739fda",
+        "contract_version": "1.0.0",
+        "first_observed": "2026-11-13T00:11:27.635882Z",
+        "framing": "lf-byte-records-v1",
+        "source": {
+          "instance": "cc9b25e1-efc9-11eb-926b-550bf0943fbb:lf-byte-records-v1",
+          "namespace": "dataset:splunk/attack_data"
+        }
+      },
+      "manifest": {
+        "capture": {
+          "author": "Patrick Bareiss",
+          "environment": "attack_range",
+          "limitations": [
+            "Controlled attack simulation; scenario context is not a per-record verdict.",
+            "No false-positive-rate or source completeness claim.",
+            "Multiple Sysmon event types; do not label all records process creation."
+          ],
+          "metadata_date": "2020-10-08",
+          "record_labels": "unknown",
+          "scenario_id": "cc9b25e1-efc9-11eb-926b-550bf0943fbb",
+          "source_format": "Mixed Sysmon XML event types; one event per LF record",
+          "techniques": [
+            "T1003.003"
+          ],
+          "timestamp_policy": "preserve_original_bytes"
+        },
+        "conversion_history": [],
+        "framing": {
+          "encoding": "utf-8",
+          "id": "lf-byte-records-v1",
+          "record_count": 7010
+        },
+        "id": "windows-sysmon-mixed",
+        "manifest_version": "1.0.0",
+        "payload": {
+          "compression": "none",
+          "sha256": "ee1c7cd9fa20013c82da17f8cb1998197c117ab4c209ab56203290bc90739fda",
+          "size_bytes": 12883992,
+          "url": "https://media.githubusercontent.com/media/splunk/attack_data/4b19e4b6824a8ba91b0f5345a3a8de488619e823/datasets/attack_techniques/T1003.003/atomic_red_team/windows-sysmon.log"
+        },
+        "provenance": [
+          {
+            "path": "LICENSE",
+            "role": "license",
+            "sha256": "8505946b2464fa90223996d99eecbc7639a86648ca071f0cac21695be2623a0a",
+            "size_bytes": 11344,
+            "url": "https://raw.githubusercontent.com/splunk/attack_data/4b19e4b6824a8ba91b0f5345a3a8de488619e823/LICENSE"
+          },
+          {
+            "path": "datasets/attack_techniques/T1003.003/atomic_red_team/atomic_red_team.yml",
+            "role": "scenario_metadata",
+            "sha256": "eebac0c9661cabf3b1bf36f200880516e19db43a1c3680ef17e6db43c78ac4f8",
+            "size_bytes": 1259,
+            "url": "https://raw.githubusercontent.com/splunk/attack_data/4b19e4b6824a8ba91b0f5345a3a8de488619e823/datasets/attack_techniques/T1003.003/atomic_red_team/atomic_red_team.yml"
+          },
+          {
+            "path": "datasets/attack_techniques/T1003.003/atomic_red_team/windows-sysmon.log",
+            "role": "lfs_pointer",
+            "sha256": "1002df7512e9df20132bde0ca5b526ae863cf19a81b2f913e9a522d569f305de",
+            "size_bytes": 133,
+            "url": "https://raw.githubusercontent.com/splunk/attack_data/4b19e4b6824a8ba91b0f5345a3a8de488619e823/datasets/attack_techniques/T1003.003/atomic_red_team/windows-sysmon.log"
+          }
+        ],
+        "terms": {
+          "ancestor_paths_checked": [
+            ".",
+            "datasets",
+            "datasets/attack_techniques",
+            "datasets/attack_techniques/T1003.003",
+            "datasets/attack_techniques/T1003.003/atomic_red_team"
+          ],
+          "applicable_notice_paths": [],
+          "attribution": "Copyright 2025 Splunk Inc.; dataset authors credited in scenario metadata.",
+          "license": "Apache-2.0",
+          "review_notes": "Pinned root LICENSE and applicable ancestor/artifact directories inspected: root Apache-2.0 terms; no additional terms or NOTICE found. Retain license and author metadata with local evidence.",
+          "review_status": "approved"
+        },
+        "upstream": {
+          "path": "datasets/attack_techniques/T1003.003/atomic_red_team/windows-sysmon.log",
+          "repository": "splunk/attack_data",
+          "revision": "4b19e4b6824a8ba91b0f5345a3a8de488619e823"
+        }
+      },
+      "manifest_sha256": "01e87eac6ce05102d20d5b77c3c6c3d68d10b1323cb3c0bce7d4f74abd0c6e8b"
+    },
+    {
+      "capture": {
+        "artifact_sha256": "d416f83636399c4fc3d16e05cf8865ad4b37ad09b1e9b24b2c3edf3d02f13431",
+        "contract_version": "1.0.0",
+        "first_observed": "2026-11-13T00:11:27.636172Z",
+        "framing": "lf-byte-records-v1",
+        "source": {
+          "instance": "4655b948-5ef9-11ef-8b94-acde48001122:lf-byte-records-v1",
+          "namespace": "dataset:splunk/attack_data"
+        }
+      },
+      "manifest": {
+        "capture": {
+          "author": "Teoderick Contreras, Splunk",
+          "environment": "attack_range",
+          "limitations": [
+            "Controlled attack simulation; scenario context is not a per-record verdict.",
+            "No false-positive-rate or source completeness claim.",
+            "Host identity/completeness is not established by these audit excerpts."
+          ],
+          "metadata_date": "2024-08-20",
+          "record_labels": "unknown",
+          "scenario_id": "4655b948-5ef9-11ef-8b94-acde48001122",
+          "source_format": "Raw Linux audit records; not assembled events",
+          "techniques": [
+            "T1016"
+          ],
+          "timestamp_policy": "preserve_original_bytes"
+        },
+        "conversion_history": [],
+        "framing": {
+          "encoding": "utf-8",
+          "id": "lf-byte-records-v1",
+          "record_count": 25
+        },
+        "id": "linux-audit-network-tools",
+        "manifest_version": "1.0.0",
+        "payload": {
+          "compression": "none",
+          "sha256": "d416f83636399c4fc3d16e05cf8865ad4b37ad09b1e9b24b2c3edf3d02f13431",
+          "size_bytes": 12321,
+          "url": "https://media.githubusercontent.com/media/splunk/attack_data/4b19e4b6824a8ba91b0f5345a3a8de488619e823/datasets/attack_techniques/T1016/linux_auditd_net_tool/linux_auditd_net_tool.log"
+        },
+        "provenance": [
+          {
+            "path": "LICENSE",
+            "role": "license",
+            "sha256": "8505946b2464fa90223996d99eecbc7639a86648ca071f0cac21695be2623a0a",
+            "size_bytes": 11344,
+            "url": "https://raw.githubusercontent.com/splunk/attack_data/4b19e4b6824a8ba91b0f5345a3a8de488619e823/LICENSE"
+          },
+          {
+            "path": "datasets/attack_techniques/T1016/linux_auditd_net_tool/linux_auditd_net_tool.yml",
+            "role": "scenario_metadata",
+            "sha256": "66b79ea598fb50ef0e4c0d36e4c5fca3e5acafcc2d44284e83c9b9f54f1b5749",
+            "size_bytes": 423,
+            "url": "https://raw.githubusercontent.com/splunk/attack_data/4b19e4b6824a8ba91b0f5345a3a8de488619e823/datasets/attack_techniques/T1016/linux_auditd_net_tool/linux_auditd_net_tool.yml"
+          },
+          {
+            "path": "datasets/attack_techniques/T1016/linux_auditd_net_tool/linux_auditd_net_tool.log",
+            "role": "lfs_pointer",
+            "sha256": "526089eb0816150ee642428a6c61ca81dff2e20f211c97b8ae1522f4552e3add",
+            "size_bytes": 130,
+            "url": "https://raw.githubusercontent.com/splunk/attack_data/4b19e4b6824a8ba91b0f5345a3a8de488619e823/datasets/attack_techniques/T1016/linux_auditd_net_tool/linux_auditd_net_tool.log"
+          }
+        ],
+        "terms": {
+          "ancestor_paths_checked": [
+            ".",
+            "datasets",
+            "datasets/attack_techniques",
+            "datasets/attack_techniques/T1016",
+            "datasets/attack_techniques/T1016/linux_auditd_net_tool"
+          ],
+          "applicable_notice_paths": [],
+          "attribution": "Copyright 2025 Splunk Inc.; dataset authors credited in scenario metadata.",
+          "license": "Apache-2.0",
+          "review_notes": "Pinned root LICENSE and applicable ancestor/artifact directories inspected: root Apache-2.0 terms; no additional terms or NOTICE found. Retain license and author metadata with local evidence.",
+          "review_status": "approved"
+        },
+        "upstream": {
+          "path": "datasets/attack_techniques/T1016/linux_auditd_net_tool/linux_auditd_net_tool.log",
+          "repository": "splunk/attack_data",
+          "revision": "4b19e4b6824a8ba91b0f5345a3a8de488619e823"
+        }
+      },
+      "manifest_sha256": "db395a3ee13b7a85723b2f148df6ca267a7959f5b3638796a415664edecddfd6"
+    }
+  ],
+  "rate": null,
+  "run_id": "cf31c277-8944-4544-bbf8-052baee01464",
+  "shift_ns": "0",
+  "time_mode": "preserve",
+  "timing_index_sha256": null,
+  "tool_version": "1.0.0"
+}

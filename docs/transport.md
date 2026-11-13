@@ -121,7 +121,9 @@ partition/offset, value length/hash, and a separate null-value indicator. No raw
 key or payload is copied into quarantine. Quarantine identity is derived from its
 source Kafka location, so retries remain attributable. No input value is emitted
 in routine logs or metrics. Helper stdout carrying base64 data is private IPC to
-the orchestrator, not operator logging.
+the orchestrator, not operator logging. Flink console logs retain severity/logger
+and a fixed category; message and exception rendering are disabled. Use internal
+status/checkpoint diagnostics for state rather than printing arbitrary exceptions.
 
 A quarantine reference depends on retaining the original input topic and its
 identity. Do not expire/delete/recreate it while references depend on it. P14

@@ -5,8 +5,17 @@ validator = "3.0.9"
 jackson = "3.1.8"
 shadow = "9.6.1"
 junit = "5.13.4"
+kafkaClients = "4.2.0"
+lz4 = "1.11.4"
+snappy = "1.1.10.9"
+jacksonLegacy = "2.18.11"
+slf4j = "2.0.20"
 
 [libraries]
+kafka-clients = { module = "org.apache.kafka:kafka-clients", version.ref = "kafkaClients" }
+codec-lz4 = { module = "at.yawk.lz4:lz4-java", version.ref = "lz4" }
+codec-snappy = { module = "org.xerial.snappy:snappy-java", version.ref = "snappy" }
+slf4j-nop = { module = "org.slf4j:slf4j-nop", version.ref = "slf4j" }
 flink-streaming = { module = "org.apache.flink:flink-streaming-java", version.ref = "flink" }
 flink-clients = { module = "org.apache.flink:flink-clients", version.ref = "flink" }
 flink-kafka = { module = "org.apache.flink:flink-connector-kafka", version.ref = "kafkaConnector" }

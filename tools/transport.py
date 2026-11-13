@@ -16,11 +16,12 @@ import time
 import uuid
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 import replay
 from check_contracts import load_json
 from check_transport import require
-from stack import DEPLOY, ROOT, Stack, StackError, project_lock, run, save
+from stack import DEPLOY, ROOT, Stack, StackError, project_lock, retry_daemon_control, run, save
 
 CACHE = ROOT / ".cache/transport"
 BUILDS = ROOT / ".cache/transport-build"
@@ -58,6 +59,10 @@ def build():
         ],
         env=java_env(),
         timeout=600,
+    )
+    run(
+        ["uv", "run", "--locked", "python", ROOT / "tools/check_transport.py", "--artifacts"],
+        timeout=60,
     )
     job = ROOT / "packages/transport-job/build/libs/transport-job.jar"
     publisher = ROOT / "packages/transport-publisher/build/libs/publisher.jar"
@@ -138,7 +143,10 @@ class Transport:
         return [
             "docker",
             "run",
-            "--rm",
+            "--name",
+            self.project + "-helper-" + uuid.uuid4().hex[:12],
+            "--log-driver",
+            "none",
             "-i",
             "--label",
             "io.detectbridge.helper.project=" + self.project,
@@ -168,9 +176,44 @@ class Transport:
             *map(str, args),
         ]
 
+    @retry_daemon_control
+    def remove_helper(self, args):
+        name = args[args.index("--name") + 1]
+        if not name.startswith(self.project + "-helper-"):
+            raise StackError("unexpected_helper_owner")
+        ids = run(
+            [
+                "docker",
+                "ps",
+                "-aq",
+                "--filter",
+                "name=^/" + name + "$",
+                "--filter",
+                "label=io.detectbridge.helper.project=" + self.project,
+            ]
+        ).stdout.split()
+        if ids:
+            run(["docker", "rm", "-f", *ids])
+
+    def helper_run(self, args, *, timeout, data=None):
+        try:
+            return run(args, timeout=timeout, data=data)
+        finally:
+            self.remove_helper(args)
+
+    def private_read(self, args, timeout):
+        for attempt in range(2):
+            try:
+                return self.helper_run(args, timeout=timeout)
+            except StackError as exc:
+                if str(exc) != "docker_daemon_api_failure" or attempt:
+                    raise
+                time.sleep(1)
+        raise StackError("docker_daemon_api_failure")
+
     def broker(self, command="describe", config=None):
         config = self.config() if config is None else config
-        result = run(
+        result = (self.helper_run if command == "init" else self.private_read)(
             self.process_args(command, config["consumer_group"], config=config), timeout=90
         )
         value = json.loads(result.stdout)
@@ -235,7 +278,7 @@ class Transport:
         self.folder.mkdir(parents=True, mode=0o700)
         replay.atomic_json(self.folder / "configuration.json", config)
         (self.folder / "configuration.sha256").write_text(digest(config) + "\n")
-        replay.atomic_json(self.folder / "jobs.json", {"jobs": []})
+        replay.atomic_json(self.folder / "jobs.json", {"contract_version": VERSION, "jobs": []})
         return {"status": "initialized", "pipeline_id": pipeline}
 
     def rest(self, path, method="GET", data=None):
@@ -262,8 +305,10 @@ class Transport:
 
     def jobs(self):
         value = load_json(self.folder / "jobs.json")
-        if not isinstance(value.get("jobs"), list):
-            raise StackError("invalid_job_history")
+        require("job-history", value)
+        expected_bundle = self.config()["bundle"]["bundle_sha256"]
+        if any(job["bundle_sha256"] != expected_bundle for job in value["jobs"]):
+            raise StackError("job_bundle_history_mismatch")
         return value
 
     def latest_job(self):
@@ -285,6 +330,16 @@ class Transport:
             raise StackError("explicit_restore_or_from_beginning_required")
         args = ["/opt/flink/bin/flink", "run", "-d"]
         if restore is not None:
+            parsed = urlsplit(restore)
+            if (
+                parsed.scheme != "file"
+                or parsed.netloc
+                or parsed.query
+                or parsed.fragment
+                or not parsed.path.startswith("/")
+            ):
+                raise StackError("unsafe_checkpoint_uri")
+            restore = "file://" + parsed.path
             import re
 
             match = re.fullmatch(
@@ -359,8 +414,16 @@ class Transport:
         config = self.config()
         info = self.verify_destination(config)
         job = self.latest_job()
-        result = {"pipeline_id": config["pipeline_id"], "broker": info, "job": job}
-        if job:
+        overview = self.rest("/jobs/overview").get("jobs", [])
+        result = {
+            "pipeline_id": config["pipeline_id"],
+            "broker": info,
+            "job": job,
+            "observed_jobs": [{"job_id": j["jid"], "state": j["state"]} for j in overview],
+        }
+        if job and job["job_id"] not in {j["jid"] for j in overview}:
+            result["job_state"] = "ABSENT_FROM_JOBMANAGER"
+        elif job:
             result["job_state"] = self.rest("/jobs/" + job["job_id"])["state"]
             result["checkpoints"] = self.rest("/jobs/" + job["job_id"] + "/checkpoints")
         return result
@@ -381,7 +444,7 @@ class Transport:
         }
 
     def read_records(self, topic, start, stop):
-        result = run(self.process_args("read", topic, start, stop), timeout=60)
+        result = self.private_read(self.process_args("read", topic, start, stop), timeout=60)
         values = [json.loads(line) for line in result.stdout.splitlines()]
         if not values or values[-1].get("type") != "end":
             raise StackError("incomplete_kafka_read")
@@ -611,11 +674,67 @@ class Transport:
             "key": None if key is None else base64.b64encode(key).decode(),
             "value": None if value is None else base64.b64encode(value).decode(),
         }
-        result = run(self.process_args("inject", INPUT), data=json.dumps(line) + "\n", timeout=60)
-        rows = [json.loads(v) for v in result.stdout.splitlines()]
-        if not rows or rows[0].get("type") != "ack":
-            raise StackError("fault_injection_failed")
-        return rows[0]
+        args = self.process_args("inject", INPUT)
+        child = subprocess.Popen(
+            args,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+        )
+        try:
+            assert child.stdin and child.stdout
+            child.stdin.write(json.dumps(line) + "\n")
+            child.stdin.flush()
+            ack = json.loads(child.stdout.readline(4096))
+            if (
+                ack.get("type") != "ack"
+                or ack.get("key_sha256") != sha(b"" if key is None else key)
+                or ack.get("value_sha256") != sha(b"" if value is None else value)
+            ):
+                raise StackError("fault_injection_ack_failed")
+            child.stdin.close()
+            end = json.loads(child.stdout.readline(4096))
+            if end.get("type") != "end" or end.get("count") != 1 or child.wait(timeout=40):
+                raise StackError("fault_injection_failed")
+            return ack
+        finally:
+            if child.poll() is None:
+                child.terminate()
+                try:
+                    child.wait(timeout=40)
+                except subprocess.TimeoutExpired:
+                    child.kill()
+                    child.wait(timeout=10)
+            if child.stdin and not child.stdin.closed:
+                child.stdin.close()
+            if child.stdout:
+                child.stdout.close()
+            self.remove_helper(args)
+
+    @retry_daemon_control
+    def pause_broker(self, paused):
+        values = [
+            v
+            for v in self.stack.containers()
+            if v["Config"]["Labels"]["com.docker.compose.service"] == "kafka"
+        ]
+        if len(values) != 1:
+            raise StackError("missing_project_broker")
+        if values[0]["State"].get("Paused", False) != paused:
+            run(["docker", "pause" if paused else "unpause", values[0]["Id"]])
+        observed = json.loads(run(["docker", "inspect", values[0]["Id"]]).stdout)[0]
+        if observed["State"].get("Paused", False) != paused:
+            raise StackError("broker_pause_state_mismatch")
+
+    def wait_input_checkpoint(self, offset, timeout=180):
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            info = self.broker()
+            if info["committed_input_offset"] > offset:
+                return
+            time.sleep(1)
+        raise StackError("input_checkpoint_progress_timeout")
 
     def await_accounted(self, expected, quarantine, timeout=180):
         deadline = time.monotonic() + timeout
@@ -644,7 +763,8 @@ class Transport:
                 offset = location["offset"]
                 if offset not in quarantine:
                     raise StackError("unexpected_quarantine_location")
-                raw = quarantine[offset]
+                original = quarantine[offset]
+                raw = b"" if original is None else original
                 expected_id = replay.identity_hash(
                     [info["cluster_id"], info["topics"][INPUT]["id"], "0", str(offset)]
                 )
@@ -653,12 +773,18 @@ class Transport:
                     or location["topic_id"] != info["topics"][INPUT]["id"]
                     or value["value_sha256"] != sha(raw)
                     or value["value_size"] != len(raw)
+                    or value["value_is_null"] != (original is None)
                     or value["quarantine_id"] != expected_id
                     or base64.b64decode(record["key"]).decode() != expected_id
                 ):
                     raise StackError("quarantine_reference_mismatch")
                 retained = self.read_records(INPUT, offset, offset + 1)
-                if len(retained) != 1 or base64.b64decode(retained[0]["value"]) != raw:
+                if len(retained) != 1 or (
+                    retained[0]["value"] is not None
+                    if original is None
+                    else retained[0]["value"] is None
+                    or base64.b64decode(retained[0]["value"]) != raw
+                ):
                     raise StackError("quarantine_input_unavailable")
                 found[offset] = found.get(offset, 0) + 1
             if set(seen) == set(expected) and set(found) == set(quarantine):
@@ -735,16 +861,18 @@ class Transport:
                     raise StackError("completed_publication_resent")
                 phase = stage("broker_outage")
                 paused = [False]
+                pause_lock = threading.Lock()
                 timers: list[threading.Timer] = []
 
                 def unpause():
-                    if paused[0]:
-                        run(["docker", "unpause", project + "-kafka-1"])
-                        paused[0] = False
+                    with pause_lock:
+                        if paused[0]:
+                            test.pause_broker(False)
+                            paused[0] = False
 
                 def outage(point):
                     if point == "after_broker_ack" and not timers:
-                        run(["docker", "pause", project + "-kafka-1"])
+                        test.pause_broker(True)
                         paused[0] = True
                         timer = threading.Timer(3, unpause)
                         timers.append(timer)
@@ -758,15 +886,23 @@ class Transport:
                         timer.join(timeout=10)
                 phase = stage("invalid_input")
                 malformed = b'{"private-body-sentinel":'
-                rejected = {test.inject(b"invalid-key", malformed)["offset"]: malformed}
+                rejected: dict[int, bytes | None] = {
+                    test.inject(b"invalid-key", malformed)["offset"]: malformed
+                }
+                rejected[test.inject(b"invalid-key", None)["offset"]] = None
+                rejected[test.inject(b"invalid-key", b'{"contract_version":"9.0.0"}')["offset"]] = (
+                    b'{"contract_version":"9.0.0"}'
+                )
                 baseline = test.await_accounted(expected, rejected)
                 phase = stage("taskmanager_recovery")
                 run(["docker", "kill", project + "-taskmanager-1"])
                 test.stack.compose("up", "-d", "taskmanager", profile="core")
-                test.wait_checkpoint(submitted["job_id"])
+                first_key, first_value = next(iter(expected.values()))
+                probe = test.inject(first_key, first_value)
+                test.wait_input_checkpoint(probe["offset"])
                 test.await_accounted(expected, rejected)
                 phase = stage("quarantine_backpressure")
-                checkpoint_before = test.wait_checkpoint(submitted["job_id"])
+                test.wait_checkpoint(submitted["job_id"])
                 try:
                     test.stack.exec(
                         "kafka",
@@ -782,14 +918,16 @@ class Transport:
                         "min.insync.replicas=2",
                     )
                     invalid = b"not-json-private-body-sentinel"
-                    rejected[test.inject(b"invalid-key", invalid)["offset"]] = invalid
+                    invalid_offset = test.inject(b"invalid-key", invalid)["offset"]
+                    rejected[invalid_offset] = invalid
                     time.sleep(12)
-                    during = (
-                        test.rest("/jobs/" + submitted["job_id"] + "/checkpoints")
-                        .get("latest", {})
-                        .get("completed")
-                    )
-                    if during and during["id"] > checkpoint_before["id"]:
+                    committed = json.loads(
+                        test.private_read(
+                            test.process_args("group-offset", test.config()["consumer_group"]),
+                            timeout=45,
+                        ).stdout
+                    )["offset"]
+                    if committed > invalid_offset:
                         raise StackError("checkpoint_advanced_past_unavailable_quarantine")
                 finally:
                     test.stack.exec(

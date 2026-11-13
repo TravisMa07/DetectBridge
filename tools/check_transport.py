@@ -1,7 +1,9 @@
 """Closed transport schema registry and shared Python/Java fixture expectations."""
 
+import argparse
 import base64
 import json
+import zipfile
 from pathlib import Path
 
 from check_contracts import StrictValidator, load_json
@@ -10,7 +12,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 ROOT = Path(__file__).resolve().parents[1]
 DIRECTORY = ROOT / "contracts/transport/v1"
-KINDS = {"configuration", "publication", "receipts", "quarantine"}
+KINDS = {"configuration", "publication", "receipts", "quarantine", "job-history"}
 
 
 def require(kind, value):
@@ -40,8 +42,47 @@ def require(kind, value):
         raise ValueError("invalid_transport_" + kind)
 
 
+def check_artifacts():
+    for module, archive, entry in [
+        ("transport-job", "transport-job.jar", "RelayJob"),
+        ("transport-publisher", "publisher.jar", "Publisher"),
+    ]:
+        path = ROOT / "packages" / module / "build/libs" / archive
+        with zipfile.ZipFile(path) as jar:
+            names = jar.namelist()
+            if len(names) != len(set(names)):
+                raise ValueError("duplicate_shaded_entries")
+            if "io/detectbridge/transport/" + entry + ".class" not in names:
+                raise ValueError("missing_entrypoint")
+            if not any(name.startswith("META-INF/LICENSE") for name in names):
+                raise ValueError("missing_dependency_license")
+            if any(
+                name.startswith(
+                    (
+                        "org/apache/flink/api/common/",
+                        "org/apache/flink/runtime/",
+                        "org/apache/flink/streaming/api/",
+                    )
+                )
+                or "/fixtures/" in name
+                or "/examples/" in name
+                for name in names
+            ):
+                raise ValueError("bundled_provided_runtime_or_fixture")
+            if any(
+                name.endswith((".SF", ".RSA", ".DSA")) and name.startswith("META-INF/")
+                for name in names
+            ):
+                raise ValueError("stale_dependency_signature")
+
+
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--artifacts", action="store_true")
+    args = parser.parse_args()
     try:
+        if args.artifacts:
+            check_artifacts()
         validator = ReplayValidator()
         for path in DIRECTORY.glob("*.schema.json"):
             schema = load_json(path)

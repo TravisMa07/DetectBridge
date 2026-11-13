@@ -50,6 +50,7 @@ def needs_transport(paths):
         "tools/replay.py",
         "tools/check_contracts.py",
         "tools/check_replay.py",
+        "tools/dependency_inventory.py",
     }
     return any(
         p in shared

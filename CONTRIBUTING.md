@@ -1,7 +1,9 @@
 # Development and contribution
 
-DetectBridge currently contains its architecture, SDLC, and repository hygiene
-tooling. There is no application to start or detection-runtime test suite yet.
+DetectBridge includes repository tooling, versioned contracts, dataset acquisition,
+local replay and a checkpointed Kafka/Flink transport job. See the
+[transport guide](docs/transport.md) for build and runtime commands. Detection
+implementation and its runtime test suite remain in later PRs.
 
 ## Workflow
 

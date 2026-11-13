@@ -34,7 +34,9 @@ Changing that bundle beside existing state requires compatibility review.
 The publisher helper runs as UID 9999 with 512 MiB memory, a 256 MiB Java heap,
 0.5 CPU, 128 PIDs and no added capabilities. It joins only the project's internal
 network. Kafka, Flink REST and Prometheus port 9249 have no host publication.
-OpenSearch is not needed for this transport path.
+OpenSearch is not needed for this transport path. Helpers have project-scoped names,
+use Docker logging driver `none`, and are explicitly removed after exit. Their
+private stdout carries broker IPC, so retaining it in Docker logs is prohibited.
 
 ## Topics and public contracts
 
@@ -61,7 +63,8 @@ Kafka metadata timestamps describe transport, not inferred source occurrence.
 Transport schemas are separate under
 [contracts/transport/v1](../contracts/transport/v1/configuration.schema.json),
 version `1.0.0`. Configuration and acknowledgment receipts are local interfaces;
-quarantine is a Kafka output contract. Readers reject unregistered versions.
+quarantine is a Kafka output contract. Publication state and versioned job history
+complete the five document kinds. Readers reject unregistered versions.
 
 ## Publication and acknowledgment
 
@@ -185,5 +188,9 @@ interrupt; development state is never the target.
 Recorded qualification uses all four pinned P04 artifacts and two distinct runs.
 Public acquisition is opt-in and excluded from required PR checks. Required Linux
 AMD64 CI runs synthetic transport qualification; macOS ARM64 is qualified locally.
+Build checks also reconcile the [dependency inventory and findings](transport-dependencies.md).
+The pinned upstream image has a documented unresolved shaded-Jackson finding;
+application dependency patching does not remediate that embedded engine component.
+
 All results establish transport/recovery behavior within the stated single-host
 limits, not detection correctness or throughput capacity.

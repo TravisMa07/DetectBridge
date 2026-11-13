@@ -8,7 +8,8 @@ replay.
 ## Current status
 
 **Repository foundation; application implementation pending.** No ingestion service, detector, API, UI,
-containers, or executable pipeline has been implemented. Repository hygiene tooling and
+or executable detection pipeline has been implemented. P06 introduces local Kafka/Flink
+infrastructure and optional authenticated OpenSearch containers. Repository hygiene tooling and
 contributor templates were introduced in P01; P02 adds reproducible build tools,
 P03 adds versioned contracts and validation, and P04 adds selective recorded-data
 acquisition. P05 adds isolated, resumable local replay with explicit timing. There are no released
@@ -38,6 +39,7 @@ caps are planned; finite operational limits are still required.
 - [Event/source contract field reference](contracts/v1/README.md)
 - [Recorded dataset acquisition](docs/datasets.md)
 - [Local replay, timing and recovery](docs/replay.md)
+- [Local infrastructure and qualification](docs/local-stack.md)
 - [SDLC and review policy](docs/sdlc.md)
 - [Milestones, PR ownership, and acceptance gates](docs/roadmap.md)
 - [Release and recovery policy](docs/releases.md)

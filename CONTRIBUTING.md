@@ -66,3 +66,11 @@ Use the [dataset guide](docs/datasets.md) to acquire selected recorded evidence.
 Normal tests use temporary synthetic bytes and loopback HTTP, not public download
 availability. Catalog updates require pinned provenance, artifact-specific terms
 review, and explicit payload/framing verification.
+
+## Replay verification
+
+The developer check includes `uv run --locked python tools/check_replay.py` and
+synthetic timing/recovery tests. See the [replay guide](docs/replay.md) for the
+separate opt-in recorded-data qualification. Normal PR checks do not download
+public evidence or wait for real-time replay pacing. Keep P03 raw contracts
+unchanged when extending replay-specific envelopes.

@@ -1,0 +1,10 @@
+{
+  "artifact_sha256": "fef8907e640641740bddba145768e43423be04c14fee57fe9d19293b1e5ac921",
+  "contract_version": "1.0.0",
+  "first_observed": "2026-11-13T00:11:27.635116Z",
+  "framing": "lf-byte-records-v1",
+  "source": {
+    "instance": "77d03c0c-5e07-11ef-b158-acde48001122:lf-byte-records-v1",
+    "namespace": "dataset:splunk/attack_data"
+  }
+}

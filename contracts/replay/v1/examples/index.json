@@ -1,0 +1,34 @@
+[
+  {
+    "path": "record.json",
+    "kind": "envelope"
+  },
+  {
+    "path": "dataset_end.json",
+    "kind": "envelope"
+  },
+  {
+    "path": "run_end.json",
+    "kind": "envelope"
+  },
+  {
+    "path": "capture.json",
+    "kind": "capture"
+  },
+  {
+    "path": "manifest.json",
+    "kind": "run-manifest"
+  },
+  {
+    "path": "checkpoint.json",
+    "kind": "checkpoint"
+  },
+  {
+    "path": "segment.json",
+    "kind": "segment"
+  },
+  {
+    "path": "timing-index.json",
+    "kind": "timing-index"
+  }
+]

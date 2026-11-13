@@ -3,7 +3,11 @@
 import json
 import os
 
-CONDITIONAL = {"toolchain-verification": "toolchains", "local-stack-verification": "stack"}
+CONDITIONAL = {
+    "toolchain-verification": "toolchains",
+    "local-stack-verification": "stack",
+    "transport-verification": "transport",
+}
 EXPECTED = {"classify-changes", "repository-hygiene", "secret-scan", *CONDITIONAL}
 
 

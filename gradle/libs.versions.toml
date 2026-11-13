@@ -1,0 +1,18 @@
+[versions]
+flink = "2.2.1"
+kafkaConnector = "5.0.0-2.2"
+validator = "3.0.9"
+jackson = "3.1.8"
+shadow = "9.6.1"
+junit = "5.13.4"
+
+[libraries]
+flink-streaming = { module = "org.apache.flink:flink-streaming-java", version.ref = "flink" }
+flink-clients = { module = "org.apache.flink:flink-clients", version.ref = "flink" }
+flink-kafka = { module = "org.apache.flink:flink-connector-kafka", version.ref = "kafkaConnector" }
+validator = { module = "com.networknt:json-schema-validator", version.ref = "validator" }
+jackson = { module = "tools.jackson.core:jackson-databind", version.ref = "jackson" }
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+
+[plugins]
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }

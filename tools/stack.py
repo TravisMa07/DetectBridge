@@ -225,6 +225,17 @@ class Stack:
                     or hashlib.sha256(path.read_bytes()).hexdigest() != expected
                 ):
                     raise StackError("missing_or_changed_security_material")
+        if state.get("transport_bundle"):
+            bundle = state["transport_bundle"]
+            if not re.fullmatch(
+                r"sha256:[0-9a-f]{64}", bundle.get("image_id", "")
+            ) or not re.fullmatch(r"[0-9a-f]{64}", bundle.get("bundle_sha256", "")):
+                raise StackError("invalid_transport_bundle")
+            overlay = self.folder / "transport.compose.json"
+            if not overlay.is_file() or hashlib.sha256(
+                overlay.read_bytes()
+            ).hexdigest() != state.get("transport_overlay_sha256"):
+                raise StackError("missing_or_changed_transport_overlay")
         return state
 
     def compose(self, *args, profile=None, timeout=240, check=True, data=None):
@@ -247,6 +258,8 @@ class Stack:
             "--file",
             DEPLOY / "compose.yml",
         ]
+        if state.get("transport_bundle"):
+            command += ["--file", self.folder / "transport.compose.json"]
         if profile:
             command += ["--profile", profile]
         return run([*command, *args], env=env, timeout=timeout, check=check, data=data)
@@ -613,7 +626,11 @@ class Stack:
                 or host.get("LogConfig")
                 != {"Type": "json-file", "Config": {"max-size": "10m", "max-file": "3"}}
                 or item["Config"]["Image"]
-                != self.image("flink" if name in ("jobmanager", "taskmanager") else name)
+                != (
+                    self.load().get("transport_bundle", {}).get("image_id", self.image("flink"))
+                    if name in ("jobmanager", "taskmanager")
+                    else self.image(name)
+                )
             ):
                 raise StackError("runtime_resource_or_user_policy_mismatch")
             if item["State"].get("Health", {}).get("Status") != "healthy":
@@ -683,8 +700,35 @@ class Stack:
         }
 
     def down(self):
-        self.containers()  # reject unexpected project membership before mutation
-        self.compose("down", "--timeout", "30", profile="full")
+        self.load()
+        values = self.containers()  # validates exact project/service ownership
+        networks = run(
+            [
+                "docker",
+                "network",
+                "ls",
+                "-q",
+                "--filter",
+                f"label=com.docker.compose.project={self.project}",
+            ]
+        ).stdout.split()
+        for network in networks:
+            item = json.loads(run(["docker", "network", "inspect", network]).stdout)[0]
+            labels = item.get("Labels", {})
+            if labels.get("com.docker.compose.project") != self.project or labels.get(
+                "com.docker.compose.network"
+            ) not in ("internal", "access"):
+                raise StackError("unexpected_project_network")
+        for item in values:
+            if item["State"].get("Paused"):
+                run(["docker", "unpause", item["Id"]])
+        running = [v["Id"] for v in values if v["State"].get("Running")]
+        if running:
+            run(["docker", "stop", "--time", "30", *running])
+        if values:
+            run(["docker", "rm", *[v["Id"] for v in values]])
+        if networks:
+            run(["docker", "network", "rm", *networks])
         return {"project": self.project, "status": "stopped", "volumes": "retained"}
 
     def cleanup_helpers(self):

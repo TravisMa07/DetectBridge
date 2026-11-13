@@ -241,6 +241,14 @@ class TransportTests(unittest.TestCase):
         )
         self.assertEqual(args[args.index("--log-driver") + 1], "none")
         self.assertNotIn("--rm", args)
+        self.assertNotIn("-i", args)
+        publisher = transport.Transport.process_args(
+            self.value,
+            "publish",
+            transport.INPUT,
+            config={"bundle": {"image_id": "sha256:" + "a" * 64}},
+        )
+        self.assertIn("-i", publisher)
         logger = (transport.DEPLOY / "transport-log4j.properties").read_text()
         self.assertIn("alwaysWriteExceptions = false", logger)
         self.assertNotIn("%m", logger)
@@ -249,6 +257,17 @@ class TransportTests(unittest.TestCase):
         self.assertEqual(args[args.index("--user") + 1], "9999:9999")
         self.assertEqual(args[args.index("--memory") + 1], "512m")
         self.assertTrue(args[args.index("--name") + 1].startswith(self.value.project + "-helper-"))
+
+    def test_read_helpers_retry_only_docker_setup_failures(self):
+        for category in ("docker_setup_failure", "docker_daemon_api_failure"):
+            self.value.helper_run = Mock(side_effect=[transport.StackError(category), "ok"])
+            with patch.object(transport.time, "sleep"):
+                self.assertEqual(transport.Transport.private_read(self.value, [], 10), "ok")
+            self.assertEqual(self.value.helper_run.call_count, 2)
+        self.value.helper_run = Mock(side_effect=transport.StackError("broker_operation_failed"))
+        with self.assertRaisesRegex(transport.StackError, "broker_operation_failed"):
+            transport.Transport.private_read(self.value, [], 10)
+        self.value.helper_run.assert_called_once()
 
     def test_versioned_job_history_rejects_bundle_mismatch(self):
         path = self.value.folder / "jobs.json"

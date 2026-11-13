@@ -37,6 +37,9 @@ network. Kafka, Flink REST and Prometheus port 9249 have no host publication.
 OpenSearch is not needed for this transport path. Helpers have project-scoped names,
 use Docker logging driver `none`, and are explicitly removed after exit. Their
 private stdout carries broker IPC, so retaining it in Docker logs is prohibited.
+Only publication/injection attaches stdin. Read-only helpers retry a recognized
+Docker API/setup failure once, after removing the old helper; broker/application
+failures are not retried through this path. Publication never uses this retry.
 
 ## Topics and public contracts
 

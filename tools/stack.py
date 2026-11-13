@@ -261,7 +261,7 @@ class Stack:
                 raise StackError("unexpected_project_container")
         return values
 
-    def doctor(self, profile, check_port=True):
+    def doctor(self, profile, check_port=True, strict=True):
         info = json.loads(run(["docker", "info", "--format", "{{json .}}"]).stdout)
         compose = run(["docker", "compose", "version", "--short"]).stdout.strip()
         engine = info["ServerVersion"]
@@ -281,7 +281,9 @@ class Stack:
             raise StackError("docker_capacity_measurement_unavailable") from exc
         free *= 1024
         errors = capacity_errors(info["MemTotal"], free, profile, kernel)
-        if errors:
+        if not info.get("MemoryLimit") or not info.get("CpuCfsQuota"):
+            errors.append("docker_cannot_enforce_resource_limits")
+        if errors and strict:
             raise StackError(",".join(errors))
         if profile == "full" and check_port and not self.containers():
             port = self.port or (
@@ -300,6 +302,7 @@ class Stack:
             "docker_disk_available_bytes": free,
             "disk_warning": free < 20 * GIB,
             "vm_max_map_count": kernel,
+            "capacity_errors": errors,
         }
 
     def init(self, profile):
@@ -486,7 +489,7 @@ class Stack:
     def publish_security(self):
         self.load()
         source = self.folder / "security"
-        command = "set -e; cp -R /usr/share/opensearch/config/. /target/; cp /input/node.p12 /input/truststore.p12 /input/ca.pem /input/health.curl /input/opensearch.yml /target/; for name in internal_users config roles roles_mapping; do cp /input/$name.yml /target/opensearch-security/; done; chmod -R u=rX,go= /target; chown -R 1000:1000 /target"
+        command = "set -e; cp -R /usr/share/opensearch/config/. /target/; cp /input/node.p12 /input/truststore.p12 /input/ca.pem /input/health.curl /input/opensearch.yml /target/; for name in internal_users config roles roles_mapping; do cp /input/$name.yml /target/opensearch-security/; done; if [ ! -f /target/opensearch.keystore ]; then OPENSEARCH_PATH_CONF=/target /usr/share/opensearch/bin/opensearch-keystore create >/dev/null; fi; chmod -R u=rX,go= /target; chown -R 1000:1000 /target"
         run(
             [
                 "docker",
@@ -539,6 +542,11 @@ class Stack:
             raise StackError("kafka_cluster_identity_mismatch")
 
     def up(self, profile):
+        if profile == "core" and any(
+            v["Config"]["Labels"]["com.docker.compose.service"] == "opensearch"
+            for v in self.containers()
+        ):
+            raise StackError("profile_change_requires_down")
         environment = self.doctor(profile)
         state = self.load()
         if profile == "full" and not state["security"]:
@@ -574,6 +582,13 @@ class Stack:
                 or item["Config"]["User"]
                 != ("9999:9999" if name in ("jobmanager", "taskmanager") else "1000:1000")
                 or host["Privileged"]
+                or host["PidsLimit"] != 256
+                or "no-new-privileges:true" not in host["SecurityOpt"]
+                or host.get("CapAdd")
+                or host.get("LogConfig")
+                != {"Type": "json-file", "Config": {"max-size": "10m", "max-file": "3"}}
+                or item["Config"]["Image"]
+                != self.image("flink" if name in ("jobmanager", "taskmanager") else name)
             ):
                 raise StackError("runtime_resource_or_user_policy_mismatch")
             if item["State"].get("Health", {}).get("Status") != "healthy":
@@ -592,8 +607,10 @@ class Stack:
                 raise StackError("emulated_image_rejected")
             for network in item["NetworkSettings"]["Networks"]:
                 net = json.loads(run(["docker", "network", "inspect", network]).stdout)[0]
+                label = net.get("Labels", {}).get("com.docker.compose.network")
                 if (
-                    not net["Internal"]
+                    label not in (["internal", "access"] if name == "opensearch" else ["internal"])
+                    or net["Internal"] != (label == "internal")
                     or net.get("Labels", {}).get("com.docker.compose.project") != self.project
                 ):
                     raise StackError("runtime_network_policy_mismatch")
@@ -633,7 +650,7 @@ class Stack:
                 }
                 for v in self.containers()
             ],
-            "environment": self.doctor(profile, check_port=False),
+            "environment": self.doctor(profile, check_port=False, strict=False),
             "limits": LIMITS,
             "state_directory": str(self.folder),
             "volumes": [self.volume(n) for n in VOLUMES if self.owned_volume(n)],

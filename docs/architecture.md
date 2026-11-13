@@ -148,3 +148,8 @@ Owner: post-v0.1.0 milestones, with contracts prepared in earlier PRs.
 The local replay boundary is specified in [ADR 0002](decisions/0002-local-replay.md)
 and the [replay guide](replay.md). It preserves P03 evidence inside a separate
 run envelope; committed local files do not establish downstream delivery.
+
+P06 refines local service/resource and access boundaries in
+[ADR 0003](decisions/0003-local-infrastructure.md); see the
+[local stack guide](local-stack.md). Infrastructure persistence qualification does
+not establish transport delivery or Flink job recovery.

@@ -123,3 +123,92 @@ class StackTests(unittest.TestCase):
                     value = copy.deepcopy(base)
                     value["classify-changes"]["outputs"] = output
                     self.assertFalse(gate_passes(value))
+
+    def test_cluster_and_security_tampering_fail_without_reformatting(self):
+        with tempfile.TemporaryDirectory() as tmp, patch.object(stack, "CACHE", Path(tmp)):
+            value = stack.Stack("detectbridge-test-a")
+            value.folder.mkdir(mode=0o700)
+            state = {
+                "version": 1,
+                "project": value.project,
+                "cluster_id": "a" * 22,
+                "port": 9200,
+                "images": value.lock["images"],
+                "security": {},
+            }
+            stack.save(value.folder / "state.json", state)
+            self.assertEqual(value.load(), state)
+            with (
+                patch.object(value, "helper", return_value="different-cluster\n"),
+                patch.object(stack, "run") as run,
+            ):
+                with self.assertRaises(stack.StackError):
+                    value.check_cluster()
+                run.assert_not_called()
+            state["security"] = {"security/ca.pem": "0" * 64}
+            stack.save(value.folder / "state.json", state)
+            with self.assertRaises(stack.StackError):
+                value.load()
+            state["security"] = {}
+            state["images"] = {}
+            stack.save(value.folder / "state.json", state)
+            with self.assertRaises(stack.StackError):
+                value.load()
+
+    def test_reset_refuses_unowned_volume_before_stopping_services(self):
+        value = stack.Stack("detectbridge-test-a")
+        with (
+            patch.object(value, "load", return_value={}),
+            patch.object(
+                value, "owned_volume", side_effect=stack.StackError("volume_ownership_mismatch")
+            ),
+            patch.object(value, "down") as down,
+        ):
+            with self.assertRaises(stack.StackError):
+                value.reset(value.project)
+            down.assert_not_called()
+
+    def test_verification_interrupt_cleans_only_exclusive_test_project(self):
+        from unittest.mock import Mock
+
+        with (
+            tempfile.TemporaryDirectory() as tmp,
+            patch.object(stack, "LOCKS", Path(tmp) / "locks"),
+        ):
+            caller = stack.Stack("detectbridge-dev")
+            fake = Mock()
+            fake.folder = Path(tmp) / "exclusive"
+            fake.folder.mkdir()
+            (fake.folder / "state.json").write_text("{}")
+            fake.up.side_effect = KeyboardInterrupt()
+            with (
+                patch.object(stack, "Stack", return_value=fake) as factory,
+                patch.object(stack.socket, "socket") as sock,
+            ):
+                sock.return_value.__enter__.return_value.getsockname.return_value = (
+                    "127.0.0.1",
+                    19200,
+                )
+                with self.assertRaises(KeyboardInterrupt):
+                    caller.verify("core")
+            selected = factory.call_args.args[0]
+            self.assertTrue(selected.startswith("detectbridge-test-"))
+            self.assertNotEqual(selected, caller.project)
+            fake.reset.assert_called_once_with(selected)
+
+    def test_up_failure_retains_existing_state(self):
+        value = stack.Stack("detectbridge-test-a")
+        with (
+            patch.object(value, "containers", return_value=[]),
+            patch.object(value, "doctor", return_value={}),
+            patch.object(value, "load", return_value={"security": {}}),
+            patch.object(value, "owned_volume", return_value=True),
+            patch.object(value, "check_cluster"),
+            patch.object(
+                value, "compose", side_effect=stack.StackError("readiness_deadline_exceeded")
+            ),
+            patch.object(value, "reset") as reset,
+        ):
+            with self.assertRaises(stack.StackError):
+                value.up("core")
+            reset.assert_not_called()

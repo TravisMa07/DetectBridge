@@ -1,6 +1,6 @@
 # Delivery roadmap and decision ownership
 
-P01–P04 are merged. P05 implementation is under review; subsequent PRs remain
+P01–P05 are merged. P06 implementation is under review; subsequent PRs remain
 planned. P numbers are planning IDs, not GitHub PR numbers. Milestones require
 their acceptance evidence and authorized merges; documentation alone does not
 complete a milestone.

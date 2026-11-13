@@ -235,3 +235,27 @@ class StackTests(unittest.TestCase):
             sock.return_value.__enter__.return_value.bind.side_effect = OSError()
             with self.assertRaisesRegex(stack.StackError, "loopback_port_in_use"):
                 value.doctor("full")
+
+    def test_readiness_deadline_and_exited_service_fail_closed(self):
+        value = stack.Stack("detectbridge-test-a")
+        with (
+            patch.object(value, "doctor", return_value={}),
+            patch.object(value, "load", return_value={"security": {}}),
+            patch.object(value, "owned_volume", return_value=True),
+            patch.object(value, "check_cluster"),
+            patch.object(value, "compose"),
+            patch.object(value, "containers", return_value=[]),
+            patch.object(stack.time, "monotonic", side_effect=[0, 181]),
+        ):
+            with self.assertRaisesRegex(stack.StackError, "readiness_deadline_exceeded"):
+                value.up("core")
+        with (
+            patch.object(value, "doctor", return_value={}),
+            patch.object(value, "load", return_value={"security": {}}),
+            patch.object(value, "owned_volume", return_value=True),
+            patch.object(value, "check_cluster"),
+            patch.object(value, "compose"),
+            patch.object(value, "containers", side_effect=[[], [{"State": {"Status": "exited"}}]]),
+        ):
+            with self.assertRaisesRegex(stack.StackError, "service_exited_before_readiness"):
+                value.up("core")

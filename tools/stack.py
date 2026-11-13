@@ -441,8 +441,8 @@ class Stack:
                 "tenant_permissions": [],
             },
             "detectbridge_operator": {
-                "cluster_permissions": ["cluster:*"],
-                "index_permissions": [{"index_patterns": ["*"], "allowed_actions": ["indices:*"]}],
+                "cluster_permissions": ["*"],
+                "index_permissions": [{"index_patterns": ["*"], "allowed_actions": ["*"]}],
                 "tenant_permissions": [],
             },
         }
@@ -567,7 +567,23 @@ class Stack:
                 raise StackError("missing_persistent_volume_run_init")
         self.check_cluster()
         started = time.monotonic()
-        self.compose("up", "-d", "--wait", "--wait-timeout", "180", profile=profile, timeout=210)
+        self.compose("up", "-d", profile=profile, timeout=180)
+        deadline = started + 180
+        expected = set(CORE + (["opensearch"] if profile == "full" else []))
+        while True:
+            values = self.containers()
+            if any(v["State"]["Status"] in ("exited", "dead") for v in values):
+                raise StackError("service_exited_before_readiness")
+            if {
+                v["Config"]["Labels"]["com.docker.compose.service"] for v in values
+            } == expected and all(
+                v["State"].get("Health", {}).get("Status") == "healthy" for v in values
+            ):
+                break
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise StackError("readiness_deadline_exceeded")
+            time.sleep(min(1, remaining))
         return {
             "project": self.project,
             "profile": profile,
@@ -707,12 +723,15 @@ class Stack:
         headers = {"Content-Type": "application/json"}
         if credential is not None:
             password = (
-                (self.folder / "security/operator-password").read_text().strip()
-                if credential == "operator"
+                (self.folder / "security" / (credential + "-password")).read_text().strip()
+                if credential in ("operator", "health")
                 else "deliberately-wrong-synthetic-password"
             )
             headers["Authorization"] = (
-                "Basic " + base64.b64encode(("operator:" + password).encode()).decode()
+                "Basic "
+                + base64.b64encode(
+                    (("health" if credential == "health" else "operator") + ":" + password).encode()
+                ).decode()
             )
         request = Request(
             f"https://127.0.0.1:{state['port']}" + path,
@@ -796,6 +815,13 @@ class Stack:
                         test.request("GET", "/", credential=c)[0] != 401 for c in (None, "wrong")
                     ):
                         raise StackError("opensearch_unauthenticated_access")
+                    if (
+                        test.request(
+                            "PUT", "/p06-proof/_doc/1", {"marker": token}, credential="health"
+                        )[0]
+                        != 403
+                    ):
+                        raise StackError("opensearch_health_account_can_write")
                     code, _ = test.request(
                         "PUT", "/p06-proof/_doc/1?refresh=true", {"marker": token}
                     )

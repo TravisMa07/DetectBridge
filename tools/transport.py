@@ -147,7 +147,7 @@ class Transport:
             self.project + "-helper-" + uuid.uuid4().hex[:12],
             "--log-driver",
             "none",
-            "-i",
+            *(["-i"] if command in ("publish", "inject") else []),
             "--label",
             "io.detectbridge.helper.project=" + self.project,
             "--network",
@@ -206,7 +206,7 @@ class Transport:
             try:
                 return self.helper_run(args, timeout=timeout)
             except StackError as exc:
-                if str(exc) != "docker_daemon_api_failure" or attempt:
+                if str(exc) not in ("docker_daemon_api_failure", "docker_setup_failure") or attempt:
                     raise
                 time.sleep(1)
         raise StackError("docker_daemon_api_failure")

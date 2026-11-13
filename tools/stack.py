@@ -72,8 +72,19 @@ def run(args, *, env=None, data=None, timeout=120, check=True):
             time.sleep(1)
             continue
         if check and result.returncode:
-            category = "docker_daemon_api_failure" if daemon_error else "command_failed"
-            if not daemon_error and "io.detectbridge.transport.Publisher" in command:
+            setup_failure = command[:2] == ["docker", "run"] and result.returncode == 125
+            category = (
+                "docker_daemon_api_failure"
+                if daemon_error
+                else "docker_setup_failure"
+                if setup_failure
+                else "command_failed"
+            )
+            if (
+                not daemon_error
+                and not setup_failure
+                and "io.detectbridge.transport.Publisher" in command
+            ):
                 operation = command[command.index("io.detectbridge.transport.Publisher") + 2]
                 if operation in ("init", "describe", "read", "publish", "inject", "group-offset"):
                     category += "_broker_" + operation.replace("-", "_")

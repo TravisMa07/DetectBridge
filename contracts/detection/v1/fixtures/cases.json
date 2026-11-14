@@ -1,0 +1,32 @@
+[
+  {
+    "name": "positive",
+    "event": "positive.event.json",
+    "expected": "matched",
+    "rationale": "Case-insensitive suffix matches; excluded substring absent."
+  },
+  {
+    "name": "excluded",
+    "event": "excluded.event.json",
+    "expected": "unmatched",
+    "rationale": "Both selection and excluded match, so NOT excludes."
+  },
+  {
+    "name": "missing-command",
+    "event": "missing-command.event.json",
+    "expected": "matched",
+    "rationale": "Missing optional command line makes excluded false; NOT is true."
+  },
+  {
+    "name": "negative",
+    "event": "negative.event.json",
+    "expected": "unmatched",
+    "rationale": "Neither accepted suffix occurs."
+  },
+  {
+    "name": "linux-suffix",
+    "event": "linux-suffix.event.json",
+    "expected": "matched",
+    "rationale": "Second list alternative matches."
+  }
+]

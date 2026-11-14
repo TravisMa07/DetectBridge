@@ -242,7 +242,7 @@ def compile_rules(paths, sources):
         "rules": sorted(rules, key=lambda r: r["id"]),
     }
     plan["bundle_sha256"] = sha(encoded(plan))
-    if len(encoded(plan)) > 4 * 1024 * 1024:
+    if len(encoded(plan)) + 1 > 4 * 1024 * 1024:
         raise CompileError("bundle_size_limit")
     if next(
         StrictValidator(

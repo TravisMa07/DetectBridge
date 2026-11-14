@@ -33,9 +33,17 @@ LIMITS = {
     "jobmanager": (GIB, 0.5),
     "taskmanager": (2 * GIB, 1.5),
     "opensearch": (2 * GIB, 1.5),
+    "writer": (GIB // 2, 0.5),
 }
 CORE = ["kafka", "jobmanager", "taskmanager"]
-VOLUMES = ["kafka-data", "flink-state", "opensearch-data", "opensearch-config"]
+VOLUMES = [
+    "kafka-data",
+    "flink-state",
+    "opensearch-data",
+    "opensearch-config",
+    "writer-secrets",
+    "writer-admin",
+]
 
 
 class StackError(Exception):
@@ -203,6 +211,44 @@ class Stack:
         item = self.lock["images"][name]
         return item["tag"] + "@sha256:" + item["index"]
 
+    @retry_daemon_control
+    def remove_temporary(self, name):
+        if not name.startswith(self.project + "-helper-"):
+            raise StackError("unexpected_helper_owner")
+        ids = run(
+            [
+                "docker",
+                "ps",
+                "-aq",
+                "--filter",
+                "name=^/" + name + "$",
+                "--filter",
+                "label=io.detectbridge.helper.project=" + self.project,
+            ]
+        ).stdout.split()
+        if ids:
+            run(["docker", "rm", "-f", *ids])
+
+    def temporary_run(self, args, *, data=None, timeout=120):
+        command = [str(item) for item in args]
+        if command[:2] != ["docker", "run"]:
+            raise StackError("invalid_helper_command")
+        command = command[2:]
+        if "io.detectbridge.helper.project=" + self.project not in command or "--name" in command:
+            raise StackError("invalid_helper_ownership")
+        if "--log-driver" in command and command[command.index("--log-driver") + 1] != "none":
+            raise StackError("invalid_helper_logging")
+        if command and command[0] == "--rm":
+            command = command[1:]
+        name = self.project + "-helper-" + uuid.uuid4().hex[:12]
+        prefix = ["docker", "run", "--name", name]
+        if "--log-driver" not in command:
+            prefix += ["--log-driver", "none"]
+        try:
+            return run([*prefix, *command], data=data, timeout=timeout)
+        finally:
+            self.remove_temporary(name)
+
     def helper(
         self, name, command, *, mounts=(), user="1000:1000", network="none", data=None, timeout=120
     ):
@@ -235,7 +281,9 @@ class Stack:
             args.append("-i")
         for mount in mounts:
             args += ["--mount", mount]
-        return run([*args, self.image(name), "-ceu", command], data=data, timeout=timeout).stdout
+        return self.temporary_run(
+            [*args, self.image(name), "-ceu", command], data=data, timeout=timeout
+        ).stdout
 
     def volume(self, name):
         return self.project + "_" + name
@@ -305,6 +353,15 @@ class Stack:
                 overlay.read_bytes()
             ).hexdigest() != state.get("transport_overlay_sha256"):
                 raise StackError("missing_or_changed_transport_overlay")
+        if state.get("writer_bundle"):
+            overlay = self.folder / "writer.compose.json"
+            if not overlay.is_file() or hashlib.sha256(
+                overlay.read_bytes()
+            ).hexdigest() != state.get("writer_overlay_sha256"):
+                raise StackError("missing_or_changed_writer_overlay")
+            from check_writer import validate_overlay
+
+            validate_overlay(load_json(overlay), state["writer_bundle"])
         return state
 
     def compose(self, *args, profile=None, timeout=240, check=True, data=None):
@@ -329,6 +386,8 @@ class Stack:
         ]
         if state.get("transport_bundle"):
             command += ["--file", self.folder / "transport.compose.json"]
+        if state.get("writer_bundle"):
+            command += ["--file", self.folder / "writer.compose.json"]
         if profile:
             command += ["--profile", profile]
         return run([*command, *args], env=env, timeout=timeout, check=check, data=data)
@@ -343,6 +402,10 @@ class Stack:
         for item in values:
             if item["Config"].get("Labels", {}).get("com.docker.compose.service") not in LIMITS:
                 raise StackError("unexpected_project_container")
+            if item["Config"].get("Labels", {}).get(
+                "com.docker.compose.service"
+            ) == "writer" and not self.load().get("writer_bundle"):
+                raise StackError("unregistered_writer_container")
         return values
 
     def doctor(self, profile, check_port=True, strict=True):
@@ -421,7 +484,7 @@ class Stack:
             self.owned_volume(name, create=True)
             # Root is restricted to initializing this project's volume; no application runs as root.
             # CHOWN/DAC_OVERRIDE are granted only to this bounded one-shot helper.
-            run(
+            self.temporary_run(
                 [
                     "docker",
                     "run",
@@ -579,7 +642,7 @@ class Stack:
         self.load()
         source = self.folder / "security"
         command = "set -e; cp -R /usr/share/opensearch/config/. /target/; cp /input/node.p12 /input/truststore.p12 /input/ca.pem /input/health.curl /input/opensearch.yml /target/; for name in internal_users config roles roles_mapping; do cp /input/$name.yml /target/opensearch-security/; done; if [ ! -f /target/opensearch.keystore ]; then OPENSEARCH_PATH_CONF=/target /usr/share/opensearch/bin/opensearch-keystore create >/dev/null; fi; chmod -R u=rX,go= /target; chown -R 1000:1000 /target"
-        run(
+        self.temporary_run(
             [
                 "docker",
                 "run",
@@ -653,7 +716,11 @@ class Stack:
         deadline = started + 180
         expected = set(CORE + (["opensearch"] if profile == "full" else []))
         while True:
-            values = self.containers()
+            values = [
+                v
+                for v in self.containers()
+                if v["Config"]["Labels"]["com.docker.compose.service"] != "writer"
+            ]
             if any(v["State"]["Status"] in ("exited", "dead") for v in values):
                 raise StackError("service_exited_before_readiness")
             if {
@@ -676,8 +743,17 @@ class Stack:
         }
 
     def inspect(self, profile):
-        values = self.containers()
+        values = [
+            v
+            for v in self.containers()
+            if v["Config"]["Labels"]["com.docker.compose.service"] != "writer"
+            or v["State"].get("Running")
+        ]
         expected = set(CORE + (["opensearch"] if profile == "full" else []))
+        if any(v["Config"]["Labels"]["com.docker.compose.service"] == "writer" for v in values):
+            if profile != "full":
+                raise StackError("writer_requires_full_profile")
+            expected.add("writer")
         if {v["Config"]["Labels"]["com.docker.compose.service"] for v in values} != expected:
             raise StackError("unexpected_service_set")
         result = []
@@ -687,9 +763,9 @@ class Stack:
             if (
                 (host["Memory"], host["NanoCpus"]) != (LIMITS[name][0], int(LIMITS[name][1] * 1e9))
                 or item["Config"]["User"]
-                != ("9999:9999" if name in ("jobmanager", "taskmanager") else "1000:1000")
+                != ("9999:9999" if name in ("jobmanager", "taskmanager", "writer") else "1000:1000")
                 or host["Privileged"]
-                or host["PidsLimit"] != 256
+                or host["PidsLimit"] != (128 if name == "writer" else 256)
                 or "no-new-privileges:true" not in host["SecurityOpt"]
                 or host.get("CapAdd")
                 or host.get("LogConfig")
@@ -698,6 +774,8 @@ class Stack:
                 != (
                     self.load().get("transport_bundle", {}).get("image_id", self.image("flink"))
                     if name in ("jobmanager", "taskmanager")
+                    else self.load()["writer_bundle"]["image_id"]
+                    if name == "writer"
                     else self.image(name)
                 )
             ):
@@ -712,6 +790,16 @@ class Stack:
             )
             if published != wanted:
                 raise StackError("runtime_port_policy_mismatch")
+            if name == "writer":
+                secrets_mounts = [m for m in item["Mounts"] if m["Destination"] == "/secrets"]
+                if (
+                    not host.get("ReadonlyRootfs")
+                    or len(secrets_mounts) != 1
+                    or secrets_mounts[0].get("RW")
+                    or secrets_mounts[0].get("Name") != self.volume("writer-secrets")
+                    or any(m.get("Type") == "bind" for m in item["Mounts"])
+                ):
+                    raise StackError("writer_secret_mount_policy_mismatch")
             image = json.loads(run(["docker", "image", "inspect", item["Image"]]).stdout)[0]
             arch = self.doctor_platform()
             if image["Architecture"] != arch:
@@ -820,6 +908,19 @@ class Stack:
         if confirm != self.project:
             raise StackError("reset_requires_exact_project_confirmation")
         self.load()
+        writer_folder = ROOT / ".cache/writer" / self.project
+        if writer_folder.exists():
+            metadata = writer_folder / (
+                "configuration.json"
+                if (writer_folder / "configuration.json").exists()
+                else "pending.json"
+            )
+            if (
+                writer_folder.is_symlink()
+                or not metadata.is_file()
+                or load_json(metadata).get("project") != self.project
+            ):
+                raise StackError("writer_reset_ownership_mismatch")
         for name in VOLUMES:
             self.owned_volume(name)
         self.cleanup_helpers()
@@ -828,10 +929,25 @@ class Stack:
             if self.owned_volume(name):
                 run(["docker", "volume", "rm", self.volume(name)])
         shutil.rmtree(self.folder)
+        if writer_folder.exists():
+            shutil.rmtree(writer_folder)
         return {"project": self.project, "status": "reset"}
 
     def exec(self, service, *args, data=None):
-        return self.compose("exec", "-T", service, *args, data=data).stdout
+        self.load()
+        values = [
+            item
+            for item in self.containers()
+            if item["Config"]["Labels"]["com.docker.compose.service"] == service
+        ]
+        if len(values) != 1 or not values[0]["State"].get("Running"):
+            raise StackError("requested_service_not_running")
+        # Resolve an owned container explicitly. Avoid Compose's exec API/attach race
+        # on Docker Desktop; never retry an arbitrary mutating exec operation.
+        return run(
+            ["docker", "exec", *(["-i"] if data is not None else []), values[0]["Id"], *args],
+            data=data,
+        ).stdout
 
     def request(self, method, path, body=None, credential="operator"):
         state = self.load()

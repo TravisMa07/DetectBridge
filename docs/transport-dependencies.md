@@ -3,7 +3,8 @@
 Reviewed on 2026-11-13. The [machine-readable inventory](transport-dependencies.json)
 records 67 unique resolved Maven coordinates across production, tests and build
 plugins, their locked configurations, patch selections and remaining dispositions.
-This is a scoped dependency review, not a complete container SBOM or certification.
+P08 adds uses of these same coordinates for its independent writer; no new
+upstream coordinates are introduced. This is a scoped dependency review, not a complete container SBOM or certification.
 
 ## Reproduction and integrity
 
@@ -59,3 +60,7 @@ Kafka values remain bytes until application Jackson validates them; Flink REST
 and metrics remain internal and Docker access is administrative. These boundaries
 reduce exposure but do not establish that the embedded component is unaffected
 or remediated. No required correctness check is waived by this disposition.
+
+P08 repeated the OSV Maven query on 2026-11-14 for the same 67 coordinates:
+no advisory matches were returned. This does not cover the shaded dependencies
+inside the upstream image; the remaining finding above is unchanged.

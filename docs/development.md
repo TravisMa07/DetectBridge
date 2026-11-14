@@ -56,7 +56,8 @@ Use the committed Wrapper exclusively, with `JAVA_HOME` pointing to `.cache/jdk`
 and `GRADLE_USER_HOME` to `.cache/gradle`, as the command runner does. Gradle checks
 Java 17, disables automatic JDK downloads, and configures future Java modules for
 Java 17. The Kotlin DSL root includes shared transport validation, publisher and
-Flink job modules; no unused application modules are introduced.
+Flink job and independent OpenSearch writer modules; no unused application modules
+are introduced.
 
 The distribution and Wrapper JAR have independent official SHA-256 pins. The JAR
 is the only allowed tracked binary and is still included in secret scanning.
@@ -75,5 +76,5 @@ or its explicit inapplicability and skipped status.
 Workflow setup pins must agree with the manifest. Retain read-only credentials,
 SHA-pinned actions and owner merge authorization. Linux AMD64 CI and local macOS
 ARM64 checks qualify tooling. Applicable runtime checks additionally qualify local
-infrastructure and [transport recovery](transport.md); none establish throughput.
+infrastructure and [transport recovery](transport.md) and the [writer](writer.md); none establish throughput.
 See the [reviewed Java inventory](transport-dependencies.md) for dependency findings.

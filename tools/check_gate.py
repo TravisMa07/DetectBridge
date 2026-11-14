@@ -7,6 +7,7 @@ CONDITIONAL = {
     "toolchain-verification": "toolchains",
     "local-stack-verification": "stack",
     "transport-verification": "transport",
+    "opensearch-writer-verification": "writer",
 }
 EXPECTED = {"classify-changes", "repository-hygiene", "secret-scan", *CONDITIONAL}
 

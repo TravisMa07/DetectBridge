@@ -1,7 +1,8 @@
 # Development and contribution
 
 DetectBridge includes repository tooling, versioned contracts, dataset acquisition,
-local replay and a checkpointed Kafka/Flink transport job. See the
+local replay, a checkpointed Kafka/Flink transport job and a separate OpenSearch
+metadata writer. See the
 [transport guide](docs/transport.md) for build and runtime commands. Detection
 implementation and its runtime test suite remain in later PRs.
 

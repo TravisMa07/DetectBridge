@@ -1,0 +1,55 @@
+{
+  "services": {
+    "writer": {
+      "image": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "profiles": [
+        "writer"
+      ],
+      "user": "9999:9999",
+      "networks": [
+        "internal"
+      ],
+      "mem_limit": "512m",
+      "cpus": 0.5,
+      "pids_limit": 128,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "read_only": true,
+      "tmpfs": [
+        "/tmp:rw,nosuid,size=32m"
+      ],
+      "stop_grace_period": "45s",
+      "volumes": [
+        "writer-secrets:/secrets:ro"
+      ],
+      "logging": {
+        "driver": "json-file",
+        "options": {
+          "max-size": "10m",
+          "max-file": "3"
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "curl",
+          "--fail",
+          "--silent",
+          "--max-time",
+          "3",
+          "http://localhost:9250/health"
+        ],
+        "interval": "5s",
+        "timeout": "4s",
+        "retries": 3
+      }
+    }
+  },
+  "volumes": {
+    "writer-secrets": {}
+  }
+}

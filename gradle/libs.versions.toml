@@ -1,5 +1,5 @@
 [versions]
-flink = "2.2.1"
+flink = "2.3.0"
 kafkaConnector = "5.0.0-2.2"
 validator = "3.0.9"
 jackson = "3.1.8"

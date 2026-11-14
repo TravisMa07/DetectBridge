@@ -1,0 +1,15 @@
+title: Synthetic process slice
+id: 70000000-0000-4000-8000-000000000001
+status: test
+description: Original synthetic P09 semantic fixture
+license: Apache-2.0
+logsource:
+  category: process_creation
+detection:
+  selection:
+    Image|endswith:
+      - '\\cmd.exe'
+      - '/sh'
+  excluded:
+    CommandLine|contains: harmless
+  condition: selection and not excluded

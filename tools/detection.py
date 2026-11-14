@@ -13,7 +13,7 @@ from urllib.parse import urlsplit
 import replay
 from check_contracts import load_json
 from detection_compile import compile_rules, encoded, sha
-from stack import DEPLOY, ROOT, StackError, project_lock, run, save
+from stack import DEPLOY, ROOT, Stack, StackError, project_lock, run, save
 from transport import Transport, digest, java_env
 
 CACHE = ROOT / ".cache/detection-runtime"

@@ -201,6 +201,7 @@ def check():
     run(["uv", "run", "--locked", "python", "tools/check_replay.py"])
     run(["uv", "run", "--locked", "python", "tools/check_stack.py"])
     run(["uv", "run", "--locked", "python", "tools/check_transport.py"])
+    run(["uv", "run", "--locked", "python", "tools/check_writer.py"])
     run(["uv", "run", "--locked", "python", "tools/dependency_inventory.py"])
     run(["uv", "run", "--locked", "python", "tools/check_repo.py"])
     run(["uv", "run", "--locked", "ruff", "check", "tools"])
@@ -218,6 +219,8 @@ def java():
             ":detection-evaluator:test",
             ":detection-evaluator:shadowJar",
             ":detection-job:shadowJar",
+            ":transport-writer:test",
+            ":transport-writer:shadowJar",
             ":transport-publisher:shadowJar",
             ":transport-job:shadowJar",
         ]
@@ -225,6 +228,7 @@ def java():
 
     run(["uv", "run", "--locked", "python", "tools/check_transport.py", "--artifacts"])
     run(["uv", "run", "--locked", "python", "tools/check_detection.py", "--java"])
+    run(["uv", "run", "--locked", "python", "tools/check_writer.py", "--artifacts"])
 
 
 def smoke():

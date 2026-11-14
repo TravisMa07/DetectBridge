@@ -158,6 +158,11 @@ P07 introduces the checkpointed replay transport boundary in
 [ADR 0004](decisions/0004-replay-transport.md) and the
 [transport guide](transport.md). It does not implement normalization or detection.
 
+P08 introduces an independent metadata-only OpenSearch writer with create-and-verify
+identities, Kafka-backed failure accounting and explicit offset commits. See
+[ADR 0008](decisions/0008-opensearch-writer.md) and the [writer guide](writer.md).
+It preserves P03/P05 contracts and P07 transport/checkpoint boundaries.
+
 P09 refines A04 with the bounded normalized-fixture slice in
 [owning design notes](p09-design.md) and the [detection guide](detection.md).
 Its separate evaluation-result contract does not freeze P13 detection outputs.

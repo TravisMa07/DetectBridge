@@ -1,0 +1,87 @@
+{
+  "@timestamp": "2026-11-12T12:00:00.123456789Z",
+  "ecs": {
+    "version": "9.5.0"
+  },
+  "event": {
+    "kind": "event",
+    "category": [
+      "process"
+    ],
+    "type": [
+      "start"
+    ],
+    "id": "sha256:ddc7456a0929284a17c722b0caa01110ca92ab80ba32b74b784b93a0089c775c",
+    "code": "4688",
+    "created": "2026-11-12T12:00:01.123456789Z",
+    "provider": "security",
+    "dataset": "windows-security-4688"
+  },
+  "host": {
+    "id": "windows-security-4688-host-a",
+    "name": "example-host"
+  },
+  "user": {
+    "name": "example-user"
+  },
+  "source_fields": {
+    "NewProcessName": "example-value"
+  },
+  "detectbridge": {
+    "contract_version": "1.0.0",
+    "source": {
+      "namespace": "synthetic-contract-tests",
+      "instance": "windows-security-4688-host-a"
+    },
+    "source_contract": {
+      "id": "windows-security-4688",
+      "version": "1.0.0"
+    },
+    "processing": {
+      "parser": "fixture-only/1.0.0",
+      "mapping": "fixture-only/1.0.0",
+      "normalizer": "fixture-only/1.0.0"
+    },
+    "run_id": "00000000-0000-4000-8000-000000000001",
+    "time": {
+      "basis": "source",
+      "quality": "valid",
+      "first_observed": "2026-11-12T12:00:01.123456789Z",
+      "source_value": "2026-11-12T12:00:00.123456789Z",
+      "source_utc": "2026-11-12T12:00:00.123456789Z"
+    },
+    "assembly": {
+      "mode": "standalone",
+      "closure": "not_required",
+      "quality": "source_indicated",
+      "assembler_version": "1.0.0"
+    },
+    "quality": {
+      "integrity": "sufficient",
+      "eligibility": "eligible",
+      "diagnostics": []
+    },
+    "evidence": [
+      {
+        "record_id": "sha256:169ed77b63ce5f360b331a4f505ebc5d1a4c29380cc3bfd0c8355b448e0aa933",
+        "evidence": {
+          "sha256": "beeba6184fee4afe9c657819147c5784963a372d74d2ae6a1f6f1f33cb93cb4e",
+          "media_type": "text/plain",
+          "encoding": "utf-8",
+          "inline": "SYNTHETIC P09 independent case excluded.event; not recorded telemetry\n"
+        }
+      }
+    ]
+  },
+  "process": {
+    "pid": 100,
+    "name": "example",
+    "executable": "C:\\cmd.exe",
+    "args": [
+      "example",
+      "repeat",
+      "repeat"
+    ],
+    "command_line": "harmless"
+  }
+}

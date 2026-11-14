@@ -113,3 +113,20 @@ The [reviewed dependency inventory](docs/transport-dependencies.md) records
 transitive security patches, their provenance and the unresolved shaded-Jackson
 finding in the pinned upstream Flink image. LZ4 Java retains its Apache-2.0
 license; Snappy Java retains Apache-2.0 and bundled native-library notices.
+
+## P09 compiler dependency
+
+pySigma 2.1.0 is installed separately and unmodified from PyPI, pinned with artifact
+hashes in uv.lock. Its authoritative metadata declares LGPL-2.1-only; source and
+license are available at [the pinned upstream tree](https://github.com/SigmaHQ/pySigma/tree/v2.1.0).
+Retain the installed distribution's license and notices. The Python library remains
+replaceable; no pySigma source is copied into original Apache-2.0 code or the Java
+JARs. Future redistribution must include the applicable license/notice material
+and satisfy corresponding-source and replacement obligations for that packaging.
+P09 does not publish a bundled Python distribution.
+
+Transitive Python artifacts and hashes are locked; their installed distributions
+retain their individual notices. Java dependencies reuse P07's reviewed versions
+and upstream image findings. [P09 inventory](docs/detection-dependencies.json)
+records module locks and compiler provenance. Original synthetic fixtures are
+Apache-2.0 and contain no SigmaHQ rule content or recorded telemetry.

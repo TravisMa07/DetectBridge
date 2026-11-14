@@ -1,0 +1,223 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:detection:1.0.0:plan",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": "1.0.0"
+    },
+    "compiler": {
+      "const": "detectbridge/1.0.0"
+    },
+    "pysigma": {
+      "const": "2.1.0"
+    },
+    "evaluator": {
+      "const": "detectbridge-java/1.0.0"
+    },
+    "mapping": {
+      "const": {
+        "Image": "process.executable",
+        "CommandLine": "process.command_line",
+        "ProcessId": "process.pid",
+        "User": "user.name"
+      }
+    },
+    "mapping_version": {
+      "const": "fixture/1.0.0"
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "maxItems": 16
+    },
+    "rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revision": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "yaml": {
+            "type": "string",
+            "maxLength": 262144
+          },
+          "logsource": {
+            "type": "object",
+            "properties": {
+              "product": {
+                "type": "string"
+              },
+              "category": {
+                "type": "string"
+              },
+              "service": {
+                "type": "string"
+              }
+            },
+            "required": [],
+            "additionalProperties": false
+          },
+          "expression": {
+            "$ref": "#/$defs/node"
+          }
+        },
+        "required": [
+          "id",
+          "revision",
+          "yaml",
+          "logsource",
+          "expression"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 100,
+      "minItems": 1
+    },
+    "bundle_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "required": [
+    "version",
+    "compiler",
+    "pysigma",
+    "evaluator",
+    "mapping",
+    "mapping_version",
+    "sources",
+    "rules",
+    "bundle_sha256"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "node": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "enum": [
+                "and",
+                "or"
+              ]
+            },
+            "args": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/node"
+              },
+              "maxItems": 4096,
+              "minItems": 1
+            }
+          },
+          "required": [
+            "op",
+            "args"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "enum": [
+                "not"
+              ]
+            },
+            "arg": {
+              "$ref": "#/$defs/node"
+            }
+          },
+          "required": [
+            "op",
+            "arg"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "enum": [
+                "integer"
+              ]
+            },
+            "field": {
+              "enum": [
+                "process.pid"
+              ]
+            },
+            "value": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            }
+          },
+          "required": [
+            "op",
+            "field",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "enum": [
+                "string"
+              ]
+            },
+            "field": {
+              "enum": [
+                "process.executable",
+                "process.command_line",
+                "user.name"
+              ]
+            },
+            "tokens": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "literal",
+                      "star",
+                      "any"
+                    ]
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "maxItems": 4096
+            }
+          },
+          "required": [
+            "op",
+            "field",
+            "tokens"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

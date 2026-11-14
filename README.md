@@ -9,7 +9,9 @@ replay.
 
 **Local replay and checkpointed Kafka/Flink transport implemented; detection is pending.**
 The transport validates replay envelopes and forwards unchanged bytes or quarantine
-references. No detector, management API, UI or OpenSearch writer is implemented.
+references. P09 adds a bounded synthetic normalized-fixture compiler/Java evaluator slice and a
+separate Flink job, under qualification. Production detection, management API, UI
+and OpenSearch writer integration remain pending.
 P06 provides local Kafka/Flink infrastructure and optional authenticated OpenSearch.
 Repository hygiene tooling and
 contributor templates were introduced in P01; P02 adds reproducible build tools,
@@ -43,6 +45,7 @@ caps are planned; finite operational limits are still required.
 - [Local replay, timing and recovery](docs/replay.md)
 - [Local infrastructure and qualification](docs/local-stack.md)
 - [Kafka/Flink replay transport](docs/transport.md)
+- [Compiler/evaluator slice](docs/detection.md)
 - [SDLC and review policy](docs/sdlc.md)
 - [Milestones, PR ownership, and acceptance gates](docs/roadmap.md)
 - [Release and recovery policy](docs/releases.md)

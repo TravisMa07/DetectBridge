@@ -77,3 +77,11 @@ SHA-pinned actions and owner merge authorization. Linux AMD64 CI and local macOS
 ARM64 checks qualify tooling. Applicable runtime checks additionally qualify local
 infrastructure and [transport recovery](transport.md); none establish throughput.
 See the [reviewed Java inventory](transport-dependencies.md) for dependency findings.
+
+## Detection slice checks
+
+`tools/dev.py java` prepares the synthetic plan, runs Java semantic tests and
+checks the same evaluator through independent YAML-to-Java cases. Run
+`uv run --locked python tools/detection.py build` then
+`uv run --locked python tools/detection.py verify` for isolated Kafka/Flink
+qualification. See [the detection guide](detection.md).

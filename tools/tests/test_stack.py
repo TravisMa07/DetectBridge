@@ -102,6 +102,7 @@ class StackTests(unittest.TestCase):
                             "toolchains": tools,
                             "stack": selected,
                             "transport": "false",
+                            "detection": "false",
                             "writer": "false",
                         },
                     },
@@ -111,6 +112,7 @@ class StackTests(unittest.TestCase):
                         "result": "success" if tools == "true" else "skipped"
                     },
                     "transport-verification": {"result": "skipped"},
+                    "detection-verification": {"result": "skipped"},
                     "opensearch-writer-verification": {"result": "skipped"},
                     "local-stack-verification": {
                         "result": "success" if selected == "true" else "skipped"

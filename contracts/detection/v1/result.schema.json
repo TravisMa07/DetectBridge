@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:detection:1.0.0:result",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": "1.0.0"
+    },
+    "result_id": {
+      "type": "string"
+    },
+    "event_id": {
+      "type": "string"
+    },
+    "run_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "bundle_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "evaluator": {
+      "const": "detectbridge-java/1.0.0"
+    },
+    "compiler": {
+      "const": "detectbridge/1.0.0"
+    },
+    "mapping_version": {
+      "const": "fixture/1.0.0"
+    },
+    "input": {
+      "type": "object",
+      "properties": {
+        "cluster_id": {
+          "type": "string"
+        },
+        "topic_id": {
+          "type": "string"
+        },
+        "topic": {
+          "type": "string"
+        },
+        "partition": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "value_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "cluster_id",
+        "topic_id",
+        "topic",
+        "partition",
+        "offset",
+        "value_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "matched": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "required": [
+          "id",
+          "revision"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 100
+    },
+    "counts": {
+      "type": "object",
+      "properties": {
+        "matched": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "unmatched": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "inapplicable": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "configuration_blocked": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "quality_skipped": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "evaluation_error": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        }
+      },
+      "required": [
+        "matched",
+        "unmatched",
+        "inapplicable",
+        "configuration_blocked",
+        "quality_skipped",
+        "evaluation_error"
+      ],
+      "additionalProperties": false
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "rule_id": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "pointer": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "rule_id",
+          "category",
+          "pointer"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 100
+    }
+  },
+  "required": [
+    "version",
+    "result_id",
+    "event_id",
+    "run_id",
+    "bundle_sha256",
+    "evaluator",
+    "compiler",
+    "mapping_version",
+    "input",
+    "matched",
+    "counts",
+    "diagnostics"
+  ],
+  "additionalProperties": false
+}

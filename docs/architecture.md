@@ -162,3 +162,7 @@ P08 introduces an independent metadata-only OpenSearch writer with create-and-ve
 identities, Kafka-backed failure accounting and explicit offset commits. See
 [ADR 0008](decisions/0008-opensearch-writer.md) and the [writer guide](writer.md).
 It preserves P03/P05 contracts and P07 transport/checkpoint boundaries.
+
+P09 refines A04 with the bounded normalized-fixture slice in
+[owning design notes](p09-design.md) and the [detection guide](detection.md).
+Its separate evaluation-result contract does not freeze P13 detection outputs.

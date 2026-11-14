@@ -315,6 +315,7 @@ class TransportTests(unittest.TestCase):
                             "toolchains": "false",
                             "stack": "false",
                             "transport": applicable,
+                            "detection": "false",
                             "writer": "false",
                         },
                     },
@@ -323,6 +324,7 @@ class TransportTests(unittest.TestCase):
                     "toolchain-verification": {"result": "skipped"},
                     "local-stack-verification": {"result": "skipped"},
                     "transport-verification": {"result": result},
+                    "detection-verification": {"result": "skipped"},
                     "opensearch-writer-verification": {"result": "skipped"},
                 }
                 self.assertEqual(

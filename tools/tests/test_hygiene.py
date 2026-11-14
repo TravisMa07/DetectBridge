@@ -114,6 +114,7 @@ class HygieneTests(unittest.TestCase):
                             "toolchains": applicable,
                             "stack": applicable,
                             "transport": applicable,
+                            "writer": "false",
                         },
                     },
                     "repository-hygiene": {"result": "success"},
@@ -121,6 +122,7 @@ class HygieneTests(unittest.TestCase):
                     "toolchain-verification": {"result": status},
                     "local-stack-verification": {"result": status},
                     "transport-verification": {"result": status},
+                    "opensearch-writer-verification": {"result": "skipped"},
                 }
                 self.assertEqual(
                     gate_passes(needs), status == ("success" if applicable == "true" else "skipped")

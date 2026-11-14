@@ -98,7 +98,12 @@ class StackTests(unittest.TestCase):
                 base: dict[str, Any] = {
                     "classify-changes": {
                         "result": "success",
-                        "outputs": {"toolchains": tools, "stack": selected, "transport": "false"},
+                        "outputs": {
+                            "toolchains": tools,
+                            "stack": selected,
+                            "transport": "false",
+                            "writer": "false",
+                        },
                     },
                     "repository-hygiene": {"result": "success"},
                     "secret-scan": {"result": "success"},
@@ -106,6 +111,7 @@ class StackTests(unittest.TestCase):
                         "result": "success" if tools == "true" else "skipped"
                     },
                     "transport-verification": {"result": "skipped"},
+                    "opensearch-writer-verification": {"result": "skipped"},
                     "local-stack-verification": {
                         "result": "success" if selected == "true" else "skipped"
                     },
@@ -256,7 +262,19 @@ class StackTests(unittest.TestCase):
             patch.object(value, "owned_volume", return_value=True),
             patch.object(value, "check_cluster"),
             patch.object(value, "compose"),
-            patch.object(value, "containers", side_effect=[[], [{"State": {"Status": "exited"}}]]),
+            patch.object(
+                value,
+                "containers",
+                side_effect=[
+                    [],
+                    [
+                        {
+                            "State": {"Status": "exited"},
+                            "Config": {"Labels": {"com.docker.compose.service": "kafka"}},
+                        }
+                    ],
+                ],
+            ),
         ):
             with self.assertRaisesRegex(stack.StackError, "service_exited_before_readiness"):
                 value.up("core")
@@ -276,6 +294,61 @@ class StackTests(unittest.TestCase):
                 with self.assertRaises(stack.StackError) as raised:
                     stack.run(["docker", "exec", "owned-container", *args])
                 self.assertEqual(str(raised.exception), "command_failed_" + category + "_exit_22")
+
+    def test_helper_lifetime_is_explicit_and_cleanup_is_scoped(self):
+        import subprocess
+        from typing import Any, cast
+        from unittest.mock import Mock
+
+        value = cast(Any, stack.Stack("detectbridge-test-helpers"))
+        value.remove_temporary = Mock()
+        with patch.object(
+            stack, "run", return_value=subprocess.CompletedProcess([], 0, "ok", "")
+        ) as execute:
+            value.temporary_run(
+                [
+                    "docker",
+                    "run",
+                    "--rm",
+                    "--label",
+                    "io.detectbridge.helper.project=" + value.project,
+                    "approved-image",
+                    "command",
+                ]
+            )
+            args = execute.call_args.args[0]
+            self.assertNotIn("--rm", args)
+            self.assertEqual(args[args.index("--log-driver") + 1], "none")
+            name = args[args.index("--name") + 1]
+            self.assertTrue(name.startswith(value.project + "-helper-"))
+            value.remove_temporary.assert_called_once_with(name)
+
+    def test_exec_resolves_only_owned_running_service_without_compose(self):
+        import subprocess
+        from typing import Any, cast
+        from unittest.mock import Mock
+
+        value = cast(Any, stack.Stack("detectbridge-test-exec"))
+        value.load = Mock(return_value={})
+        value.containers = Mock(
+            return_value=[
+                {
+                    "Id": "owned-id",
+                    "Config": {"Labels": {"com.docker.compose.service": "kafka"}},
+                    "State": {"Running": True},
+                }
+            ]
+        )
+        with patch.object(
+            stack, "run", return_value=subprocess.CompletedProcess([], 0, "ok", "")
+        ) as execute:
+            self.assertEqual(value.exec("kafka", "read-command"), "ok")
+            self.assertEqual(
+                execute.call_args.args[0], ["docker", "exec", "owned-id", "read-command"]
+            )
+            with self.assertRaisesRegex(stack.StackError, "not_running"):
+                value.exec("writer", "unowned-command")
+            self.assertEqual(execute.call_count, 1)
 
     def test_daemon_read_retry_never_retries_mutating_execution(self):
         import subprocess

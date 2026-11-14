@@ -113,3 +113,11 @@ The [reviewed dependency inventory](docs/transport-dependencies.md) records
 transitive security patches, their provenance and the unresolved shaded-Jackson
 finding in the pinned upstream Flink image. LZ4 Java retains its Apache-2.0
 license; Snappy Java retains Apache-2.0 and bundled native-library notices.
+
+## Independent OpenSearch writer
+
+P08 reuses the pinned Java/Kafka/Jackson/NetworkNT/Shadow/JUnit dependencies and
+Java 17 runtime image. HTTP/TLS uses JDK APIs, with no new client SDK or image pin.
+The writer bundle retains combined license/notice material. The locked inventory
+includes its production/test/build configurations; the existing upstream-image
+finding and P21 remediation requirement remain in effect.

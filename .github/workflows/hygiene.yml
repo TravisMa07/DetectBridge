@@ -30,6 +30,12 @@
           "type": "boolean",
           "required": false,
           "default": false
+        },
+        "qualify-writer": {
+          "description": "Opt-in recorded OpenSearch writer qualification",
+          "type": "boolean",
+          "required": false,
+          "default": false
         }
       }
     }
@@ -65,7 +71,8 @@
       "outputs": {
         "toolchains": "${{ steps.paths.outputs.toolchains }}",
         "stack": "${{ steps.paths.outputs.stack }}",
-        "transport": "${{ steps.paths.outputs.transport }}"
+        "transport": "${{ steps.paths.outputs.transport }}",
+        "writer": "${{ steps.paths.outputs.writer }}"
       }
     },
     "repository-hygiene": {
@@ -180,7 +187,8 @@
         "secret-scan",
         "toolchain-verification",
         "local-stack-verification",
-        "transport-verification"
+        "transport-verification",
+        "opensearch-writer-verification"
       ]
     },
     "dataset-acquisition": {
@@ -321,6 +329,63 @@
         {
           "name": "Build and qualify checkpointed transport",
           "run": "uv run --locked python tools/transport.py build\nuv run --locked python tools/datasets.py fetch --all\nuv run --locked python tools/transport.py verify --recorded"
+        }
+      ]
+    },
+    "opensearch-writer-verification": {
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 45,
+      "needs": [
+        "classify-changes"
+      ],
+      "if": "${{ needs.classify-changes.outputs.writer == 'true' }}",
+      "steps": [
+        {
+          "uses": "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "with": {
+            "persist-credentials": false
+          }
+        },
+        {
+          "uses": "actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0",
+          "with": {
+            "python-version": "3.12.12"
+          }
+        },
+        {
+          "name": "Install pinned development tools",
+          "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
+        },
+        {
+          "name": "Build and qualify idempotent OpenSearch writer",
+          "run": "uv run --locked python tools/transport.py build\nuv run --locked python tools/writer.py build\nuv run --locked python tools/writer.py verify"
+        }
+      ]
+    },
+    "recorded-writer-qualification": {
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 45,
+      "if": "${{ github.event_name == 'workflow_dispatch' && inputs.qualify-writer }}",
+      "steps": [
+        {
+          "uses": "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "with": {
+            "persist-credentials": false
+          }
+        },
+        {
+          "uses": "actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0",
+          "with": {
+            "python-version": "3.12.12"
+          }
+        },
+        {
+          "name": "Install pinned development tools",
+          "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
+        },
+        {
+          "name": "Build and qualify idempotent OpenSearch writer",
+          "run": "uv run --locked python tools/transport.py build\nuv run --locked python tools/writer.py build\nuv run --locked python tools/datasets.py fetch --all\nuv run --locked python tools/writer.py verify --recorded"
         }
       ]
     }

@@ -229,4 +229,26 @@ class EvaluatorTest {
       assertEquals(vector.get("expected_id").asString(), Json.identity(Json.read(literal)));
     }
   }
+
+  @Test
+  void maximumAstDepthSurvivesJsonArrayNesting() throws Exception {
+    ObjectNode plan =
+        (ObjectNode)
+            Json.MAPPER.readTree(Files.readAllBytes(ROOT.resolve(".cache/detection/plan.json")));
+    JsonNode leaf = string("x");
+    JsonNode expression = leaf;
+    for (int depth = 1; depth < 32; depth++)
+      expression =
+          Json.MAPPER.valueToTree(
+              Map.of("op", depth % 2 == 0 ? "and" : "or", "args", List.of(expression, leaf)));
+    ((ObjectNode) plan.get("rules").get(0)).set("expression", expression);
+    plan.remove("bundle_sha256");
+    plan.put("bundle_sha256", Json.sha(Json.bytes(Contracts.canonical(plan))));
+    assertDoesNotThrow(() -> new Evaluator(Json.bytes(plan)));
+    ((ObjectNode) plan.get("rules").get(0))
+        .set("expression", Json.MAPPER.valueToTree(Map.of("op", "not", "arg", expression)));
+    plan.remove("bundle_sha256");
+    plan.put("bundle_sha256", Json.sha(Json.bytes(Contracts.canonical(plan))));
+    assertThrows(IllegalArgumentException.class, () -> new Evaluator(Json.bytes(plan)));
+  }
 }

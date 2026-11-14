@@ -41,6 +41,8 @@ def build():
     jar = ROOT / "packages/detection-job/build/libs/detection-job.jar"
     dockerfile = DEPLOY / "detection.Dockerfile"
     logger = DEPLOY / "transport-log4j.properties"
+    if dockerfile.read_text().splitlines()[0] != "FROM " + Stack().image("flink"):
+        raise StackError("detection_base_image_mismatch")
     fingerprint = sha(
         jar.read_bytes() + plan.read_bytes() + dockerfile.read_bytes() + logger.read_bytes()
     )

@@ -20,6 +20,20 @@ public final class Evaluator {
           "configuration_blocked",
           "quality_skipped",
           "evaluation_error");
+  // AST depth counts nodes; JSON arrays add another nesting level at each boolean node.
+  private static final tools.jackson.databind.json.JsonMapper BUNDLE_JSON =
+      tools.jackson.databind.json.JsonMapper.builder(
+              tools.jackson.core.json.JsonFactory.builder()
+                  .enable(tools.jackson.core.StreamReadFeature.STRICT_DUPLICATE_DETECTION)
+                  .streamReadConstraints(
+                      tools.jackson.core.StreamReadConstraints.builder()
+                          .maxNestingDepth(128)
+                          .maxStringLength(1024 * 1024)
+                          .maxNumberLength(128)
+                          .build())
+                  .build())
+          .enable(tools.jackson.databind.DeserializationFeature.FAIL_ON_TRAILING_TOKENS)
+          .build();
   private final Contracts contracts = new Contracts();
   private final Normalized normalized = new Normalized(contracts);
   private final JsonNode plan;
@@ -32,7 +46,7 @@ public final class Evaluator {
           .newDecoder()
           .onMalformedInput(CodingErrorAction.REPORT)
           .decode(ByteBuffer.wrap(bytes));
-      plan = Json.MAPPER.readTree(bytes);
+      plan = BUNDLE_JSON.readTree(bytes);
       Normalized.unicode(plan);
       contracts.require("detection", "plan", plan);
       ObjectNode unhashed = ((ObjectNode) plan).deepCopy();

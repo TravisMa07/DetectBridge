@@ -199,6 +199,7 @@ def check():
     run(["uv", "run", "--locked", "python", "tools/check_replay.py"])
     run(["uv", "run", "--locked", "python", "tools/check_stack.py"])
     run(["uv", "run", "--locked", "python", "tools/check_transport.py"])
+    run(["uv", "run", "--locked", "python", "tools/check_writer.py"])
     run(["uv", "run", "--locked", "python", "tools/dependency_inventory.py"])
     run(["uv", "run", "--locked", "python", "tools/check_repo.py"])
     run(["uv", "run", "--locked", "ruff", "check", "tools"])
@@ -212,12 +213,15 @@ def java():
             ROOT / "gradlew",
             "--console=plain",
             ":transport-contracts:test",
+            ":transport-writer:test",
+            ":transport-writer:shadowJar",
             ":transport-publisher:shadowJar",
             ":transport-job:shadowJar",
         ]
     )
 
     run(["uv", "run", "--locked", "python", "tools/check_transport.py", "--artifacts"])
+    run(["uv", "run", "--locked", "python", "tools/check_writer.py", "--artifacts"])
 
 
 def smoke():

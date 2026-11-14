@@ -135,7 +135,9 @@ persistence, not job/checkpoint recovery. This local shared filesystem does not
 establish a distributed storage design or JobManager high availability.
 
 OpenSearch uses single-node discovery and its own persistent data volume.
-Application indexes and ingestion retry behavior belong to P08. The one-node
+P08 adds opt-in application indexes and ingestion retry behavior through its
+[writer](writer.md). Its additional 512 MiB is excluded from the baseline budgets
+above; writer commands require 7.5 GiB Docker memory. The one-node
 stack has no disk-failure protection or host-failure availability guarantee.
 
 Preserve state metadata, credentials, and data volumes together. Missing metadata,

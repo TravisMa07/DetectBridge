@@ -64,6 +64,13 @@
             "runtimeClasspath",
             "testRuntimeClasspath"
           ]
+        },
+        {
+          "lockfile": "packages/transport-writer/gradle.lockfile",
+          "configurations": [
+            "runtimeClasspath",
+            "testRuntimeClasspath"
+          ]
         }
       ]
     },
@@ -125,6 +132,15 @@
             "runtimeClasspath",
             "testRuntimeClasspath"
           ]
+        },
+        {
+          "lockfile": "packages/transport-writer/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
         }
       ]
     },
@@ -151,6 +167,15 @@
         },
         {
           "lockfile": "packages/transport-publisher/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/transport-writer/gradle.lockfile",
           "configurations": [
             "compileClasspath",
             "runtimeClasspath",
@@ -253,6 +278,13 @@
             "runtimeClasspath",
             "testRuntimeClasspath"
           ]
+        },
+        {
+          "lockfile": "packages/transport-writer/gradle.lockfile",
+          "configurations": [
+            "runtimeClasspath",
+            "testRuntimeClasspath"
+          ]
         }
       ]
     },
@@ -290,6 +322,15 @@
           "lockfile": "packages/transport-publisher/gradle.lockfile",
           "configurations": [
             "runtimeClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/transport-writer/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
             "testRuntimeClasspath"
           ]
         }
@@ -652,6 +693,15 @@
             "testCompileClasspath",
             "testRuntimeClasspath"
           ]
+        },
+        {
+          "lockfile": "packages/transport-writer/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
         }
       ]
     },
@@ -660,6 +710,12 @@
       "uses": [
         {
           "lockfile": "packages/transport-contracts/gradle.lockfile",
+          "configurations": [
+            "testCompileClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/transport-writer/gradle.lockfile",
           "configurations": [
             "testCompileClasspath"
           ]
@@ -686,6 +742,13 @@
             "testCompileClasspath",
             "testRuntimeClasspath"
           ]
+        },
+        {
+          "lockfile": "packages/transport-writer/gradle.lockfile",
+          "configurations": [
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
         }
       ]
     },
@@ -697,6 +760,12 @@
           "configurations": [
             "testRuntimeClasspath"
           ]
+        },
+        {
+          "lockfile": "packages/transport-writer/gradle.lockfile",
+          "configurations": [
+            "testRuntimeClasspath"
+          ]
         }
       ]
     },
@@ -705,6 +774,13 @@
       "uses": [
         {
           "lockfile": "packages/transport-contracts/gradle.lockfile",
+          "configurations": [
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/transport-writer/gradle.lockfile",
           "configurations": [
             "testCompileClasspath",
             "testRuntimeClasspath"
@@ -721,6 +797,13 @@
             "testCompileClasspath",
             "testRuntimeClasspath"
           ]
+        },
+        {
+          "lockfile": "packages/transport-writer/gradle.lockfile",
+          "configurations": [
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
         }
       ]
     },
@@ -729,6 +812,13 @@
       "uses": [
         {
           "lockfile": "packages/transport-contracts/gradle.lockfile",
+          "configurations": [
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/transport-writer/gradle.lockfile",
           "configurations": [
             "testCompileClasspath",
             "testRuntimeClasspath"
@@ -744,6 +834,12 @@
           "configurations": [
             "testRuntimeClasspath"
           ]
+        },
+        {
+          "lockfile": "packages/transport-writer/gradle.lockfile",
+          "configurations": [
+            "testRuntimeClasspath"
+          ]
         }
       ]
     },
@@ -755,6 +851,12 @@
           "configurations": [
             "testRuntimeClasspath"
           ]
+        },
+        {
+          "lockfile": "packages/transport-writer/gradle.lockfile",
+          "configurations": [
+            "testRuntimeClasspath"
+          ]
         }
       ]
     },
@@ -763,6 +865,13 @@
       "uses": [
         {
           "lockfile": "packages/transport-contracts/gradle.lockfile",
+          "configurations": [
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/transport-writer/gradle.lockfile",
           "configurations": [
             "testCompileClasspath",
             "testRuntimeClasspath"
@@ -786,6 +895,13 @@
       "uses": [
         {
           "lockfile": "packages/transport-contracts/gradle.lockfile",
+          "configurations": [
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/transport-writer/gradle.lockfile",
           "configurations": [
             "testCompileClasspath",
             "testRuntimeClasspath"
@@ -828,6 +944,15 @@
             "runtimeClasspath",
             "testRuntimeClasspath"
           ]
+        },
+        {
+          "lockfile": "packages/transport-writer/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
         }
       ]
     },
@@ -836,6 +961,13 @@
       "uses": [
         {
           "lockfile": "packages/transport-publisher/gradle.lockfile",
+          "configurations": [
+            "runtimeClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/transport-writer/gradle.lockfile",
           "configurations": [
             "runtimeClasspath",
             "testRuntimeClasspath"
@@ -879,6 +1011,15 @@
             "runtimeClasspath",
             "testRuntimeClasspath"
           ]
+        },
+        {
+          "lockfile": "packages/transport-writer/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
         }
       ]
     },
@@ -903,6 +1044,13 @@
         },
         {
           "lockfile": "packages/transport-publisher/gradle.lockfile",
+          "configurations": [
+            "runtimeClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/transport-writer/gradle.lockfile",
           "configurations": [
             "runtimeClasspath",
             "testRuntimeClasspath"
@@ -933,6 +1081,15 @@
         },
         {
           "lockfile": "packages/transport-publisher/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/transport-writer/gradle.lockfile",
           "configurations": [
             "compileClasspath",
             "runtimeClasspath",
@@ -971,6 +1128,15 @@
             "testCompileClasspath",
             "testRuntimeClasspath"
           ]
+        },
+        {
+          "lockfile": "packages/transport-writer/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
         }
       ]
     },
@@ -997,6 +1163,15 @@
           "lockfile": "packages/transport-publisher/gradle.lockfile",
           "configurations": [
             "runtimeClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/transport-writer/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
             "testRuntimeClasspath"
           ]
         }
@@ -1031,6 +1206,15 @@
             "testCompileClasspath",
             "testRuntimeClasspath"
           ]
+        },
+        {
+          "lockfile": "packages/transport-writer/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
         }
       ]
     },
@@ -1045,5 +1229,6 @@
         }
       ]
     }
-  ]
+  ],
+  "writer_reviewed_on": "2026-11-14"
 }

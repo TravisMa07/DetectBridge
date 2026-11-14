@@ -1,0 +1,42 @@
+{
+  "contract_version": "1.0.0",
+  "project": "detectbridge-example",
+  "writer_id": "00000000-0000-4000-8000-000000000002",
+  "pipeline_id": "00000000-0000-4000-8000-000000000001",
+  "consumer_group": "detectbridge-writer-v1-example",
+  "kafka_cluster_id": "example-cluster",
+  "source_topics": {
+    "detectbridge.replay.input.v1": {
+      "id": "example-input"
+    },
+    "detectbridge.replay.output.v1": {
+      "id": "example-output"
+    },
+    "detectbridge.replay.quarantine.v1": {
+      "id": "example-quarantine"
+    },
+    "detectbridge.opensearch.writer-failures.v1": {
+      "id": "example-failure"
+    }
+  },
+  "bundle": {
+    "jar_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "bundle_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "image_id": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "platform": "linux/arm64"
+  },
+  "opensearch_cluster_id": "example-opensearch",
+  "indices": {
+    "detectbridge-replay-v1": {
+      "uuid": "example-detectbridge-replay-v1",
+      "fingerprint": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+    },
+    "detectbridge-diagnostics-v1": {
+      "uuid": "example-detectbridge-diagnostics-v1",
+      "fingerprint": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+    }
+  },
+  "template_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+  "password_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+  "ca_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+}

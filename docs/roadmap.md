@@ -1,7 +1,7 @@
 # Delivery roadmap and decision ownership
 
-P01–P06 are merged. P07 implementation is under review; subsequent PRs remain
-planned. P numbers are planning IDs, not GitHub PR numbers. Milestones require
+P01–P07 are merged. P08 is implemented and qualified locally on ARM64; native
+AMD64 CI and owner review remain pending. Subsequent PRs remain separately planned. P numbers are planning IDs, not GitHub PR numbers. Milestones require
 their acceptance evidence and authorized merges; documentation alone does not
 complete a milestone.
 
@@ -112,6 +112,9 @@ No application scaffolding, runtime capability claims or release tag.
 
 ### P08 — OpenSearch writer
 
+- Local status: synthetic and four-artifact recorded ARM64 qualification passed;
+  see the [validation record](writer.md#local-validation-record). Native AMD64 CI
+  and owner compatibility/code review remain required before merge.
 - Depends on: P07.
 - Deliver: idempotent indexing, error index/quarantine, per-item retries and metrics.
 - Resolve: index templates, IDs, batching, retry bounds, permanent failure classes

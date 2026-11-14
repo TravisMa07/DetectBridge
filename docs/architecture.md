@@ -153,3 +153,7 @@ P06 refines local service/resource and access boundaries in
 [ADR 0003](decisions/0003-local-infrastructure.md); see the
 [local stack guide](local-stack.md). Infrastructure persistence qualification does
 not establish transport delivery or Flink job recovery.
+
+P07 introduces the checkpointed replay transport boundary in
+[ADR 0004](decisions/0004-replay-transport.md) and the
+[transport guide](transport.md). It does not implement normalization or detection.

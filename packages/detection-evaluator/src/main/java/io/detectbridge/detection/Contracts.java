@@ -28,9 +28,27 @@ public final class Contracts {
         throw new IllegalStateException("schema_load_failure");
       }
     }
+    resources.forEach((id, text) -> checkRefs(Json.MAPPER.readTree(text), resources, id));
     registry =
         SchemaRegistry.withDefaultDialect(
             SpecificationVersion.DRAFT_2020_12, builder -> builder.schemas(resources));
+  }
+
+  private static void checkRefs(JsonNode node, Map<String, String> resources, String current) {
+    if (node.isObject())
+      for (var p : node.properties()) {
+        if (p.getKey().equals("$ref") || p.getKey().equals("$dynamicRef")) {
+          String[] ref = p.getValue().asString().split("#", 2);
+          String id = ref[0].isEmpty() ? current : ref[0];
+          check(resources.containsKey(id), "nonlocal_schema");
+          if (ref.length == 2 && ref[1].startsWith("/"))
+            check(
+                !Json.MAPPER.readTree(resources.get(id)).at(ref[1]).isMissingNode(),
+                "unknown_schema_fragment");
+        }
+        checkRefs(p.getValue(), resources, current);
+      }
+    else if (node.isArray()) for (var item : node) checkRefs(item, resources, current);
   }
 
   public void require(String domain, String kind, JsonNode node) {

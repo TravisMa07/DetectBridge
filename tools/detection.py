@@ -147,6 +147,17 @@ class Detection(Transport):
                 json.loads(base64.b64decode(r["value"]))
                 for r in self.read_records(QUARANTINE, 0, info["end_offsets"][QUARANTINE])
             ]
+            stable: dict[tuple[str, str, str], dict] = {}
+            identities: dict[str, tuple[str, str, str]] = {}
+            for result in results:
+                key = (result["event_id"], result["run_id"], result["bundle_sha256"])
+                semantic = {name: value for name, value in result.items() if name != "input"}
+                if key in stable and stable[key] != semantic:
+                    raise StackError("unstable_duplicate_result")
+                if result["result_id"] in identities and identities[result["result_id"]] != key:
+                    raise StackError("result_identity_collision")
+                stable[key] = semantic
+                identities[result["result_id"]] = key
             seen = {r["input"]["offset"]: r for r in results}
             bad = {r["input"]["offset"]: r for r in errors}
             if set(seen) == set(expected) and set(bad) == set(invalid):
@@ -209,7 +220,7 @@ class Detection(Transport):
             self.verify_destination(config)
             return {"status": "initialized", "pipeline_id": config["pipeline_id"]}
         if self.folder.exists():
-            raise StackError("partial_transport_initialization_requires_review")
+            raise StackError("partial_detection_initialization_requires_review")
         self.stack.init("core")
         bundle = self.bundle()
         state = self.stack.load()
@@ -217,7 +228,7 @@ class Detection(Transport):
             raise StackError("bundle_replacement_requires_review")
         # An idle stack must be explicitly recreated with the reviewed bundle.
         if self.stack.containers():
-            raise StackError("stop_idle_stack_before_transport_initialization")
+            raise StackError("stop_idle_stack_before_detection_initialization")
         overlay: dict[str, Any] = {"services": {}}
         base = load_json(DEPLOY / "compose.yml")
         for service in ("jobmanager", "taskmanager"):
@@ -246,8 +257,7 @@ class Detection(Transport):
             "bundle": bundle,
             "broker": {"cluster_id": info["cluster_id"], "topics": info["topics"]},
             "consumer_group": initial["consumer_group"],
-            "replay_contract": VERSION,
-            "raw_contract": VERSION,
+            "normalized_contract": VERSION,
         }
         self.folder.mkdir(parents=True, mode=0o700)
         replay.atomic_json(self.folder / "configuration.json", config)
@@ -336,8 +346,11 @@ def qualify():
     report = ROOT / ".cache/detection-reports" / (project + ".json")
 
     report.parent.mkdir(parents=True, exist_ok=True)
+    phase = "setup"
 
     def stage(name):
+        nonlocal phase
+        phase = name
         print(json.dumps({"phase": name, "project": project}), flush=True)
         save(report, {"status": "running", "phase": name, "project": project})
 
@@ -378,19 +391,17 @@ def qualify():
             checkpoint = test.wait_checkpoint(job["job_id"])
 
             def policy(value):
-                test.stack.exec(
-                    "kafka",
-                    "/opt/kafka/bin/kafka-configs.sh",
-                    "--bootstrap-server",
-                    "kafka:9092",
-                    "--alter",
-                    "--entity-type",
-                    "topics",
-                    "--entity-name",
-                    QUARANTINE,
-                    "--add-config",
-                    "min.insync.replicas=" + value,
-                )
+                # Idempotent test-only mutation, executed outside the broker's memory budget.
+                for attempt in range(2):
+                    try:
+                        test.helper_run(test.process_args("quarantine-isr", value), timeout=60)
+                        return
+                    except StackError as error:
+                        if (
+                            str(error) not in ("docker_daemon_api_failure", "docker_setup_failure")
+                            or attempt
+                        ):
+                            raise
 
             try:
                 policy("2")
@@ -438,11 +449,20 @@ def qualify():
                 "valid_inputs": len(expected),
                 "invalid_inputs": len(invalid),
                 "physical_results": len(results),
+                "bundle": test.config()["bundle"],
             }
             save(report, result)
             return result
-        except BaseException:
-            save(report, {"status": "failed", "project": project})
+        except BaseException as error:
+            save(
+                report,
+                {
+                    "status": "failed",
+                    "project": project,
+                    "phase": phase,
+                    "category": type(error).__name__,
+                },
+            )
             raise
         finally:
             if (test.stack.folder / "state.json").exists():

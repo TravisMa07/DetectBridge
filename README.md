@@ -7,7 +7,8 @@ replay.
 
 ## Current status
 
-**Local replay and checkpointed Kafka/Flink transport implemented; detection is pending.**
+**Local replay, checkpointed transport, and a synthetic detection slice implemented;
+production detection remains pending.**
 The transport validates replay envelopes and forwards unchanged bytes or quarantine
 references. P09 adds a bounded synthetic normalized-fixture compiler/Java evaluator slice and a
 separate Flink job, under qualification. Production detection, management API, UI

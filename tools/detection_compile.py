@@ -244,9 +244,35 @@ def compile_rules(paths, sources):
     plan["bundle_sha256"] = sha(encoded(plan))
     if len(encoded(plan)) > 4 * 1024 * 1024:
         raise CompileError("bundle_size_limit")
-    if next(StrictValidator(load_json(DIRECTORY / "plan.schema.json")).iter_errors(plan), None):
+    if next(
+        StrictValidator(
+            load_json(DIRECTORY / "plan.schema.json"), registry=validator.registry
+        ).iter_errors(plan),
+        None,
+    ):
         raise CompileError("invalid_plan")
     return plan
+
+
+def load_source(path):
+    with Path(path).open("rb") as stream:
+        raw = stream.read(4 * 1024 * 1024 + 1)
+    if len(raw) > 4 * 1024 * 1024:
+        raise CompileError("source_size_limit")
+
+    def unique(pairs):
+        value = {}
+        for key, item in pairs:
+            if key in value:
+                raise CompileError("duplicate_source_key")
+            value[key] = item
+        return value
+
+    return json.loads(
+        raw,
+        object_pairs_hook=unique,
+        parse_constant=lambda _: (_ for _ in ()).throw(CompileError("non_json_number")),
+    )
 
 
 def main():
@@ -263,7 +289,9 @@ def main():
     signal.alarm(30)
     temporary = None
     try:
-        plan = compile_rules(args.rules, [load_json(Path(p)) for p in args.source])
+        if len(args.source) > 16 or len(args.rules) > 100:
+            raise CompileError("bundle_count_limit")
+        plan = compile_rules(args.rules, [load_source(p) for p in args.source])
         args.output.parent.mkdir(parents=True, exist_ok=True)
         with tempfile.NamedTemporaryFile(dir=args.output.parent, delete=False) as out:
             temporary = Path(out.name)

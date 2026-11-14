@@ -1,6 +1,7 @@
 # P09 compiler and evaluator design
 
-Status: implementation in progress; no acceptance claim.
+Status: implemented in draft; runtime qualification and independent expectation
+review are required before acceptance.
 
 ## Boundary and decisions
 
@@ -30,7 +31,8 @@ Source applicability and quality gates precede evaluation. Unknown source contra
 are configuration-blocked; invalid events are quarantined, never unmatched.
 
 Limits: 256 KiB/YAML, 100 rules, 4 MiB/bundle, depth 32, 4096 nodes/rule,
-65536 nodes/bundle, 4096 code points/pattern, 1 MiB/event, one million evaluation
+65536 nodes/bundle, 4096 code points/pattern, 16 source snapshots at most 4 MiB
+each, 1 MiB/event, one million evaluation
 operations/event and 30 seconds/compiler invocation. Limit failures are explicit.
 Diagnostics expose categories/locations rather than values or exception text.
 
@@ -55,3 +57,16 @@ Python dependency pins, dev commands, CI applicability/aggregate checks, invento
 README, roadmap and architecture register. Use separate detection deployment files.
 Do not alter P07 schemas, relay behavior or recovery state. Rebase and rerun affected
 consumer checks after either PR merges. No automatic merges or publication.
+
+## Implementation refinements
+
+The pySigma 2.1.0 numeric constructor can convert exact large integers to floats.
+The compiler restores validated YAML integers into typed detection items before
+condition expansion; signed-64-bit boundary regressions verify exact results.
+Source snapshots use the existing closed P03 source-contract schema. A compiler
+failure preserves any previous valid output and returns nonzero; no partial bundle
+is activated. Checkpoint bindings include the consumer group and evaluator version.
+
+Fault qualification changes quarantine minimum ISR through the bounded helper
+container, with readback, rather than launching another JVM inside Kafka. Outcome
+counters have fixed labels; no rule/run/event identities enter metric labels.

@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:detection:1.0.0:quarantine",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": "1.0.0"
+    },
+    "quarantine_id": {
+      "type": "string"
+    },
+    "input": {
+      "type": "object",
+      "properties": {
+        "cluster_id": {
+          "type": "string"
+        },
+        "topic_id": {
+          "type": "string"
+        },
+        "topic": {
+          "type": "string"
+        },
+        "partition": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "value_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "cluster_id",
+        "topic_id",
+        "topic",
+        "partition",
+        "offset",
+        "value_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "value_size": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "value_is_null": {
+      "type": "boolean"
+    },
+    "category": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "version",
+    "quarantine_id",
+    "input",
+    "value_size",
+    "value_is_null",
+    "category"
+  ],
+  "additionalProperties": false
+}

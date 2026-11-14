@@ -1,0 +1,86 @@
+{
+  "@timestamp": "2026-11-12T12:00:00.123456789Z",
+  "ecs": {
+    "version": "9.5.0"
+  },
+  "event": {
+    "kind": "event",
+    "category": [
+      "process"
+    ],
+    "type": [
+      "start"
+    ],
+    "id": "sha256:ac9e761a055b79e466dece009b376aa35176d1d2a52278203979670d6fa86aac",
+    "code": "4688",
+    "created": "2026-11-12T12:00:01.123456789Z",
+    "provider": "security",
+    "dataset": "windows-security-4688"
+  },
+  "host": {
+    "id": "windows-security-4688-host-a",
+    "name": "example-host"
+  },
+  "user": {
+    "name": "example-user"
+  },
+  "source_fields": {
+    "NewProcessName": "example-value"
+  },
+  "detectbridge": {
+    "contract_version": "1.0.0",
+    "source": {
+      "namespace": "synthetic-contract-tests",
+      "instance": "windows-security-4688-host-a"
+    },
+    "source_contract": {
+      "id": "windows-security-4688",
+      "version": "1.0.0"
+    },
+    "processing": {
+      "parser": "fixture-only/1.0.0",
+      "mapping": "fixture-only/1.0.0",
+      "normalizer": "fixture-only/1.0.0"
+    },
+    "run_id": "00000000-0000-4000-8000-000000000001",
+    "time": {
+      "basis": "source",
+      "quality": "valid",
+      "first_observed": "2026-11-12T12:00:01.123456789Z",
+      "source_value": "2026-11-12T12:00:00.123456789Z",
+      "source_utc": "2026-11-12T12:00:00.123456789Z"
+    },
+    "assembly": {
+      "mode": "standalone",
+      "closure": "not_required",
+      "quality": "source_indicated",
+      "assembler_version": "1.0.0"
+    },
+    "quality": {
+      "integrity": "sufficient",
+      "eligibility": "eligible",
+      "diagnostics": []
+    },
+    "evidence": [
+      {
+        "record_id": "sha256:cd4154c6a996fe46ba468fa72d5b4c47d54aa6253b2a5742b8e8701f628cfb0f",
+        "evidence": {
+          "sha256": "45ff9f4e981d39b45abe116a3322db7f75654aec164407d45a0a69644ddf87a2",
+          "media_type": "text/plain",
+          "encoding": "utf-8",
+          "inline": "SYNTHETIC P09 independent case missing-command.event; not recorded telemetry\n"
+        }
+      }
+    ]
+  },
+  "process": {
+    "pid": 100,
+    "name": "example",
+    "executable": "C:\\cmd.exe",
+    "args": [
+      "example",
+      "repeat",
+      "repeat"
+    ]
+  }
+}

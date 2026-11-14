@@ -1,0 +1,87 @@
+{
+  "@timestamp": "2026-11-12T12:00:00.123456789Z",
+  "ecs": {
+    "version": "9.5.0"
+  },
+  "event": {
+    "kind": "event",
+    "category": [
+      "process"
+    ],
+    "type": [
+      "start"
+    ],
+    "id": "sha256:bc3ba38d75dfea77e3d8910f4904a4224450b09caa77a49b6a07d422b7afbdac",
+    "code": "4688",
+    "created": "2026-11-12T12:00:01.123456789Z",
+    "provider": "security",
+    "dataset": "windows-security-4688"
+  },
+  "host": {
+    "id": "windows-security-4688-host-a",
+    "name": "example-host"
+  },
+  "user": {
+    "name": "example-user"
+  },
+  "source_fields": {
+    "NewProcessName": "example-value"
+  },
+  "detectbridge": {
+    "contract_version": "1.0.0",
+    "source": {
+      "namespace": "synthetic-contract-tests",
+      "instance": "windows-security-4688-host-a"
+    },
+    "source_contract": {
+      "id": "windows-security-4688",
+      "version": "1.0.0"
+    },
+    "processing": {
+      "parser": "fixture-only/1.0.0",
+      "mapping": "fixture-only/1.0.0",
+      "normalizer": "fixture-only/1.0.0"
+    },
+    "run_id": "00000000-0000-4000-8000-000000000001",
+    "time": {
+      "basis": "source",
+      "quality": "valid",
+      "first_observed": "2026-11-12T12:00:01.123456789Z",
+      "source_value": "2026-11-12T12:00:00.123456789Z",
+      "source_utc": "2026-11-12T12:00:00.123456789Z"
+    },
+    "assembly": {
+      "mode": "standalone",
+      "closure": "not_required",
+      "quality": "source_indicated",
+      "assembler_version": "1.0.0"
+    },
+    "quality": {
+      "integrity": "sufficient",
+      "eligibility": "eligible",
+      "diagnostics": []
+    },
+    "evidence": [
+      {
+        "record_id": "sha256:b8e5516addcbe60909bbe7d4af3e36c95c5ffc88dd54f7b23d703e39ceb9aa11",
+        "evidence": {
+          "sha256": "440ea5a5c71abb8d5cb0152614b7563ba48637e77543a2364bbd9898ad90980d",
+          "media_type": "text/plain",
+          "encoding": "utf-8",
+          "inline": "SYNTHETIC P09 independent case linux-suffix.event; not recorded telemetry\n"
+        }
+      }
+    ]
+  },
+  "process": {
+    "pid": 100,
+    "name": "example",
+    "executable": "/bin/sh",
+    "args": [
+      "example",
+      "repeat",
+      "repeat"
+    ],
+    "command_line": "id"
+  }
+}

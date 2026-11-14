@@ -126,6 +126,46 @@ def needs_writer(paths):
     )
 
 
+def needs_detection(paths):
+    shared = {
+        "pyproject.toml",
+        "uv.lock",
+        "settings.gradle.kts",
+        "settings-gradle.lockfile",
+        "build.gradle.kts",
+        "gradle.properties",
+        "gradlew",
+        "gradlew.bat",
+        "tools/dev.py",
+        "tools/toolchains.json",
+        "tools/check_gate.py",
+        "tools/classify_changes.py",
+        "tools/stack.py",
+        "tools/transport.py",
+        "tools/check_contracts.py",
+        "tools/dependency_inventory.py",
+    }
+    return any(
+        p in shared
+        or p.startswith(
+            (
+                "packages/detection-",
+                "packages/transport-contracts/",
+                "contracts/v1/",
+                "contracts/detection/",
+                "gradle/",
+                "deploy/local/",
+                ".github/workflows/",
+                "tools/detection",
+                "tools/check_detection",
+                "tools/tests/test_detection",
+            )
+        )
+        for p in paths
+        if not (p.endswith(".md") or p == "LICENSE")
+    )
+
+
 if __name__ == "__main__":
     base = os.environ.get("CHANGE_BASE", "")
     head = os.environ.get("CHANGE_HEAD", "HEAD")
@@ -140,6 +180,7 @@ if __name__ == "__main__":
     value = str(needs_toolchains([p for p in paths if p])).lower()
     with open(os.environ["GITHUB_OUTPUT"], "a") as output:
         output.write(f"toolchains={value}\n")
+        output.write(f"detection={str(needs_detection([p for p in paths if p])).lower()}\n")
         output.write(f"stack={str(needs_stack([p for p in paths if p])).lower()}\n")
         output.write(f"transport={str(needs_transport([p for p in paths if p])).lower()}\n")
         output.write(f"writer={str(needs_writer([p for p in paths if p])).lower()}\n")

@@ -1,9 +1,10 @@
 # Delivery roadmap and decision ownership
 
-P01–P07 are merged. P08 is implemented and qualified locally on ARM64; native
-AMD64 CI and owner review remain pending. Subsequent PRs remain separately planned. P numbers are planning IDs, not GitHub PR numbers. Milestones require
-their acceptance evidence and authorized merges; documentation alone does not
-complete a milestone.
+P01–P08 are merged. P09 is implemented in a draft PR; combined qualification
+and owner review remain required before acceptance. Subsequent PRs remain planned.
+P numbers are planning IDs, not GitHub PR numbers. Milestones require their
+acceptance evidence and authorized merges; documentation alone does not complete
+a milestone.
 
 ## Milestones
 

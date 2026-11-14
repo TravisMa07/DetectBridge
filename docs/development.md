@@ -56,8 +56,8 @@ Use the committed Wrapper exclusively, with `JAVA_HOME` pointing to `.cache/jdk`
 and `GRADLE_USER_HOME` to `.cache/gradle`, as the command runner does. Gradle checks
 Java 17, disables automatic JDK downloads, and configures future Java modules for
 Java 17. The Kotlin DSL root includes shared transport validation, publisher and
-Flink job and independent OpenSearch writer modules; no unused application modules
-are introduced.
+Flink job, independent OpenSearch writer, detection evaluator and detection job
+modules; no unused application modules are introduced.
 
 The distribution and Wrapper JAR have independent official SHA-256 pins. The JAR
 is the only allowed tracked binary and is still included in secret scanning.
@@ -78,3 +78,11 @@ SHA-pinned actions and owner merge authorization. Linux AMD64 CI and local macOS
 ARM64 checks qualify tooling. Applicable runtime checks additionally qualify local
 infrastructure and [transport recovery](transport.md) and the [writer](writer.md); none establish throughput.
 See the [reviewed Java inventory](transport-dependencies.md) for dependency findings.
+
+## Detection slice checks
+
+`tools/dev.py java` prepares the synthetic plan, runs Java semantic tests and
+checks the same evaluator through independent YAML-to-Java cases. Run
+`uv run --locked python tools/detection.py build` then
+`uv run --locked python tools/detection.py verify` for isolated Kafka/Flink
+qualification. See [the detection guide](detection.md).

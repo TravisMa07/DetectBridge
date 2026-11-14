@@ -165,6 +165,7 @@ def doctor():
     expect_version("TypeScript", output.split()[1], PINS["typescript"])
     print(output.strip())
     consistency()
+    run(["uv", "run", "--locked", "python", "tools/check_detection.py"])
 
 
 def bootstrap():
@@ -194,6 +195,7 @@ def bootstrap():
 
 def check():
     consistency()
+    run(["uv", "run", "--locked", "python", "tools/check_detection.py"])
     run(["uv", "run", "--locked", "python", "tools/check_datasets.py"])
     run(["uv", "run", "--locked", "python", "tools/check_contracts.py"])
     run(["uv", "run", "--locked", "python", "tools/check_replay.py"])
@@ -208,11 +210,15 @@ def check():
 
 
 def java():
+    run(["uv", "run", "--locked", "python", "tools/detection.py", "prepare"])
     run(
         [
             ROOT / "gradlew",
             "--console=plain",
             ":transport-contracts:test",
+            ":detection-evaluator:test",
+            ":detection-evaluator:shadowJar",
+            ":detection-job:shadowJar",
             ":transport-writer:test",
             ":transport-writer:shadowJar",
             ":transport-publisher:shadowJar",
@@ -221,6 +227,7 @@ def java():
     )
 
     run(["uv", "run", "--locked", "python", "tools/check_transport.py", "--artifacts"])
+    run(["uv", "run", "--locked", "python", "tools/check_detection.py", "--java"])
     run(["uv", "run", "--locked", "python", "tools/check_writer.py", "--artifacts"])
 
 

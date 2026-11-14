@@ -1,5 +1,6 @@
 """Negative fixtures are temporary; no deliberately broken content is committed."""
 
+import re
 import secrets
 import string
 import subprocess
@@ -10,7 +11,7 @@ from pathlib import Path
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from check_gate import gate_passes
+from check_gate import CONDITIONAL, EXPECTED, gate_passes
 from check_repo import content_errors, form_errors, native, workflow_errors, yaml_load
 from setup_github import contains_policy
 
@@ -114,6 +115,7 @@ class HygieneTests(unittest.TestCase):
                             "toolchains": applicable,
                             "stack": applicable,
                             "transport": applicable,
+                            "detection": applicable,
                             "writer": "false",
                         },
                     },
@@ -122,6 +124,7 @@ class HygieneTests(unittest.TestCase):
                     "toolchain-verification": {"result": status},
                     "local-stack-verification": {"result": status},
                     "transport-verification": {"result": status},
+                    "detection-verification": {"result": status},
                     "opensearch-writer-verification": {"result": "skipped"},
                 }
                 self.assertEqual(
@@ -133,6 +136,28 @@ class HygieneTests(unittest.TestCase):
         self.assertFalse(gate_passes(None))
         needs["classify-changes"] = {"result": "success", "outputs": {}}
         self.assertFalse(gate_passes(needs))
+
+    def test_combined_workflow_preserves_writer_and_detection_gates(self):
+        root = Path(__file__).resolve().parents[2]
+        workflow = yaml_load((root / ".github/workflows/hygiene.yml").read_text())
+        jobs = workflow["jobs"]
+        self.assertEqual(set(jobs["required-checks"]["needs"]), EXPECTED)
+        outputs = jobs["classify-changes"]["outputs"]
+        for job, field in CONDITIONAL.items():
+            self.assertIn(job, jobs)
+            self.assertIn(field, outputs)
+            self.assertIn("outputs." + field, jobs[job]["if"])
+        inputs = workflow["on"]["workflow_dispatch"]["inputs"]
+        for job in jobs.values():
+            for field in re.findall(r"inputs\.([a-z-]+)", job.get("if", "")):
+                self.assertIn(field, inputs)
+        for failed_job in ("opensearch-writer-verification", "detection-verification"):
+            needs: dict[str, Any] = {name: {"result": "success"} for name in EXPECTED}
+            needs["classify-changes"]["outputs"] = {field: "true" for field in CONDITIONAL.values()}
+            self.assertTrue(gate_passes(needs))
+            for status in ("failure", "cancelled", "skipped"):
+                needs[failed_job]["result"] = status
+                self.assertFalse(gate_passes(needs))
 
     def test_generated_dummy_secret_is_detected(self):
         with tempfile.TemporaryDirectory() as folder:

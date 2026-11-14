@@ -2,6 +2,7 @@
 
 import copy
 import json
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -87,6 +88,55 @@ class CompilerTests(unittest.TestCase):
         source["mappings"][0]["target_path"] = "undefined.field"
         with self.assertRaises(CompileError):
             compile_rules([FIXTURES / "rules/process.yml"], [source])
+
+    def test_integer_precision_is_preserved(self):
+        import yaml
+
+        rule = yaml.safe_load(RULE)
+        rule["detection"] = {
+            "selection": {"ProcessId": [9223372036854775807, -9223372036854775808]},
+            "condition": "selection",
+        }
+        expression = self.compile(yaml.safe_dump(rule))["rules"][0]["expression"]
+        self.assertEqual(
+            [n["value"] for n in expression["args"]], [9223372036854775807, -9223372036854775808]
+        )
+
+    def test_failed_cli_preserves_existing_plan_and_redacts_values(self):
+        with tempfile.TemporaryDirectory() as directory:
+            folder = Path(directory)
+            rule = folder / "bad.yml"
+            rule.write_text(RULE.replace("Image|endswith", "private-secret-sentinel|re"))
+            output = folder / "plan.json"
+            output.write_bytes(b"previous-valid-plan")
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(ROOT / "tools/detection_compile.py"),
+                    str(rule),
+                    "--source",
+                    str(ROOT / "contracts/v1/examples/windows-security-4688.source.json"),
+                    "--output",
+                    str(output),
+                ],
+                capture_output=True,
+                timeout=35,
+            )
+            self.assertNotEqual(result.returncode, 0)
+            self.assertEqual(output.read_bytes(), b"previous-valid-plan")
+            self.assertNotIn(b"private-secret-sentinel", result.stdout + result.stderr)
+            self.assertEqual(json.loads(result.stdout)["category"], "unmapped_field")
+
+    def test_plan_schema_closes_source_snapshots(self):
+        from check_contracts import ContractValidator, StrictValidator, load_json
+        from detection_compile import DIRECTORY
+
+        plan = self.compile(RULE)
+        plan["sources"][0]["unexpected"] = "value"
+        validator = StrictValidator(
+            load_json(DIRECTORY / "plan.schema.json"), registry=ContractValidator().registry
+        )
+        self.assertTrue(list(validator.iter_errors(plan)))
 
 
 class DetectionGateTests(unittest.TestCase):

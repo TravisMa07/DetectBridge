@@ -29,9 +29,10 @@
     "sources": {
       "type": "array",
       "items": {
-        "type": "object"
+        "$ref": "urn:detectbridge:contracts:1.0.0:source-contract"
       },
-      "maxItems": 16
+      "maxItems": 16,
+      "minItems": 1
     },
     "rules": {
       "type": "array",

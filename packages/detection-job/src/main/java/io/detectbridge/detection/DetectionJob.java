@@ -74,7 +74,8 @@ public final class DetectionJob {
     private transient Evaluator evaluator;
     private transient ListState<String> binding;
     private String fingerprint;
-    private transient Counter seen, valid, invalid, controls;
+    private transient Counter seen, valid, invalid;
+    private transient Map<String, Counter> outcomes;
 
     public Route(
         String bootstrap, String cluster, Map<String, String> ids, byte[] plan, String group) {
@@ -93,7 +94,9 @@ public final class DetectionJob {
       seen = metrics.counter("seen_total");
       valid = metrics.counter("valid_total");
       invalid = metrics.counter("invalid_total");
-      controls = metrics.counter("controls_total");
+      outcomes = new java.util.HashMap<>();
+      for (String outcome : Evaluator.OUTCOMES)
+        outcomes.put(outcome, metrics.counter(outcome + "_total"));
     }
 
     @Override
@@ -127,6 +130,8 @@ public final class DetectionJob {
           throw new IllegalArgumentException("key_run_mismatch");
         var result = evaluator.evaluate(input.value, location);
         valid.inc();
+        for (String outcome : Evaluator.OUTCOMES)
+          outcomes.get(outcome).inc(result.get("counts").get(outcome).asLong());
         output.topic = DetectionBroker.OUTPUT;
         output.key = result.get("result_id").asString().getBytes(StandardCharsets.UTF_8);
         output.value = Json.bytes(result);

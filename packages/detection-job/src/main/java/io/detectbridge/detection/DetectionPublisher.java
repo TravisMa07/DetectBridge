@@ -100,9 +100,39 @@ public final class DetectionPublisher {
     emit(Map.of("type", "end"));
   }
 
+  private static void quarantineIsr(String bootstrap, String value) throws Exception {
+    if (!List.of("1", "2").contains(value))
+      throw new IllegalArgumentException("invalid_fault_policy");
+    try (var admin =
+        org.apache.kafka.clients.admin.Admin.create(DetectionBroker.properties(bootstrap))) {
+      var resource =
+          new org.apache.kafka.common.config.ConfigResource(
+              org.apache.kafka.common.config.ConfigResource.Type.TOPIC, DetectionBroker.QUARANTINE);
+      var change =
+          new org.apache.kafka.clients.admin.AlterConfigOp(
+              new org.apache.kafka.clients.admin.ConfigEntry("min.insync.replicas", value),
+              org.apache.kafka.clients.admin.AlterConfigOp.OpType.SET);
+      admin
+          .incrementalAlterConfigs(Map.of(resource, List.of(change)))
+          .all()
+          .get(15, TimeUnit.SECONDS);
+      String actual =
+          admin
+              .describeConfigs(List.of(resource))
+              .all()
+              .get(15, TimeUnit.SECONDS)
+              .get(resource)
+              .get("min.insync.replicas")
+              .value();
+      Contracts.check(value.equals(actual), "fault_policy_readback_mismatch");
+      emit(Map.of("status", "configured"));
+    }
+  }
+
   public static void main(String[] args) {
     try {
       switch (args[1]) {
+        case "quarantine-isr" -> quarantineIsr(args[0], args[2]);
         case "init", "describe" ->
             emit(
                 DetectionBroker.describe(

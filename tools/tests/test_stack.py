@@ -98,13 +98,14 @@ class StackTests(unittest.TestCase):
                 base: dict[str, Any] = {
                     "classify-changes": {
                         "result": "success",
-                        "outputs": {"toolchains": tools, "stack": selected},
+                        "outputs": {"toolchains": tools, "stack": selected, "transport": "false"},
                     },
                     "repository-hygiene": {"result": "success"},
                     "secret-scan": {"result": "success"},
                     "toolchain-verification": {
                         "result": "success" if tools == "true" else "skipped"
                     },
+                    "transport-verification": {"result": "skipped"},
                     "local-stack-verification": {
                         "result": "success" if selected == "true" else "skipped"
                     },
@@ -259,3 +260,37 @@ class StackTests(unittest.TestCase):
         ):
             with self.assertRaisesRegex(stack.StackError, "service_exited_before_readiness"):
                 value.up("core")
+
+    def test_administrative_failures_identify_operation_without_values(self):
+        import subprocess
+
+        cases = [
+            (["test", "-s", "/private/checkpoint"], "checkpoint_metadata"),
+            (["curl", "https://private/value"], "internal_http"),
+            (["/opt/flink/bin/flink", "run"], "job_submission"),
+            (["/opt/kafka/bin/kafka-configs.sh"], "topic_configuration"),
+        ]
+        for args, category in cases:
+            failed = subprocess.CompletedProcess([], 22, "sensitive-output", "sensitive-error")
+            with patch.object(stack.subprocess, "run", return_value=failed):
+                with self.assertRaises(stack.StackError) as raised:
+                    stack.run(["docker", "exec", "owned-container", *args])
+                self.assertEqual(str(raised.exception), "command_failed_" + category + "_exit_22")
+
+    def test_daemon_read_retry_never_retries_mutating_execution(self):
+        import subprocess
+
+        failed = subprocess.CompletedProcess(
+            [], 1, "", "request returned 500 Internal Server Error for API route and version"
+        )
+        success = subprocess.CompletedProcess([], 0, "{}", "")
+        with (
+            patch.object(stack.subprocess, "run", side_effect=[failed, success]) as execute,
+            patch.object(stack.time, "sleep"),
+        ):
+            self.assertEqual(stack.run(["docker", "info"]).returncode, 0)
+            self.assertEqual(execute.call_count, 2)
+        with patch.object(stack.subprocess, "run", return_value=failed) as execute:
+            with self.assertRaisesRegex(stack.StackError, "docker_daemon_api_failure"):
+                stack.run(["docker", "exec", "owned-container", "operation"])
+            execute.assert_called_once()

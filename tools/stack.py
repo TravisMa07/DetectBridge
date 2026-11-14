@@ -16,6 +16,7 @@ import subprocess
 import time
 import uuid
 from contextlib import contextmanager
+from functools import wraps
 from pathlib import Path
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
@@ -42,22 +43,90 @@ class StackError(Exception):
 
 
 def run(args, *, env=None, data=None, timeout=120, check=True):
-    try:
-        result = subprocess.run(
-            [str(a) for a in args],
-            input=data,
-            capture_output=True,
-            text=True,
-            env=env,
-            timeout=timeout,
+    command = [str(a) for a in args]
+    read_only = command[:2] in (
+        ["docker", "info"],
+        ["docker", "inspect"],
+        ["docker", "ps"],
+        ["docker", "logs"],
+        ["docker", "stats"],
+    ) or command[:3] in (
+        ["docker", "image", "inspect"],
+        ["docker", "network", "inspect"],
+        ["docker", "network", "ls"],
+        ["docker", "volume", "inspect"],
+    )
+    for attempt in range(2):
+        try:
+            result = subprocess.run(
+                command, input=data, capture_output=True, text=True, env=env, timeout=timeout
+            )
+        except subprocess.TimeoutExpired as exc:
+            raise StackError("command_timeout") from exc
+        except OSError as exc:
+            raise StackError("docker_unavailable") from exc
+        daemon_error = (
+            result.returncode and "Internal Server Error for API route and version" in result.stderr
         )
-    except subprocess.TimeoutExpired as exc:
-        raise StackError("command_timeout") from exc
-    except OSError as exc:
-        raise StackError("docker_unavailable") from exc
-    if check and result.returncode:
-        raise StackError("command_failed")
-    return result
+        if daemon_error and read_only and attempt == 0:
+            time.sleep(1)
+            continue
+        if check and result.returncode:
+            setup_failure = command[:2] == ["docker", "run"] and result.returncode == 125
+            category = (
+                "docker_daemon_api_failure"
+                if daemon_error
+                else "docker_setup_failure"
+                if setup_failure
+                else "command_failed"
+            )
+            if (
+                not daemon_error
+                and not setup_failure
+                and "io.detectbridge.transport.Publisher" in command
+            ):
+                operation = command[command.index("io.detectbridge.transport.Publisher") + 2]
+                if operation in ("init", "describe", "read", "publish", "inject", "group-offset"):
+                    category += "_broker_" + operation.replace("-", "_")
+                try:
+                    detail = json.loads(result.stdout.splitlines()[-1])
+                    reason = detail.get("reason_type", "")
+                    if detail.get("status") == "failed" and re.fullmatch(
+                        r"[A-Za-z0-9_]{1,80}", reason
+                    ):
+                        category += "_" + reason
+                except (ValueError, IndexError):
+                    pass
+            if not daemon_error and "exec" in command:
+                if "/opt/flink/bin/flink" in command:
+                    category += "_job_submission"
+                elif "test" in command and "-s" in command:
+                    category += "_checkpoint_metadata"
+                elif "curl" in command:
+                    category += "_internal_http"
+                elif "/opt/kafka/bin/kafka-configs.sh" in command:
+                    category += "_topic_configuration"
+                category += "_exit_" + str(result.returncode)
+            raise StackError(category)
+        return result
+    raise StackError("docker_daemon_api_failure")
+
+
+def retry_daemon_control(function):
+    """Only convergent, ownership-checked cleanup may retry an ambiguous daemon API 500."""
+
+    @wraps(function)
+    def wrapped(*args, **kwargs):
+        for attempt in range(2):
+            try:
+                return function(*args, **kwargs)
+            except StackError as exc:
+                if str(exc) != "docker_daemon_api_failure" or attempt:
+                    raise
+                time.sleep(1)
+        raise StackError("docker_daemon_api_failure")
+
+    return wrapped
 
 
 def project_name(value):
@@ -225,6 +294,17 @@ class Stack:
                     or hashlib.sha256(path.read_bytes()).hexdigest() != expected
                 ):
                     raise StackError("missing_or_changed_security_material")
+        if state.get("transport_bundle"):
+            bundle = state["transport_bundle"]
+            if not re.fullmatch(
+                r"sha256:[0-9a-f]{64}", bundle.get("image_id", "")
+            ) or not re.fullmatch(r"[0-9a-f]{64}", bundle.get("bundle_sha256", "")):
+                raise StackError("invalid_transport_bundle")
+            overlay = self.folder / "transport.compose.json"
+            if not overlay.is_file() or hashlib.sha256(
+                overlay.read_bytes()
+            ).hexdigest() != state.get("transport_overlay_sha256"):
+                raise StackError("missing_or_changed_transport_overlay")
         return state
 
     def compose(self, *args, profile=None, timeout=240, check=True, data=None):
@@ -247,6 +327,8 @@ class Stack:
             "--file",
             DEPLOY / "compose.yml",
         ]
+        if state.get("transport_bundle"):
+            command += ["--file", self.folder / "transport.compose.json"]
         if profile:
             command += ["--profile", profile]
         return run([*command, *args], env=env, timeout=timeout, check=check, data=data)
@@ -613,7 +695,11 @@ class Stack:
                 or host.get("LogConfig")
                 != {"Type": "json-file", "Config": {"max-size": "10m", "max-file": "3"}}
                 or item["Config"]["Image"]
-                != self.image("flink" if name in ("jobmanager", "taskmanager") else name)
+                != (
+                    self.load().get("transport_bundle", {}).get("image_id", self.image("flink"))
+                    if name in ("jobmanager", "taskmanager")
+                    else self.image(name)
+                )
             ):
                 raise StackError("runtime_resource_or_user_policy_mismatch")
             if item["State"].get("Health", {}).get("Status") != "healthy":
@@ -682,11 +768,40 @@ class Stack:
             "opensearch_port": state["port"] if state["security"] else None,
         }
 
+    @retry_daemon_control
     def down(self):
-        self.containers()  # reject unexpected project membership before mutation
-        self.compose("down", "--timeout", "30", profile="full")
+        self.load()
+        values = self.containers()  # validates exact project/service ownership
+        networks = run(
+            [
+                "docker",
+                "network",
+                "ls",
+                "-q",
+                "--filter",
+                f"label=com.docker.compose.project={self.project}",
+            ]
+        ).stdout.split()
+        for network in networks:
+            item = json.loads(run(["docker", "network", "inspect", network]).stdout)[0]
+            labels = item.get("Labels", {})
+            if labels.get("com.docker.compose.project") != self.project or labels.get(
+                "com.docker.compose.network"
+            ) not in ("internal", "access"):
+                raise StackError("unexpected_project_network")
+        for item in values:
+            if item["State"].get("Paused"):
+                run(["docker", "unpause", item["Id"]])
+        running = [v["Id"] for v in values if v["State"].get("Running")]
+        if running:
+            run(["docker", "stop", "--time", "30", *running])
+        if values:
+            run(["docker", "rm", *[v["Id"] for v in values]])
+        if networks:
+            run(["docker", "network", "rm", *networks])
         return {"project": self.project, "status": "stopped", "volumes": "retained"}
 
+    @retry_daemon_control
     def cleanup_helpers(self):
         ids = run(
             [
@@ -700,6 +815,7 @@ class Stack:
         if ids:
             run(["docker", "rm", "-f", *ids])
 
+    @retry_daemon_control
     def reset(self, confirm):
         if confirm != self.project:
             raise StackError("reset_requires_exact_project_confirmation")

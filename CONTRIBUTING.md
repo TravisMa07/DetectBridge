@@ -1,7 +1,9 @@
 # Development and contribution
 
-DetectBridge currently contains its architecture, SDLC, and repository hygiene
-tooling. There is no application to start or detection-runtime test suite yet.
+DetectBridge includes repository tooling, versioned contracts, dataset acquisition,
+local replay and a checkpointed Kafka/Flink transport job. See the
+[transport guide](docs/transport.md) for build and runtime commands. Detection
+implementation and its runtime test suite remain in later PRs.
 
 ## Workflow
 
@@ -82,3 +84,11 @@ changes, run both isolated core/full qualification commands from the
 [local stack guide](docs/local-stack.md). CI runs the same commands on Linux
 AMD64. Never use runtime qualification against the development project or commit
 generated credentials/configuration.
+
+## Java transport verification
+
+Run `uv run --locked python tools/dev.py java` for Java semantic tests and
+packaging, and follow the [transport guide](docs/transport.md) for native runtime
+qualification. Gradle locks and strict verification metadata accompany dependency
+changes. Review regenerated checksums and licenses; never disable verification to
+make a build pass. Shared schemas select their Java consumer in CI.

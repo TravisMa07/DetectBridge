@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:transport:1.0.0:quarantine",
+  "type": "object",
+  "properties": {
+    "contract_version": {
+      "const": "1.0.0"
+    },
+    "quarantine_id": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "input": {
+      "type": "object",
+      "properties": {
+        "cluster_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "topic": {
+          "const": "detectbridge.replay.input.v1"
+        },
+        "topic_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "partition": {
+          "const": 0
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "cluster_id",
+        "topic",
+        "topic_id",
+        "partition",
+        "offset"
+      ],
+      "additionalProperties": false
+    },
+    "diagnostic": {
+      "type": "object",
+      "properties": {
+        "category": {
+          "enum": [
+            "null_value",
+            "value_limit",
+            "schema_invalid",
+            "key_run_mismatch",
+            "invalid_json_or_raw_semantics"
+          ]
+        },
+        "pointer": {
+          "const": ""
+        }
+      },
+      "required": [
+        "category",
+        "pointer"
+      ],
+      "additionalProperties": false
+    },
+    "value_size": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "value_is_null": {
+      "type": "boolean"
+    },
+    "value_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "required": [
+    "contract_version",
+    "quarantine_id",
+    "input",
+    "diagnostic",
+    "value_size",
+    "value_is_null",
+    "value_sha256"
+  ],
+  "additionalProperties": false
+}

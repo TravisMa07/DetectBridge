@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:transport:1.0.0:receipts",
+  "type": "object",
+  "properties": {
+    "contract_version": {
+      "const": "1.0.0"
+    },
+    "configuration_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "first_sequence": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "receipts": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "const": "ack"
+          },
+          "sequence": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "partition": {
+            "const": 0
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "key_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "value_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "required": [
+          "type",
+          "sequence",
+          "partition",
+          "offset",
+          "key_sha256",
+          "value_sha256"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "contract_version",
+    "configuration_sha256",
+    "first_sequence",
+    "receipts"
+  ],
+  "additionalProperties": false
+}

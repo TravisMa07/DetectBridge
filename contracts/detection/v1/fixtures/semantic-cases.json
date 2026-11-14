@@ -1,0 +1,292 @@
+[
+  {
+    "name": "integer-max",
+    "detection": {
+      "selection": {
+        "ProcessId": 9223372036854775807
+      },
+      "condition": "selection"
+    },
+    "event": {
+      "process.pid": 9223372036854775807
+    },
+    "expected": "matched",
+    "rationale": "Exact signed 64-bit integer equality."
+  },
+  {
+    "name": "integer-negative",
+    "detection": {
+      "selection": {
+        "ProcessId": -1
+      },
+      "condition": "selection"
+    },
+    "event": {
+      "process.pid": 0
+    },
+    "expected": "unmatched",
+    "rationale": "Negative rule constant differs from zero."
+  },
+  {
+    "name": "contains-case",
+    "detection": {
+      "selection": {
+        "CommandLine|contains": "WHOAMI"
+      },
+      "condition": "selection"
+    },
+    "event": {
+      "process.command_line": "cmd /c whoami"
+    },
+    "expected": "matched",
+    "rationale": "Case folding and substring modifier."
+  },
+  {
+    "name": "starts",
+    "detection": {
+      "selection": {
+        "CommandLine|startswith": "cmd"
+      },
+      "condition": "selection"
+    },
+    "event": {
+      "process.command_line": "cmd /c"
+    },
+    "expected": "matched",
+    "rationale": "Prefix starts at first code point."
+  },
+  {
+    "name": "starts-negative",
+    "detection": {
+      "selection": {
+        "CommandLine|startswith": "cmd"
+      },
+      "condition": "selection"
+    },
+    "event": {
+      "process.command_line": "xcmd"
+    },
+    "expected": "unmatched",
+    "rationale": "Prefix must not search interior."
+  },
+  {
+    "name": "ends-negative",
+    "detection": {
+      "selection": {
+        "CommandLine|endswith": "cmd"
+      },
+      "condition": "selection"
+    },
+    "event": {
+      "process.command_line": "cmdx"
+    },
+    "expected": "unmatched",
+    "rationale": "Suffix must end at final code point."
+  },
+  {
+    "name": "escaped-star",
+    "detection": {
+      "selection": {
+        "CommandLine": "a\\*b"
+      },
+      "condition": "selection"
+    },
+    "event": {
+      "process.command_line": "a*b"
+    },
+    "expected": "matched",
+    "rationale": "Escaped wildcard is literal."
+  },
+  {
+    "name": "escaped-star-negative",
+    "detection": {
+      "selection": {
+        "CommandLine": "a\\*b"
+      },
+      "condition": "selection"
+    },
+    "event": {
+      "process.command_line": "axxb"
+    },
+    "expected": "unmatched",
+    "rationale": "Escaped star cannot consume arbitrary text."
+  },
+  {
+    "name": "one-codepoint",
+    "detection": {
+      "selection": {
+        "CommandLine": "a?b"
+      },
+      "condition": "selection"
+    },
+    "event": {
+      "process.command_line": "a😀b"
+    },
+    "expected": "matched",
+    "rationale": "Supplementary character is one code point."
+  },
+  {
+    "name": "unicode-fold",
+    "detection": {
+      "selection": {
+        "User": "Ä"
+      },
+      "condition": "selection"
+    },
+    "event": {
+      "user.name": "ä"
+    },
+    "expected": "matched",
+    "rationale": "Single-code-point folding."
+  },
+  {
+    "name": "no-expansion",
+    "detection": {
+      "selection": {
+        "User": "SS"
+      },
+      "condition": "selection"
+    },
+    "event": {
+      "user.name": "ß"
+    },
+    "expected": "unmatched",
+    "rationale": "No multi-character fold expansion."
+  },
+  {
+    "name": "no-normalization",
+    "detection": {
+      "selection": {
+        "User": "é"
+      },
+      "condition": "selection"
+    },
+    "event": {
+      "user.name": "é"
+    },
+    "expected": "unmatched",
+    "rationale": "No canonical normalization."
+  },
+  {
+    "name": "field-conjunction",
+    "detection": {
+      "selection": {
+        "Image": "C:\\example.exe",
+        "User": "somebody"
+      },
+      "condition": "selection"
+    },
+    "event": {
+      "user.name": "different"
+    },
+    "expected": "unmatched",
+    "rationale": "Fields within a selection use AND."
+  },
+  {
+    "name": "nested-negation",
+    "detection": {
+      "selection": {
+        "CommandLine": "a"
+      },
+      "condition": "not (not selection)"
+    },
+    "event": {
+      "process.command_line": "a"
+    },
+    "expected": "matched",
+    "rationale": "Double negation preserves predicate."
+  },
+  {
+    "name": "missing-negative",
+    "detection": {
+      "selection": {
+        "CommandLine": "x"
+      },
+      "condition": "not selection"
+    },
+    "event": {
+      "process.command_line": {
+        "absent": true
+      }
+    },
+    "expected": "matched",
+    "rationale": "NOT of absent positive predicate is true."
+  },
+  {
+    "name": "null-invalid",
+    "detection": {
+      "selection": {
+        "CommandLine": "x"
+      },
+      "condition": "selection"
+    },
+    "event": {
+      "process.command_line": null
+    },
+    "expected": "invalid",
+    "rationale": "Null mapped ECS field is schema-invalid, never a nonmatch."
+  },
+  {
+    "name": "float-invalid",
+    "detection": {
+      "selection": {
+        "ProcessId": 1
+      },
+      "condition": "selection"
+    },
+    "event": {
+      "process.pid": 1.0
+    },
+    "expected": "invalid",
+    "rationale": "Integral JSON float is not an integer representation."
+  },
+  {
+    "name": "string-pid-invalid",
+    "detection": {
+      "selection": {
+        "ProcessId": 1
+      },
+      "condition": "selection"
+    },
+    "event": {
+      "process.pid": "1"
+    },
+    "expected": "invalid",
+    "rationale": "String PID is invalid, never coerced."
+  },
+  {
+    "name": "bool-pid-invalid",
+    "detection": {
+      "selection": {
+        "ProcessId": 1
+      },
+      "condition": "selection"
+    },
+    "event": {
+      "process.pid": true
+    },
+    "expected": "invalid",
+    "rationale": "Boolean PID is invalid, never coerced."
+  },
+  {
+    "name": "precedence",
+    "detection": {
+      "a": {
+        "User": "no"
+      },
+      "b": {
+        "User": "yes"
+      },
+      "c": {
+        "CommandLine": "bad"
+      },
+      "condition": "a or b and not c"
+    },
+    "event": {
+      "user.name": "yes",
+      "process.command_line": "good"
+    },
+    "expected": "matched",
+    "rationale": "AND binds tighter than OR; NOT binds tighter than AND."
+  }
+]

@@ -157,3 +157,7 @@ not establish transport delivery or Flink job recovery.
 P07 introduces the checkpointed replay transport boundary in
 [ADR 0004](decisions/0004-replay-transport.md) and the
 [transport guide](transport.md). It does not implement normalization or detection.
+
+P09 refines A04 with the bounded normalized-fixture slice in
+[owning design notes](p09-design.md) and the [detection guide](detection.md).
+Its separate evaluation-result contract does not freeze P13 detection outputs.

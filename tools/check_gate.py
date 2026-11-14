@@ -4,6 +4,7 @@ import json
 import os
 
 CONDITIONAL = {
+    "detection-verification": "detection",
     "toolchain-verification": "toolchains",
     "local-stack-verification": "stack",
     "transport-verification": "transport",

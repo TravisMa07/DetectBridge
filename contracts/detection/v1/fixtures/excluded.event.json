@@ -11,7 +11,7 @@
     "type": [
       "start"
     ],
-    "id": "sha256:d11cea8e3a9db5c6b649b8790e807f3e7f070ed5586fd3cb3e7519acb5fb8ce5",
+    "id": "sha256:ddc7456a0929284a17c722b0caa01110ca92ab80ba32b74b784b93a0089c775c",
     "code": "4688",
     "created": "2026-11-12T12:00:01.123456789Z",
     "provider": "security",
@@ -63,12 +63,12 @@
     },
     "evidence": [
       {
-        "record_id": "sha256:c55cafc0faaeb34f70a0b8963ed70b6158843f2d08e4bd4fafd8a79b8911f779",
+        "record_id": "sha256:169ed77b63ce5f360b331a4f505ebc5d1a4c29380cc3bfd0c8355b448e0aa933",
         "evidence": {
-          "sha256": "172123f69529756240d1c8eaf2075b38cf574575a8ad7dde07bcaeff36d60d9f",
+          "sha256": "beeba6184fee4afe9c657819147c5784963a372d74d2ae6a1f6f1f33cb93cb4e",
           "media_type": "text/plain",
           "encoding": "utf-8",
-          "inline": "SYNTHETIC windows-security-4688 fixture; not captured telemetry\n"
+          "inline": "SYNTHETIC P09 independent case excluded.event; not recorded telemetry\n"
         }
       }
     ]

@@ -65,7 +65,8 @@
       "outputs": {
         "toolchains": "${{ steps.paths.outputs.toolchains }}",
         "stack": "${{ steps.paths.outputs.stack }}",
-        "transport": "${{ steps.paths.outputs.transport }}"
+        "transport": "${{ steps.paths.outputs.transport }}",
+        "detection": "${{ steps.paths.outputs.detection }}"
       }
     },
     "repository-hygiene": {
@@ -180,7 +181,8 @@
         "secret-scan",
         "toolchain-verification",
         "local-stack-verification",
-        "transport-verification"
+        "transport-verification",
+        "detection-verification"
       ]
     },
     "dataset-acquisition": {
@@ -321,6 +323,36 @@
         {
           "name": "Build and qualify checkpointed transport",
           "run": "uv run --locked python tools/transport.py build\nuv run --locked python tools/datasets.py fetch --all\nuv run --locked python tools/transport.py verify --recorded"
+        }
+      ]
+    },
+    "detection-verification": {
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 35,
+      "needs": [
+        "classify-changes"
+      ],
+      "if": "${{ needs.classify-changes.outputs.detection == 'true' }}",
+      "steps": [
+        {
+          "uses": "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "with": {
+            "persist-credentials": false
+          }
+        },
+        {
+          "uses": "actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0",
+          "with": {
+            "python-version": "3.12.12"
+          }
+        },
+        {
+          "name": "Install pinned development tools",
+          "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
+        },
+        {
+          "name": "Qualify independent detection semantics and recovery",
+          "run": "uv run --locked python tools/detection.py build\nuv run --locked python tools/check_detection.py --java\nuv run --locked python tools/detection.py verify"
         }
       ]
     }

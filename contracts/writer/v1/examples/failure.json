@@ -1,0 +1,18 @@
+{
+  "contract_version": "1.0.0",
+  "failure_id": "sha256:2ce809a4c983b479d109c587cf917ab167ecbb89092ce961034337ec631c6817",
+  "input": {
+    "cluster_id": "example-cluster",
+    "topic_id": "example-output",
+    "topic": "detectbridge.replay.output.v1",
+    "partition": 0,
+    "offset": 2
+  },
+  "value_is_null": false,
+  "value_size": 3,
+  "value_sha256": "2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1",
+  "diagnostic": {
+    "category": "invalid_json",
+    "pointer": ""
+  }
+}

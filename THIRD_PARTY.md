@@ -130,3 +130,11 @@ retain their individual notices. Java dependencies reuse P07's reviewed versions
 and upstream image findings. [P09 inventory](docs/detection-dependencies.json)
 records module locks and compiler provenance. Original synthetic fixtures are
 Apache-2.0 and contain no SigmaHQ rule content or recorded telemetry.
+
+## Independent OpenSearch writer
+
+P08 reuses the pinned Java/Kafka/Jackson/NetworkNT/Shadow/JUnit dependencies and
+Java 17 runtime image. HTTP/TLS uses JDK APIs, with no new client SDK or image pin.
+The writer bundle retains combined license/notice material. The locked inventory
+includes its production/test/build configurations; the existing upstream-image
+finding and P21 remediation requirement remain in effect.

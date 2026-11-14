@@ -316,6 +316,7 @@ class TransportTests(unittest.TestCase):
                             "stack": "false",
                             "transport": applicable,
                             "detection": "false",
+                            "writer": "false",
                         },
                     },
                     "repository-hygiene": {"result": "success"},
@@ -324,6 +325,7 @@ class TransportTests(unittest.TestCase):
                     "local-stack-verification": {"result": "skipped"},
                     "transport-verification": {"result": result},
                     "detection-verification": {"result": "skipped"},
+                    "opensearch-writer-verification": {"result": "skipped"},
                 }
                 self.assertEqual(
                     gate_passes(needs), result == ("success" if applicable == "true" else "skipped")

@@ -70,3 +70,12 @@ is activated. Checkpoint bindings include the consumer group and evaluator versi
 Fault qualification changes quarantine minimum ISR through the bounded helper
 container, with readback, rather than launching another JVM inside Kafka. Outcome
 counters have fixed labels; no rule/run/event identities enter metric labels.
+
+## Integration with merged P08
+
+P09 incorporates main through P08 merge commit 430609a. Shared Gradle registration
+and developer commands retain the writer and both detection modules. CI retains
+separate writer/detection classifiers, runtime jobs and fail-closed aggregate
+requirements; shared stack and contract changes select both affected consumers.
+P08's metadata writer and P09's normalized-input slice remain separate runtime
+projects and topic sets. No detection-to-OpenSearch integration is implied.

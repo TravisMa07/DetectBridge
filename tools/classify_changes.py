@@ -79,6 +79,53 @@ def needs_transport(paths):
     )
 
 
+def needs_writer(paths):
+    shared = {
+        "pyproject.toml",
+        "uv.lock",
+        "settings.gradle.kts",
+        "settings-gradle.lockfile",
+        "build.gradle.kts",
+        "gradle.properties",
+        "gradlew",
+        "gradlew.bat",
+        "tools/toolchains.json",
+        "tools/dev.py",
+        "tools/stack.py",
+        "tools/transport.py",
+        "tools/replay.py",
+        "tools/datasets.py",
+        "tools/check_datasets.py",
+        "tools/check_contracts.py",
+        "tools/check_replay.py",
+        "tools/check_transport.py",
+        "tools/check_gate.py",
+        "tools/classify_changes.py",
+        "tools/dependency_inventory.py",
+    }
+    return any(
+        p in shared
+        or p.startswith(
+            (
+                "packages/transport-",
+                "gradle/",
+                "contracts/v1/",
+                "contracts/replay/",
+                "contracts/transport/",
+                "contracts/writer/",
+                "catalog/datasets/",
+                "tools/writer",
+                "tools/check_writer",
+                "tools/tests/test_writer",
+                "deploy/local/",
+                ".github/workflows/",
+            )
+        )
+        for p in paths
+        if not (p.endswith(".md") or p == "LICENSE")
+    )
+
+
 def needs_detection(paths):
     shared = {
         "pyproject.toml",
@@ -136,3 +183,4 @@ if __name__ == "__main__":
         output.write(f"detection={str(needs_detection([p for p in paths if p])).lower()}\n")
         output.write(f"stack={str(needs_stack([p for p in paths if p])).lower()}\n")
         output.write(f"transport={str(needs_transport([p for p in paths if p])).lower()}\n")
+        output.write(f"writer={str(needs_writer([p for p in paths if p])).lower()}\n")

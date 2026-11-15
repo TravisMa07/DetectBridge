@@ -1,0 +1,11 @@
+title: Synthetic P12 unsupported command line
+id: 72000000-0000-4000-8000-000000000003
+status: test
+license: Apache-2.0
+logsource:
+  product: linux
+  category: process_creation
+detection:
+  selection:
+    CommandLine: whoami
+  condition: selection

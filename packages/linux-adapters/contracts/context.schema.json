@@ -1,0 +1,144 @@
+{
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": "1.0.0"
+    },
+    "run_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "source": {
+      "$ref": "urn:detectbridge:contracts:1.0.0:common#/$defs/source"
+    },
+    "first_observed": {
+      "$ref": "urn:detectbridge:contracts:1.0.0:common#/$defs/timestamp"
+    },
+    "source_generation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "provenance": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "maxItems": 16
+        }
+      },
+      "required": [
+        "id",
+        "provenance"
+      ],
+      "additionalProperties": false
+    },
+    "host_binding": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "provenance": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "maxItems": 16
+        }
+      },
+      "required": [
+        "id",
+        "revision",
+        "sha256",
+        "provenance"
+      ],
+      "additionalProperties": false
+    },
+    "source_contract": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "const": "1.0.0"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "snapshot": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "sha256",
+        "snapshot"
+      ],
+      "additionalProperties": false
+    },
+    "mapping_profile": {
+      "type": "object"
+    },
+    "parser": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "const": "1.0.0"
+        }
+      },
+      "required": [
+        "id",
+        "version"
+      ],
+      "additionalProperties": false
+    },
+    "receipt": {
+      "type": "object",
+      "properties": {
+        "received": {
+          "$ref": "urn:detectbridge:contracts:1.0.0:common#/$defs/timestamp"
+        }
+      },
+      "required": [
+        "received"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "version",
+    "run_id",
+    "source",
+    "first_observed",
+    "source_contract",
+    "mapping_profile",
+    "parser"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:linux:1.0.0:context"
+}

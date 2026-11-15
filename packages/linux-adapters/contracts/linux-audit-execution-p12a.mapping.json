@@ -1,0 +1,45 @@
+{
+  "version": "1.0.0",
+  "id": "linux-audit-execution-p12a",
+  "source": {
+    "id": "linux-audit-execution-p12a",
+    "version": "1.0.0",
+    "sha256": "89b2989949d08463721e14321394a2bf199e5a236928da569ba6a279b6fd4f4e"
+  },
+  "fields": [
+    {
+      "alias": "Image",
+      "target": "process.executable",
+      "type": "string",
+      "cardinality": "scalar",
+      "capability": "available",
+      "transform": "identity-string/1.0.0",
+      "source_path": "/exe"
+    },
+    {
+      "alias": "CommandLine",
+      "target": "process.command_line",
+      "type": "string",
+      "cardinality": "scalar",
+      "capability": "unsupported",
+      "transform": "identity-string/1.0.0"
+    },
+    {
+      "alias": "ProcessId",
+      "target": "process.pid",
+      "type": "integer",
+      "cardinality": "scalar",
+      "capability": "unsupported",
+      "transform": "decimal-integer/1.0.0"
+    },
+    {
+      "alias": "User",
+      "target": "user.name",
+      "type": "string",
+      "cardinality": "scalar",
+      "capability": "unsupported",
+      "transform": "identity-string/1.0.0"
+    }
+  ],
+  "sha256": "eea3f4bbbc200b07353962882d4f752687d1fdbdc49b9f9c2852b06f2ce576ee"
+}

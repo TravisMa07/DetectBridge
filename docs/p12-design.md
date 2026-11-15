@@ -36,7 +36,7 @@ non-UTF-8/NUL arguments remain preserved but cannot populate ECS strings.
 PROCTITLE is preserved, never a replacement for missing EXECVE arguments.
 All tokens, encodings, duplicate occurrences and PATH items survive in source_fields.
 
-Auth reference is [OpenSSH 9.9p2 auth.c](https://github.com/openssh/openssh-portable/blob/V_9_9_P2/auth.c)
+Auth reference is [OpenSSH 9.9p2 auth.c](https://github.com/openssh/openssh-portable/blob/d76b2675116617394cd355a3437b4963a562b64d/auth.c)
 and [RFC5424](https://www.rfc-editor.org/rfc/rfc5424.html). Only the exact
 Accepted/Failed password body is supported, with literal IP and port 1–65535.
 Accept RFC5424 version 1, valid bounded header and structured data; preserve
@@ -88,3 +88,20 @@ recordings. Existing audit excerpts lack trusted host/generation and completenes
 No suitable exact public auth recording has yet been substantiated; the runbook
 records source research and a real instrumented capture proposal. This remains an
 acceptance blocker. No P12 completion, checkpoint recovery, capacity or AMD64 claim.
+
+## Review refinements
+
+New source IDs ending -p12a explicitly distinguish module proposals from P03's
+unchanged fixture contracts. Fixture-only schema examples are not parser outputs.
+Manifest/preservation descriptors identify already retained original raw records
+by ID, cursor, evidence hash and canonical raw-envelope hash; original reference
+locators/ranges are retained unchanged. Inline descriptors do not invent locators.
+The caller must retain the raw envelope, exact context snapshot and bytes before
+admission. Descriptors bind both raw and context hashes; descriptors over 2048
+bytes reference those retained objects instead of copying large metadata. This is the
+fixed boundary's preservation prerequisite, not an archive implementation.
+
+Ended runs retain lifecycle knowledge under the closed-state byte budget while
+releasing active-run slots. The serialized pending budget includes its wrapper;
+the closed budget includes receipts for all accepted records and state metadata.
+The runbook records exact semantics and concrete recording blockers.

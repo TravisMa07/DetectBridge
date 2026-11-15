@@ -1,0 +1,205 @@
+{
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": "1.0.0"
+    },
+    "binding": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "runs": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[0-9A-Fa-f-]{36}$"
+      },
+      "additionalProperties": {
+        "enum": [
+          "active",
+          "ended"
+        ]
+      },
+      "maxProperties": 100000
+    },
+    "groups": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[0-9a-f]{64}$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "object",
+            "properties": {
+              "run_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "source": {
+                "$ref": "urn:detectbridge:contracts:1.0.0:common#/$defs/source"
+              },
+              "host_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "generation": {
+                "type": "string",
+                "minLength": 1
+              },
+              "audit_timestamp": {
+                "type": "string",
+                "pattern": "^[0-9]+\\.[0-9]{1,9}$"
+              },
+              "audit_serial": {
+                "type": "string",
+                "pattern": "^[0-9]+$"
+              }
+            },
+            "required": [
+              "run_id",
+              "source",
+              "host_id",
+              "generation",
+              "audit_timestamp",
+              "audit_serial"
+            ],
+            "additionalProperties": false
+          },
+          "context": {
+            "$ref": "urn:detectbridge:linux:1.0.0:context"
+          },
+          "opened": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1048576
+          },
+          "members": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 256,
+            "items": {
+              "type": "object",
+              "properties": {
+                "raw": {
+                  "$ref": "urn:detectbridge:contracts:1.0.0:raw-record"
+                },
+                "context": {
+                  "$ref": "urn:detectbridge:linux:1.0.0:context"
+                },
+                "bytes_base64": {
+                  "type": "string",
+                  "maxLength": 1398104,
+                  "pattern": "^[A-Za-z0-9+/]*={0,2}$"
+                }
+              },
+              "required": [
+                "raw",
+                "context",
+                "bytes_base64"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "key",
+          "context",
+          "opened",
+          "bytes",
+          "members"
+        ],
+        "additionalProperties": false
+      },
+      "maxProperties": 1024
+    },
+    "closed": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[0-9a-f]{64}$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "object",
+            "properties": {
+              "run_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "source": {
+                "$ref": "urn:detectbridge:contracts:1.0.0:common#/$defs/source"
+              },
+              "host_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "generation": {
+                "type": "string",
+                "minLength": 1
+              },
+              "audit_timestamp": {
+                "type": "string",
+                "pattern": "^[0-9]+\\.[0-9]{1,9}$"
+              },
+              "audit_serial": {
+                "type": "string",
+                "pattern": "^[0-9]+$"
+              }
+            },
+            "required": [
+              "run_id",
+              "source",
+              "host_id",
+              "generation",
+              "audit_timestamp",
+              "audit_serial"
+            ],
+            "additionalProperties": false
+          },
+          "manifest_id": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          },
+          "event_id": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          }
+        },
+        "required": [
+          "key",
+          "manifest_id"
+        ],
+        "additionalProperties": false
+      },
+      "maxProperties": 100000
+    },
+    "receipts": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[0-9A-Fa-f-]{36}/sha256:[0-9a-f]{64}$"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      },
+      "maxProperties": 500000
+    }
+  },
+  "required": [
+    "version",
+    "binding",
+    "runs",
+    "groups",
+    "closed",
+    "receipts"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:linux:1.0.0:state"
+}

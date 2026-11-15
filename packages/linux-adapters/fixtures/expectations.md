@@ -36,3 +36,19 @@ they are not generated from parser/evaluator output. Owner semantic review pendi
   image equals /bin/false does not. CommandLine rule is configuration_blocked by
   unsupported capability. Incomplete output is quality_skipped. Auth User=alice
   matches accepted and failed alike; outcome does not alter username matching.
+
+Independent identity cross-checks use the P03 compact array preimages and Python
+stdlib SHA-256, without Java adapter/evaluator execution. For synthetic namespace
+original-synthetic, instance a and native cursor synthetic-position-0, record ID
+is `sha256:d844c75430581095cf915d0f6ccd412a21b181e79d9c525293e9bf38178ee119`.
+The exact SYSCALL LF bytes above have SHA-256
+`4554fb95fca6d5ed7e8f3ba562cf89bf8cec09586c526e0f6e228d59f8a5006f`.
+Membership at native positions 0 through 5 (five records plus EOE) gives event ID
+`sha256:45c509e3f82ee0b547bffd5b241b0f6f18bf55a81646572f673524276f3dd12f`.
+
+Bounded descriptor case: a valid retained raw occurrence can have an 8000-character
+native cursor or evidence locator. The complete cursor/locator remains in the
+original retained raw envelope, bound by its canonical hash. A descriptor larger
+than 2048 serialized bytes uses record ID/evidence hash/raw-envelope hash and
+retention=retained_raw, with no truncated cursor or invented URI. Thus 256 member
+descriptors fit below the 1 MiB manifest cap even for large original metadata.

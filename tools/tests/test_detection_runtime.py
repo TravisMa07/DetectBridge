@@ -206,11 +206,13 @@ class RuntimeAccountingTests(unittest.TestCase):
         }
         return runtime, plan, expected, row
 
-    def account(self, runtime, plan, expected, invalid, results, errors):
+    def account(self, runtime, plan, expected, invalid, results, errors, *, wire_key=None):
         def wire(row):
             identity = row.get("result_id", row.get("quarantine_id"))
             return {
-                "key": base64.b64encode(identity.encode()).decode(),
+                "key": base64.b64encode(
+                    identity.encode() if wire_key is None else wire_key
+                ).decode(),
                 "value": base64.b64encode(encoded(row)).decode(),
             }
 
@@ -281,6 +283,13 @@ class RuntimeAccountingTests(unittest.TestCase):
                 row["input"]["topic"] = detection.INPUT
             with self.subTest(mutation=mutation), self.assertRaises(StackError):
                 self.account(runtime, plan, expected, {}, [row], [])
+
+    def test_wrong_kafka_key_cannot_pass_a_correct_result_body(self):
+        runtime, plan, expected, row = self.fixture()
+        with self.assertRaisesRegex(StackError, "detection_output_key_mismatch"):
+            self.account(
+                runtime, plan, expected, {}, [row], [], wire_key=b"wrong-result-routing-key"
+            )
 
     def test_quarantine_identity_size_and_null_metadata_are_independent(self):
         runtime, plan, _, result = self.fixture()

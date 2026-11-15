@@ -212,7 +212,7 @@ public final class Machine {
     for(JsonNode intent:outbox()) {
       ObjectNode item=intents.addObject();item.put("sequence",intent.get("sequence").asLong());item.set("kind",intent.get("kind"));item.set("key",intent.get("key"));
       JsonNode doc=intent.get("document");item.put("document_sha256",Json.sha(Json.bytes(doc)));
-      String run=doc.at("/detectbridge/run_id").asString();if(run.isEmpty())run=doc.path("run_id").asString();item.put("run_id",run);
+      String run=doc.at("/detectbridge/run_id").asString();if(run.isEmpty())run=doc.has("manifest_id")?doc.at("/key/run_id").asString():doc.path("run_id").asString();item.put("run_id",run);
       if(doc.has("input"))item.set("input",doc.get("input"));
       ArrayNode refs=item.putArray("members");
       JsonNode originals=doc.has("@timestamp")?doc.at("/detectbridge/evidence"):doc.path("members");

@@ -15,6 +15,7 @@ from urllib.parse import urlsplit
 
 from check_contracts import load_json
 from detection import Detection
+from jsonschema import Draft202012Validator, FormatChecker
 from linux_assembly_cases import (
     ROOT,
     digest,
@@ -109,6 +110,10 @@ class Assembly(Detection):
 
     def config(self):
         value = load_json(self.folder / "configuration.json")
+        Draft202012Validator(
+            load_json(ROOT / "contracts/linux-assembly/v1/assembly-runtime.schema.json"),
+            format_checker=FormatChecker(),
+        ).validate(value)
         if (
             value.get("runtime") != "linux-assembly/1.0.0"
             or value["project"] != self.project
@@ -733,6 +738,11 @@ def _qualify_default():
                 inputs=len(oracle.inputs),
                 logical_groups=len(oracle.groups),
                 physical_outputs=len(outputs),
+                logical_outputs=len(
+                    {(kind, wire["key"], encoded(doc)) for kind, wire, doc in outputs}
+                ),
+                physical_duplicates=len(outputs)
+                - len({(kind, wire["key"], encoded(doc)) for kind, wire, doc in outputs}),
                 sink_failures=fault_evidence,
                 broker_unavailability=broker_evidence,
                 bundle=config["bundle"],
@@ -815,6 +825,24 @@ def qualify_pressure(profile):
             oracle = Oracle(test.config(), runtime_binding(test.config()))
 
             def send(rows):
+                with (test.folder / "independent-inputs.ndjson").open("ab") as original:
+                    for row in rows:
+                        original.write(
+                            encoded(
+                                dict(
+                                    value_is_null=False,
+                                    value_base64=base64.b64encode(encoded(row)).decode(),
+                                )
+                            )
+                            + b"\n"
+                        )
+                save(
+                    test.folder / "independent-expectations.json",
+                    dict(
+                        groups=list(oracle.groups.values()),
+                        diagnostics=list(oracle.diagnostics.values()),
+                    ),
+                )
                 acks = test.inject_rows([encoded(row) for row in rows])
                 oracle.register(rows, acks)
                 return acks

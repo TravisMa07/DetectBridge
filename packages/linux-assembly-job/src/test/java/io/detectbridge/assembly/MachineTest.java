@@ -41,7 +41,11 @@ class MachineTest {
     Time time=new Time(); Machine m=machine(time);JsonNode cases=cases();long offset=0;
     for(JsonNode row:cases.get("complete")) add(m,row,offset++);
     List<Machine.Intent> emitted=new ArrayList<>();m.complete(0,emitted::add);assertTrue(emitted.isEmpty());
-    byte[] durable=m.snapshot(1);add(m,cases.get("auth"),offset);
+    byte[] durable=m.snapshot(1);
+    JsonNode manifestReference=m.inventory(1,durable).get("outbox").valueStream().filter(i->i.get("kind").asString().equals("manifest")).findFirst().orElseThrow();
+    assertEquals(cases.at("/complete/0/context/run_id"),manifestReference.get("run_id"));
+    assertEquals(cases.at("/expected/member_ids"),Json.MAPPER.valueToTree(manifestReference.get("members").valueStream().map(i->i.get("record_id").asString()).sorted().toList()));
+    add(m,cases.get("auth"),offset);
     m.complete(1,emitted::add);assertEquals(8,emitted.size());assertEquals(2,m.pendingOutputs());
     var event=emitted.stream().filter(i->i.kind().equals("event")).findFirst().orElseThrow().document();
     assertEquals(cases.at("/expected/event_id"),event.at("/event/id"));

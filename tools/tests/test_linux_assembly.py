@@ -5,11 +5,16 @@ import copy
 import hashlib
 import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
+
+from jsonschema import ValidationError
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from linux_assembly_cases import cases, encoded
+from linux_assembly import TOPICS, Assembly
+from linux_assembly_cases import cases, digest, encoded
 from linux_assembly_verify import Oracle
 from stack import StackError
 
@@ -93,3 +98,54 @@ class AssemblyOracleTests(unittest.TestCase):
                 changed[1]["headers"]["detectbridge.runtime.binding"] = "b" * 64
             with self.assertRaises(StackError):
                 oracle.check([row, changed])
+
+
+class RuntimeContractTests(unittest.TestCase):
+    def test_checksummed_configuration_still_requires_closed_versioned_contract(self):
+        config = dict(
+            contract_version="1.0.0",
+            project="detectbridge-p12-unit",
+            pipeline_id="00000000-0000-4000-8000-000000000012",
+            bundle=dict(
+                bundle_sha256="a" * 64,
+                jar_sha256="b" * 64,
+                publisher_sha256="b" * 64,
+                image="synthetic",
+                image_id="sha256:" + "c" * 64,
+                platform="linux/arm64",
+            ),
+            broker=dict(
+                cluster_id="synthetic",
+                topics={
+                    name: dict(id=name, partitions=1, replicas=1, config={}) for name in TOPICS
+                },
+            ),
+            consumer_group="synthetic",
+            normalized_contract="1.0.0",
+            runtime="linux-assembly/1.0.0",
+            limits_profile="default",
+            evidence_registry_sha256="d" * 64,
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            assembly = Assembly(config["project"])
+            assembly.folder = Path(directory)
+
+            def persist(value):
+                (assembly.folder / "configuration.json").write_bytes(encoded(value))
+                (assembly.folder / "configuration.sha256").write_text(digest(value) + "\n")
+
+            with patch.object(assembly, "bundle") as bundle:
+                persist(config)
+                self.assertEqual(assembly.config(), config)
+                bundle.assert_called_once()
+                for field, value in (
+                    ("extra", True),
+                    ("contract_version", "2.0.0"),
+                    ("limits_profile", "unreviewed"),
+                    ("evidence_registry_sha256", "invalid"),
+                ):
+                    changed = dict(config, **{field: value})
+                    persist(changed)
+                    with self.subTest(field=field), self.assertRaises(ValidationError):
+                        assembly.config()
+                self.assertEqual(bundle.call_count, 1)

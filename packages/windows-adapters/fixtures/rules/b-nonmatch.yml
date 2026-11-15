@@ -1,0 +1,12 @@
+title: P11 synthetic literal nonmatch
+id: 71100000-0000-4000-8000-000000000002
+status: test
+author: DetectBridge contributors
+license: Apache-2.0
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selected:
+    Image: 'C:\other.exe'
+  condition: selected

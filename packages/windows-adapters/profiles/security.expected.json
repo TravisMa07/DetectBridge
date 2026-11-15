@@ -1,0 +1,114 @@
+{
+  "@timestamp": "2026-11-12T12:00:00.123456789123Z",
+  "ecs": {
+    "version": "9.5.0"
+  },
+  "event": {
+    "id": "sha256:28a0dd5e80010815e15b939227fbfeee0267c9b618a37e9b4b3878b5514747b1",
+    "kind": "event",
+    "category": [
+      "process"
+    ],
+    "type": [
+      "start"
+    ],
+    "code": "4688",
+    "created": "2026-11-12T12:00:01.123456789123Z",
+    "provider": "Microsoft-Windows-Security-Auditing"
+  },
+  "host": {
+    "id": "synthetic-host-id",
+    "name": "SYNTHETIC-HOST"
+  },
+  "user": {
+    "name": "Alice",
+    "domain": "LAB",
+    "id": "S-1-5-21-123"
+  },
+  "process": {
+    "pid": 16,
+    "parent": {
+      "pid": 32
+    },
+    "executable": "C:\\synthetic.exe",
+    "command_line": "synthetic.exe \"α 😀\""
+  },
+  "source_fields": {
+    "NewProcessName": "C:\\synthetic.exe",
+    "NewProcessId": "0x10",
+    "ProcessId": "0x20",
+    "CommandLine": "synthetic.exe \"α 😀\"",
+    "SubjectUserName": "Alice",
+    "SubjectDomainName": "LAB",
+    "SubjectUserSid": "S-1-5-21-123",
+    "TargetUserName": "Bob",
+    "windows_system": {
+      "values": {
+        "Provider": "",
+        "EventID": "4688",
+        "Version": "2",
+        "TimeCreated": "",
+        "Channel": "Security",
+        "Computer": "SYNTHETIC-HOST"
+      },
+      "attributes": {
+        "Provider": {
+          "Name": "Microsoft-Windows-Security-Auditing"
+        },
+        "EventID": {},
+        "Version": {},
+        "TimeCreated": {
+          "SystemTime": "2026-11-12T12:00:00.123456789123Z"
+        },
+        "Channel": {},
+        "Computer": {}
+      }
+    }
+  },
+  "detectbridge": {
+    "contract_version": "1.0.0",
+    "source": {
+      "namespace": "synthetic-p11",
+      "instance": "synthetic-origin"
+    },
+    "source_contract": {
+      "id": "windows-security-4688-xml",
+      "version": "1.0.0"
+    },
+    "processing": {
+      "parser": "windows-xml/1.0.0",
+      "normalizer": "windows-normalizer/1.0.0",
+      "mapping": "windows-security-4688-xml-mapping/1.0.0"
+    },
+    "run_id": "00000000-0000-4000-8000-000000000001",
+    "time": {
+      "basis": "source",
+      "quality": "valid",
+      "first_observed": "2026-11-12T12:00:01.123456789123Z",
+      "source_value": "2026-11-12T12:00:00.123456789123Z",
+      "source_utc": "2026-11-12T12:00:00.123456789123Z"
+    },
+    "assembly": {
+      "mode": "standalone",
+      "closure": "not_required",
+      "quality": "source_indicated",
+      "assembler_version": "1.0.0"
+    },
+    "quality": {
+      "integrity": "sufficient",
+      "eligibility": "eligible",
+      "diagnostics": []
+    },
+    "evidence": [
+      {
+        "record_id": "sha256:fb0945adcb3b80d2352015c3b81f921dfcc2c208faeed29ab4215946f843bc5e",
+        "evidence": {
+          "sha256": "1835aec8c474500680746ef7f4950e16fc301763b355b971642cdc5da819052c",
+          "media_type": "application/xml",
+          "encoding": "utf-8",
+          "inline": "<Event xmlns=\"http://schemas.microsoft.com/win/2004/08/events/event\"><System><Provider Name=\"Microsoft-Windows-Security-Auditing\"/><EventID>4688</EventID><Version>2</Version><TimeCreated SystemTime=\"2026-11-12T12:00:00.123456789123Z\"/><Channel>Security</Channel><Computer>SYNTHETIC-HOST</Computer></System><EventData><Data Name=\"NewProcessName\">C:\\synthetic.exe</Data><Data Name=\"NewProcessId\">0x10</Data><Data Name=\"ProcessId\">0x20</Data><Data Name=\"CommandLine\">synthetic.exe &quot;α 😀&quot;</Data><Data Name=\"SubjectUserName\">Alice</Data><Data Name=\"SubjectDomainName\">LAB</Data><Data Name=\"SubjectUserSid\">S-1-5-21-123</Data><Data Name=\"TargetUserName\">Bob</Data></EventData></Event>\n"
+        }
+      }
+    ]
+  }
+}

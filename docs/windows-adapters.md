@@ -1,0 +1,120 @@
+# Windows XML adapters and offline qualification
+
+P11 provides an offline Java subsystem for the exact UTF-8 XML records described
+in [the design](p11-design.md). It does not accept EVTX, JSON collectors, multiline
+XML, Security versions other than 4688 v2, or Sysmon versions other than 1 v5.
+There is no production Flink adapter pipeline, writer integration or throughput
+claim. [The ledger](p11-ledger.md) distinguishes implementation and acceptance.
+
+## Build and synthetic qualification
+
+Use the pinned JDK, Gradle cache and locked Python environment from the
+[development guide](development.md):
+
+```sh
+uv run --locked python tools/dev.py check
+uv run --locked python tools/dev.py java
+JAVA_HOME="$PWD/.cache/jdk" GRADLE_USER_HOME="$PWD/.cache/gradle" ./gradlew --offline --console=plain :windows-adapters:test :windows-adapters:installDist
+uv run --locked ruff check packages/windows-adapters/*.py
+uv run --locked ruff format --check packages/windows-adapters/*.py
+```
+
+The module test task compiles original synthetic YAML through pinned pySigma/P10,
+then checks the same public Java evaluator on actual parser outputs. Independent
+literal expectations include all six evaluator outcomes and full normalized
+fixtures. No public recordings are required for ordinary tests.
+
+## Module-local input boundary
+
+`WindowsAdapter.adapt(raw, resolver, context)` consumes a validated P03 raw record,
+an explicit evidence resolver and the exact context boundary. The local resolver
+accepts an object directory containing files named by SHA-256; it never fetches
+URI values or uses them as filesystem paths. Each resolution rehashes the complete
+object (maximum 32 MiB), checks range and LF boundaries, dataset cursor position
+and selected record hash. A custom resolver must provide the same verified-byte
+guarantee. Resolver IOException is visible retry/backlog failure. Integrity failure
+returns a value-free preservation diagnostic. The adapter independently rechecks
+the supplied record-byte hash.
+
+Context 1.0.0 has these concrete module-local shapes (no new shared schema):
+
+- `run_id`, `source`, `first_observed`: frozen boundary values; origin and observation
+  must equal raw input exactly.
+- `source_contract`: `id`, `version`, canonical `sha256`, `snapshot`.
+- `mapping_profile`: `id`, `version`, `sha256`, `declaration`.
+- `parser`: `id: windows-xml`, `version: 1.0.0`.
+- Optional `host_binding`: `host_id`, exact XML `computer`, `source`, `revision`,
+  canonical `sha256` excluding itself, nonempty `provenance` string array, and
+  `kind` (`reviewed` or `synthetic`). Source and Computer must agree. Checksums do
+  not authenticate a binding: callers must substantiate review. Synthetic context
+  cannot qualify recorded host identity.
+- Optional `source_generation`: explicit `id`, nonempty `provenance` string array,
+  optional `command_line_capture` (`enabled`, `disabled`, `unknown`).
+- Optional `receipt`: actual `received` and/or `processed` UTC timestamps.
+
+Snapshots/declarations must equal the module's parser-backed profiles. Unknown
+members, versions, transforms, hashes and fixture-only profiles fail before XML
+normalization. The fixed profiles declare Image, CommandLine, ProcessId and User
+against actual extracted names. No arbitrary executable transform is supported.
+
+Malformed/unsupported XML returns no event. A parsed supported event with missing
+trusted host identity or invalid typed extraction remains normalized but skipped.
+Computer is display only. Subject actor is distinct from target account. Command
+lines remain literal strings; no argument tokenization. Empty optional command
+line is legitimately absent unless reviewed context states capture disabled;
+contradictory disabled context plus a present value is conflicting/skipped.
+
+## Atomic offline output
+
+Input is NDJSON with exactly `raw` and `context` per row. Run:
+
+```sh
+JAVA_HOME="$PWD/.cache/jdk" packages/windows-adapters/build/install/windows-adapters/bin/windows-adapters INPUT.ndjson OUTPUT.ndjson OBJECT_DIRECTORY .cache/windows/plan.json
+```
+
+The optional fourth argument is a validated mapped P10 plan. The complete-file
+output contains version, original raw/context, and event plus optional evaluation,
+or preservation diagnostic. Context remains beside the P03 event to retain exact
+snapshot/binding hashes without changing closed P03 processing metadata. Explicit
+output contains retained evidence; operational stdout prints counts only and
+stderr fixed failure categories. Treat output as local evidence, keep it ignored.
+
+The runner fsyncs a unique same-directory temporary file and atomically replaces
+output after all rows complete. Invalid input, I/O, evaluator failure or interrupted
+pre-publication leaves existing output intact and returns failure. A hard process
+kill may leave a `.windows-*.tmp` file; it is never a published output. Remove such
+files after confirming no runner owns them. Atomic rename is not archive durability,
+whole-disk recovery or downstream acceptance. No non-atomic fallback is used.
+
+## Opt-in retained recordings
+
+Acquire only catalog-approved artifacts with the existing dataset tooling. This
+subsystem performs no downloads. Prepare local inputs and independently inventory
+all records, supplying an actual immutable first observation at raw creation:
+
+```sh
+uv run --locked python packages/windows-adapters/recorded.py --cache .cache/datasets --output .cache/windows/recorded-input.ndjson --first-observed ACTUAL_UTC_FIRST_OBSERVATION --run-id RUN_UUID
+JAVA_HOME="$PWD/.cache/jdk" packages/windows-adapters/build/install/windows-adapters/bin/windows-adapters .cache/windows/recorded-input.ndjson .cache/windows/recorded-output.ndjson .cache/datasets/objects/sha256 .cache/windows/plan.json
+```
+
+Preparation verifies payload, license, scenario metadata and LFS pointer against
+the catalog, partitions original LF bytes and retains exact offsets/lengths/hashes.
+Its ElementTree signature inventory is independent of the hardened Java admission
+path; the Java runner establishes actual adapter disposition. No telemetry bodies
+are printed. Outputs and raw inputs belong only in ignored cache.
+
+Reverified inventory: Security artifact
+`81e1d4e381f4dc38b97c48f9fa5b0ab0b098810c321b7d4599029a9f22530259`
+has 8 supported records. Sysmon artifact
+`ee1c7cd9fa20013c82da17f8cb1998197c117ab4c209ab56203290bc90739fda`
+has 353 supported and 6,657 unsupported records. Total 7,018, with command lines
+present in all 361 supported candidates. These are not per-record detection labels.
+
+The pinned metadata object
+`eebac0c9661cabf3b1bf36f200880516e19db43a1c3680ef17e6db43c78ac4f8`
+identifies author, scenario, environment, dataset paths and collector sourcetypes.
+It contains no stable host identifier or reviewed Computer-to-host binding. Neither
+catalog capture identity nor metadata date can fill that gap. Preparation supplies
+no host binding, so recorded candidates cannot become eligible. Full recorded
+eligible qualification requires additional provenance-backed bindings; do not edit
+input contexts to invent them. Synthetic disabled-capture tests remain necessary.

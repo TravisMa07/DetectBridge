@@ -1,0 +1,48 @@
+{
+  "version": "1.0.0",
+  "id": "windows-security-4688-xml-mapping",
+  "source": {
+    "id": "windows-security-4688-xml",
+    "version": "1.0.0",
+    "sha256": "f454d09097f84c865356c51dbadb001b39f871bb5a9d6b35deea9a2b57261696"
+  },
+  "fields": [
+    {
+      "alias": "Image",
+      "target": "process.executable",
+      "source_path": "/NewProcessName",
+      "capability": "available",
+      "type": "string",
+      "cardinality": "scalar",
+      "transform": "identity-string/1.0.0"
+    },
+    {
+      "alias": "CommandLine",
+      "target": "process.command_line",
+      "source_path": "/CommandLine",
+      "capability": "conditional",
+      "type": "string",
+      "cardinality": "scalar",
+      "transform": "identity-string/1.0.0"
+    },
+    {
+      "alias": "ProcessId",
+      "target": "process.pid",
+      "source_path": "/NewProcessId",
+      "capability": "conditional",
+      "type": "integer",
+      "cardinality": "scalar",
+      "transform": "hex-integer/1.0.0"
+    },
+    {
+      "alias": "User",
+      "target": "user.name",
+      "source_path": "/SubjectUserName",
+      "capability": "conditional",
+      "type": "string",
+      "cardinality": "scalar",
+      "transform": "identity-string/1.0.0"
+    }
+  ],
+  "sha256": "dd27aa53f243f4f5d14746fd4f78342e3d7e122ae1affa3e37dcf488eab5f5ae"
+}

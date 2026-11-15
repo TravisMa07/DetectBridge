@@ -1,6 +1,7 @@
 # P12b design notes
 
-Status: implementation authorized 2026-11-15; runtime qualification pending.
+Status: implementation authorized 2026-11-15; final-artifact ARM64 qualification
+passed. AMD64 CI and owner review remain pending; see the P12b ledger.
 Base is merged P12a 9ea1c68 plus the reviewed plan 55a28f2. Merged-main CI must
 pass before runtime qualification. Preserve ADR 0004 at-least-once output.
 

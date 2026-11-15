@@ -1,8 +1,9 @@
 # P12b — Checkpointed Linux assembly and failure qualification
 
-Status: implementation plan for owner review, 2026-11-15. No P12b runtime code is
-implemented by this document. Refines A03/A06 and ADR 0004's at-least-once delivery
-policy; preserves P03 identities and the P12a source/mapping semantics.
+Status: plan authorized for implementation, 2026-11-15. Implementation and exact
+qualification evidence are now recorded in the [ledger](p12b-ledger.md). This plan
+refines A03/A06 and ADR 0004's at-least-once delivery policy; preserves P03 identities
+and the P12a source/mapping semantics.
 
 ## Base, prerequisites and scope
 

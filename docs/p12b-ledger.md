@@ -1,7 +1,7 @@
 # P12b implementation ledger
 
-Status: implementation complete for draft review; final-artifact ARM64 and AMD64
-qualification remain in progress. No full P12 acceptance, merge or release claimed.
+Status: implementation complete for draft review; final-artifact ARM64
+qualification passed; actual AMD64 CI remains pending. No full P12 acceptance, merge or release claimed.
 Branch: feat/p12b-linux-qualification. Base: P12a merge 9ea1c68 plus approved plan
 55a28f2. Design/semantic expectations were committed at 655e362 before wrapper
 code; detached transitions, independently computed cases and checkpoint model
@@ -55,8 +55,7 @@ The failed attempt is not accepted qualification.
 
 Prepared/model/serializer/evidence tests, owning artifact checks, new Python
 oracle/gate regressions, locked root checks and combined Java checks have passed
-at intermediate heads; exact final-head results will be recorded after the final
-qualification. 67 reviewed Maven coordinates remain the combined set; the new
+at intermediate heads; final code/artifact results are recorded below. 67 reviewed Maven coordinates remain the combined set; the new
 module adds uses of existing coordinates/configurations only. No new checksum or
 fresh advisory-remediation claim. Existing image findings remain open.
 
@@ -91,8 +90,8 @@ Default artifact: bundle
 Evidence remains ignored in `.cache/p12b-qualified-run.log`, per-project original
 input/expectation ledgers and `.cache/linux-assembly-reports/`. Stacks/volumes were
 removed. A subsequent metadata-scope/runtime-contract/accounting correction at
-9a93070 has a fresh complete final-artifact run in progress; intermediate evidence
-is not silently attributed to that later artifact. Ordinary CI uses original
+9a93070 was followed by the fresh complete final-artifact run recorded below;
+intermediate evidence is not silently attributed to that later artifact. Ordinary CI uses original
 synthetic cases, not the reviewed local authentication recording.
 
 Locked repository checks pass with 133 Python regressions; combined Java/P10
@@ -100,9 +99,44 @@ semantic checks, 36 Linux and 10 assembly Java tests, six assembly Python oracle
 gate/runtime-contract regressions, artifact/dependency/notice checks, lint/types
 and secret scanning pass. Exact final runtime artifacts/results will be appended.
 
+## Final-artifact ARM64 evidence
+
+The final default run passed in `detectbridge-p12-test-75e4667e33ab` after code
+9a93070, with no later runtime code changes. All 52 inputs are accounted for:
+83 logical output documents, 93 physical rows and 10 byte-identical at-least-once
+duplicates; 10 audit groups. Exact input/raw/context/evidence/membership/identity/
+scope/quality checks passed, including registered reference ranges and immutable
+late links. Actual partial-group TaskManager restart, explicit restore,
+incompatible-binding failure and JobManager recovery passed. Checkpoint 43 retained
+the partial group across a 40-second actual broker pause and recovered its original
+timeout. Actual producer failures retained blocked event/manifest/diagnostic/
+quarantine/receipt intents in completed checkpoints 48/53/58/63/68; healthy restored
+sinks drained them. Metrics and payload-log isolation passed.
+
+Final bundle:
+`5d3bf6a695bd5a419d226f3ef03b9809563e0ab9623b0b79ddd0e27a25cf0d96`;
+JAR: `0f4955f221bcc3b61fafeea9dea1779d8913bc24f8bc7f1b1b600080646314de`;
+image ID: `sha256:871255524cb908c687044f9ff3b6bc2c98494393f8fa7ac54c8d29c1ca749e2d`.
+The metadata includes platform linux/arm64. Logs:
+`.cache/p12b-final-build.log`, `.cache/p12b-final-qualification.log` and
+`.cache/linux-assembly-reports/detectbridge-p12-test-75e4667e33ab.json`.
+Both final resource profiles passed using this artifact: limits project
+`detectbridge-p12-limits-0cc6ccb50133` qualified four closures, member/open-group
+pressure and closed-budget rejection with exact original offset 8 retained;
+bytes project `detectbridge-p12-bytes-e7ca7c2f2782` qualified two closures under
+serialized pending-byte pressure. The aggregate final report is
+`.cache/linux-assembly-reports/qualification.json`. All three owned stacks and
+volumes were removed. These are local ignored observations, not published payloads
+or recovery sources.
+
+The draft implementation PR is [#42](https://github.com/TravisMa07/DetectBridge/pull/42)
+against main. Actual AMD64 linux-assembly-verification and shared regression jobs
+were created and started in run 43767027576 on 483b2be. Check creation is not a
+pass; final PR-head CI remains required after evidence documentation updates.
+
 ## Remaining acceptance
 
-Complete final-artifact ARM64 qualification and actual AMD64 CI; owner review of
+Actual final-PR-head AMD64 CI; owner review of
 independent expectations/completeness policy; reviewed eligible audit provenance;
 separate owner merge authorization and merged-main qualification. Windows recorded
 host binding and full P12/P13 acceptance remain separate blockers. The existing

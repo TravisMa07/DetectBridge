@@ -154,3 +154,11 @@ on feat/p12b-linux-qualification. The [P12b ledger](p12b-ledger.md) records exac
 artifact/runtime results, failed attempts, final-head evidence and remaining gates.
 No P13 production wiring, recorded audit eligibility, owner semantic approval,
 merge authorization or release is inferred from these checks.
+
+Final P12b ARM64 qualification passed on the artifact recorded in its ledger:
+52 default inputs, 83 logical documents, 93 physical rows including 10 stable
+recovery duplicates, all five actual required-sink failures, real broker pause,
+TaskManager/JobManager/checkpoint recovery and both pressure profiles. Local locked
+checks passed with 133 Python regressions and combined Java/semantic consumers.
+Draft PR #42 targets main; actual linux-assembly-verification and shared AMD64
+jobs were created. Final-head AMD64 CI, owner review and merge remain pending.

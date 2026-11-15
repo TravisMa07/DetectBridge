@@ -190,7 +190,8 @@ No application scaffolding, runtime capability claims or release tag.
   completeness. Known-bad evidence is retained with skipped-detection reasons.
 
 P12b checkpointed qualification is implemented for review in its owning branch;
-see the [ledger](p12b-ledger.md) for actual versus pending evidence. Full P12 and
+final-artifact ARM64 qualification passed and actual AMD64 CI remains pending.
+See the [ledger](p12b-ledger.md) for exact evidence and limits. Full P12 and
 P13 acceptance are not implied.
 
 ### P13 — Integrated enrichment and evaluation outcomes

@@ -189,3 +189,10 @@ does not deploy P12b Flink state or P13 production wiring. A small actual local
 OpenSSH9 capture qualifies the selected password grammar; recorded audit
 eligibility and complete P12 acceptance remain blocked. See the
 [P12a design](p12-design.md) and [ledger](p12-ledger.md).
+
+P12b's isolated checkpointed Linux assembly implementation refines A03/A06 through
+prepared transitions, durable output intents, restored absolute timers and strict
+runtime/destination bindings. It preserves ADR 0004 at-least-once output and does
+not implement P13. See [ADR 0012](decisions/0012-linux-assembly-qualification.md),
+[runbook](linux-assembly.md) and [qualification ledger](p12b-ledger.md) for exact
+acceptance status; implementation alone does not establish runtime qualification.

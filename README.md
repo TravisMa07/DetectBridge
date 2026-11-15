@@ -24,6 +24,9 @@ recorded preservation accounting; trusted recorded host bindings remain unavaila
 and selected authentication parsing, with a small real reviewed local OpenSSH9
 recording. Recorded audit eligibility, P12b checkpoint qualification and owner
 review remain pending.
+[P12b checkpoint qualification](docs/linux-assembly.md) now has an isolated
+implementation; exact runtime evidence and remaining acceptance gates are tracked
+in its ledger.
 Production detection, management API, UI and detection-to-OpenSearch integration
 remain pending.
 P06 provides local Kafka/Flink infrastructure and optional authenticated OpenSearch.

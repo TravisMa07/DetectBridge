@@ -165,3 +165,10 @@ source/binary, credentials, private keys or recording payload enters Git. Public
 payload redistribution is not authorized by this local-use review and would need
 an explicit owner terms decision. This does not change existing public dataset
 terms or approved P04 acquisition entries.
+
+P12b adds module/configuration uses of existing reviewed coordinates in
+`docs/assembly-dependencies.json`, reconciled with the combined inventory. No new
+artifact/checksum, fresh advisory scan or remediation of the existing image
+finding is claimed. The job retains project LICENSE/ECS-NOTICE and merged upstream
+notices. Original synthetic qualification inputs are Apache-2.0; local registered
+objects retain their own provenance/terms and never enter Git or published images.

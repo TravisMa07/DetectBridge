@@ -46,6 +46,21 @@ state versions, limits/timer policy, Kafka cluster/topic IDs and group. Restore
 validates all state before releasing output or consuming new input. Parallelism
 and input partition count are one. No production rescaling or P13 integration.
 
+## Closure budget
+
+One prepared transition returns at most one group closure: at most one event and
+one membership manifest, each independently capped at 1 MiB by P12a. If the input
+is consumed, the wrapper adds at most one receipt; other preservation/quarantine
+paths emit one document plus, where applicable, one receipt. The wrapper checks
+each document against the same 1 MiB cap. Three maximum-size documents plus three
+fixed intent wrappers (sequence, bounded kind and 71-character SHA key; below
+1 KiB combined) fit below 3 MiB + 1 KiB, inside an empty 8 MiB/64-entry outbox.
+A partially occupied outbox may defer the whole proposal without admitting it.
+P12a's oversized-event policy and manifest_limit_backlog remain explicit; a group
+at its input byte/member cap is not a promise that arbitrary metadata fits an
+output document. No evidence is truncated to make it fit. These serialized bounds
+do not include the transient copies, parser objects or Flink/Kafka buffers.
+
 ## Baseline qualification evidence
 
 The first merged-main run 43750911904 failed P10 incompatible_restore with

@@ -89,7 +89,14 @@ class QualificationTests(unittest.TestCase):
                 )
                 for i in (1, 2, 4)
             ],
-            input=dict(offset=0),
+            input=dict(
+                cluster_id="offline",
+                topic_id="offline",
+                topic="windows-offline",
+                partition=0,
+                offset=0,
+                value_sha256=hashlib.sha256(compact(event)).hexdigest(),
+            ),
             **{k: self.plan[k] for k in ("compiler", "evaluator", "mapping_version")},
         )
         self.row = dict(
@@ -138,6 +145,49 @@ class QualificationTests(unittest.TestCase):
         self.output.write_bytes((compact(self.row) + b"\n") * 2)
         with self.assertRaises(ValueError):
             qualify(self.input, self.output, self.plan_path)
+
+    def test_supported_record_cannot_be_reported_as_unsupported(self):
+        raw, context = self.original["raw"], self.original["context"]
+        row = dict(
+            version="1.0.0",
+            raw=raw,
+            context=context,
+            preservation=dict(
+                version="1.0.0",
+                record_id=raw["record_id"],
+                run_id=context["run_id"],
+                evidence_sha256=raw["evidence"]["sha256"],
+                code="unsupported_source",
+                reason="source_signature",
+                field="",
+            ),
+        )
+        self.output.write_bytes(compact(row) + b"\n")
+        with self.assertRaises(ValueError):
+            qualify(self.input, self.output, self.plan_path, dict(records=1, unsupported=1))
+
+    def test_wrong_source_signature_cannot_be_normalized(self):
+        original = copy.deepcopy(self.original)
+        raw = original["raw"]
+        raw["evidence"]["inline"] = raw["evidence"]["inline"].replace(
+            "<EventID>4688</EventID>", "<EventID>4689</EventID>"
+        )
+        raw["evidence"]["sha256"] = hashlib.sha256(raw["evidence"]["inline"].encode()).hexdigest()
+        row = copy.deepcopy(self.row)
+        row["raw"] = raw
+        row["event"]["detectbridge"]["evidence"][0]["evidence"] = raw["evidence"]
+        row["evaluation"]["input"]["value_sha256"] = hashlib.sha256(
+            compact(row["event"])
+        ).hexdigest()
+        self.input.write_bytes(compact(original) + b"\n")
+        with self.assertRaises(ValueError):
+            self.verify(row)
+
+    def test_incomplete_evaluation_reference_is_rejected(self):
+        row = copy.deepcopy(self.row)
+        row["evaluation"]["input"] = dict(offset=0)
+        with self.assertRaises(ValueError):
+            self.verify(row)
 
 
 if __name__ == "__main__":

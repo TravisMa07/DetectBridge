@@ -24,3 +24,9 @@ tasks.test {
     dependsOn(prepareWindowsPlan, ":detection-evaluator:compileFixturePlan")
     systemProperty("windows.test.classpath", sourceSets.test.get().runtimeClasspath.asPath)
 }
+distributions.main {
+    contents {
+        from(rootProject.file("LICENSE"))
+        from(rootProject.file("contracts/v1/NOTICE")) { rename { "ECS-NOTICE" } }
+    }
+}

@@ -1,7 +1,7 @@
 # P11 subsystem ledger
 
 - Base: df3144822ddd5694b9244ae29eb4a3c9e2815376, verified clean before edits.
-- Branch: t3/windows-adapter-qualification.
+- Branch: feat/p11-windows-adapters.
 - Worktree: /Users/travisma/.t3/worktrees/DetectBridge/t3-689cf405-5fa25cc439f21f05.
 - Owner: Windows implementation child; no delegated children.
 - Owns: packages/windows-adapters, p11 design, ledger and Windows guide.
@@ -11,7 +11,7 @@
   commit; CI/dev-command/inventory/status integration remains orchestrator-owned.
 - Acceptance blockers: recorded trusted host binding provenance, AMD64 subsystem
   execution, orchestrator integration/review. No Docker runs authorized here.
-- Tests/evidence: pending implementation; no runtime or capacity claim.
+- Tests/evidence: child and orchestrator evidence recorded below; no throughput claim.
 
 ## Implementation and integration handoff
 
@@ -86,3 +86,31 @@ Computer-to-host binding. Full recorded eligible coverage therefore remains bloc
 no guessed bindings or metadata-date occurrence times were supplied. Synthetic host
 bindings are labelled synthetic. AMD64/CI execution, owner review and integrated
 P13 streaming/recovery remain outside this child evidence. No throughput claim.
+
+## Orchestrator integration
+
+P10 merged-main qualification passed on df31448; the owner authorized dependent
+P11/P12 work without an invented formal semantic-review record. The orchestrator
+retains this worktree/branch and coordinates shared changes serially. Windows
+verification is now a real developer/CI gate with shared-consumer classification
+and fail-closed aggregation. Root java includes the adapter tests/installed
+artifact checks; owning scripts receive lint/format and independent verifier tests.
+The combined inventory records all Windows lock uses, plus an owning inventory
+covering 23 reused coordinates. Local distribution retains LICENSE/ECS-NOTICE.
+
+Root review found and fixed System/Data versus EventData/Data attribution, with a
+new literal regression. Independent recorded verification now validates every
+source signature, raw/event/result schema and input attribution, rejecting false
+unsupported/normalized classifications and incomplete result references. The
+strengthened verifier rechecked all 7,018 rows (361 supported/skipped, 6,657
+unsupported); a fresh runner/output check is recorded separately when complete.
+Trusted host binding provenance remains missing, not silently waived.
+
+The orchestrator renamed the completed child's branch to feat/p11-windows-adapters
+for the repository convention; the prepared worktree and implementation history
+are retained. Integrated validation passed: root check (124 Python tests), combined
+Java verification, Windows gate (34 Java tests including UUID case preservation,
+five independent verifier regressions, packaging/licenses and lint/format). A
+fresh 7,018-row atomic runner/verifier pass confirms 361 supported/skipped and
+6,657 unsupported records. The post-compatibility-fix recorded rerun is in progress
+with its frozen plan and ignored local logs; no recorded host identity is inferred.

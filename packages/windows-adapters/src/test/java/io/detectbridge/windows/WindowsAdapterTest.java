@@ -137,6 +137,24 @@ class WindowsAdapterTest {
     var e=adapt(base.replace("Alice", "x".repeat(65536)), "security", true).event(); assertEquals(65536,e.at("/user/name").asString().length());
     assertNotNull(adapt(base.replace("Alice", "😀".repeat(16384)), "security", true).event());
   }
+  @Test void systemDataCannotShadowEventDataFields() throws Exception {
+    String xml = fixture("security").replace("</System>", "<Data Name=\"NewProcessName\">system-only</Data></System>");
+    var event = adapt(xml, "security", true).event();
+    assertNotNull(event);
+    assertEquals("C:\\synthetic.exe", event.at("/process/executable").asString());
+    assertEquals("system-only", event.at("/source_fields/windows_system/values/Data").asString());
+    assertEquals("NewProcessName", event.at("/source_fields/windows_system/attributes/Data/Name").asString());
+  }
+  @Test void contractUuidCaseIsPreservedWithoutNormalization() throws Exception {
+    var r = raw(fixture("security"));
+    var c = context(r, "security", true);
+    String run = "ABCDEFAB-1234-4ABC-8DEF-ABCDEFABCDEF";
+    c.put("run_id", run);
+    var event = new WindowsAdapter().adapt(r, EvidenceResolver.local(temp), c).event();
+    assertEquals(run, event.at("/detectbridge/run_id").asString());
+    c.put("run_id", "a-1-4-8-1");
+    assertThrows(IllegalArgumentException.class, () -> new WindowsAdapter().adapt(r, EvidenceResolver.local(temp), c));
+  }
   @Test void contextTamperRejectedBeforeParsing() throws Exception {
     var r=raw(fixture("security")); var c=context(r,"security",true);
     c.put("version","2.0.0"); assertThrows(IllegalArgumentException.class,()->new WindowsAdapter().adapt(r,EvidenceResolver.local(temp),c));

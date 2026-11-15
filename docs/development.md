@@ -91,3 +91,19 @@ P10b adds `tools/detection.py --mapped build` and `--mapped verify` for the isol
 v2 runtime. Detection CI runs legacy and mapped qualification sequentially; the
 existing fail-closed aggregate still gates the same real detection component.
 See the [v2 detection guide](detection.md#p10-mapped-runtime).
+
+## Windows adapter verification
+
+`uv run --locked python tools/dev.py windows` builds/tests/packages the implemented
+Windows adapter library, validates installed profiles/licenses and dependency lock,
+runs independent verifier regressions and subsystem Ruff checks. `java` includes
+its Java tests/installed artifact checks; `check` includes source/mapping/inventory
+and classifier/gate tests plus subsystem lint/format. Mypy continues covering tools;
+no blanket typing or runtime/performance claim is made.
+
+The real `windows-verification` AMD64 job uses the same command and is selected by
+Windows, shared event/detection contracts, compiler/evaluator/transport validation,
+Gradle/toolchain and shared CI changes. The fail-closed aggregator requires it when
+applicable and rejects unexpected skip/cancellation. Ordinary checks use original
+synthetic bytes and never download telemetry. Recorded qualification is opt-in
+against the reviewed local dataset cache; see [the guide](windows-adapters.md).

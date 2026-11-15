@@ -176,3 +176,8 @@ P10b implements source-only candidate indexing with an exhaustive reference and 
 separate v2 detection deployment in [design notes](p10b-design.md). P09 topics and
 checkpoint bindings remain independent. The [adapter boundary](source-adapter-interface.md)
 specifies P11/P12 obligations without claiming parser implementation.
+
+P11 implements the bounded Windows source adapter boundary from A02/A03 in
+[owning design notes](p11-design.md), using module-local JSON context APIs and
+unchanged P03 schemas. This is an offline library/runner, not the P13 production
+pipeline. Recorded inputs without trusted host bindings remain skipped.

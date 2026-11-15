@@ -82,7 +82,7 @@ final class WindowsXml extends DefaultHandler {
   @Override public void endElement(String uri, String local, String qName) throws SAXException {
     if (scalar != null) {
       String value = scalar.toString(); limit(value);
-      if (local.equals("Data")) data.put(field, value); else system.put(local, value);
+      if (String.join("/", path).equals("Event/EventData/Data")) data.put(field, value); else system.put(local, value);
       scalar = null;
     }
     path.removeLast();

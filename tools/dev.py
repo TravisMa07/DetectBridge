@@ -202,11 +202,14 @@ def check():
     run(["uv", "run", "--locked", "python", "tools/check_stack.py"])
     run(["uv", "run", "--locked", "python", "tools/check_transport.py"])
     run(["uv", "run", "--locked", "python", "tools/check_writer.py"])
+    run(["uv", "run", "--locked", "python", "tools/check_windows.py"])
     run(["uv", "run", "--locked", "python", "tools/dependency_inventory.py"])
     run(["uv", "run", "--locked", "python", "tools/check_repo.py"])
     run(["uv", "run", "--locked", "ruff", "check", "tools"])
     run(["uv", "run", "--locked", "ruff", "format", "--check", "tools"])
     run(["uv", "run", "--locked", "mypy"])
+    run(["uv", "run", "--locked", "ruff", "check", "packages/windows-adapters"])
+    run(["uv", "run", "--locked", "ruff", "format", "--check", "packages/windows-adapters"])
 
 
 def java():
@@ -223,12 +226,59 @@ def java():
             ":transport-writer:shadowJar",
             ":transport-publisher:shadowJar",
             ":transport-job:shadowJar",
+            ":windows-adapters:test",
+            ":windows-adapters:installDist",
         ]
     )
 
     run(["uv", "run", "--locked", "python", "tools/check_transport.py", "--artifacts"])
     run(["uv", "run", "--locked", "python", "tools/check_detection.py", "--java"])
     run(["uv", "run", "--locked", "python", "tools/check_writer.py", "--artifacts"])
+    run(["uv", "run", "--locked", "python", "tools/check_windows.py", "--artifacts"])
+    run(
+        [
+            "uv",
+            "run",
+            "--locked",
+            "python",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "packages/windows-adapters",
+            "-p",
+            "test_*.py",
+        ]
+    )
+
+
+def windows():
+    run(
+        [
+            ROOT / "gradlew",
+            "--console=plain",
+            ":windows-adapters:test",
+            ":windows-adapters:installDist",
+        ]
+    )
+    run(["uv", "run", "--locked", "python", "tools/check_windows.py", "--artifacts"])
+    run(
+        [
+            "uv",
+            "run",
+            "--locked",
+            "python",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "packages/windows-adapters",
+            "-p",
+            "test_*.py",
+        ]
+    )
+    run(["uv", "run", "--locked", "ruff", "check", "packages/windows-adapters"])
+    run(["uv", "run", "--locked", "ruff", "format", "--check", "packages/windows-adapters"])
 
 
 def smoke():
@@ -273,7 +323,7 @@ def smoke():
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "command", choices=["doctor", "bootstrap", "check", "smoke", "java", "verify"]
+        "command", choices=["doctor", "bootstrap", "check", "smoke", "java", "windows", "verify"]
     )
     args = parser.parse_args()
     try:

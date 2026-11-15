@@ -136,3 +136,24 @@ catalog capture identity nor metadata date can fill that gap. Preparation suppli
 no host binding, so recorded candidates cannot become eligible. Full recorded
 eligible qualification requires additional provenance-backed bindings; do not edit
 input contexts to invent them. Synthetic disabled-capture tests remain necessary.
+
+## Integrated developer and CI gate
+
+```sh
+uv run --locked python tools/dev.py windows
+uv run --locked python tools/dev.py check
+uv run --locked python tools/dev.py java
+```
+
+The Windows command runs the real Java tests, installDist packaging/profile/
+license checks, five independent verifier regressions and subsystem lint/format.
+CI uses the same command on AMD64, selected by owning/shared consumer changes and
+required by the fail-closed aggregate. This does not establish P13 streaming
+recovery or recorded eligible coverage. The distribution contains LICENSE and
+ECS-NOTICE alongside original dependency JARs.
+
+The independent recorded verifier checks the full source signature for every row,
+including preservation rows, raw/event/result contracts, exact reference hashes
+and complete input attribution. Supported records cannot count as unsupported,
+and unsupported source versions cannot count as normalized merely to satisfy
+aggregate totals. No host binding is invented to turn skipped into nonmatched.

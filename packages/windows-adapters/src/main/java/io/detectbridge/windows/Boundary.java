@@ -61,7 +61,7 @@ final class Boundary {
         Set.of("source_generation", "host_binding", "receipt"));
     check(c.path("version").asString().equals("1.0.0"), "context_version");
     text(c.get("run_id"));
-    check(UUID.fromString(c.get("run_id").asString()).toString().equals(c.get("run_id").asString()), "context_run");
+    check(UUID.fromString(c.get("run_id").asString()).toString().equalsIgnoreCase(c.get("run_id").asString()), "context_run");
     check(c.get("source").equals(raw.get("source")) && c.get("first_observed").equals(raw.get("first_observed")), "context_origin");
     keys(c.get("parser"), Set.of("id", "version"), Set.of());
     check(c.get("parser").equals(Json.MAPPER.valueToTree(Map.of("id", "windows-xml", "version", "1.0.0"))), "context_parser");

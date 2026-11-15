@@ -138,3 +138,15 @@ Java 17 runtime image. HTTP/TLS uses JDK APIs, with no new client SDK or image p
 The writer bundle retains combined license/notice material. The locked inventory
 includes its production/test/build configurations; the existing upstream-image
 finding and P21 remediation requirement remain in effect.
+
+## Windows source adapters
+
+P11 adds module uses of 23 already reviewed Maven coordinates, without new
+dependencies or changes to the upstream image disposition. The
+[Windows inventory](docs/windows-dependencies.json) pins its lock and reviewed
+coordinate set; the combined transport inventory records those module uses.
+The local application distribution retains original dependency JARs/notices, the
+project LICENSE and the applicable ECS notice. No recorded Windows telemetry or
+additional upstream rule content is redistributed. Synthetic source cases remain
+original Apache-2.0 fixtures; recorded qualification uses the existing reviewed
+P04 cache under its unchanged provenance and terms.

@@ -9,6 +9,11 @@ from collections import Counter
 from itertools import zip_longest
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "tools"))
+from check_contracts import ContractValidator  # noqa: E402
+from detection_mapping import require_schema, validate_profiles  # noqa: E402
+
 
 def require(condition):
     if not condition:
@@ -17,6 +22,9 @@ def require(condition):
 
 def qualify(input_path, output_path, plan_path, expected_counts=None, objects=None):
     plan = json.loads(plan_path.read_bytes())
+    require_schema("plan", plan)
+    validate_profiles(plan["mapping_profiles"], plan["sources"])
+    validator = ContractValidator()
 
     def canonical(v):
         return json.dumps(v, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
@@ -70,8 +78,38 @@ def qualify(input_path, output_path, plan_path, expected_counts=None, objects=No
             raw, context = expected["raw"], expected["context"]
             require("host_binding" not in context)
             require(("event" in actual) != ("preservation" in actual))
+            require(not validator.validate("raw-record", raw))
+            original_xml = ET.fromstring(evidence(raw))
+            ns = "{http://schemas.microsoft.com/win/2004/08/events/event}"
+            system = original_xml.find(ns + "System")
+            require(system is not None)
+            family = context["source_contract"]["id"]
+            signatures = {
+                "windows-security-4688-xml": (
+                    "Microsoft-Windows-Security-Auditing",
+                    "Security",
+                    "4688",
+                    "2",
+                ),
+                "windows-sysmon-process-xml": (
+                    "Microsoft-Windows-Sysmon",
+                    "Microsoft-Windows-Sysmon/Operational",
+                    "1",
+                    "5",
+                ),
+            }
+            require(family in signatures)
+            signature = (
+                system.find(ns + "Provider").attrib.get("Name"),
+                system.findtext(ns + "Channel"),
+                system.findtext(ns + "EventID"),
+                system.findtext(ns + "Version"),
+            )
+            supported = signature == signatures[family]
             counts["records"] += 1
             if "preservation" in actual:
+                require(not supported)
+                require(set(actual) == {"version", "raw", "context", "preservation"})
                 diagnostic = actual["preservation"]
                 require(
                     diagnostic
@@ -88,12 +126,19 @@ def qualify(input_path, output_path, plan_path, expected_counts=None, objects=No
                 require("evaluation" not in actual)
                 counts["unsupported"] += 1
             else:
-                original_xml = ET.fromstring(evidence(raw))
-                ns = "{http://schemas.microsoft.com/win/2004/08/events/event}"
+                require(supported)
+                require(set(actual) == {"version", "raw", "context", "event", "evaluation"})
                 fields = {
                     d.attrib["Name"]: d.text or "" for d in original_xml.find(ns + "EventData")
                 }
                 event = actual["event"]
+                require(
+                    not validator.validate(
+                        "normalized-event",
+                        event,
+                        source_contract=context["source_contract"]["snapshot"],
+                    )
+                )
                 security = context["source_contract"]["id"] == "windows-security-4688-xml"
                 require(event["event"]["code"] == ("4688" if security else "1"))
                 require(
@@ -163,6 +208,20 @@ def qualify(input_path, output_path, plan_path, expected_counts=None, objects=No
                     )
                 )
                 evaluation = actual["evaluation"]
+                require_schema("result", evaluation)
+                require(
+                    evaluation["input"]
+                    == dict(
+                        cluster_id="offline",
+                        topic_id="offline",
+                        topic="windows-offline",
+                        partition=0,
+                        offset=index,
+                        value_sha256=hashlib.sha256(
+                            json.dumps(event, ensure_ascii=False, separators=(",", ":")).encode()
+                        ).hexdigest(),
+                    )
+                )
                 require(
                     evaluation["version"] == "2.0.0"
                     and evaluation["event_id"] == event["event"]["id"]

@@ -5,7 +5,9 @@ local replay, a checkpointed Kafka/Flink transport job and a separate OpenSearch
 metadata writer and synthetic compiler/evaluator slice. See the
 [transport guide](docs/transport.md) for build and runtime commands. Detection
 includes bounded normalized-fixture semantics/runtime checks; production adapters
-and integrated detection remain future work.
+and integrated detection remain future work. The bounded Windows adapter library
+is implemented for review; see [its guide](docs/windows-adapters.md) and run
+`uv run --locked python tools/dev.py windows` for the real subsystem gate.
 
 ## Workflow
 

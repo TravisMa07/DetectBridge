@@ -79,3 +79,24 @@ Tests must assert these literals, never obtain expectations by running evaluator
 Recorded inventory must independently rehash and count each supported signature;
 361 candidates are not 361 eligible events. No trusted recorded host binding is
 assumed. Heavy Docker qualification belongs to orchestrator.
+
+## Orchestrator integration and review
+
+The real Windows gate is wired into developer commands, CI applicability and the
+fail-closed required-checks aggregator. Shared event/detection contracts and
+compiler/evaluator validation changes select this consumer. The module's 23 reused
+Maven coordinates are reconciled with the combined inventory and owning lock;
+no new dependency/image pin or advisory-remediation claim is made.
+
+Review corrected System/Data versus EventData/Data attribution: unknown System
+metadata must not shadow EventData extraction or create a null vendor-field key.
+The regression retains the opaque System value and the original process image.
+Independent recorded verification now checks source signatures and schemas for
+every original row, not only totals or normalized rows. Verifier regressions
+reject supported-as-unsupported, unsupported-as-normalized and incomplete result
+references. Full recorded eligible coverage remains blocked on trusted host
+binding provenance; implementation is not acceptance of that missing evidence.
+
+The context boundary accepts upper/lowercase canonical-width UUID spelling, as
+P03's UUID format permits, preserving the caller's exact run string. It still
+rejects abbreviated UUID spellings; no silent ID normalization is introduced.

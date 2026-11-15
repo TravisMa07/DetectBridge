@@ -103,4 +103,45 @@ Original files and notices must remain accessible by their recorded hashes.
 
 The new offline mode emits result 2.0.0. P09's deployed job rejects v2 plans to
 protect its v1 result topic; keep its existing commands/projects/checkpoints.
-P10b must provide separately versioned deployment and recovery evidence.
+P10b provides the separate runtime below; exact-head evidence is recorded in its
+PR and ledger.
+
+## P10 mapped runtime
+
+P10b evaluates v2 plans through a loader-built source index, preserving serialized
+rule order and the shared operation budget. `Evaluate` accepts `--exhaustive` as a
+third argument for complete-result comparison. The regression suite checks both
+paths against independent expectations; no field-presence pruning is performed.
+
+```sh
+uv run --locked python tools/detection.py --mapped build
+uv run --locked python tools/detection.py --mapped verify
+uv run --locked python tools/detection.py --mapped --project detectbridge-p10-dev init
+uv run --locked python tools/detection.py --mapped --project detectbridge-p10-dev start
+uv run --locked python tools/detection.py --mapped --project detectbridge-p10-dev status
+uv run --locked python tools/detection.py --mapped --project detectbridge-p10-dev stop
+```
+
+Mapped projects must start `detectbridge-p10-`; legacy projects remain
+`detectbridge-p09-`. Mapped mode uses separate `.cache/detection-v2-{build,runtime,reports}`
+folders and `detectbridge.detection.{input,results,quarantine}.v2` topics. Inputs
+remain P03 normalized contract 1.0.0; results are 2.0.0 and quarantine references
+retain their 1.0.0 shape. Explicit Java mapped entrypoints reject legacy plans.
+The legacy job retains its existing v1 topic and plan restrictions.
+
+Use the same `start --restore file:///state/checkpoints/...` or deliberate
+`start --from-beginning` options with `--mapped`. Restore binds actual evaluator,
+selector policy, complete bundle, cluster, consumer group and topic identities.
+Cross-mode adoption, changed binding and unknown checkpoint ownership fail. No
+state migration is promised. Keep frozen build inputs alongside runtime metadata
+for qualification attribution; don't replace them with a later fixture plan.
+
+Mapped qualification covers all six outcomes, two baseline replay runs plus five
+isolated synthetic diagnostic cases, TaskManager recovery, unavailable quarantine
+sink, explicit checkpoint restore, actual changed-group restore rejection,
+JobManager restore, metrics and value-free logs. Every accepted input must remain
+accounted for with its original location/hash and independently expected identity,
+match metadata and diagnostics. Retain original input topics while output/quarantine
+references depend on them. Heavy legacy/mapped qualification runs are sequential.
+No recorded source eligibility, production detection, archive or throughput claim
+follows. Independent owner semantic acceptance remains pending.

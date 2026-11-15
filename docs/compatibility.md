@@ -1,6 +1,6 @@
 # Compiler compatibility matrix
 
-Scope: P09 legacy semantic mode and P10a source-mapped mode. All executable cases
+Scope: P09 legacy semantic mode and P10 source-mapped mode. All executable cases
 are original synthetic material; no broad SigmaHQ corpus coverage rate is claimed.
 See [P10 design](p10-design.md) for provenance, quality precedence and limitations.
 
@@ -22,7 +22,7 @@ See [P10 design](p10-design.md) for provenance, quality precedence and limitatio
 | Required alias unsupported by source | Rule/source configuration_blocked, even within OR | P10 unsupported/OR cases |
 | Known mismatching logsource | Inapplicable before capability/quality | P10 source-before-capability case |
 | Unknown source / insufficient event quality | Configuration-blocked / quality-skipped, distinct | P10 mapping cases; legacy fixture cases |
-| Optimized source selection | Planned P10b; P10a scans all rules | Not claimed by P10a |
+| Optimized source selection | P10b loader-built source index; exhaustive reference retained | `SelectionTest`; mapped YAML-to-Java equivalence cases |
 | Production Windows/Linux parsing | Planned P11/P12 | Not claimed by normalized synthetic cases |
 
 Legacy independent cases and rationales:

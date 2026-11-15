@@ -11,6 +11,7 @@ import tools.jackson.databind.node.ObjectNode;
 
 /** Immutable compiled bundle. Per-event budget is local; no Python or dynamic code. */
 public final class Evaluator {
+  public static final String SELECTION_VERSION = "source-index/1.0.0";
   public static final String VERSION = "detectbridge-java/1.0.0";
   public static final List<String> OUTCOMES =
       List.of(
@@ -39,6 +40,8 @@ public final class Evaluator {
   private final JsonNode plan;
   private final MappingProfiles mappings;
   private final boolean mapped;
+  private record Selection(List<JsonNode> rules, Set<String> blocked, int inapplicable) {}
+  private final Map<String, Selection> selections = new HashMap<>();
   private final Map<String, JsonNode> sources = new HashMap<>();
 
   public Evaluator(byte[] bytes) {
@@ -75,6 +78,23 @@ public final class Evaluator {
         check(count <= 4096 && total <= 65536, "node_limit");
       }
       mappings = mapped ? new MappingProfiles(plan, sources) : null;
+      if (mapped) {
+        for (var entry : sources.entrySet()) {
+          List<JsonNode> candidates = new ArrayList<>();
+          Set<String> blocked = new HashSet<>();
+          int inapplicable = 0;
+          for (var rule : plan.get("rules")) {
+            boolean applicable = true;
+            for (var dimension : rule.get("logsource").properties())
+              if (!entry.getValue().get("sigma").path(dimension.getKey()).equals(dimension.getValue()))
+                applicable = false;
+            if (!applicable) { inapplicable++; continue; }
+            candidates.add(rule);
+            if (mappings.blocked(entry.getValue(), rule)) blocked.add(rule.get("id").asString());
+          }
+          selections.put(entry.getKey(), new Selection(List.copyOf(candidates), Set.copyOf(blocked), inapplicable));
+        }
+      }
     } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException("invalid_bundle");
     } catch (Exception e) {
@@ -84,6 +104,14 @@ public final class Evaluator {
 
   public void requireLegacyDeployment() {
     check(!mapped, "versioned_detection_deployment_required");
+  }
+
+  public void requireMappedDeployment() {
+    check(mapped, "mapped_plan_required");
+  }
+
+  public String semanticVersion() {
+    return plan.get("evaluator").asString();
   }
 
   public String bundle() {
@@ -119,7 +147,9 @@ public final class Evaluator {
   }
 
   static final class Budget {
-    int left = 1_000_000;
+    int left;
+    Budget() { this(1_000_000); }
+    Budget(int limit) { check(limit >= 0 && limit <= 1_000_000, "evaluation_budget_limit"); left = limit; }
 
     void tick() {
       if (--left < 0) throw new IllegalArgumentException("evaluation_budget");
@@ -184,6 +214,14 @@ public final class Evaluator {
   }
 
   public JsonNode evaluate(byte[] bytes, Map<String, Object> location) {
+    return evaluate(bytes, location, true, 1_000_000);
+  }
+
+  public JsonNode evaluateExhaustive(byte[] bytes, Map<String, Object> location) {
+    return evaluate(bytes, location, false, 1_000_000);
+  }
+
+  JsonNode evaluate(byte[] bytes, Map<String, Object> location, boolean indexed, int limit) {
     JsonNode event = Json.read(bytes),
         db = event.path("detectbridge"),
         sc = db.path("source_contract");
@@ -192,11 +230,22 @@ public final class Evaluator {
     Map<String, Integer> counts = new LinkedHashMap<>();
     OUTCOMES.forEach(k -> counts.put(k, 0));
     List<Object> matched = new ArrayList<>(), diagnostics = new ArrayList<>();
-    Budget budget = new Budget();
-    for (var rule : plan.get("rules")) {
+    Budget budget = new Budget(limit);
+    Selection selection = indexed && mapped && source != null
+        ? selections.get(sc.get("id").asString() + "/" + sc.get("version").asString()) : null;
+    Iterable<JsonNode> candidates = selection == null ? plan.get("rules") : selection.rules();
+    if (selection != null) counts.put("inapplicable", selection.inapplicable());
+    for (var rule : candidates) {
       String outcome;
       if (source == null) outcome = "configuration_blocked";
-      else {
+      else if (selection != null) {
+        if (selection.blocked().contains(rule.get("id").asString())) outcome = "configuration_blocked";
+        else if (!db.get("quality").get("eligibility").asString().equals("eligible"))
+          outcome = "quality_skipped";
+        else try {
+          outcome = matches(rule.get("expression"), event, budget) ? "matched" : "unmatched";
+        } catch (IllegalArgumentException e) { outcome = "evaluation_error"; }
+      } else {
         boolean applicable = true;
         for (var p : rule.get("logsource").properties())
           if (!source.get("sigma").path(p.getKey()).equals(p.getValue())) applicable = false;

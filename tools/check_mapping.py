@@ -35,6 +35,72 @@ def prepare_mapped():
     path = ROOT / ".cache/detection/mapped-plan.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(encoded(plan) + b"\n")
+    selection = compile_rules(
+        sorted((FIXTURES / "rules").glob("*.yml")),
+        sources,
+        mappings=profiles,
+        provenance=load_json(FIXTURES / "selection-candidates.json"),
+    )
+    (ROOT / ".cache/detection/selection-plan.json").write_bytes(encoded(selection) + b"\n")
+
+
+def evaluate_pair(jar, folder):
+    command = [
+        str(ROOT / ".cache/jdk/bin/java"),
+        "-jar",
+        str(jar),
+        str(folder / "plan.json"),
+        str(folder / "event.json"),
+    ]
+    selected = subprocess.run(command, capture_output=True, timeout=30)
+    exhaustive = subprocess.run([*command, "--exhaustive"], capture_output=True, timeout=30)
+    if selected.returncode != exhaustive.returncode or (
+        selected.returncode == 0 and json.loads(selected.stdout) != json.loads(exhaustive.stdout)
+    ):
+        raise ValueError("selection_exhaustive_disagreement")
+    return selected
+
+
+def derived_provenance(rule_path, identity, name):
+    candidate = copy.deepcopy(load_json(FIXTURES / "candidates.json")[0])
+    candidate["rule_id"] = identity
+    candidate["revision"] = sha(rule_path.read_bytes())
+    candidate["modifications"] = [
+        {
+            "input_sha256": candidate["original_sha256"],
+            "output_sha256": candidate["revision"],
+            "description": "Original synthetic semantic case: " + name,
+        }
+    ]
+    return candidate
+
+
+def synthetic_semantic_source():
+    # Explicit invented capability profile for predicate regression only; no parser claim.
+    source = load_json(ROOT / "contracts/v1/examples/windows-security-4688.source.json")
+    source["id"] = "p10-synthetic-semantics"
+    source["formats"] = ["Original synthetic normalized semantic fixtures"]
+    source["provider_versions"] = ["Original fixture scope only; no source adapter"]
+    profile = load_json(FIXTURES / "windows-security-4688.mapping.json")
+    profile["id"] = "p10-synthetic-semantics-mapping"
+    for field in profile["fields"]:
+        if field["capability"] == "unsupported":
+            field["capability"] = "available"
+            field["source_path"] = "/Synthetic" + field["alias"]
+            source["mappings"].append(
+                {
+                    "source_path": field["source_path"],
+                    "target_path": field["target"],
+                    "capability": "available",
+                }
+            )
+    profile["source"] = {
+        "id": source["id"],
+        "version": source["version"],
+        "sha256": sha(encoded(source)),
+    }
+    profile["sha256"] = content_hash(profile)
+    return source, profile
 
 
 def check_mapped(jar):
@@ -63,15 +129,7 @@ def check_mapped(jar):
             }
             rule_path = folder / "rule.yml"
             rule_path.write_text(yaml.safe_dump(rule))
-            candidate = copy.deepcopy(load_json(FIXTURES / "candidates.json")[0])
-            candidate["revision"] = sha(rule_path.read_bytes())
-            candidate["modifications"] = [
-                {
-                    "input_sha256": candidate["original_sha256"],
-                    "output_sha256": candidate["revision"],
-                    "description": "Original synthetic semantic case: " + case["name"],
-                }
-            ]
+            candidate = derived_provenance(rule_path, rule["id"], case["name"])
             plan = compile_rules([rule_path], [source], mappings=[profile], provenance=[candidate])
             (folder / "plan.json").write_bytes(encoded(plan))
             event = load_json(ROOT / "contracts/detection/v1/fixtures/positive.event.json")
@@ -88,17 +146,7 @@ def check_mapped(jar):
                     {"code": "capture_unavailable", "field": "/process/command_line"}
                 )
             (folder / "event.json").write_bytes(encoded(event))
-            result = subprocess.run(
-                [
-                    str(ROOT / ".cache/jdk/bin/java"),
-                    "-jar",
-                    str(jar),
-                    str(folder / "plan.json"),
-                    str(folder / "event.json"),
-                ],
-                capture_output=True,
-                timeout=30,
-            )
+            result = evaluate_pair(jar, folder)
             if case["expected"] == "invalid":
                 valid = result.returncode != 0
             else:

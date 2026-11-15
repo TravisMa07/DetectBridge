@@ -86,3 +86,8 @@ checks the same evaluator through independent YAML-to-Java cases. Run
 `uv run --locked python tools/detection.py build` then
 `uv run --locked python tools/detection.py verify` for isolated Kafka/Flink
 qualification. See [the detection guide](detection.md).
+
+P10b adds `tools/detection.py --mapped build` and `--mapped verify` for the isolated
+v2 runtime. Detection CI runs legacy and mapped qualification sequentially; the
+existing fail-closed aggregate still gates the same real detection component.
+See the [v2 detection guide](detection.md#p10-mapped-runtime).

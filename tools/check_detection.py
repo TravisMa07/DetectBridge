@@ -9,7 +9,13 @@ from pathlib import Path
 
 import yaml
 from check_contracts import load_json
-from check_mapping import check_mapped, prepare_mapped
+from check_mapping import (
+    check_mapped,
+    derived_provenance,
+    evaluate_pair,
+    prepare_mapped,
+    synthetic_semantic_source,
+)
 from detection import FIXTURES, ROOT
 from detection_compile import DIRECTORY, compile_rules, encoded
 from jsonschema import Draft202012Validator
@@ -84,7 +90,29 @@ def check(java=False):
                     raise ValueError("expected_rejection_" + case["name"])
             elif result.returncode or json.loads(result.stdout)["counts"][case["expected"]] != 1:
                 raise ValueError("semantic_failure_" + case["name"])
-    print(f"PASS: {len(cases)} independent YAML-to-Java semantic cases")
+            mapped_source, profile = synthetic_semantic_source()
+            plan = compile_rules(
+                [rule_path],
+                [mapped_source],
+                mappings=[profile],
+                provenance=[derived_provenance(rule_path, rule["id"], case["name"])],
+            )
+            (folder / "plan.json").write_bytes(encoded(plan))
+            event["detectbridge"]["source_contract"]["id"] = mapped_source["id"]
+            (folder / "event.json").write_bytes(encoded(event))
+            mapped = evaluate_pair(jar, folder)
+            if case["expected"] == "invalid":
+                valid = mapped.returncode != 0
+            else:
+                valid = (
+                    mapped.returncode == 0
+                    and json.loads(mapped.stdout)["counts"][case["expected"]] == 1
+                )
+            if not valid:
+                raise ValueError("mapped_semantic_failure_" + case["name"])
+    print(
+        f"PASS: {len(cases)} legacy plus {len(cases)} mapped independent YAML-to-Java cases; mapped exhaustive equivalence"
+    )
     check_mapped(jar)
 
 

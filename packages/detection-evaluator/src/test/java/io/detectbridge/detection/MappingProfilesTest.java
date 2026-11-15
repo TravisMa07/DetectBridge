@@ -30,6 +30,8 @@ class MappingProfilesTest {
       if (filename.equals("mapped-plan.json"))
         assertThrows(IllegalArgumentException.class, evaluator::requireLegacyDeployment);
       else assertDoesNotThrow(evaluator::requireLegacyDeployment);
+      if (filename.equals("mapped-plan.json")) assertDoesNotThrow(evaluator::requireMappedDeployment);
+      else assertThrows(IllegalArgumentException.class, evaluator::requireMappedDeployment);
       JsonNode result = evaluator.evaluate(event, EvaluatorTest.location(event));
       boolean mapped = filename.equals("mapped-plan.json");
       assertEquals(mapped ? "2.0.0" : "1.0.0", result.get("version").asString());

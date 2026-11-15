@@ -1,8 +1,8 @@
 # Delivery roadmap and decision ownership
 
 P01–P09 are merged. P09 merged-main AMD64 qualification passed; independent
-semantic expectation review remains pending. P10a is implemented for review; P10b
-and subsequent deliverables remain planned. See the [implementation ledger](implementation-ledger.md).
+semantic expectation review remains pending. P10a is merged. P10b selection/runtime is implemented for review;
+subsequent deliverables remain planned. See the [implementation ledger](implementation-ledger.md).
 P numbers are planning IDs, not GitHub PR numbers. Milestones require their
 acceptance evidence and authorized merges; documentation alone does not complete
 a milestone.
@@ -139,9 +139,10 @@ No application scaffolding, runtime capability claims or release tag.
 
 ### P10 — Compatibility matrix and mapping coverage
 
-- Local status: P10a mapping/provenance contracts and offline v2 reader implemented
-  for review. P10b selection equivalence, runtime qualification and complete
-  semantic acceptance remain pending. See [design notes](p10-design.md).
+- Local status: P10a merged; P10b source selection, exhaustive equivalence and
+  isolated v2 runtime implemented for review. Exact-head qualification is recorded
+  in the ledger/owning PR; independent owner semantic acceptance remains pending.
+  See [design notes](p10b-design.md).
 
 - Depends on: P04, P09.
 - Deliver: supported-feature matrix, semantic regressions, mapping validation and

@@ -41,6 +41,15 @@ missing diagnostic-handler import was also corrected. That failed exploratory
 run is not qualification evidence. Preliminary images/configurations are not
 accepted compatibility baselines.
 
+The first full ARM64 attempt at 91e309a reached selective sink faults after the
+recovery/replay phases, then correctly failed: min.insync.replicas=2 did not reject
+writes in this single-broker setup. A focused probe confirmed both outputs were
+acknowledged; no speculative broker-internal cause is asserted. Qualification now
+requires actual RecordTooLarge producer failure using read-back-verified per-topic
+max.message.bytes=1, plus a separate actual broker pause. Healthy policy is restored
+explicitly before checkpoint recovery. No assertion or required gate was weakened.
+The failed attempt is not accepted qualification.
+
 ## Verification so far
 
 Prepared/model/serializer/evidence tests, owning artifact checks, new Python

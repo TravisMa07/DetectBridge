@@ -53,7 +53,7 @@ public final class AssemblyBroker {
     p.put("bootstrap.servers", bootstrap);
     p.put("request.timeout.ms", "10000");
     p.put("default.api.timeout.ms", "15000");
-    p.put("client.id", "detectbridge-detection-v1");
+    p.put("client.id", "detectbridge-assembly-v1");
     return p;
   }
 

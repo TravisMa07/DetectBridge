@@ -107,8 +107,8 @@ public final class AssemblyPublisher {
     emit(Map.of("type", "end"));
   }
 
-  private static void quarantineIsr(String bootstrap, String value, String topic) throws Exception {
-    if (!List.of("1", "2").contains(value))
+  private static void sinkPolicy(String bootstrap, String value, String topic) throws Exception {
+    if (!List.of("1", "2097152").contains(value))
       throw new IllegalArgumentException("invalid_fault_policy");
     try (var admin =
         org.apache.kafka.clients.admin.Admin.create(AssemblyBroker.properties(bootstrap))) {
@@ -117,7 +117,7 @@ public final class AssemblyPublisher {
               org.apache.kafka.common.config.ConfigResource.Type.TOPIC, topic);
       var change =
           new org.apache.kafka.clients.admin.AlterConfigOp(
-              new org.apache.kafka.clients.admin.ConfigEntry("min.insync.replicas", value),
+              new org.apache.kafka.clients.admin.ConfigEntry("max.message.bytes", value),
               org.apache.kafka.clients.admin.AlterConfigOp.OpType.SET);
       admin
           .incrementalAlterConfigs(Map.of(resource, List.of(change)))
@@ -129,7 +129,7 @@ public final class AssemblyPublisher {
               .all()
               .get(15, TimeUnit.SECONDS)
               .get(resource)
-              .get("min.insync.replicas")
+              .get("max.message.bytes")
               .value();
       Contracts.check(value.equals(actual), "fault_policy_readback_mismatch");
       emit(Map.of("status", "configured"));
@@ -143,7 +143,7 @@ public final class AssemblyPublisher {
   static void execute(String[] args) {
     try {
       switch (args[1]) {
-        case "isr" -> { Contracts.check(AssemblyBroker.ROUTES.containsValue(args[2]), "fault_topic_scope"); quarantineIsr(args[0], args[3], args[2]); }
+        case "sink-policy" -> { Contracts.check(AssemblyBroker.ROUTES.containsValue(args[2]), "fault_topic_scope"); sinkPolicy(args[0], args[3], args[2]); }
         case "init", "describe" ->
             emit(
                 AssemblyBroker.describe(

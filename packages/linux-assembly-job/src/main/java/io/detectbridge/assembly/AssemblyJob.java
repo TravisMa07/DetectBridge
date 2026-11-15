@@ -76,9 +76,10 @@ public final class AssemblyJob {
     private transient ListState<byte[]> checkpointState;
     private transient ScheduledFuture<?> timer;
     private transient boolean restored;
+    private transient long lastCompleted;
     public Operator(Configuration config){this.config=config;}
     @Override public void initializeState(StateInitializationContext context) throws Exception {
-      super.initializeState(context);
+      super.initializeState(context);lastCompleted=-1;
       var failures=getMetricGroup().addGroup("detectbridge_assembly").counter("restore_failures");
       try {
       AssemblyBroker.verifyIdentities(config.bootstrap,config.cluster,config.ids);
@@ -122,11 +123,14 @@ public final class AssemblyJob {
         try(var files=Files.list(directory)) {
           var old=files.filter(p->p.getFileName().toString().matches("checkpoint-[0-9]+\\.json"))
               .sorted(Comparator.comparingLong(p->Long.parseLong(p.getFileName().toString().replace("checkpoint-","").replace(".json","")))).toList();
-          for(int i=0;i<old.size()-4;i++)Files.deleteIfExists(old.get(i));
+          for(int i=0;i<old.size()-4;i++) {
+            long candidate=Long.parseLong(old.get(i).getFileName().toString().replace("checkpoint-","").replace(".json",""));
+            if(candidate!=lastCompleted)Files.deleteIfExists(old.get(i));
+          }
         }
       } finally {Files.deleteIfExists(temp);}
     }
-    @Override public void notifyCheckpointComplete(long id) throws Exception {super.notifyCheckpointComplete(id);machine.complete(id,this::emit);machine.pump();}
+    @Override public void notifyCheckpointComplete(long id) throws Exception {super.notifyCheckpointComplete(id);lastCompleted=id;machine.complete(id,this::emit);machine.pump();}
     @Override public void notifyCheckpointAborted(long id) throws Exception {super.notifyCheckpointAborted(id);machine.abort(id);}
     @Override public void close() throws Exception {if(timer!=null)timer.cancel(false);super.close();}
   }

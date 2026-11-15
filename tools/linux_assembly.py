@@ -300,7 +300,10 @@ class Assembly(Detection):
         return result
 
     def fault(self, kind, value):
-        self.helper_run(self.process_args("isr", ROUTES[kind], value), timeout=90)
+        self.helper_run(
+            self.process_args("sink-policy", ROUTES[kind], "1" if value == "2" else "2097152"),
+            timeout=90,
+        )
 
 
 def runtime_binding(config):
@@ -464,7 +467,7 @@ def _qualify_default():
             source = cases()
             original = source["complete"]
 
-            def send(rows):
+            def retain(rows):
                 values = [
                     row if isinstance(row, bytes) or row is None else encoded(row) for row in rows
                 ]
@@ -492,6 +495,10 @@ def _qualify_default():
                         diagnostics=list(oracle.diagnostics.values()),
                     ),
                 )
+                return values
+
+            def send(rows):
+                values = retain(rows)
                 acks = test.inject_rows(values)
                 oracle.register(rows, acks)
                 return acks
@@ -612,6 +619,49 @@ def _qualify_default():
             oracle.diagnostic(late_restored, "late_evidence", timed)
             send([late_restored])
             wait_outputs(test, oracle)
+            stage("broker_unavailability_and_retained_deadline")
+            paused_row = record(audit(PARTS[0], "60"), 700, context(run=run3))
+            paused_group = oracle.group([paused_row], "timeout", ["cwd_missing"])
+            paused_ack = send([paused_row])
+            test.wait_input_checkpoint(paused_ack[-1]["offset"])
+            before_pause = test.wait_checkpoint(job["job_id"])
+            paused_inventory = checkpoint_inventory(test, before_pause)
+            require(
+                any(
+                    g["members"][0]["record_id"] == paused_row["raw"]["record_id"]
+                    for g in paused_inventory["groups"]
+                )
+            )
+            test.pause_broker(True)
+            try:
+                # Exceed the original admission deadline while Kafka is actually unavailable.
+                time.sleep(40)
+                latest = test.rest("/jobs/" + job["job_id"] + "/checkpoints")["latest"]["completed"]
+                # A racing pre-pause checkpoint may complete, but cannot retire the timed closure.
+                during_pause = checkpoint_inventory(test, latest)
+                require(
+                    any(
+                        g["members"][0]["record_id"] == paused_row["raw"]["record_id"]
+                        for g in during_pause["groups"]
+                    )
+                    or any(
+                        i["kind"] == "manifest" and i["key"] == paused_group["manifest_id"]
+                        for i in during_pause["outbox"]
+                    )
+                )
+            finally:
+                test.pause_broker(False)
+            if test.rest("/jobs/" + job["job_id"])["state"] not in (
+                "FAILED",
+                "CANCELED",
+                "FINISHED",
+            ):
+                test.stop()
+            job = test.start(restore=latest["external_path"])
+            wait_outputs(test, oracle)
+            broker_evidence = dict(
+                checkpoint=latest["id"], paused_seconds=40, original_deadline_preserved=True
+            )
             stage("required_output_sink_failures")
             fault_evidence = []
             for number, kind in enumerate(ROUTES):
@@ -636,7 +686,7 @@ def _qualify_default():
                 # Hold only the selected required sink; a completed staging checkpoint must retain its blocked intent.
                 # Injection is first acknowledged by Kafka; original values remain in the dedicated input.
                 config = test.config()
-                value = row if isinstance(row, bytes) else encoded(row)
+                value = retain([row])[0]
                 test.fault(kind, "2")
                 try:
                     ipc = (
@@ -655,7 +705,8 @@ def _qualify_default():
                     ]
                     require(len(ack) == 1)
                     oracle.register([row], ack)
-                    cp = test.wait_quarantine_retry_limit(job["job_id"], timeout=180)
+                    wait_failure(test, job, "RecordTooLarge", timeout=180)
+                    cp = test.rest("/jobs/" + job["job_id"] + "/checkpoints")["latest"]["completed"]
                     evidence = checkpoint_inventory(test, cp)
                     require(any(intent["kind"] == kind for intent in evidence["outbox"]))
                     # The latest completed checkpoint durably retains the blocked output; retirement never completed.
@@ -683,6 +734,7 @@ def _qualify_default():
                 logical_groups=len(oracle.groups),
                 physical_outputs=len(outputs),
                 sink_failures=fault_evidence,
+                broker_unavailability=broker_evidence,
                 bundle=config["bundle"],
                 baseline_main_run=43750911904,
             )
@@ -713,6 +765,7 @@ def _qualify_default():
                         for marker in (
                             "incompatible_assembly_restore",
                             "NotEnoughReplicas",
+                            "RecordTooLarge",
                             "OutOfMemoryError",
                             "ClassNotFoundException",
                             "NoSuchMethodError",

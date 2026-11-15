@@ -100,10 +100,8 @@ public final class OpenSsh {
     while (pos < text.length() && text.charAt(pos) == '[') {
       int start = ++pos; pos = name(text, pos);
       check(ids.add(text.substring(start, pos)), "duplicate_sd_id");
-      Set<String> params = new HashSet<>();
       while (pos < text.length() && text.charAt(pos) == ' ') {
         start = ++pos; pos = name(text, pos);
-        check(params.add(text.substring(start, pos)), "duplicate_sd_param");
         check(text.startsWith("=\"", pos), "invalid_sd_param"); pos += 2;
         boolean closed = false;
         while (pos < text.length()) {
@@ -111,7 +109,8 @@ public final class OpenSsh {
           if (c == '"') { closed = true; break; }
           check(c != ']', "invalid_sd_escape");
           if (c == '\\') {
-            check(pos < text.length() && "\\\"]".indexOf(text.charAt(pos++)) >= 0, "invalid_sd_escape");
+            check(pos < text.length(), "invalid_sd_escape");
+            if ("\\\"]".indexOf(text.charAt(pos)) >= 0) pos++;
           }
         }
         check(closed, "unterminated_sd_param");

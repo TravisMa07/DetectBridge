@@ -32,8 +32,15 @@ class OpenSshTest {
     JsonNode e = adapt(text); assertEquals("alice", e.at("/user/name").asString());
     assertEquals("[capture@32473 name=\"a\\]b\"][x]", e.at("/source_fields/rfc5424/structured_data").asString());
     assertEquals("alice", adapt(auth("\ufeff" + ACCEPT)).at("/user/name").asString());
-    for (String sd : List.of("[x a=\"broken]", "[x a=\"bad\\q\"]", "[x][x]", "[x a=\"1\" a=\"2\"]", "[x a=\"bad]\"]"))
+    for (String sd : List.of("[x a=\"broken]", "[x][x]", "[x a=\"bad]\"]"))
       assertEquals("extraction_failed", adapt(auth(ACCEPT).replace(" 7 - - ", " 7 - " + sd + " ")).get("code").asString(), sd);
+  }
+  @Test void repeatedStructuredParametersAndUnknownEscapesRemainLiteral() throws Exception {
+    for (String sd : List.of("[x a=\"1\" a=\"2\"]", "[x a=\"bad\\q\"]")) {
+      JsonNode event = adapt(auth(ACCEPT).replace(" 7 - - ", " 7 - " + sd + " "));
+      assertEquals("eligible", event.at("/detectbridge/quality/eligibility").asString());
+      assertEquals(sd, event.at("/source_fields/rfc5424/structured_data").asString());
+    }
   }
   @Test void malformedHeaderPortIpAndTimestampStayInvalid() throws Exception {
     for (String text : List.of(auth(ACCEPT).replace("<38>", "<192>"), auth(ACCEPT).replace("<38>", "<038>"),

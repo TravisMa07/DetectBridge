@@ -150,3 +150,18 @@ project LICENSE and the applicable ECS notice. No recorded Windows telemetry or
 additional upstream rule content is redistributed. Synthetic source cases remain
 original Apache-2.0 fixtures; recorded qualification uses the existing reviewed
 P04 cache under its unchanged provenance and terms.
+
+P12a adds uses of the same 23 reviewed Maven coordinates, reconciled in
+`docs/linux-dependencies.json` and the combined inventory; no new artifact,
+verification checksum or fresh advisory remediation is claimed. The production
+jar and local distribution retain project LICENSE and ECS-NOTICE.
+
+The OpenSSH9 password lab recording uses a pinned Debian image and real local
+OpenSSH/rsyslog processes, not a downloaded third-party dataset. Package copyright
+notices, native output and framing configuration are retained locally and hashed
+in `catalog/recordings/openssh9-password-lab-v1.json`. The reviewed scope is local
+qualification of a disposable self-owned account on loopback. No third-party
+source/binary, credentials, private keys or recording payload enters Git. Public
+payload redistribution is not authorized by this local-use review and would need
+an explicit owner terms decision. This does not change existing public dataset
+terms or approved P04 acquisition entries.

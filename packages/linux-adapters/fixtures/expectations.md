@@ -52,3 +52,9 @@ original retained raw envelope, bound by its canonical hash. A descriptor larger
 than 2048 serialized bytes uses record ID/evidence hash/raw-envelope hash and
 retention=retained_raw, with no truncated cursor or invented URI. Thus 256 member
 descriptors fit below the 1 MiB manifest cap even for large original metadata.
+
+Orchestrator review correction against RFC5424 §6.3.3: repeated parameter names
+are valid, and an unknown backslash sequence is retained literally. Both preserve
+the exact structured-data string and keep otherwise valid auth eligible. Repeated
+SD-ID, unescaped closing bracket and unterminated parameters remain invalid. These
+expectations are grounded in the RFC, independent from parser output.

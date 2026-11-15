@@ -105,6 +105,7 @@ class StackTests(unittest.TestCase):
                             "detection": "false",
                             "writer": "false",
                             "windows": "false",
+                            "linux": "false",
                         },
                     },
                     "repository-hygiene": {"result": "success"},
@@ -116,6 +117,7 @@ class StackTests(unittest.TestCase):
                     "detection-verification": {"result": "skipped"},
                     "opensearch-writer-verification": {"result": "skipped"},
                     "windows-verification": {"result": "skipped"},
+                    "linux-verification": {"result": "skipped"},
                     "local-stack-verification": {
                         "result": "success" if selected == "true" else "skipped"
                     },

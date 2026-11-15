@@ -4,7 +4,7 @@
 
 - Base verified clean before editing:
   df3144822ddd5694b9244ae29eb4a3c9e2815376.
-- Branch: t3/linux-audit-assembly.
+- Original child branch: t3/linux-audit-assembly; now feat/p12a-linux-adapters.
 - Worktree: /Users/travisma/.t3/worktrees/DetectBridge/t3-0d1707c7-0b0f38be33ce0e0e.
 - Owner authorized dependent implementation after P10. No separate P10 semantic
   approval is invented; referenced merged-main CI was not polled/watched.
@@ -65,7 +65,7 @@ Pure-state round trips are not actual checkpoint recovery. No Docker/runtime,
 AMD64, performance, production integration or recorded eligible acceptance is
 claimed. No evidence payload, credentials or build artifacts are committed.
 
-## Blockers and next owner actions
+## Child handoff blockers (historical)
 
 The [shared handoff](p12-integration.md) enumerates concrete Gradle/dev/CI/gate,
 inventory and context/schema reconciliation requirements. No draft PR was opened
@@ -82,3 +82,54 @@ remain acceptance blockers; no synthetic data is substituted for recording.
 P12a acceptance remains incomplete. P12b was not started and requires a separately
 authorized P12a merge and main qualification. Full P12 and P13 remain blocked.
 No PR push, merge, release, archive or production pipeline occurred in this child.
+
+## Orchestrator integration and current status
+
+P12a is stacked above P11 PR #38 at 4f741c2 to serialize shared changes; this does
+not create a semantic Linux dependency on Windows. The original child commits were
+rebased with both Gradle module registrations retained. Source contracts/P03
+registry/version semantics remain unchanged. Context proposals now align on the
+P11 mapping wrapper and source-bound reviewed/synthetic host hash. Manifest scope
+references the same context shapes instead of duplicating stale definitions.
+
+Root java and a real classified/fail-closed linux-verification CI job select Linux
+tests, artifact/notice checks, verifier regressions and lint/format. The combined
+inventory includes all 23 existing reviewed Linux coordinates, with no new
+artifact/checksum or fresh advisory claim. An owning inventory records exact locks.
+
+Independent read-only review reproduced URI scheme case rejection and incorrect
+RFC5424 structured-data rejection (duplicate parameter names and unknown escapes).
+Both were corrected with boundary/literal regressions grounded in P03/RFC5424.
+Review found no further concrete assembly/state defect; owner completeness-policy
+and expectation review remains outstanding.
+
+The selected real authentication recording now exists: OpenSSH 9.2p1-2+deb12u10,
+rsyslog 8.2302.0-1+deb12u2, pinned Debian base and exact main packages, immutable
+local image ID and container generation. Real SSH client actions produced exactly
+one accepted and one failed password message. All 11 native/collector rows are
+retained, two normalize eligible, nine preserve unsupported. Both eligible records
+are true nonmatches for the separately authored auth-user rule selecting alice.
+Original synthetic tests separately prove matches and other outcome gates.
+Catalog metadata pins all original byte hashes, configuration, binary/package
+versions, Docker identity, acquisition time, collector transformation, local-use
+terms and independently specified per-record fields/outcomes. No payload, password,
+private key, image or binary was committed/published. Preliminary captures are
+superseded by `.cache/p12-auth-reviewed-v1`, never acceptance substitutes.
+
+An atomic bounded inline-only authentication replay runner feeds actual adapter
+output to P10. A separate verifier validates originals/framing, raw/context/event/
+preservation/result contracts, fields, identities/membership, frozen bundle and
+result attribution. Failed publication leaves prior output untouched. This is
+offline evidence, not checkpointed streaming or general audit replay.
+
+Local ARM64 verification passed: root check (127 Python regressions), combined Java
+and independent P10 semantic cases, Linux gate and three verifier regressions,
+subsystem lint/format, production jar/distribution resource and license checks.
+Logs remain ignored at `.cache/p12-integrated-check-final.log`,
+`.cache/p12-integrated-java.log`, `.cache/p12-integrated-linux-final.log`. Final
+recorded replay/frozen-plan results are recorded below.
+
+Outstanding: AMD64 CI, owner independent-expectation/completeness review, eligible
+recorded audit host/generation/completeness provenance, separately authorized P12a
+merge/main qualification and dependent P12b checkpoint qualification. P12 and P13
+remain incomplete. No merge/release, production wiring or throughput claim.

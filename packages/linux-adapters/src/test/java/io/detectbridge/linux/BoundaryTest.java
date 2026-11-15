@@ -32,6 +32,28 @@ class BoundaryTest {
     ObjectNode raw = (ObjectNode)original.raw(); raw.put("record_id", "sha256:" + "0".repeat(64));
     assertThrows(IllegalArgumentException.class, () -> Boundary.resolve(raw, original.context(), e -> original.bytes()));
   }
+  @Test void schemeCasePreservesEvidenceAndBindingHashesAreRequired() throws Exception {
+    var original = input(line("EOE"), 0, context(false));
+    for (String scheme : List.of("https", "HTTPS", "hTtPs", "s3", "S3", "file", "FILE")) {
+      ObjectNode raw = (ObjectNode)original.raw();
+      ObjectNode evidence = (ObjectNode)raw.get("evidence"); evidence.remove("inline");
+      String uri = scheme + "://evidence.example/object";
+      evidence.set("reference", Json.MAPPER.valueToTree(Map.of("uri", uri,
+          "object_sha256", evidence.get("sha256").asString())));
+      var resolved = Boundary.resolve(raw, original.context(), e -> original.bytes());
+      assertEquals(uri, resolved.raw().at("/evidence/reference/uri").asString());
+    }
+    for (String change : List.of("source", "hash", "kind", "mapping_declaration")) {
+      ObjectNode c = (ObjectNode)original.context();
+      switch(change) {
+        case "source" -> ((ObjectNode)c.at("/host_binding/source")).put("instance", "wrong");
+        case "hash" -> ((ObjectNode)c.get("host_binding")).put("sha256", "0".repeat(64));
+        case "kind" -> ((ObjectNode)c.get("host_binding")).put("kind", "invented");
+        case "mapping_declaration" -> ((ObjectNode)c.at("/mapping_profile/declaration")).put("id", "wrong");
+      }
+      assertThrows(IllegalArgumentException.class, () -> Boundary.resolve(original.raw(), c, e -> original.bytes()), change);
+    }
+  }
   @Test void suppliedResolverSeesExactReferenceRangeAndPreservationRetainsIt() throws Exception {
     Boundary.Input inline = input(line("EOE"), 0, context(false)); ObjectNode raw = (ObjectNode)inline.raw();
     ObjectNode evidence = (ObjectNode)raw.get("evidence"); evidence.remove("inline");

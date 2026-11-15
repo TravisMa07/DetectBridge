@@ -29,13 +29,21 @@ final class Fixtures {
     c.set("source", Json.MAPPER.valueToTree(Map.of("namespace", "original-synthetic", "instance", "a")));
     c.put("first_observed", FIRST);
     c.set("source_generation", Json.MAPPER.valueToTree(Map.of("id", "boot-a", "provenance", List.of("synthetic:boot-a"))));
-    c.set("host_binding", Json.MAPPER.valueToTree(Map.of("id", "host-a", "revision", "synthetic-1",
-        "sha256", "a".repeat(64), "provenance", List.of("synthetic:binding-a"))));
+    c.set("host_binding", Json.MAPPER.valueToTree(Map.of("host_id", "host-a", "revision", "synthetic-1",
+        "source", c.get("source"), "kind", "synthetic", "provenance", List.of("synthetic:binding-a"))));
+    bind(c);
     c.set("source_contract", Json.MAPPER.valueToTree(Map.of("id", id, "version", "1.0.0",
         "sha256", Boundary.hash(source), "snapshot", source)));
-    c.set("mapping_profile", Boundary.resource(id + ".mapping"));
+    JsonNode mapping = Boundary.resource(id + ".mapping");
+    c.set("mapping_profile", Json.MAPPER.valueToTree(Map.of("id", mapping.get("id"),
+        "version", mapping.get("version"), "sha256", mapping.get("sha256"), "declaration", mapping)));
     c.set("parser", Json.MAPPER.valueToTree(Map.of("id", auth ? "openssh-password" : "linux-audit", "version", "1.0.0")));
     return c;
+  }
+  static void bind(ObjectNode context) {
+    ObjectNode host = (ObjectNode)context.get("host_binding");
+    host.set("source", context.get("source").deepCopy()); host.remove("sha256");
+    host.put("sha256", Boundary.hash(host));
   }
   static Boundary.Input input(String text, int position, ObjectNode ctx) throws Exception {
     byte[] bytes = text.getBytes(StandardCharsets.UTF_8); ObjectNode raw = Json.MAPPER.createObjectNode();

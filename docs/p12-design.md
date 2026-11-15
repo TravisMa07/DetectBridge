@@ -85,8 +85,9 @@ Independent literal cases and reasoning precede implementation in
 [expectations](../packages/linux-adapters/fixtures/expectations.md). Author review
 of these expectations is pending. Synthetic qualification cannot replace reviewed
 recordings. Existing audit excerpts lack trusted host/generation and completeness.
-No suitable exact public auth recording has yet been substantiated; the runbook
-records source research and a real instrumented capture proposal. This remains an
+No suitable exact public auth recording was substantiated by the child. The
+orchestrator subsequently completed the real instrumented local capture in the
+runbook; recorded audit evidence remains an
 acceptance blocker. No P12 completion, checkpoint recovery, capacity or AMD64 claim.
 
 ## Review refinements

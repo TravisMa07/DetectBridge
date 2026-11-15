@@ -118,6 +118,7 @@ class HygieneTests(unittest.TestCase):
                             "detection": applicable,
                             "writer": "false",
                             "windows": "false",
+                            "linux": "false",
                         },
                     },
                     "repository-hygiene": {"result": "success"},
@@ -128,6 +129,7 @@ class HygieneTests(unittest.TestCase):
                     "detection-verification": {"result": status},
                     "opensearch-writer-verification": {"result": "skipped"},
                     "windows-verification": {"result": "skipped"},
+                    "linux-verification": {"result": "skipped"},
                 }
                 self.assertEqual(
                     gate_passes(needs), status == ("success" if applicable == "true" else "skipped")

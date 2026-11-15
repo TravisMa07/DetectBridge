@@ -40,10 +40,6 @@
     "host_binding": {
       "type": "object",
       "properties": {
-        "id": {
-          "type": "string",
-          "minLength": 1
-        },
         "revision": {
           "type": "string",
           "minLength": 1
@@ -60,13 +56,32 @@
           },
           "minItems": 1,
           "maxItems": 16
+        },
+        "host_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "$ref": "urn:detectbridge:contracts:1.0.0:common#/$defs/source"
+        },
+        "kind": {
+          "enum": [
+            "reviewed",
+            "synthetic"
+          ]
+        },
+        "computer": {
+          "type": "string",
+          "minLength": 1
         }
       },
       "required": [
-        "id",
         "revision",
         "sha256",
-        "provenance"
+        "provenance",
+        "host_id",
+        "source",
+        "kind"
       ],
       "additionalProperties": false
     },
@@ -97,7 +112,30 @@
       "additionalProperties": false
     },
     "mapping_profile": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "const": "1.0.0"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "declaration": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "sha256",
+        "declaration"
+      ],
+      "additionalProperties": false
     },
     "parser": {
       "type": "object",
@@ -121,11 +159,12 @@
       "properties": {
         "received": {
           "$ref": "urn:detectbridge:contracts:1.0.0:common#/$defs/timestamp"
+        },
+        "processed": {
+          "$ref": "urn:detectbridge:contracts:1.0.0:common#/$defs/timestamp"
         }
       },
-      "required": [
-        "received"
-      ],
+      "required": [],
       "additionalProperties": false
     }
   },

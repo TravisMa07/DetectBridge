@@ -56,3 +56,16 @@ P12b is not implemented and must wait for separately authorized P12a merge and
 main qualification. No heavy Docker run was started. Main's referenced CI was not
 polled or watched. No merge, release, push, archive or integrated production
 pipeline occurred in this child.
+
+## Orchestrator resolution
+
+The original requirements above are historical child handoff items. Both modules
+are registered on a P12a branch stacked above P11 PR #38 for serial shared changes.
+Root check/java and a real classified/fail-closed linux-verification job select
+Linux behavior, artifact, notice and independent-verifier regressions. Inventories
+include all 23 reused module coordinates. Module-local context shapes now follow
+the common mapping wrapper and reviewed/synthetic source-bound host hash, without
+a P03 revision. Independent review URI/structured-data findings are corrected.
+The owner-selected actual OpenSSH9 capture is complete and independently qualified;
+see the local recording catalog/runbook. Owner acceptance review, recorded eligible
+audit evidence, AMD64 CI and P12b remain distinct outstanding gates.

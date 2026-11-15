@@ -49,11 +49,12 @@ class AssemblerTest {
     for (String dimension : List.of("original", "host", "run", "generation", "instance")) {
       ObjectNode c = context(false);
       switch (dimension) {
-        case "host" -> ((ObjectNode)c.get("host_binding")).put("id", "host-b");
+        case "host" -> ((ObjectNode)c.get("host_binding")).put("host_id", "host-b");
         case "run" -> c.put("run_id", RUN2);
         case "generation" -> ((ObjectNode)c.get("source_generation")).put("id", "boot-b");
         case "instance" -> ((ObjectNode)c.get("source")).put("instance", "b");
       }
+      bind(c);
       contexts.add(c);
     }
     for (int i : List.of(4, 2, 0, 3, 1)) for (int j = 0; j < contexts.size(); j++)
@@ -124,6 +125,7 @@ class AssemblerTest {
     complete(a, sink, c, 0); ObjectNode other = c.deepCopy();
     other.put("first_observed", "2026-01-01T00:00:02Z");
     ((ObjectNode)other.get("host_binding")).put("revision", "changed-binding");
+    bind(other);
     a.accept(input(line("EOE"), 5, other), sink);
     assertFalse(sink.manifests().get(0).get("eligible").asBoolean());
     assertEquals(FIRST, sink.events().get(0).at("/event/created").asString());

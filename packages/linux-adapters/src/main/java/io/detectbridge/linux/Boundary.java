@@ -107,9 +107,11 @@ public final class Boundary {
       java.net.URI uri = java.net.URI.create(uriText);
       check(uri.getRawUserInfo() == null && uri.getRawQuery() == null && uri.getRawFragment() == null
           && (uri.getRawAuthority() == null || !uri.getRawAuthority().contains("@")), "unsafe_reference");
-      check(Set.of("urn", "https", "s3", "file").contains(uri.getScheme()), "unsupported_reference");
-      if (uri.getScheme().equals("urn")) check(uriText.equals("urn:sha256:" + hash), "content_address");
-      if (Set.of("https", "s3").contains(uri.getScheme())) check(uri.getHost() != null, "reference_host");
+      check(uri.getScheme() != null, "unsupported_reference");
+      String scheme = uri.getScheme().toLowerCase(Locale.ROOT);
+      check(Set.of("urn", "https", "s3", "file").contains(scheme), "unsupported_reference");
+      if (scheme.equals("urn")) check(uriText.equals("urn:sha256:" + hash), "content_address");
+      if (Set.of("https", "s3").contains(scheme)) check(uri.getHost() != null, "reference_host");
       check(ref.has("byte_range") || evidence.get("sha256").asString().equals(hash), "whole_object_digest");
     }
     String id = ctx.at("/source_contract/id").asString();
@@ -117,7 +119,16 @@ public final class Boundary {
     JsonNode source = resource(id + ".source"), profile = resource(id + ".mapping");
     check(ctx.at("/source_contract/snapshot").equals(source), "source_snapshot");
     check(ctx.at("/source_contract/sha256").asString().equals(hash(source)), "source_hash");
-    check(ctx.get("mapping_profile").equals(profile), "mapping_snapshot");
+    JsonNode mapping = ctx.get("mapping_profile");
+    check(mapping.get("declaration").equals(profile) && mapping.get("id").equals(profile.get("id"))
+        && mapping.get("version").equals(profile.get("version"))
+        && mapping.get("sha256").equals(profile.get("sha256")), "mapping_snapshot");
+    if (ctx.has("host_binding")) {
+      JsonNode host = ctx.get("host_binding");
+      check(host.get("source").equals(raw.get("source")), "binding_source");
+      ObjectNode unhashed = ((ObjectNode)host).deepCopy(); unhashed.remove("sha256");
+      check(hash(unhashed).equals(host.get("sha256").asString()), "binding_hash");
+    }
     check(ctx.at("/parser/id").asString().equals(id.startsWith("linux") ? "linux-audit" : "openssh-password"), "parser_binding");
     NORMALIZED.source(source);
   }
@@ -199,7 +210,7 @@ public final class Boundary {
     event.put("created", first); event.put("code", closure.equals("not_required") ? "sshd" : "EXECVE");
     event.put("provider", closure.equals("not_required") ? "sshd" : "auditd");
     event.put("dataset", source.get("id").asString()); out.set("event", event);
-    if (ctx.has("host_binding")) out.set("host", Json.MAPPER.valueToTree(Map.of("id", ctx.at("/host_binding/id").asString())));
+    if (ctx.has("host_binding")) out.set("host", Json.MAPPER.valueToTree(Map.of("id", ctx.at("/host_binding/host_id").asString())));
     extracted.forEach((k, v) -> out.set(k, Json.MAPPER.valueToTree(v)));
     out.set("source_fields", fields);
     ObjectNode db = out.putObject("detectbridge"); db.put("contract_version", VERSION);

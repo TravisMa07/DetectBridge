@@ -26,9 +26,8 @@ The module Gradle test task compiles four original synthetic YAML derivatives
 through P10's real locked compiler, then tests actual adapter outputs through the
 same Java Evaluator. Expectations are literal match/nonmatch/block/skip assertions.
 Plans remain in ignored `.cache/linux-adapters/plans`. No Docker is used.
-The root `java` command does not yet select this module; serial integration must
-add its test task and CI applicability/gate as described in the
-[shared handoff](p12-integration.md). Existing transport/writer/detection
+Root `java` now selects this module; `tools/dev.py linux` is the targeted
+developer/CI command. The shared handoff records the original child requirements. Existing transport/writer/detection
 checks must remain intact. Strict verification metadata is unchanged: all module
 coordinates already exist in the reviewed dependency graph. A module-local lock
 pins the configurations used here; orchestration owns consolidated inventories.
@@ -63,10 +62,13 @@ source_contract/mapping_profile/parser; optional receipt. The module resolves th
 previously unspecified nested shapes explicitly:
 
 - source_generation: id and nonempty provenance-reference array.
-- host_binding: id, revision, SHA-256 and nonempty provenance-reference array.
+- host_binding: host_id/source/revision/SHA-256/provenance/kind, plus optional
+  computer display context. Hash binds canonical content without sha256.
 - source_contract: id/version/SHA-256 plus immutable snapshot.
-- mapping_profile: complete pinned P10 declaration with own content hash.
-- parser: id/version. receipt: received timestamp, when actually known.
+- mapping_profile: id/version/sha256/declaration wrapper binding the complete
+  pinned P10 declaration.
+- parser: id/version. receipt: optional received/processed timestamps, when
+  actually known.
 
 Host/generation bindings are trusted reviewed caller input, never derived from
 hostname, dataset ID, audit serial or capture ID. Tests use explicitly labelled
@@ -165,50 +167,67 @@ Two public candidates were investigated and rejected rather than changing scope:
   2.0 and the complete ancestor inventory were checked; no additional applicable
   LICENSE/NOTICE was found. It was not added to the acquisition catalog.
 
-These findings establish rejection of these candidates, not that no suitable
-public artifact exists anywhere. No recorded auth acceptance is claimed.
+These findings reject these candidates without claiming no suitable public artifact
+exists elsewhere. The orchestrator completed the selected alternative below.
 
-## Proposed real opt-in capture
+## Reviewed real opt-in authentication recording
 
-If no suitable primary artifact is approved, use a disposable isolated **Linux**
-lab after orchestration schedules resources. This protocol is a concrete proposal;
-it was not executed here and supplies no fabricated recording hashes.
+The versioned local catalog pins an actual Debian bookworm ARM64 OpenSSH
+9.2p1-2+deb12u10 and rsyslog 8.2302.0-1+deb12u2 capture from a disposable container
+with no external network or published port. An immutable image was built from the
+committed base digest and exact main package versions before capture. All resolved
+packages, binary hashes, effective daemon config, image/container inspection and
+upstream copyright notices are retained and hashed locally. This replaces the
+child's unexecuted source-build proposal; it stays within the selected 9.x scope.
 
-1. Build actual unmodified OpenSSH portable 9.9p2 at
-   d76b2675116617394cd355a3437b4963a562b64d and rsyslog 8.2502.0 at
-   a2d0282d5b8202080713bafa7a722770250394c0. Pin the Linux image/toolchain/package
-   digests before capture. Keep source licenses and compiler/configure flags
-   locally. Record actual `sshd -V`, `rsyslogd -v`, binary hashes, libc/kernel and
-   package/build manifests; version mismatch fails the proposed protocol.
-   These are proposed source pins, not assertions about installed binaries.
-2. Run daemon on loopback only, disposable non-root test account, password auth
-   enabled, pubkey/PAM/keyboard-interactive disabled for the case, English locale.
-   Retain exact daemon configuration and effective config output. Never retain
-   passwords/private host keys in the review manifest. Use a disposable password
-   supplied interactively to the actual SSH client, never a synthetic log writer.
-3. Send exactly one accepted and one failed password attempt for that valid user
-   over IPv4, then over IPv6 when available. Preserve complete original daemon/
-   collector output, including unrelated/excluded lines. Retain client exit status
-   and an independently written action ledger with attempt order and endpoints.
-4. Collect actual local syslog datagrams in rsyslog through a private imuxsock
-   socket, retaining original rawmsg bytes in one file and RFC5424 collector output
-   in a second. Pin collector configuration and RFC5424 template byte hash. Record
-   framing transformation ID `openssh9-rsyslog-rfc5424-lf/1.0.0`, exact input/output
-   byte hashes, source-to-output membership, timestamp/hostname interpretation and
-   LF boundaries. Do not relabel RFC3164 daemon bytes as original RFC5424 bytes.
-   Collector version/configuration and framing are part of the evidence.
-5. Record machine-id/boot-id or another explicit stable lab host binding with
-   provenance and a separately recorded capture generation. A random capture UUID
-   is not host identity. Retain first observations and do not infer capture times
-   from publication metadata. Review original byte ranges/record IDs and literal
-   expected username/outcome/address/port against the action ledger before parser
-   qualification; reviewer records actual approval identity/revision.
-6. Store evidence only in ignored `.cache/linux-recordings/<capture>/objects/sha256`.
-   Pin immutable capture revision, bytes, terms/ownership/consent, daemon/collector
-   provenance and independently reviewed expectations in a proposed catalog
-   extension. Review capture output rights separately from software licenses.
-   No payload may enter Git. Orchestrator reconciles schema/catalog/acquisition
-   integration and owner review before any recorded-qualification claim.
+The committed capture tool generates one real accepted and one failed password
+attempt for bridgeauth over 127.0.0.1, using a real SSH client. Passwords exist only
+in process memory/stdin. Host keys/passwords are not copied; the container is
+removed on exit. Docker's exact container identity binds the ephemeral lab host;
+its actual start and one daemon invocation bind generation. No hostname or random
+capture ID is substituted for identity. First observation records actual local
+artifact acquisition, separately from source message timestamps.
+
+All 11 native daemon messages and corresponding RFC5424 collector rows were
+retained. The pinned collector template removes the native tag separator from
+msg while rendering RFC5424, with exact body identity independently checked for
+every row. Original native bytes are never relabelled as daemon-native RFC5424.
+Two messages normalize as eligible password success/failure; nine unrelated daemon
+messages are preserved unsupported. Both eligible events are independently
+expected nonmatches for the original synthetic auth-user rule targeting alice.
+Original synthetic cases separately exercise true matches and other outcomes.
+No IPv6 recorded coverage, production distribution or performance is claimed.
+
+Exact hashes, context and per-record expectations live in
+[catalog/recordings/openssh9-password-lab-v1.json](../catalog/recordings/openssh9-password-lab-v1.json).
+Payloads remain in ignored `.cache/p12-auth-reviewed-v1`. The local-use terms review
+authorizes qualification only; public payload redistribution needs owner review.
+To reverify retained originals and the frozen plan:
+
+```sh
+uv run --locked python packages/linux-adapters/recording/qualify.py \
+  .cache/p12-auth-reviewed-v1 --prepare .cache/p12-auth-reviewed-v1/input.ndjson
+JAVA_HOME="$PWD/.cache/jdk" packages/linux-adapters/build/install/linux-adapters/bin/linux-adapters \
+  .cache/p12-auth-reviewed-v1/input.ndjson .cache/p12-auth-reviewed-v1/output.ndjson \
+  .cache/p12-auth-reviewed-v1/frozen-plan.json
+uv run --locked python packages/linux-adapters/recording/qualify.py \
+  .cache/p12-auth-reviewed-v1 --input .cache/p12-auth-reviewed-v1/input.ndjson \
+  --output .cache/p12-auth-reviewed-v1/output.ndjson --plan .cache/p12-auth-reviewed-v1/frozen-plan.json
+```
+
+`AuthReplay` accepts bounded NDJSON raw/context rows with retained inline UTF-8 or
+base64 evidence. It uses the real adapter and mapped evaluator, retaining every
+raw/context/result. Failed parsing/configuration/output publication leaves the
+previous output intact. It does not resolve reference URIs or implement audit
+replay/checkpointing. Reference evidence remains available through Boundary's
+explicit caller resolver contract. The independent verifier checks all originals,
+framing, expected fields/outcomes/quality/membership, exact frozen bundle and result
+attribution. Payloads are absent from ordinary CI.
+
+To create another recording, explicitly build the committed lab Dockerfile, record
+its immutable image ID and invoke `recording/capture.py IMAGE_ID NEW_EMPTY_DIRECTORY`.
+New bytes/identity require a new reviewed manifest; never overwrite this recording
+ID or infer a new capture has identical hashes. No lab image or payload is published.
 
 An eligible audit recording needs an equivalent reviewed Linux capture with audit
 configuration/rule inventory, trusted host/boot binding, syscall table version,

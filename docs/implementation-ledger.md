@@ -117,3 +117,15 @@ being integrated for a draft PR. See [subsystem ledger](p11-ledger.md). Recorded
 Windows accounting is preservation/skip evidence; no eligible recording claim
 is made without trusted host bindings. No services, P13 pipeline, release or
 authorized merge is implied.
+
+P11 draft PR #38 at 4f741c2 passed all required AMD64 jobs in run 43684323177,
+including Windows, shared Java, legacy/mapped detection and existing transport/
+writer gates. It remains unmerged with trusted recorded Windows host bindings
+missing and owner review outstanding.
+
+P12a's isolated offline core is now integrated for review on
+feat/p12a-linux-adapters, stacked above P11 only to serialize shared changes. The
+real local OpenSSH9 capture has 11 original messages, two eligible success/failure
+events and nine unsupported diagnostics, with immutable byte/context/terms review
+and independent adapter/evaluator accounting. No P12b checkpoint qualification or
+recorded eligible audit claim is made. See the P12 ledger for exact heads/evidence.

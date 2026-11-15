@@ -82,60 +82,10 @@
       "type": "object",
       "properties": {
         "host_binding": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "string",
-              "minLength": 1
-            },
-            "revision": {
-              "type": "string",
-              "minLength": 1
-            },
-            "sha256": {
-              "type": "string",
-              "pattern": "^[0-9a-f]{64}$"
-            },
-            "provenance": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "minLength": 1
-              },
-              "minItems": 1,
-              "maxItems": 16
-            }
-          },
-          "required": [
-            "id",
-            "revision",
-            "sha256",
-            "provenance"
-          ],
-          "additionalProperties": false
+          "$ref": "urn:detectbridge:linux:1.0.0:context#/properties/host_binding"
         },
         "source_generation": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "string",
-              "minLength": 1
-            },
-            "provenance": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "minLength": 1
-              },
-              "minItems": 1,
-              "maxItems": 16
-            }
-          },
-          "required": [
-            "id",
-            "provenance"
-          ],
-          "additionalProperties": false
+          "$ref": "urn:detectbridge:linux:1.0.0:context#/properties/source_generation"
         }
       },
       "required": [

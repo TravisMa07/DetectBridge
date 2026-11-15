@@ -181,3 +181,11 @@ P11 implements the bounded Windows source adapter boundary from A02/A03 in
 [owning design notes](p11-design.md), using module-local JSON context APIs and
 unchanged P03 schemas. This is an offline library/runner, not the P13 production
 pipeline. Recorded inputs without trusted host bindings remain skipped.
+
+P12a implements the offline Linux audit/authentication boundary with scope-keyed
+bounded transactional assembly, immutable membership/late links, module-local
+context/manifest/state schemas and an atomic authentication replay command. It
+does not deploy P12b Flink state or P13 production wiring. A small actual local
+OpenSSH9 capture qualifies the selected password grammar; recorded audit
+eligibility and complete P12 acceptance remain blocked. See the
+[P12a design](p12-design.md) and [ledger](p12-ledger.md).

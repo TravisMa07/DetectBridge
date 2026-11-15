@@ -3,7 +3,9 @@
 P01–P10 are merged. The owner authorized P11/P12 implementation after P10
 completion. P11 adapters and offline qualification are implemented for review;
 recorded host-binding evidence and owner review remain acceptance blockers. P12a
-implementation is in progress; later capabilities remain planned. See the
+offline core and a reviewed local authentication recording are implemented for
+review. Recorded audit acceptance, P12b checkpoint qualification and owner review
+remain outstanding; later capabilities remain planned. See the
 [implementation ledger](implementation-ledger.md) for exact evidence and limits.
 P numbers are planning IDs, not GitHub PR numbers. Milestones require their
 acceptance evidence and authorized merges; documentation alone does not complete
@@ -172,6 +174,10 @@ No application scaffolding, runtime capability claims or release tag.
   capability, parse failure and actual nonmatches; originals remain accessible.
 
 ### P12 — Linux adapters and audit assembly
+
+- Local status: P12a bounded offline core implemented for review, with real
+  OpenSSH9 recording qualification; recorded audit evidence, owner review, AMD64
+  CI and P12b checkpoint qualification remain separate gates. Full P12 is incomplete.
 
 - Depends on: P04, P10.
 - Deliver: audit execution and selected authentication adapters, bounded keyed

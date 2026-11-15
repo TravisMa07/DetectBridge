@@ -90,7 +90,7 @@ public final class Assembler {
   private void admit(ObjectNode next, List<JsonNode> outputs, Boundary.Input input, Audit.Record record) {
     ObjectNode key = Json.MAPPER.createObjectNode();
     key.set("run_id", input.context().get("run_id")); key.set("source", input.context().get("source"));
-    key.set("host_id", input.context().at("/host_binding/id"));
+    key.set("host_id", input.context().at("/host_binding/host_id"));
     key.set("generation", input.context().at("/source_generation/id"));
     key.put("audit_timestamp", record.timestamp()); key.put("audit_serial", record.serial());
     String id = Boundary.hash(key);
@@ -232,7 +232,7 @@ public final class Assembler {
       for (JsonNode m : g.get("members")) {
         JsonNode raw = m.get("raw"), ctx = m.get("context"); Boundary.validateContext(raw, ctx);
         check(ctx.at("/run_id").equals(g.at("/key/run_id")) && ctx.at("/source").equals(g.at("/key/source"))
-            && ctx.at("/host_binding/id").equals(g.at("/key/host_id"))
+            && ctx.at("/host_binding/host_id").equals(g.at("/key/host_id"))
             && ctx.at("/source_generation/id").equals(g.at("/key/generation"))
             && n.get("runs").path(ctx.get("run_id").asString()).asString().equals("active"), "state_scope");
         String receipt = ctx.get("run_id").asString() + "/" + raw.get("record_id").asString();

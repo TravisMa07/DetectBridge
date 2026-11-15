@@ -20,6 +20,10 @@ merged with ARM64/AMD64 qualification evidence. The owner authorized P11/P12;
 formal semantic review history remains recorded separately.
 [P11 Windows adapters](docs/windows-adapters.md) are implemented for review with
 recorded preservation accounting; trusted recorded host bindings remain unavailable.
+[P12a Linux adapters](docs/p12-runbook.md) provide bounded offline audit assembly
+and selected authentication parsing, with a small real reviewed local OpenSSH9
+recording. Recorded audit eligibility, P12b checkpoint qualification and owner
+review remain pending.
 Production detection, management API, UI and detection-to-OpenSearch integration
 remain pending.
 P06 provides local Kafka/Flink infrastructure and optional authenticated OpenSearch.

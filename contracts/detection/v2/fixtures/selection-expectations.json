@@ -1,0 +1,5 @@
+[
+  {"budget":7,"matched":1,"unmatched":0,"inapplicable":1,"configuration_blocked":1,"quality_skipped":0,"evaluation_error":1,"rationale":"A and D each cost four ticks; B/C are gates with zero predicate cost. A consumes four; D exhausts the remaining three."},
+  {"budget":8,"matched":2,"unmatched":0,"inapplicable":1,"configuration_blocked":1,"quality_skipped":0,"evaluation_error":0,"rationale":"Exactly eight ticks cover both supported leaves; gates do not consume the shared budget."},
+  {"budget":3,"matched":0,"unmatched":0,"inapplicable":1,"configuration_blocked":1,"quality_skipped":0,"evaluation_error":2,"rationale":"A exhausts the shared budget; D must not receive a reset budget."}
+]

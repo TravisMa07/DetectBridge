@@ -16,13 +16,10 @@ public final class Evaluate {
 
   public static void main(String[] args) {
     try {
-      Contracts.check(args.length == 2, "arguments");
+      Contracts.check(args.length == 2 || (args.length == 3 && args[2].equals("--exhaustive")), "arguments");
       Evaluator evaluator = new Evaluator(bounded(Path.of(args[0]), 4 * 1024 * 1024));
       byte[] event = bounded(Path.of(args[1]), 1024 * 1024);
-      System.out.println(
-          evaluator.evaluate(
-              event,
-              Map.of(
+      var location = Map.<String, Object>of(
                   "cluster_id",
                   "offline",
                   "topic_id",
@@ -34,7 +31,9 @@ public final class Evaluate {
                   "offset",
                   0,
                   "value_sha256",
-                  Json.sha(event))));
+                  Json.sha(event));
+      System.out.println(args.length == 3
+          ? evaluator.evaluateExhaustive(event, location) : evaluator.evaluate(event, location));
     } catch (Exception e) {
       System.err.println("{\"category\":\"evaluation_input_failure\",\"pointer\":\"\"}");
       System.exit(1);

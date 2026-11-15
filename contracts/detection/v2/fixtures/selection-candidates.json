@@ -1,0 +1,90 @@
+[
+  {
+    "version": "1.0.0",
+    "rule_id": "70000000-0000-4000-8000-000000000011",
+    "revision": "04ca9de674946a6c2901bcf1f61796aee23083ab9fd224753dbeeae4264985d8",
+    "kind": "synthetic",
+    "repository": "https://github.com/TravisMa07/DetectBridge",
+    "repository_revision": "4d7d685ae65b2163906f7b662aac411583c5250d",
+    "path": "contracts/detection/v1/fixtures/rules/process.yml",
+    "original_sha256": "7b9919d78636ebe89a69ca4f516433c93258e244cd4608d8df0736220a22f795",
+    "authors": [
+      "DetectBridge contributors"
+    ],
+    "license": "Apache-2.0",
+    "notices": [],
+    "modifications": [
+      {
+        "input_sha256": "7b9919d78636ebe89a69ca4f516433c93258e244cd4608d8df0736220a22f795",
+        "output_sha256": "04ca9de674946a6c2901bcf1f61796aee23083ab9fd224753dbeeae4264985d8",
+        "description": "Original synthetic selection rule a-supported; independent budget expectation"
+      }
+    ]
+  },
+  {
+    "version": "1.0.0",
+    "rule_id": "70000000-0000-4000-8000-000000000012",
+    "revision": "c7098327719e0edda214ed15de2226f192b412bfe24149cd6d5e014d98edf9c6",
+    "kind": "synthetic",
+    "repository": "https://github.com/TravisMa07/DetectBridge",
+    "repository_revision": "4d7d685ae65b2163906f7b662aac411583c5250d",
+    "path": "contracts/detection/v1/fixtures/rules/process.yml",
+    "original_sha256": "7b9919d78636ebe89a69ca4f516433c93258e244cd4608d8df0736220a22f795",
+    "authors": [
+      "DetectBridge contributors"
+    ],
+    "license": "Apache-2.0",
+    "notices": [],
+    "modifications": [
+      {
+        "input_sha256": "7b9919d78636ebe89a69ca4f516433c93258e244cd4608d8df0736220a22f795",
+        "output_sha256": "c7098327719e0edda214ed15de2226f192b412bfe24149cd6d5e014d98edf9c6",
+        "description": "Original synthetic selection rule b-inapplicable; independent budget expectation"
+      }
+    ]
+  },
+  {
+    "version": "1.0.0",
+    "rule_id": "70000000-0000-4000-8000-000000000013",
+    "revision": "d0de3932c8380c0527a996f3286678c92a4cdc1581302a26f4fe2707c77c1d30",
+    "kind": "synthetic",
+    "repository": "https://github.com/TravisMa07/DetectBridge",
+    "repository_revision": "4d7d685ae65b2163906f7b662aac411583c5250d",
+    "path": "contracts/detection/v1/fixtures/rules/process.yml",
+    "original_sha256": "7b9919d78636ebe89a69ca4f516433c93258e244cd4608d8df0736220a22f795",
+    "authors": [
+      "DetectBridge contributors"
+    ],
+    "license": "Apache-2.0",
+    "notices": [],
+    "modifications": [
+      {
+        "input_sha256": "7b9919d78636ebe89a69ca4f516433c93258e244cd4608d8df0736220a22f795",
+        "output_sha256": "d0de3932c8380c0527a996f3286678c92a4cdc1581302a26f4fe2707c77c1d30",
+        "description": "Original synthetic selection rule c-blocked; independent budget expectation"
+      }
+    ]
+  },
+  {
+    "version": "1.0.0",
+    "rule_id": "70000000-0000-4000-8000-000000000014",
+    "revision": "ea53f8ef6e0f73f69e1ca856b25cf8144a3b1379eec0b8de1805d8e44704c14d",
+    "kind": "synthetic",
+    "repository": "https://github.com/TravisMa07/DetectBridge",
+    "repository_revision": "4d7d685ae65b2163906f7b662aac411583c5250d",
+    "path": "contracts/detection/v1/fixtures/rules/process.yml",
+    "original_sha256": "7b9919d78636ebe89a69ca4f516433c93258e244cd4608d8df0736220a22f795",
+    "authors": [
+      "DetectBridge contributors"
+    ],
+    "license": "Apache-2.0",
+    "notices": [],
+    "modifications": [
+      {
+        "input_sha256": "7b9919d78636ebe89a69ca4f516433c93258e244cd4608d8df0736220a22f795",
+        "output_sha256": "ea53f8ef6e0f73f69e1ca856b25cf8144a3b1379eec0b8de1805d8e44704c14d",
+        "description": "Original synthetic selection rule d-supported; independent budget expectation"
+      }
+    ]
+  }
+]

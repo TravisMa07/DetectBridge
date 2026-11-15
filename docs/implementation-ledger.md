@@ -7,8 +7,8 @@ children completed P11/P12 design read-only; they have not implemented adapters.
 
 | Unit | Owner | Base / branch / worktree | Dependencies | Status and blockers |
 | --- | --- | --- | --- | --- |
-| P10a | Main orchestrator | `4d7d685`; `feat/p10-mapping-contracts`; `/Users/travisma/GitHub_Projects/DetectBridge-p10a` | P04/P09 merged | Implemented in [draft PR #36](https://github.com/TravisMa07/DetectBridge/pull/36); local check/java passed; merge unauthorized |
-| P10b | Main orchestrator | Not created | Authorized P10a merge + green main | Planned; complete P10 semantic/selection/runtime gate pending |
+| P10a | Main orchestrator | `4d7d685`; `feat/p10-mapping-contracts`; `/Users/travisma/GitHub_Projects/DetectBridge-p10a` | P04/P09 merged | Merged in [PR #36](https://github.com/TravisMa07/DetectBridge/pull/36) as `b45fba4`; semantic acceptance remains separately pending |
+| P10b | Main orchestrator | `b45fba4`; `feat/p10-source-selection`; `/Users/travisma/GitHub_Projects/DetectBridge-p10b` | P10a merged; merged-main checks recorded separately | Implemented for review; exact-head qualification, semantic review and merge authorization separate |
 | P11 | Windows child | Not created | Complete accepted P10 | Planned; host binding and recorded eligible evidence required |
 | P12a | Linux child | Not created | Complete accepted P10 | Planned; host/generation evidence and reviewed OpenSSH recording required |
 | P12b | Linux child | Not created | Authorized P12a merge + green main | Planned; actual checkpoint/recovery qualification required |
@@ -41,3 +41,8 @@ This qualifies legacy deployment preservation, not P10b's future v2 runtime or
 production source adapters. Initial build failed while Docker was stopped; it was
 started and the successful build/qualification was rerun. AMD64 checks are reported
 on the PR against each pushed head; they are not inferred from the local run.
+
+P10a merged-main [AMD64 CI](https://github.com/TravisMa07/DetectBridge/actions/runs/43673156008)
+succeeded on `b45fba48b57eb360087521bc9ba06113cb34ef88`, including detection,
+writer, transport, local-stack and required-checks. Optional recorded jobs were
+skipped; independent semantic review is not inferred from this result.

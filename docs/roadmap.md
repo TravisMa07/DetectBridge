@@ -1,8 +1,10 @@
 # Delivery roadmap and decision ownership
 
-P01–P09 are merged. P09 merged-main AMD64 qualification passed; independent
-semantic expectation review remains pending. P10a is merged. P10b selection/runtime is implemented for review;
-subsequent deliverables remain planned. See the [implementation ledger](implementation-ledger.md).
+P01–P10 are merged. The owner authorized P11/P12 implementation after P10
+completion. P11 adapters and offline qualification are implemented for review;
+recorded host-binding evidence and owner review remain acceptance blockers. P12a
+implementation is in progress; later capabilities remain planned. See the
+[implementation ledger](implementation-ledger.md) for exact evidence and limits.
 P numbers are planning IDs, not GitHub PR numbers. Milestones require their
 acceptance evidence and authorized merges; documentation alone does not complete
 a milestone.
@@ -139,10 +141,9 @@ No application scaffolding, runtime capability claims or release tag.
 
 ### P10 — Compatibility matrix and mapping coverage
 
-- Local status: P10a merged; P10b source selection, exhaustive equivalence and
-  isolated v2 runtime implemented for review. Exact-head qualification is recorded
-  in the ledger/owning PR; independent owner semantic acceptance remains pending.
-  See [design notes](p10b-design.md).
+- Local status: P10a/P10b merged with ARM64/AMD64 qualification evidence. The
+  owner declared P10 finished and authorized P11/P12; formal semantic review
+  history remains recorded separately. See [design notes](p10b-design.md).
 
 - Depends on: P04, P09.
 - Deliver: supported-feature matrix, semantic regressions, mapping validation and
@@ -156,6 +157,10 @@ No application scaffolding, runtime capability claims or release tag.
 ## M4 — Source integrity
 
 ### P11 — Windows adapters and quality
+
+- Local status: bounded Security/Sysmon adapter and offline runner implemented for
+  review; recorded preservation accounting passes, but no recorded eligible
+  coverage is claimed without trusted host bindings. See [design](p11-design.md).
 
 - Depends on: P04, P10.
 - Deliver: source contracts/adapters for selected Security and Sysmon formats,

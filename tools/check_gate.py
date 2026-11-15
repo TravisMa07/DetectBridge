@@ -5,6 +5,7 @@ import os
 
 CONDITIONAL = {
     "detection-verification": "detection",
+    "windows-verification": "windows",
     "toolchain-verification": "toolchains",
     "local-stack-verification": "stack",
     "transport-verification": "transport",

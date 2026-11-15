@@ -64,3 +64,9 @@ or remediated. No required correctness check is waived by this disposition.
 P08 repeated the OSV Maven query on 2026-11-14 for the same 67 coordinates:
 no advisory matches were returned. This does not cover the shaded dependencies
 inside the upstream image; the remaining finding above is unchanged.
+
+P11 adds 23 module uses of existing reviewed coordinates for its Windows adapter
+library. The combined inventory includes those uses, and the
+[Windows inventory](windows-dependencies.json) pins its owning lock. No new
+coordinate, checksum, security patch or image-remediation claim is introduced.
+This is a dependency-use review, not a fresh advisory scan.

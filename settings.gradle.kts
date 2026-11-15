@@ -8,3 +8,5 @@ project(":detection-evaluator").projectDir = file("packages/detection-evaluator"
 project(":detection-job").projectDir = file("packages/detection-job")
 include("transport-writer")
 project(":transport-writer").projectDir = file("packages/transport-writer")
+include("windows-adapters")
+project(":windows-adapters").projectDir = file("packages/windows-adapters")

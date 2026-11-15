@@ -8,9 +8,9 @@ children completed P11/P12 design read-only; they have not implemented adapters.
 | Unit | Owner | Base / branch / worktree | Dependencies | Status and blockers |
 | --- | --- | --- | --- | --- |
 | P10a | Main orchestrator | `4d7d685`; `feat/p10-mapping-contracts`; `/Users/travisma/GitHub_Projects/DetectBridge-p10a` | P04/P09 merged | Merged in [PR #36](https://github.com/TravisMa07/DetectBridge/pull/36) as `b45fba4`; semantic acceptance remains separately pending |
-| P10b | Main orchestrator | `b45fba4`; `feat/p10-source-selection`; `/Users/travisma/GitHub_Projects/DetectBridge-p10b` | P10a merged; merged-main checks recorded separately | Implemented in [draft PR #37](https://github.com/TravisMa07/DetectBridge/pull/37); validation evidence below; semantic review and merge authorization separate |
-| P11 | Windows child | Not created | Complete accepted P10 | Planned; host binding and recorded eligible evidence required |
-| P12a | Linux child | Not created | Complete accepted P10 | Planned; host/generation evidence and reviewed OpenSSH recording required |
+| P10b | Main orchestrator | `b45fba4`; `feat/p10-source-selection`; `/Users/travisma/GitHub_Projects/DetectBridge-p10b` | P10a merged; merged-main checks recorded separately | Merged in [PR #37](https://github.com/TravisMa07/DetectBridge/pull/37) as `df31448`; merged-main checks passed; owner authorized P11/P12 |
+| P11 | Windows child; orchestrator integration | `df31448`; `feat/p11-windows-adapters`; `/Users/travisma/.t3/worktrees/DetectBridge/t3-689cf405-5fa25cc439f21f05` | P10 merged; owner authorized dependent work | Implemented/integrating for draft review; recorded trusted host bindings and eligibility acceptance remain blocked |
+| P12a | Linux child | `df31448`; isolated delegated worktree (handoff pending) | P10 merged; owner authorized dependent work | In progress; host/generation evidence and reviewed OpenSSH recording required |
 | P12b | Linux child | Not created | Authorized P12a merge + green main | Planned; actual checkpoint/recovery qualification required |
 | P13 | Unassigned | Not created | P08 + complete P11/P12 | Blocked |
 
@@ -100,3 +100,20 @@ checkpoint/JobManager recovery, attribution, metrics and value-free logs. Projec
 `59a3bca0f6ff994ffb687485b9b2fffd0a7657085a36f5493b3e9ecec54c4c39`;
 this change affects qualification, not evaluator semantics or production bindings.
 AMD64 confirmation remains pending; unrelated CLI failures remain failures.
+
+## P11/P12 authorization and current integration
+
+The owner declared P10 finished and requested the agreed P11/P12 planning and
+implementation. P10b merged as df3144822ddd5694b9244ae29eb4a3c9e2815376;
+[merged-main CI](https://github.com/TravisMa07/DetectBridge/actions/runs/43679437257)
+passed. This records authorization to proceed, not an invented semantic-review
+approval. P11 and P12a run in separate worktrees from that same base; P12b remains
+dependent on P12a's authorized merge and complete P12 acceptance remains separate.
+
+P11 child commits f78e221/f764907/eb44769/f82e83b provide design/expectations,
+isolated Gradle integration, adapters and qualification. Orchestrator-owned CI/dev
+gates, inventories, source-signature verifier and System/Data attribution fix are
+being integrated for a draft PR. See [subsystem ledger](p11-ledger.md). Recorded
+Windows accounting is preservation/skip evidence; no eligible recording claim
+is made without trusted host bindings. No services, P13 pipeline, release or
+authorized merge is implied.

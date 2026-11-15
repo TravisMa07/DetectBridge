@@ -1,0 +1,119 @@
+{
+  "@timestamp": "2026-11-12T12:00:00.123456789123Z",
+  "ecs": {
+    "version": "9.5.0"
+  },
+  "event": {
+    "id": "sha256:28a0dd5e80010815e15b939227fbfeee0267c9b618a37e9b4b3878b5514747b1",
+    "kind": "event",
+    "category": [
+      "process"
+    ],
+    "type": [
+      "start"
+    ],
+    "code": "1",
+    "created": "2026-11-12T12:00:01.123456789123Z",
+    "provider": "Microsoft-Windows-Sysmon"
+  },
+  "host": {
+    "id": "synthetic-host-id",
+    "name": "SYNTHETIC-HOST"
+  },
+  "user": {
+    "name": "Alice",
+    "domain": "LAB"
+  },
+  "process": {
+    "pid": 42,
+    "parent": {
+      "pid": 12,
+      "entity_id": "{00000000-0000-4000-8000-000000000011}",
+      "executable": "C:\\parent.exe"
+    },
+    "entity_id": "{00000000-0000-4000-8000-000000000010}",
+    "executable": "C:\\synthetic.exe",
+    "command_line": "synthetic.exe --literal",
+    "working_directory": "C:\\work\\"
+  },
+  "source_fields": {
+    "Image": "C:\\synthetic.exe",
+    "ProcessId": "42",
+    "ParentProcessId": "12",
+    "CommandLine": "synthetic.exe --literal",
+    "User": "LAB\\Alice",
+    "UtcTime": "2026-11-12 12:00:00.123456789123",
+    "ProcessGuid": "{00000000-0000-4000-8000-000000000010}",
+    "ParentProcessGuid": "{00000000-0000-4000-8000-000000000011}",
+    "CurrentDirectory": "C:\\work\\",
+    "ParentImage": "C:\\parent.exe",
+    "windows_system": {
+      "values": {
+        "Provider": "",
+        "EventID": "1",
+        "Version": "5",
+        "TimeCreated": "",
+        "Channel": "Microsoft-Windows-Sysmon/Operational",
+        "Computer": "SYNTHETIC-HOST"
+      },
+      "attributes": {
+        "Provider": {
+          "Name": "Microsoft-Windows-Sysmon"
+        },
+        "EventID": {},
+        "Version": {},
+        "TimeCreated": {
+          "SystemTime": "2026-11-12T12:01:00Z"
+        },
+        "Channel": {},
+        "Computer": {}
+      }
+    }
+  },
+  "detectbridge": {
+    "contract_version": "1.0.0",
+    "source": {
+      "namespace": "synthetic-p11",
+      "instance": "synthetic-origin"
+    },
+    "source_contract": {
+      "id": "windows-sysmon-process-xml",
+      "version": "1.0.0"
+    },
+    "processing": {
+      "parser": "windows-xml/1.0.0",
+      "normalizer": "windows-normalizer/1.0.0",
+      "mapping": "windows-sysmon-process-xml-mapping/1.0.0"
+    },
+    "run_id": "00000000-0000-4000-8000-000000000001",
+    "time": {
+      "basis": "source",
+      "quality": "valid",
+      "first_observed": "2026-11-12T12:00:01.123456789123Z",
+      "source_value": "2026-11-12 12:00:00.123456789123",
+      "source_utc": "2026-11-12T12:00:00.123456789123Z"
+    },
+    "assembly": {
+      "mode": "standalone",
+      "closure": "not_required",
+      "quality": "source_indicated",
+      "assembler_version": "1.0.0"
+    },
+    "quality": {
+      "integrity": "sufficient",
+      "eligibility": "eligible",
+      "diagnostics": []
+    },
+    "evidence": [
+      {
+        "record_id": "sha256:fb0945adcb3b80d2352015c3b81f921dfcc2c208faeed29ab4215946f843bc5e",
+        "evidence": {
+          "sha256": "1c4b862aa12e54fb909ce5eaac811869a749584e11920e06bda4ff54b0118454",
+          "media_type": "application/xml",
+          "encoding": "utf-8",
+          "inline": "<Event xmlns=\"http://schemas.microsoft.com/win/2004/08/events/event\"><System><Provider Name=\"Microsoft-Windows-Sysmon\"/><EventID>1</EventID><Version>5</Version><TimeCreated SystemTime=\"2026-11-12T12:01:00Z\"/><Channel>Microsoft-Windows-Sysmon/Operational</Channel><Computer>SYNTHETIC-HOST</Computer></System><EventData><Data Name=\"Image\">C:\\synthetic.exe</Data><Data Name=\"ProcessId\">42</Data><Data Name=\"ParentProcessId\">12</Data><Data Name=\"CommandLine\">synthetic.exe --literal</Data><Data Name=\"User\">LAB\\Alice</Data><Data Name=\"UtcTime\">2026-11-12 12:00:00.123456789123</Data><Data Name=\"ProcessGuid\">{00000000-0000-4000-8000-000000000010}</Data><Data Name=\"ParentProcessGuid\">{00000000-0000-4000-8000-000000000011}</Data><Data Name=\"CurrentDirectory\">C:\\work\\</Data><Data Name=\"ParentImage\">C:\\parent.exe</Data></EventData></Event>\n"
+        }
+      }
+    ]
+  }
+}

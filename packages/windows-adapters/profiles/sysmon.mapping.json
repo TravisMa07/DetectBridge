@@ -1,0 +1,48 @@
+{
+  "version": "1.0.0",
+  "id": "windows-sysmon-process-xml-mapping",
+  "source": {
+    "id": "windows-sysmon-process-xml",
+    "version": "1.0.0",
+    "sha256": "216441d0d9fe9d1c257dbf7f576e3e8b384a93c0ba8db5165962b20453a1a564"
+  },
+  "fields": [
+    {
+      "alias": "Image",
+      "target": "process.executable",
+      "source_path": "/Image",
+      "capability": "available",
+      "type": "string",
+      "cardinality": "scalar",
+      "transform": "identity-string/1.0.0"
+    },
+    {
+      "alias": "CommandLine",
+      "target": "process.command_line",
+      "source_path": "/CommandLine",
+      "capability": "conditional",
+      "type": "string",
+      "cardinality": "scalar",
+      "transform": "identity-string/1.0.0"
+    },
+    {
+      "alias": "ProcessId",
+      "target": "process.pid",
+      "source_path": "/ProcessId",
+      "capability": "conditional",
+      "type": "integer",
+      "cardinality": "scalar",
+      "transform": "decimal-integer/1.0.0"
+    },
+    {
+      "alias": "User",
+      "target": "user.name",
+      "source_path": "/User",
+      "capability": "conditional",
+      "type": "string",
+      "cardinality": "scalar",
+      "transform": "windows-account/1.0.0"
+    }
+  ],
+  "sha256": "4baa2e046e5136ab5e3cda62a80077aceb44ce40ce5a129f4acbf8f4bc3930cc"
+}

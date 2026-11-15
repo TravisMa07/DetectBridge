@@ -73,7 +73,8 @@
         "stack": "${{ steps.paths.outputs.stack }}",
         "transport": "${{ steps.paths.outputs.transport }}",
         "detection": "${{ steps.paths.outputs.detection }}",
-        "writer": "${{ steps.paths.outputs.writer }}"
+        "writer": "${{ steps.paths.outputs.writer }}",
+        "windows": "${{ steps.paths.outputs.windows }}"
       }
     },
     "repository-hygiene": {
@@ -190,7 +191,8 @@
         "local-stack-verification",
         "transport-verification",
         "detection-verification",
-        "opensearch-writer-verification"
+        "opensearch-writer-verification",
+        "windows-verification"
       ]
     },
     "dataset-acquisition": {
@@ -418,6 +420,36 @@
         {
           "name": "Build and qualify idempotent OpenSearch writer",
           "run": "uv run --locked python tools/transport.py build\nuv run --locked python tools/writer.py build\nuv run --locked python tools/datasets.py fetch --all\nuv run --locked python tools/writer.py verify --recorded"
+        }
+      ]
+    },
+    "windows-verification": {
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 20,
+      "needs": [
+        "classify-changes"
+      ],
+      "if": "${{ needs.classify-changes.outputs.windows == 'true' }}",
+      "steps": [
+        {
+          "uses": "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "with": {
+            "persist-credentials": false
+          }
+        },
+        {
+          "uses": "actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0",
+          "with": {
+            "python-version": "3.12.12"
+          }
+        },
+        {
+          "name": "Install pinned development tools",
+          "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
+        },
+        {
+          "name": "Build and qualify Windows adapter semantics and offline recovery",
+          "run": "uv run --locked python tools/dev.py windows"
         }
       ]
     }

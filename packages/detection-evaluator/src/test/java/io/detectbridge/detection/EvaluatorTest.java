@@ -180,6 +180,35 @@ class EvaluatorTest {
   }
 
   @Test
+  void evidenceUriSchemesAreCaseInsensitiveWithoutRewritingLocators() throws Exception {
+    Evaluator evaluator =
+        new Evaluator(Files.readAllBytes(ROOT.resolve(".cache/detection/plan.json")));
+    ObjectNode original = (ObjectNode) read(FIX.resolve("positive.event.json"));
+    for (String scheme : List.of("https", "HTTPS", "hTtPs", "s3", "S3", "file", "FILE")) {
+      ObjectNode event = original.deepCopy();
+      ObjectNode evidence =
+          (ObjectNode) event.get("detectbridge").get("evidence").get(0).get("evidence");
+      String hash = evidence.get("sha256").asString();
+      evidence.remove("inline");
+      String uri = scheme + "://evidence.example/object";
+      evidence.set("reference", Json.MAPPER.valueToTree(Map.of("uri", uri, "object_sha256", hash)));
+      byte[] bytes = Json.bytes(event);
+      assertDoesNotThrow(() -> evaluator.evaluate(bytes, location(bytes)), scheme);
+      assertEquals(uri, evidence.get("reference").get("uri").asString());
+    }
+    for (String uri : List.of("HTTPS://user@evidence.example/object", "ftp://evidence.example/object", "URN:sha256:")) {
+      ObjectNode event = original.deepCopy();
+      ObjectNode evidence =
+          (ObjectNode) event.get("detectbridge").get("evidence").get(0).get("evidence");
+      String hash = evidence.get("sha256").asString();
+      evidence.remove("inline");
+      evidence.set("reference", Json.MAPPER.valueToTree(Map.of("uri", uri.endsWith(":") ? uri + hash : uri, "object_sha256", hash)));
+      byte[] bytes = Json.bytes(event);
+      assertThrows(IllegalArgumentException.class, () -> evaluator.evaluate(bytes, location(bytes)), uri);
+    }
+  }
+
+  @Test
   void normalizedEvidenceAndConfigurationAreNotNonmatches() throws Exception {
     Evaluator evaluator =
         new Evaluator(Files.readAllBytes(ROOT.resolve(".cache/detection/plan.json")));

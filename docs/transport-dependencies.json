@@ -71,6 +71,13 @@
             "runtimeClasspath",
             "testRuntimeClasspath"
           ]
+        },
+        {
+          "lockfile": "packages/windows-adapters/gradle.lockfile",
+          "configurations": [
+            "runtimeClasspath",
+            "testRuntimeClasspath"
+          ]
         }
       ]
     },
@@ -141,6 +148,15 @@
             "testCompileClasspath",
             "testRuntimeClasspath"
           ]
+        },
+        {
+          "lockfile": "packages/windows-adapters/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
         }
       ]
     },
@@ -176,6 +192,15 @@
         },
         {
           "lockfile": "packages/transport-writer/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/windows-adapters/gradle.lockfile",
           "configurations": [
             "compileClasspath",
             "runtimeClasspath",
@@ -285,6 +310,13 @@
             "runtimeClasspath",
             "testRuntimeClasspath"
           ]
+        },
+        {
+          "lockfile": "packages/windows-adapters/gradle.lockfile",
+          "configurations": [
+            "runtimeClasspath",
+            "testRuntimeClasspath"
+          ]
         }
       ]
     },
@@ -327,6 +359,15 @@
         },
         {
           "lockfile": "packages/transport-writer/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/windows-adapters/gradle.lockfile",
           "configurations": [
             "compileClasspath",
             "runtimeClasspath",
@@ -702,6 +743,15 @@
             "testCompileClasspath",
             "testRuntimeClasspath"
           ]
+        },
+        {
+          "lockfile": "packages/windows-adapters/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
         }
       ]
     },
@@ -716,6 +766,12 @@
         },
         {
           "lockfile": "packages/transport-writer/gradle.lockfile",
+          "configurations": [
+            "testCompileClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/windows-adapters/gradle.lockfile",
           "configurations": [
             "testCompileClasspath"
           ]
@@ -749,6 +805,13 @@
             "testCompileClasspath",
             "testRuntimeClasspath"
           ]
+        },
+        {
+          "lockfile": "packages/windows-adapters/gradle.lockfile",
+          "configurations": [
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
         }
       ]
     },
@@ -763,6 +826,12 @@
         },
         {
           "lockfile": "packages/transport-writer/gradle.lockfile",
+          "configurations": [
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/windows-adapters/gradle.lockfile",
           "configurations": [
             "testRuntimeClasspath"
           ]
@@ -781,6 +850,13 @@
         },
         {
           "lockfile": "packages/transport-writer/gradle.lockfile",
+          "configurations": [
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/windows-adapters/gradle.lockfile",
           "configurations": [
             "testCompileClasspath",
             "testRuntimeClasspath"
@@ -804,6 +880,13 @@
             "testCompileClasspath",
             "testRuntimeClasspath"
           ]
+        },
+        {
+          "lockfile": "packages/windows-adapters/gradle.lockfile",
+          "configurations": [
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
         }
       ]
     },
@@ -819,6 +902,13 @@
         },
         {
           "lockfile": "packages/transport-writer/gradle.lockfile",
+          "configurations": [
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/windows-adapters/gradle.lockfile",
           "configurations": [
             "testCompileClasspath",
             "testRuntimeClasspath"
@@ -840,6 +930,12 @@
           "configurations": [
             "testRuntimeClasspath"
           ]
+        },
+        {
+          "lockfile": "packages/windows-adapters/gradle.lockfile",
+          "configurations": [
+            "testRuntimeClasspath"
+          ]
         }
       ]
     },
@@ -854,6 +950,12 @@
         },
         {
           "lockfile": "packages/transport-writer/gradle.lockfile",
+          "configurations": [
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/windows-adapters/gradle.lockfile",
           "configurations": [
             "testRuntimeClasspath"
           ]
@@ -872,6 +974,13 @@
         },
         {
           "lockfile": "packages/transport-writer/gradle.lockfile",
+          "configurations": [
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/windows-adapters/gradle.lockfile",
           "configurations": [
             "testCompileClasspath",
             "testRuntimeClasspath"
@@ -902,6 +1011,13 @@
         },
         {
           "lockfile": "packages/transport-writer/gradle.lockfile",
+          "configurations": [
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/windows-adapters/gradle.lockfile",
           "configurations": [
             "testCompileClasspath",
             "testRuntimeClasspath"
@@ -947,6 +1063,15 @@
         },
         {
           "lockfile": "packages/transport-writer/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/windows-adapters/gradle.lockfile",
           "configurations": [
             "compileClasspath",
             "runtimeClasspath",
@@ -1020,6 +1145,15 @@
             "testCompileClasspath",
             "testRuntimeClasspath"
           ]
+        },
+        {
+          "lockfile": "packages/windows-adapters/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
         }
       ]
     },
@@ -1051,6 +1185,13 @@
         },
         {
           "lockfile": "packages/transport-writer/gradle.lockfile",
+          "configurations": [
+            "runtimeClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/windows-adapters/gradle.lockfile",
           "configurations": [
             "runtimeClasspath",
             "testRuntimeClasspath"
@@ -1090,6 +1231,15 @@
         },
         {
           "lockfile": "packages/transport-writer/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/windows-adapters/gradle.lockfile",
           "configurations": [
             "compileClasspath",
             "runtimeClasspath",
@@ -1137,6 +1287,15 @@
             "testCompileClasspath",
             "testRuntimeClasspath"
           ]
+        },
+        {
+          "lockfile": "packages/windows-adapters/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
         }
       ]
     },
@@ -1168,6 +1327,15 @@
         },
         {
           "lockfile": "packages/transport-writer/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/windows-adapters/gradle.lockfile",
           "configurations": [
             "compileClasspath",
             "runtimeClasspath",
@@ -1209,6 +1377,15 @@
         },
         {
           "lockfile": "packages/transport-writer/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/windows-adapters/gradle.lockfile",
           "configurations": [
             "compileClasspath",
             "runtimeClasspath",

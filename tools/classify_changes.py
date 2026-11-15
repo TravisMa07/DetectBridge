@@ -168,6 +168,51 @@ def needs_detection(paths):
     )
 
 
+def needs_windows(paths):
+    shared = {
+        "pyproject.toml",
+        "uv.lock",
+        "settings.gradle.kts",
+        "settings-gradle.lockfile",
+        "build.gradle.kts",
+        "gradle.properties",
+        "gradlew",
+        "gradlew.bat",
+        "tools/dev.py",
+        "tools/toolchains.json",
+        "tools/check_gate.py",
+        "tools/classify_changes.py",
+        "tools/dependency_inventory.py",
+        "tools/check_contracts.py",
+        "tools/datasets.py",
+        "docs/windows-dependencies.json",
+        "docs/transport-dependencies.json",
+    }
+    return any(
+        (
+            p in shared
+            or p.startswith(
+                (
+                    "packages/windows-adapters/",
+                    "packages/detection-evaluator/",
+                    "packages/transport-contracts/",
+                    "contracts/v1/",
+                    "contracts/detection/",
+                    "catalog/datasets/",
+                    "gradle/",
+                    ".github/workflows/",
+                    "tools/detection_compile",
+                    "tools/detection_mapping",
+                    "tools/check_windows",
+                    "tools/tests/test_windows",
+                )
+            )
+        )
+        for p in paths
+        if not (p.endswith(".md") or p == "LICENSE")
+    )
+
+
 if __name__ == "__main__":
     base = os.environ.get("CHANGE_BASE", "")
     head = os.environ.get("CHANGE_HEAD", "HEAD")
@@ -186,3 +231,4 @@ if __name__ == "__main__":
         output.write(f"stack={str(needs_stack([p for p in paths if p])).lower()}\n")
         output.write(f"transport={str(needs_transport([p for p in paths if p])).lower()}\n")
         output.write(f"writer={str(needs_writer([p for p in paths if p])).lower()}\n")
+        output.write(f"windows={str(needs_windows([p for p in paths if p])).lower()}\n")

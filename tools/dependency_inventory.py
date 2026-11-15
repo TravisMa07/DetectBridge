@@ -13,7 +13,11 @@ REVIEW = ROOT / "docs/transport-dependencies.json"
 
 def artifacts():
     result: dict[str, list[dict]] = {}
-    paths = [*ROOT.glob("*-gradle.lockfile"), *ROOT.glob("packages/transport-*/gradle.lockfile")]
+    paths = [
+        *ROOT.glob("*-gradle.lockfile"),
+        *ROOT.glob("packages/transport-*/gradle.lockfile"),
+        *ROOT.glob("packages/windows-adapters/gradle.lockfile"),
+    ]
     for path in sorted(paths):
         for line in path.read_text().splitlines():
             if not line or line.startswith(("#", "empty=")):

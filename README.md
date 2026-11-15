@@ -15,8 +15,11 @@ recorded in the writer guide. P09 adds a bounded synthetic normalized-fixture
 compiler/Java evaluator slice and a separate Flink job, with merged-main AMD64
 semantic/recovery CI passed and independent owner semantic review pending.
 P10a adds [source mapping/provenance compatibility](docs/p10-design.md).
-[P10b](docs/p10b-design.md) adds source-indexed evaluation and a separate v2 runtime
-for review; independent owner semantic acceptance remains pending.
+[P10b](docs/p10b-design.md) adds source-indexed evaluation and a separate v2 runtime,
+merged with ARM64/AMD64 qualification evidence. The owner authorized P11/P12;
+formal semantic review history remains recorded separately.
+[P11 Windows adapters](docs/windows-adapters.md) are implemented for review with
+recorded preservation accounting; trusted recorded host bindings remain unavailable.
 Production detection, management API, UI and detection-to-OpenSearch integration
 remain pending.
 P06 provides local Kafka/Flink infrastructure and optional authenticated OpenSearch.

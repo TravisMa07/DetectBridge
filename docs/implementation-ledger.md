@@ -129,3 +129,13 @@ real local OpenSSH9 capture has 11 original messages, two eligible success/failu
 events and nine unsupported diagnostics, with immutable byte/context/terms review
 and independent adapter/evaluator accounting. No P12b checkpoint qualification or
 recorded eligible audit claim is made. See the P12 ledger for exact heads/evidence.
+
+## P12b planning after adapter merges
+
+P11 #38 and P12a #39 merged as 46fb080 and 9ea1c68 respectively. P12a PR CI passed;
+merged-main run 43750911904 was still in progress when the next plan was written.
+The [P12b implementation plan](p12b-plan.md) covers checkpointed Linux assembly,
+bounded output intents, timers, real Kafka/Flink failure qualification and exact
+accepted-input accounting. It is a proposal, not implemented recovery evidence.
+Recorded audit eligibility, Windows host binding and independent owner semantic
+review remain separate acceptance items; no P13 readiness is inferred from merges.

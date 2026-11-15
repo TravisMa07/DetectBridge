@@ -105,3 +105,26 @@ Ended runs retain lifecycle knowledge under the closed-state byte budget while
 releasing active-run slots. The serialized pending budget includes its wrapper;
 the closed budget includes receipts for all accepted records and state metadata.
 The runbook records exact semantics and concrete recording blockers.
+
+## Orchestrator reconciliation before acceptance
+
+P12a is stacked above P11's review branch only to serialize shared integration;
+Linux parsing has no semantic dependency on Windows parsing. Retain both modules,
+all existing gates and exact P03 schemas. Align the module-local context proposal
+with P11: mapping_profile is the id/version/sha256/declaration wrapper; host_binding
+uses host_id, source, revision, sha256, provenance and explicit reviewed/synthetic
+kind (optional display computer for Linux). Verify binding content hash and source
+scope. source_generation retains id/provenance; receipt can hold actual received
+and processed timestamps. No common unused adapter module or closed P03 revision.
+
+The owner already selected a real reviewed authentication recording. Execute a
+small isolated Debian bookworm OpenSSH 9.x/rsyslog lab instead of making capture
+conditional on another authorization. Pin actual base digest and package/binary
+metadata before authentication actions, isolate networking to container loopback,
+use a disposable lab-only account, and retain no passwords/private keys. Define
+one accepted and one failed password action independently before capture. Retain
+all native daemon messages and RFC5424 collector output with versioned framing,
+immutable hashes, host/container-generation binding and terms review. Runtime
+capture is distinct from hand-written synthetic messages. New local recording
+catalog metadata must identify opt-in local acquisition and must not imply a
+public download or broad authentication/audit coverage.

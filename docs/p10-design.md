@@ -1,7 +1,7 @@
 # P10 compatibility and source mapping design
 
-Status: P10a implemented for review; P10b selection and runtime qualification remain
-blocked on P10a's authorized merge. Independent owner review of P09/P10 semantic
+Status: P10a merged in PR #36 at b45fba4. P10b source selection and isolated runtime
+are implemented for review; see [P10b design](p10b-design.md). Independent owner review of P09/P10 semantic
 expectations remains pending. See the [accepted implementation plan](p10-p12-plan.md)
 and [task ledger](implementation-ledger.md).
 
@@ -23,7 +23,8 @@ version, plus the hash of the complete canonical ordered mapping-profile list.
 
 P09's existing Flink job is deliberately restricted to legacy plans at submission,
 state initialization and open. It cannot publish v2 results into its v1 topic.
-P10b must supply a separately versioned qualified runtime deployment. Existing
+P10b supplies a separately versioned runtime; its exact-head qualification evidence
+is tracked independently from the legacy regression. Existing
 P07/P08/P09 projects, topics and retained checkpoints are not migrated or adopted.
 Bundle changes alter checkpoint bindings; no state migration is introduced.
 
@@ -104,6 +105,6 @@ nested tamper checks with recomputed outer hashes and changed-mapping checkpoint
 binding rejection. Shared detection changes retain existing writer/transport build
 gates. Mapping checker/test paths explicitly select detection CI.
 
-P10a does not claim v2 Flink recovery, recorded source eligibility, throughput or
-complete P10 acceptance. P10b owns the remaining complete acceptance gate; P11/P12
+P10a alone does not establish v2 Flink recovery, recorded source eligibility,
+throughput or complete P10 acceptance. P10b owns the complete acceptance gate; P11/P12
 remain dependent on it. The upstream shaded-Jackson image finding remains open.

@@ -28,10 +28,10 @@ val compileFixturePlan by tasks.registering(Exec::class) {
     commandLine("uv", "run", "--locked", "python", "tools/check_mapping.py", "--prepare")
     inputs.files(rootProject.fileTree("contracts/detection/v1/fixtures"), rootProject.fileTree("contracts/v1"), rootProject.fileTree("contracts/detection/v2"))
     inputs.files(rootProject.fileTree("tools") { include("detection_compile.py", "detection_mapping.py", "check_mapping.py") }, rootProject.file("uv.lock"))
-    outputs.files(rootProject.file(".cache/detection/plan.json"), rootProject.file(".cache/detection/mapped-plan.json"))
+    outputs.files(rootProject.file(".cache/detection/plan.json"), rootProject.file(".cache/detection/mapped-plan.json"), rootProject.file(".cache/detection/selection-plan.json"))
 }
 tasks.test {
     dependsOn(compileFixturePlan)
     inputs.files(rootProject.fileTree("contracts/detection/v1/fixtures"), rootProject.fileTree("contracts/v1"), rootProject.fileTree("contracts/detection/v2"))
-    inputs.files(rootProject.file(".cache/detection/plan.json"), rootProject.file(".cache/detection/mapped-plan.json"))
+    inputs.files(rootProject.file(".cache/detection/plan.json"), rootProject.file(".cache/detection/mapped-plan.json"), rootProject.file(".cache/detection/selection-plan.json"))
 }

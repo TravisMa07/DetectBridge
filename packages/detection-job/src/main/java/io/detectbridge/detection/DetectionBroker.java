@@ -58,18 +58,23 @@ public final class DetectionBroker {
 
   public static Map<String, Object> describe(String bootstrap, boolean create, String group)
       throws Exception {
+    return describe(bootstrap, create, group, TOPICS);
+  }
+
+  public static Map<String, Object> describe(String bootstrap, boolean create, String group,
+      List<String> topicNames) throws Exception {
     try (Admin admin = Admin.create(properties(bootstrap))) {
       if (create) {
         var existing = admin.listTopics().names().get(15, TimeUnit.SECONDS);
         List<NewTopic> topics = new ArrayList<>();
-        for (String name : TOPICS)
+        for (String name : topicNames)
           if (!existing.contains(name))
             topics.add(new NewTopic(name, 1, (short) 1).configs(TOPIC_CONFIG));
         if (!topics.isEmpty()) admin.createTopics(topics).all().get(15, TimeUnit.SECONDS);
       }
-      var descriptions = admin.describeTopics(TOPICS).allTopicNames().get(15, TimeUnit.SECONDS);
+      var descriptions = admin.describeTopics(topicNames).allTopicNames().get(15, TimeUnit.SECONDS);
       Map<String, Object> topics = new LinkedHashMap<>();
-      for (String name : TOPICS) {
+      for (String name : topicNames) {
         var topic = descriptions.get(name);
         if (topic.partitions().size() != 1 || topic.partitions().get(0).replicas().size() != 1)
           throw new IllegalStateException("topic_topology_mismatch");
@@ -100,12 +105,12 @@ public final class DetectionBroker {
       result.put("topics", topics);
       Map<TopicPartition, org.apache.kafka.clients.admin.OffsetSpec> request =
           new LinkedHashMap<>();
-      for (String name : TOPICS)
+      for (String name : topicNames)
         request.put(
             new TopicPartition(name, 0), org.apache.kafka.clients.admin.OffsetSpec.latest());
       var offsets = admin.listOffsets(request).all().get(15, TimeUnit.SECONDS);
       Map<String, Long> ends = new LinkedHashMap<>();
-      for (String name : TOPICS) ends.put(name, offsets.get(new TopicPartition(name, 0)).offset());
+      for (String name : topicNames) ends.put(name, offsets.get(new TopicPartition(name, 0)).offset());
       result.put("end_offsets", ends);
       if (group != null) {
         var committed =
@@ -113,7 +118,7 @@ public final class DetectionBroker {
                 .listConsumerGroupOffsets(group)
                 .partitionsToOffsetAndMetadata()
                 .get(15, TimeUnit.SECONDS);
-        var offset = committed.get(new TopicPartition(INPUT, 0));
+        var offset = committed.get(new TopicPartition(topicNames.get(0), 0));
         result.put("committed_input_offset", offset == null ? 0 : offset.offset());
       }
       return result;
@@ -121,13 +126,17 @@ public final class DetectionBroker {
   }
 
   public static long groupOffset(String bootstrap, String group) throws Exception {
+    return groupOffset(bootstrap, group, INPUT);
+  }
+
+  public static long groupOffset(String bootstrap, String group, String input) throws Exception {
     try (Admin admin = Admin.create(properties(bootstrap))) {
       var values =
           admin
               .listConsumerGroupOffsets(group)
               .partitionsToOffsetAndMetadata()
               .get(15, TimeUnit.SECONDS);
-      var offset = values.get(new TopicPartition(INPUT, 0));
+      var offset = values.get(new TopicPartition(input, 0));
       return offset == null ? 0 : offset.offset();
     }
   }
@@ -135,11 +144,18 @@ public final class DetectionBroker {
   @SuppressWarnings("unchecked")
   public static void verify(String bootstrap, String cluster, Map<String, String> ids)
       throws Exception {
-    Map<String, Object> current = describe(bootstrap, false, null);
+    verify(bootstrap, cluster, ids, TOPICS);
+  }
+
+  @SuppressWarnings("unchecked")
+  public static void verify(String bootstrap, String cluster, Map<String, String> ids,
+      List<String> topicNames) throws Exception {
+    Contracts.check(ids.keySet().equals(new java.util.HashSet<>(topicNames)), "topic_boundary_mismatch");
+    Map<String, Object> current = describe(bootstrap, false, null, topicNames);
     if (!cluster.equals(current.get("cluster_id")))
       throw new IllegalStateException("cluster_changed");
     Map<String, Object> topics = (Map<String, Object>) current.get("topics");
-    for (String name : TOPICS)
+    for (String name : topicNames)
       if (!ids.get(name).equals(((Map<String, Object>) topics.get(name)).get("id")))
         throw new IllegalStateException("topic_recreated");
   }

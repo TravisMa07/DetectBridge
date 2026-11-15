@@ -11,8 +11,9 @@ from typing import Any
 from urllib.parse import urlsplit
 
 import replay
-from check_contracts import load_json
+from check_contracts import StrictValidator, load_json
 from detection_compile import compile_rules, encoded, sha
+from jsonschema import FormatChecker
 from stack import DEPLOY, ROOT, Stack, StackError, project_lock, run, save
 from transport import Transport, digest, java_env
 
@@ -26,7 +27,62 @@ VERSION = "1.0.0"
 FIXTURES = ROOT / "contracts/detection/v1/fixtures"
 
 
-def build():
+def failure_category(error):
+    """Emit fixed operational categories only; never exception text or input values."""
+    if isinstance(error, StackError):
+        category = str(error)
+        known = {
+            "command_timeout",
+            "command_failed",
+            "docker_unavailable",
+            "docker_daemon_api_failure",
+            "docker_setup_failure",
+            "job_terminated_before_checkpoint",
+            "completed_checkpoint_timeout",
+            "missing_submitted_job_id",
+            "job_already_active",
+            "unknown_checkpoint_owner",
+            "unsafe_checkpoint_uri",
+            "detection_accounting_timeout",
+            "independent_expectation_failed",
+            "quarantine_reference_mismatch",
+            "detection_input_reference_mismatch",
+            "detection_output_schema_invalid",
+            "detection_output_key_mismatch",
+            "mapped_version_attribution_mismatch",
+            "unstable_duplicate_result",
+            "result_identity_collision",
+            "unexpected_detection_output",
+            "qualified_bundle_changed",
+            "missing_detection_metrics",
+            "payload_leaked_to_logs",
+            "replay_isolation_failed",
+            "input_checkpoint_progress_timeout",
+            "job_cancellation_timeout",
+            "incompatible_restore_not_rejected",
+            "missing_incompatible_restore_job",
+            "ambiguous_incompatible_restore_job",
+            "unrelated_incompatible_restore_failure",
+            "checkpoint_crossed_failed_sink",
+        }
+        if category in known:
+            return category
+        command = re.fullmatch(
+            r"command_failed(?:_(?:job_submission|checkpoint_metadata|internal_http|topic_configuration))?_exit_([0-9]{1,3})",
+            category,
+        )
+        if command and 1 <= int(command[1]) <= 255:
+            return category
+    if isinstance(error, KeyError):
+        return "unexpected_document_shape"
+    if isinstance(error, json.JSONDecodeError):
+        return "invalid_json"
+    if isinstance(error, OSError):
+        return "io_error"
+    return "detection_operation_failed"
+
+
+def build(mapped=False):
     run(
         [
             ROOT / "gradlew",
@@ -37,7 +93,8 @@ def build():
         env=java_env(),
         timeout=600,
     )
-    plan = ROOT / ".cache/detection/plan.json"
+    plan = ROOT / (".cache/detection/mapped-plan.json" if mapped else ".cache/detection/plan.json")
+    builds = ROOT / ".cache/detection-v2-build" if mapped else BUILDS
     jar = ROOT / "packages/detection-job/build/libs/detection-job.jar"
     dockerfile = DEPLOY / "detection.Dockerfile"
     logger = DEPLOY / "transport-log4j.properties"
@@ -46,7 +103,7 @@ def build():
     fingerprint = sha(
         jar.read_bytes() + plan.read_bytes() + dockerfile.read_bytes() + logger.read_bytes()
     )
-    folder = BUILDS / fingerprint
+    folder = builds / fingerprint
     folder.mkdir(parents=True, exist_ok=True)
     for source, name in [
         (jar, "detection-job.jar"),
@@ -55,7 +112,7 @@ def build():
         (logger, "log4j-console.properties"),
     ]:
         shutil.copyfile(source, folder / name)
-    image = "detectbridge-detection:" + fingerprint
+    image = ("detectbridge-detection-v2:" if mapped else "detectbridge-detection:") + fingerprint
     run(
         [
             "docker",
@@ -77,26 +134,37 @@ def build():
         "image_id": metadata["Id"],
         "platform": "linux/" + metadata["Architecture"],
     }
-    save(BUILDS / "bundle.json", bundle)
+    save(builds / "bundle.json", bundle)
     return {"status": "built", "bundle": bundle}
 
 
 class Detection(Transport):
-    def __init__(self, project):
-        if not re.fullmatch(r"detectbridge-p09-[a-z0-9-]+", project):
+    def __init__(self, project, *, mapped=False):
+        self.mapped = mapped
+        suffix = "v2" if mapped else "v1"
+        self.input = "detectbridge.detection.input." + suffix
+        self.output = "detectbridge.detection.results." + suffix
+        self.quarantine = "detectbridge.detection.quarantine." + suffix
+        self.topics = [self.input, self.output, self.quarantine]
+        self.builds = ROOT / ".cache/detection-v2-build" if mapped else BUILDS
+        self.cache = ROOT / ".cache/detection-v2-runtime" if mapped else CACHE
+        prefix = "detectbridge-p10-" if mapped else "detectbridge-p09-"
+        if not re.fullmatch(re.escape(prefix) + r"[a-z0-9-]+", project):
             raise StackError("dedicated_detection_project_required")
         super().__init__(project)
-        self.folder = CACHE / self.project
+        self.folder = self.cache / self.project
         if self.folder.is_symlink():
             raise StackError("unsafe_detection_state")
 
     def bundle(self, value=None):
-        return super().bundle(load_json(BUILDS / "bundle.json") if value is None else value)
+        return super().bundle(load_json(self.builds / "bundle.json") if value is None else value)
 
     def config(self):
         value = load_json(self.folder / "configuration.json")
-        if value["project"] != self.project or set(value["broker"]["topics"]) != set(TOPICS):
+        if value["project"] != self.project or set(value["broker"]["topics"]) != set(self.topics):
             raise StackError("detection_configuration_mismatch")
+        if self.mapped and value.get("runtime") != "mapped/2.0.0":
+            raise StackError("detection_runtime_mismatch")
         if (self.folder / "configuration.sha256").read_text().strip() != digest(value):
             raise StackError("configuration_checksum_mismatch")
         self.bundle(value["bundle"])
@@ -130,28 +198,71 @@ class Detection(Transport):
             "value": base64.b64encode(value).decode() if value is not None else None,
         }
         result = self.helper_run(
-            self.process_args("inject", INPUT), timeout=60, data=json.dumps(row) + "\n"
+            self.process_args("inject", self.input), timeout=60, data=json.dumps(row) + "\n"
         )
         rows = [json.loads(line) for line in result.stdout.splitlines()]
         if len(rows) != 2 or rows[0].get("type") != "ack" or rows[1].get("count") != 1:
             raise StackError("missing_detection_ack")
         return rows[0]
 
+    def qualification_plan(self):
+        config = self.config()
+        folder = self.builds / config["bundle"]["bundle_sha256"]
+        material = b"".join(
+            (folder / name).read_bytes()
+            for name in ("detection-job.jar", "plan.json", "Dockerfile", "log4j-console.properties")
+        )
+        if sha(material) != config["bundle"]["bundle_sha256"]:
+            raise StackError("qualified_bundle_changed")
+        return load_json(folder / "plan.json")
+
     def accounted(self, expected, invalid, timeout=180):
+        plan = self.qualification_plan()
+        result_schema = (
+            ROOT / "contracts/detection" / ("v2" if self.mapped else "v1") / "result.schema.json"
+        )
+        result_validator = StrictValidator(load_json(result_schema), format_checker=FormatChecker())
+        error_validator = StrictValidator(
+            load_json(ROOT / "contracts/detection/v1/quarantine.schema.json"),
+            format_checker=FormatChecker(),
+        )
         deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
             info = self.verify_destination()
-            results = [
-                json.loads(base64.b64decode(r["value"]))
-                for r in self.read_records(OUTPUT, 0, info["end_offsets"][OUTPUT])
-            ]
-            errors = [
-                json.loads(base64.b64decode(r["value"]))
-                for r in self.read_records(QUARANTINE, 0, info["end_offsets"][QUARANTINE])
-            ]
+            result_rows = self.read_records(self.output, 0, info["end_offsets"][self.output])
+            error_rows = self.read_records(self.quarantine, 0, info["end_offsets"][self.quarantine])
+            results: list[dict] = []
+            errors: list[dict] = []
+            for rows, validator, target, identity_field in (
+                (result_rows, result_validator, results, "result_id"),
+                (error_rows, error_validator, errors, "quarantine_id"),
+            ):
+                for wire in rows:
+                    row = json.loads(base64.b64decode(wire["value"]))
+                    if next(validator.iter_errors(row), None):
+                        raise StackError("detection_output_schema_invalid")
+                    if (
+                        wire["key"] is None
+                        or base64.b64decode(wire["key"]) != row[identity_field].encode()
+                    ):
+                        raise StackError("detection_output_key_mismatch")
+                    target.append(row)
+            for row in results + errors:
+                location = row["input"]
+                if (
+                    location["cluster_id"] != info["cluster_id"]
+                    or location["topic"] != self.input
+                    or location["topic_id"] != info["topics"][self.input]["id"]
+                ):
+                    raise StackError("detection_input_reference_mismatch")
             stable: dict[tuple[str, str, str], dict] = {}
             identities: dict[str, tuple[str, str, str]] = {}
             for result in results:
+                if result["bundle_sha256"] != plan["bundle_sha256"] or (
+                    self.mapped
+                    and result["mapping_sha256"] != sha(encoded(plan["mapping_profiles"]))
+                ):
+                    raise StackError("mapped_version_attribution_mismatch")
                 key = (result["event_id"], result["run_id"], result["bundle_sha256"])
                 semantic = {name: value for name, value in result.items() if name != "input"}
                 if key in stable and stable[key] != semantic:
@@ -163,14 +274,62 @@ class Detection(Transport):
             seen = {r["input"]["offset"]: r for r in results}
             bad = {r["input"]["offset"]: r for r in errors}
             if set(seen) == set(expected) and set(bad) == set(invalid):
-                for offset, (outcome, checksum) in expected.items():
+                for offset, expectation in expected.items():
+                    result = seen[offset]
+                    outcome = expectation["outcome"]
+                    expected_counts = {
+                        name: int(name == outcome)
+                        for name in (
+                            "matched",
+                            "unmatched",
+                            "inapplicable",
+                            "configuration_blocked",
+                            "quality_skipped",
+                            "evaluation_error",
+                        )
+                    }
+                    rule = {
+                        "id": "70000000-0000-4000-8000-000000000001",
+                        "revision": sha((FIXTURES / "rules/process.yml").read_bytes()),
+                    }
+                    expected_matches = [rule] if outcome == "matched" else []
+                    expected_diagnostics = (
+                        [{"rule_id": rule["id"], "category": outcome, "pointer": ""}]
+                        if outcome
+                        in ("configuration_blocked", "quality_skipped", "evaluation_error")
+                        else []
+                    )
+                    identity = "sha256:" + sha(
+                        encoded(
+                            [expectation["event_id"], expectation["run_id"], plan["bundle_sha256"]]
+                        )
+                    )
                     if (
-                        seen[offset]["counts"][outcome] != 1
-                        or seen[offset]["input"]["value_sha256"] != checksum
+                        result["counts"] != expected_counts
+                        or result["matched"] != expected_matches
+                        or result["diagnostics"] != expected_diagnostics
+                        or result["event_id"] != expectation["event_id"]
+                        or result["run_id"] != expectation["run_id"]
+                        or result["result_id"] != identity
+                        or result["input"]["partition"] != 0
+                        or result["input"]["value_sha256"] != expectation["value_sha256"]
                     ):
                         raise StackError("independent_expectation_failed")
-                for offset, checksum in invalid.items():
-                    if bad[offset]["input"]["value_sha256"] != checksum:
+                for offset, expectation in invalid.items():
+                    error = bad[offset]
+                    identity = "sha256:" + sha(
+                        encoded(
+                            [info["cluster_id"], info["topics"][self.input]["id"], "0", str(offset)]
+                        )
+                    )
+                    if (
+                        error["input"]["value_sha256"] != expectation["value_sha256"]
+                        or error["input"]["partition"] != 0
+                        or error["quarantine_id"] != identity
+                        or error["value_size"] != expectation["value_size"]
+                        or error["value_is_null"] != expectation["value_is_null"]
+                        or error["category"] != "invalid_normalized_input"
+                    ):
                         raise StackError("quarantine_reference_mismatch")
                 return results
             if set(seen) - set(expected) or set(bad) - set(invalid):
@@ -210,7 +369,9 @@ class Detection(Transport):
             "-Xmx256m",
             "-cp",
             "/opt/detectbridge/detection-job.jar:/opt/flink/lib/*",
-            "io.detectbridge.detection.DetectionPublisher",
+            "io.detectbridge.detection.DetectionV2Publisher"
+            if self.mapped
+            else "io.detectbridge.detection.DetectionPublisher",
             "kafka:9092",
             command,
             *map(str, args),
@@ -250,7 +411,13 @@ class Detection(Transport):
         save(self.stack.folder / "state.json", state)
         self.stack.up("core")
         pipeline = str(uuid.uuid4())
-        initial = {"bundle": bundle, "consumer_group": "detectbridge-detection-v1-" + pipeline}
+        initial = {
+            "bundle": bundle,
+            "consumer_group": (
+                "detectbridge-detection-v2-" if self.mapped else "detectbridge-detection-v1-"
+            )
+            + pipeline,
+        }
         info = self.broker("init", config=initial)
         config = {
             "contract_version": VERSION,
@@ -261,6 +428,8 @@ class Detection(Transport):
             "consumer_group": initial["consumer_group"],
             "normalized_contract": VERSION,
         }
+        if self.mapped:
+            config["runtime"] = "mapped/2.0.0"
         self.folder.mkdir(parents=True, mode=0o700)
         replay.atomic_json(self.folder / "configuration.json", config)
         (self.folder / "configuration.sha256").write_text(digest(config) + "\n")
@@ -304,12 +473,14 @@ class Detection(Transport):
                 path += "/_metadata"
             self.stack.exec("jobmanager", "test", "-s", path)
             args += ["-s", "file://" + path]
+        if self.mapped:
+            args += ["-c", "io.detectbridge.detection.DetectionV2Job"]
         args += [
             "/opt/detectbridge/detection-job.jar",
             "kafka:9092",
             config["consumer_group"],
             config["broker"]["cluster_id"],
-            *[config["broker"]["topics"][t]["id"] for t in TOPICS],
+            *[config["broker"]["topics"][t]["id"] for t in self.topics],
             "/opt/detectbridge/plan.json",
         ]
         result = self.stack.exec("jobmanager", *args)
@@ -340,12 +511,100 @@ def prepare():
     return path
 
 
-def qualify():
-    project = "detectbridge-p09-test-" + uuid.uuid4().hex[:12]
-    test = Detection(project)
-    expected: dict[int, tuple[str, str]] = {}
-    invalid: dict[int, str] = {}
-    report = ROOT / ".cache/detection-reports" / (project + ".json")
+def mapped_runtime_cases():
+    cases = []
+    for profile, outcome in (
+        ("linux-audit-execution", "configuration_blocked"),
+        ("openssh-authentication", "inapplicable"),
+    ):
+        cases.append(
+            (load_json(ROOT / "contracts/v1/examples" / (profile + ".event.json")), outcome)
+        )
+    skipped = load_json(FIXTURES / "positive.event.json")
+    skipped["detectbridge"]["quality"]["eligibility"] = "undetermined"
+    cases.append((skipped, "quality_skipped"))
+    unknown = load_json(FIXTURES / "positive.event.json")
+    unknown["detectbridge"]["source_contract"]["id"] = "unknown-source"
+    cases.append((unknown, "configuration_blocked"))
+    exhausted = load_json(FIXTURES / "positive.event.json")
+    exhausted["process"]["command_line"] = "x" * 150000
+    cases.append((exhausted, "evaluation_error"))
+    for index, (event, _) in enumerate(cases, start=3):
+        event["detectbridge"]["run_id"] = "00000000-0000-4000-8000-" + str(index).zfill(12)
+    return cases
+
+
+def qualify_incompatible_restore(test, checkpoint):
+    """Test-only actual restore under a changed group; never rewrite valid configuration."""
+    config = test.config()
+    test.stop()
+    command = [
+        "/opt/flink/bin/flink",
+        "run",
+        "-d",
+        "-s",
+        checkpoint["external_path"],
+        "-c",
+        "io.detectbridge.detection.DetectionV2Job",
+        "/opt/detectbridge/detection-job.jar",
+        "kafka:9092",
+        config["consumer_group"] + "-incompatible",
+        config["broker"]["cluster_id"],
+        *[config["broker"]["topics"][t]["id"] for t in test.topics],
+        "/opt/detectbridge/plan.json",
+    ]
+    before = {job["jid"] for job in test.rest("/jobs/overview").get("jobs", [])}
+    try:
+        response = test.stack.exec("jobmanager", *command)
+    except StackError as error:
+        # Some clients observe initialization failure before returning a JobID.
+        # Never treat a CLI failure itself as proof of correct binding rejection.
+        if str(error) != "command_failed_job_submission_exit_1":
+            raise
+        deadline = time.monotonic() + 10
+        job_id = None
+        while time.monotonic() < deadline:
+            after = {job["jid"] for job in test.rest("/jobs/overview").get("jobs", [])}
+            created = after - before
+            if len(created) > 1:
+                raise StackError("ambiguous_incompatible_restore_job")
+            if created:
+                job_id = created.pop()
+                break
+            time.sleep(1)
+        if job_id is None:
+            raise StackError("missing_incompatible_restore_job") from None
+    else:
+        match = re.search(r"JobID ([0-9a-f]{32})", response)
+        if not match or match[1] in before:
+            raise StackError("missing_incompatible_restore_job")
+        job_id = match[1]
+    deadline = time.monotonic() + 180
+    while time.monotonic() < deadline:
+        state = test.rest("/jobs/" + job_id)["state"]
+        if state == "FAILED":
+            detail = json.dumps(test.rest("/jobs/" + job_id + "/exceptions"))
+            if "incompatible_detection_restore" not in detail:
+                raise StackError("unrelated_incompatible_restore_failure")
+            return
+        if state in ("FINISHED", "CANCELED", "SUSPENDED"):
+            raise StackError("unrelated_incompatible_restore_failure")
+        time.sleep(1)
+    raise StackError("incompatible_restore_not_rejected")
+
+
+def qualify(mapped=False):
+    project = ("detectbridge-p10-test-" if mapped else "detectbridge-p09-test-") + uuid.uuid4().hex[
+        :12
+    ]
+    test = Detection(project, mapped=mapped)
+    expected: dict[int, dict] = {}
+    invalid: dict[int, dict] = {}
+    report = (
+        ROOT
+        / (".cache/detection-v2-reports" if mapped else ".cache/detection-reports")
+        / (project + ".json")
+    )
 
     report.parent.mkdir(parents=True, exist_ok=True)
     phase = "setup"
@@ -359,9 +618,19 @@ def qualify():
     def send(value, key, outcome):
         ack = test.inject_event(value, key)
         if outcome is None:
-            invalid[ack["offset"]] = sha(value)
+            invalid[ack["offset"]] = {
+                "value_sha256": sha(value),
+                "value_size": len(value),
+                "value_is_null": False,
+            }
         else:
-            expected[ack["offset"]] = (outcome, sha(value))
+            event = json.loads(value)
+            expected[ack["offset"]] = {
+                "outcome": outcome,
+                "value_sha256": sha(value),
+                "event_id": event["event"]["id"],
+                "run_id": event["detectbridge"]["run_id"],
+            }
         return ack
 
     with project_lock(project):
@@ -378,9 +647,12 @@ def qualify():
                     event = load_json(FIXTURES / case["event"])
                     event["detectbridge"]["run_id"] = run_id
                     send(encoded(event), run_id.encode(), case["expected"])
+            if mapped:
+                for event, outcome in mapped_runtime_cases():
+                    send(encoded(event), event["detectbridge"]["run_id"].encode(), outcome)
             send(b"private-body-sentinel", b"invalid", None)
             results = test.accounted(expected, invalid)
-            if len({r["run_id"] for r in results}) != 2:
+            if len({r["run_id"] for r in results}) != (7 if mapped else 2):
                 raise StackError("replay_isolation_failed")
             stage("taskmanager_recovery")
             run(["docker", "kill", project + "-taskmanager-1"])
@@ -413,10 +685,14 @@ def qualify():
                     "value": base64.b64encode(b"outage-private-body-sentinel").decode(),
                 }
                 response = test.helper_run(
-                    test.process_args("inject", INPUT), timeout=60, data=json.dumps(row) + "\n"
+                    test.process_args("inject", test.input), timeout=60, data=json.dumps(row) + "\n"
                 )
                 offset = json.loads(response.stdout.splitlines()[0])["offset"]
-                invalid[offset] = sha(b"outage-private-body-sentinel")
+                invalid[offset] = {
+                    "value_sha256": sha(b"outage-private-body-sentinel"),
+                    "value_size": len(b"outage-private-body-sentinel"),
+                    "value_is_null": False,
+                }
                 checkpoint = test.wait_quarantine_retry_limit(job["job_id"])
                 committed = json.loads(
                     test.private_read(
@@ -433,10 +709,19 @@ def qualify():
             test.accounted(expected, invalid)
             test.wait_input_checkpoint(max(invalid))
             checkpoint = test.wait_checkpoint(restored["job_id"])
-            stage("jobmanager_restore")
+            if mapped:
+                stage("incompatible_restore")
+                qualify_incompatible_restore(test, checkpoint)
+                resumed = test.start(restore=checkpoint["external_path"])
+                test.accounted(expected, invalid)
+                checkpoint = test.wait_checkpoint(resumed["job_id"])
+            stage("jobmanager_shutdown")
             test.stack.down()
+            stage("jobmanager_startup")
             test.stack.up("core")
+            stage("jobmanager_restore_submission")
             test.start(restore=checkpoint["external_path"])
+            stage("jobmanager_result_accounting")
             results = test.accounted(expected, invalid)
             stage("metrics_and_logs")
             if not any("detectbridge_detection" in m for m in test.metrics().values()):
@@ -456,15 +741,14 @@ def qualify():
             save(report, result)
             return result
         except BaseException as error:
-            save(
-                report,
-                {
-                    "status": "failed",
-                    "project": project,
-                    "phase": phase,
-                    "category": type(error).__name__,
-                },
-            )
+            failure = {
+                "status": "failed",
+                "project": project,
+                "phase": phase,
+                "category": failure_category(error),
+            }
+            save(report, failure)
+            print(json.dumps(failure), flush=True)
             raise
         finally:
             if (test.stack.folder / "state.json").exists():
@@ -474,7 +758,10 @@ def qualify():
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--project", default="detectbridge-p09-dev")
+    parser.add_argument(
+        "--mapped", action="store_true", help="P10 v2 runtime; separate projects/topics/state"
+    )
+    parser.add_argument("--project")
     sub = parser.add_subparsers(dest="command", required=True)
     for command in ("prepare", "build", "verify", "init", "stop", "status", "metrics"):
         sub.add_parser(command)
@@ -482,26 +769,34 @@ def main():
     start.add_argument("--restore")
     start.add_argument("--from-beginning", action="store_true")
     args = parser.parse_args()
+    args.project = args.project or (
+        "detectbridge-p10-dev" if args.mapped else "detectbridge-p09-dev"
+    )
     try:
+        if args.command in ("prepare", "build"):
+            if args.mapped:
+                from check_mapping import prepare_mapped
+
+                prepare_mapped()
+            else:
+                prepare()
         if args.command == "prepare":
-            prepare()
             result = {"status": "compiled"}
         elif args.command == "build":
-            prepare()
-            result = build()
+            result = build(args.mapped)
         elif args.command == "verify":
-            result = qualify()
+            result = qualify(args.mapped)
         else:
             with project_lock(args.project):
-                test = Detection(args.project)
+                test = Detection(args.project, mapped=args.mapped)
                 result = (
                     test.start(args.restore, args.from_beginning)
                     if args.command == "start"
                     else getattr(test, args.command)()
                 )
         print(json.dumps(result))
-    except Exception:
-        print(json.dumps({"status": "failed", "category": "detection_operation_failed"}))
+    except Exception as error:
+        print(json.dumps({"status": "failed", "category": failure_category(error)}))
         raise SystemExit(1) from None
 
 

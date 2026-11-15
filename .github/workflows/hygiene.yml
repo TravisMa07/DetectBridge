@@ -336,7 +336,7 @@
     },
     "detection-verification": {
       "runs-on": "ubuntu-24.04",
-      "timeout-minutes": 35,
+      "timeout-minutes": 45,
       "needs": [
         "classify-changes"
       ],
@@ -360,7 +360,7 @@
         },
         {
           "name": "Qualify independent detection semantics and recovery",
-          "run": "uv run --locked python tools/detection.py build\nuv run --locked python tools/check_detection.py --java\nuv run --locked python tools/detection.py verify"
+          "run": "uv run --locked python tools/detection.py build\nuv run --locked python tools/check_detection.py --java\nuv run --locked python tools/detection.py verify\nuv run --locked python tools/detection.py --mapped build\nuv run --locked python tools/detection.py --mapped verify"
         }
       ]
     },

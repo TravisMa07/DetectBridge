@@ -21,7 +21,8 @@ and integrated detection remain future work.
    screenshots and contract examples when relevant.
 6. Update the branch from `main`, pass checks, resolve review conversations, and
    obtain the owner's explicit merge authorization.
-7. Squash merge, delete the branch, and verify checks on the merged commit.
+7. Merge with a merge commit, delete the branch, and verify checks on the merged commit.
+   Preserve the branch's individual commits and their timestamps.
 
 The owner authorizes every merge. A solo workflow does not require a second
 GitHub account's approval. Never interpret passing CI as permission to merge.

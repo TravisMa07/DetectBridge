@@ -133,3 +133,22 @@ Outstanding: AMD64 CI, owner independent-expectation/completeness review, eligib
 recorded audit host/generation/completeness provenance, separately authorized P12a
 merge/main qualification and dependent P12b checkpoint qualification. P12 and P13
 remain incomplete. No merge/release, production wiring or throughput claim.
+
+Integrated implementation 89dfa04 passed locked root check (127 regressions),
+combined Java, 34 Linux Java tests, 35 Windows Java tests, three independent
+recording-verifier regressions and subsystem lint/format/artifact checks. Final
+logs: `.cache/p12-integrated-check-head.log`, `.cache/p12-integrated-java-head.log`.
+The Gradle preparation task now binds its inputs to Git revision, preventing stale
+rule provenance across commits. Secret scanning passed with no leaks in
+`.cache/p12-secrets-head.log`.
+
+The fresh recorded replay uses immutable `.cache/p12-auth-reviewed-v1/frozen-plan.json`
+and `.cache/p12-auth-reviewed-v1/output-head.ndjson`; runner and independent verifier
+passed all 11 rows, two eligible/nonmatched and nine unsupported. Full original
+artifact rehash, native-to-collector body identity, module-local context and
+preservation schemas, P03 events, exact input/result/membership attribution and
+frozen plan identity passed. Separate same-count tamper probes rejected changed
+classification, source port, bundle hash, preservation reason and original cursor.
+Logs remain ignored at `replay-head.log` and `qualification-head.log` under the
+same recording directory. These results establish the selected local auth slice;
+they do not establish recorded audit eligibility or P12b recovery.

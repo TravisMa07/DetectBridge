@@ -224,6 +224,11 @@ def verify(catalog, originals, input_path, output_path, plan_path):
                     db["evidence"] == [dict(record_id=raw["record_id"], evidence=raw["evidence"])]
                 )
                 require(db["time"]["first_observed"] == raw["first_observed"])
+                require(db["time"]["basis"] == "source" and db["time"]["quality"] == "valid")
+                require(db["time"]["source_value"] == expectation["timestamp"])
+                require(db["time"]["source_utc"] == event["@timestamp"])
+                require(event["source_fields"]["rfc5424"]["timestamp"] == expectation["timestamp"])
+                require(event["source_fields"]["rfc5424"]["app_name"] == "sshd")
                 require(
                     db["processing"]
                     == dict(
@@ -282,7 +287,20 @@ def verify(catalog, originals, input_path, output_path, plan_path):
             else:
                 preserved = published["preservation"]
                 module_validator("preservation").validate(preserved)
-                require(preserved["member"]["record_id"] == raw["record_id"])
+                require(
+                    preserved["member"]
+                    == dict(
+                        record_id=raw["record_id"],
+                        evidence_sha256=sha(original),
+                        encoding=raw["evidence"]["encoding"],
+                        media_type=raw["evidence"]["media_type"],
+                        retention="raw_inline",
+                        cursor=raw["cursor"],
+                        first_observed=raw["first_observed"],
+                        raw_sha256=sha(encoded(raw, True)),
+                        context_sha256=sha(encoded(context, True)),
+                    )
+                )
                 require(preserved["member"]["raw_sha256"] == sha(encoded(raw, True)))
                 require(preserved["member"]["context_sha256"] == sha(encoded(context, True)))
                 require(preserved["member"]["evidence_sha256"] == sha(original))

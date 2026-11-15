@@ -1,0 +1,18 @@
+[
+  {
+    "version": "1.0.0",
+    "rule_id": "70000000-0000-4000-8000-000000000001",
+    "revision": "7b9919d78636ebe89a69ca4f516433c93258e244cd4608d8df0736220a22f795",
+    "kind": "synthetic",
+    "repository": "https://github.com/TravisMa07/DetectBridge",
+    "repository_revision": "4d7d685ae65b2163906f7b662aac411583c5250d",
+    "path": "contracts/detection/v1/fixtures/rules/process.yml",
+    "original_sha256": "7b9919d78636ebe89a69ca4f516433c93258e244cd4608d8df0736220a22f795",
+    "authors": [
+      "DetectBridge contributors"
+    ],
+    "license": "Apache-2.0",
+    "notices": [],
+    "modifications": []
+  }
+]

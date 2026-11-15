@@ -1,0 +1,46 @@
+{
+  "version": "1.0.0",
+  "id": "windows-security-4688-fixture",
+  "source": {
+    "id": "windows-security-4688",
+    "version": "1.0.0",
+    "sha256": "47e72c0256e4470e1d4f9d3262fc48db7105ddc8b811665493a716f841cc091c"
+  },
+  "fields": [
+    {
+      "alias": "Image",
+      "target": "process.executable",
+      "type": "string",
+      "cardinality": "scalar",
+      "capability": "available",
+      "transform": "identity-string/1.0.0",
+      "source_path": "/NewProcessName"
+    },
+    {
+      "alias": "CommandLine",
+      "target": "process.command_line",
+      "type": "string",
+      "cardinality": "scalar",
+      "capability": "conditional",
+      "transform": "identity-string/1.0.0",
+      "source_path": "/CommandLine"
+    },
+    {
+      "alias": "ProcessId",
+      "target": "process.pid",
+      "type": "integer",
+      "cardinality": "scalar",
+      "capability": "unsupported",
+      "transform": "decimal-integer/1.0.0"
+    },
+    {
+      "alias": "User",
+      "target": "user.name",
+      "type": "string",
+      "cardinality": "scalar",
+      "capability": "unsupported",
+      "transform": "identity-string/1.0.0"
+    }
+  ],
+  "sha256": "bf31b071c5a93cbc7f15913036dc3c4f8f3a1f0e04e19ae050442a51267e7b08"
+}

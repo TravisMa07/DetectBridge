@@ -1,0 +1,14 @@
+[
+  {"name":"conditional-missing-positive","condition":"selection","capability":"conditional","missing":true,"expected":"unmatched","rationale":"Missing positive predicate is false; conditional capability does not invent a value."},
+  {"name":"conditional-missing-negation","condition":"not selection","capability":"conditional","missing":true,"expected":"matched","rationale":"NOT of the false missing-field predicate is true."},
+  {"name":"unsupported-positive","condition":"selection","capability":"unsupported","missing":true,"expected":"configuration_blocked","rationale":"Declared unsupported capability prevents evaluation."},
+  {"name":"unsupported-negation","condition":"not selection","capability":"unsupported","missing":true,"expected":"configuration_blocked","rationale":"Unsupported capability cannot be replaced by missing-field negation."},
+  {"name":"unused-unsupported-alias","condition":"image","capability":"unsupported","missing":true,"expected":"matched","rationale":"Unused unsupported CommandLine does not block a supported Image-only expression."},
+  {"name":"or-cannot-bypass-capability","condition":"image or selection","capability":"unsupported","missing":true,"expected":"configuration_blocked","rationale":"All compiled expression fields are checked before event short-circuiting."},
+  {"name":"capability-before-quality","condition":"selection","capability":"unsupported","missing":true,"quality":"undetermined","expected":"configuration_blocked","rationale":"The specified capability gate precedes event eligibility."},
+  {"name":"quality-before-predicate","condition":"selection","capability":"conditional","missing":true,"quality":"undetermined","expected":"quality_skipped","rationale":"Insufficient eligibility prevents ordinary evaluation."},
+  {"name":"source-before-capability","condition":"selection","capability":"unsupported","missing":true,"product":"linux","expected":"inapplicable","rationale":"A known mismatching source is inapplicable before capability and quality gates."},
+  {"name":"unknown-source","condition":"selection","capability":"conditional","missing":true,"unknown_source":true,"expected":"configuration_blocked","rationale":"Unknown source policy cannot be evaluated."},
+  {"name":"invalid-before-inapplicable","condition":"selection","capability":"unsupported","missing":false,"product":"linux","invalid":true,"expected":"invalid","rationale":"A null ECS field is invalid input even for an inapplicable rule."},
+  {"name":"conditional-warning-negation","condition":"not selection","capability":"conditional","missing":true,"capture_warning":true,"expected":"matched","rationale":"A nonblocking capture warning retains existing NOT-on-missing behavior."}
+]

@@ -75,3 +75,10 @@ The final follow-up adds a literal independently hashed legacy binding vector an
 a wrong-Kafka-key regression; production runtime code is unchanged from 111151a.
 No source eligibility or throughput claim follows. AMD64 CI, owner semantic
 acceptance and separate merge authorization remain gates.
+
+PR #37 AMD64 run 43675094807 failed on 8e561ec during the legacy
+JobManager-restore phase, before the mapped run. The required-checks failure was
+its expected fail-closed aggregate result. Root cause is not yet established:
+the existing CLI logged only a generic failure. A diagnostic follow-up adds
+redacted failure categories and narrower recovery phases, with nonzero-exit and
+redaction regressions. Existing local ARM64 passes do not override this CI failure.

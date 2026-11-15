@@ -28,7 +28,8 @@ locks. No new runtime dependency, executable transform or checksum was introduce
 Module packaging excludes expected fixtures from production resources. No shared
 cache runtime state, Docker service, topic or checkpoint was used.
 
-Orchestrator serial integration still needs:
+The child identified these serial integration requirements (resolved by the
+orchestrator integration below):
 
 1. Retain the two root settings lines from f764907 and the Windows module lock.
 2. In `tools/dev.py` and `.github/workflows/hygiene.yml` (including the owning
@@ -44,8 +45,8 @@ Orchestrator serial integration still needs:
 4. Coordinate AMD64 execution and shared README/roadmap/architecture/status updates.
    No closed P03 schema or shared context/result API revision is needed.
 
-No PR was opened: shared gate/inventory integration remains orchestrator-owned and
-must be reconciled for an acceptance-ready PR. No merge/release was performed.
+The child opened no PR and performed no merge/release. Shared integration was
+subsequently completed by the orchestrator below.
 
 ## Verification and limits
 
@@ -121,4 +122,36 @@ case sensitively in the resolver and shared normalized-event consumer. Both are
 corrected with original evidence metadata retained. Added regressions cover
 base64 inline/reference XML, invalid UTF-8, mixed-case HTTPS/S3/file locators and
 continued rejection of unsafe locators and noncanonical content-addressed URNs.
-Final post-review validation is recorded below when complete.
+Post-review locked root check passed (124 Python tests), combined Java verification
+passed (including 35 Windows tests and 20 shared evaluator tests), and all six
+independent verifier regressions passed. Logs remain ignored at
+`.cache/p11-compat-check.log`, `.cache/p11-compat-java.log` and
+`.cache/p11-evidence-compatibility.log`.
+
+The shared consumer compatibility correction also passed ARM64 legacy detection
+runtime qualification: 11 valid inputs, two invalid inputs, replay isolation,
+TaskManager recovery, sink outage, explicit checkpoint restore, JobManager restore,
+metrics and payload-log checks. Evidence: `.cache/p11-compat-runtime-build.log`,
+`.cache/p11-compat-runtime-verify.log` and the ignored structured report under
+`.cache/detection-reports/`. This is shared-engine regression evidence, not a
+streaming/recovery qualification of the standalone Windows adapter.
+
+The final base64/URI compatibility recorded rerun passed with the frozen plan:
+all 7,018 original inputs accounted, 361 supported/skipped for missing trusted
+identity and 6,657 unsupported-source diagnostics. Both the atomic runner and
+independent original-byte/signature/mapping/result attribution verifier passed.
+Evidence stays ignored in `.cache/p11-compat-recorded-run.log`,
+`.cache/p11-compat-recorded-qualification.log`,
+`.cache/windows/compat-recorded-output.ndjson` and the frozen
+`.cache/windows/recorded-plan.json`. No recorded eligibility is claimed.
+
+The final ARM64 mapped detection runtime regression also passed: 16 valid inputs,
+two invalid inputs, logical outcome/replay accounting, TaskManager recovery, sink
+outage, explicit restore, incompatible bundle restore rejection, JobManager restore,
+metrics and payload-log checks. At-least-once recovery produced 17 physical result
+rows for the 16 valid inputs; logical accounting passed without an exactly-once
+claim. Logs: `.cache/p11-compat-mapped-build.log`,
+`.cache/p11-compat-mapped-verify.log` and the ignored structured report under
+`.cache/detection-v2-reports/`. Both temporary qualification stacks were cleaned up.
+AMD64 qualification remains pending CI. Trusted recorded host bindings remain an
+acceptance blocker. No merge, release, P13 integration or throughput claim.

@@ -60,6 +60,8 @@ def failure_category(error):
             "input_checkpoint_progress_timeout",
             "job_cancellation_timeout",
             "incompatible_restore_not_rejected",
+            "missing_incompatible_restore_job",
+            "ambiguous_incompatible_restore_job",
             "unrelated_incompatible_restore_failure",
             "checkpoint_crossed_failed_sink",
         }
@@ -551,17 +553,42 @@ def qualify_incompatible_restore(test, checkpoint):
         *[config["broker"]["topics"][t]["id"] for t in test.topics],
         "/opt/detectbridge/plan.json",
     ]
-    response = test.stack.exec("jobmanager", *command)
-    match = re.search(r"JobID ([0-9a-f]{32})", response)
-    if not match:
-        raise StackError("missing_incompatible_restore_job")
+    before = {job["jid"] for job in test.rest("/jobs/overview").get("jobs", [])}
+    try:
+        response = test.stack.exec("jobmanager", *command)
+    except StackError as error:
+        # Some clients observe initialization failure before returning a JobID.
+        # Never treat a CLI failure itself as proof of correct binding rejection.
+        if str(error) != "command_failed_job_submission_exit_1":
+            raise
+        deadline = time.monotonic() + 10
+        job_id = None
+        while time.monotonic() < deadline:
+            after = {job["jid"] for job in test.rest("/jobs/overview").get("jobs", [])}
+            created = after - before
+            if len(created) > 1:
+                raise StackError("ambiguous_incompatible_restore_job")
+            if created:
+                job_id = created.pop()
+                break
+            time.sleep(1)
+        if job_id is None:
+            raise StackError("missing_incompatible_restore_job") from None
+    else:
+        match = re.search(r"JobID ([0-9a-f]{32})", response)
+        if not match or match[1] in before:
+            raise StackError("missing_incompatible_restore_job")
+        job_id = match[1]
     deadline = time.monotonic() + 180
     while time.monotonic() < deadline:
-        if test.rest("/jobs/" + match[1])["state"] == "FAILED":
-            detail = json.dumps(test.rest("/jobs/" + match[1] + "/exceptions"))
+        state = test.rest("/jobs/" + job_id)["state"]
+        if state == "FAILED":
+            detail = json.dumps(test.rest("/jobs/" + job_id + "/exceptions"))
             if "incompatible_detection_restore" not in detail:
                 raise StackError("unrelated_incompatible_restore_failure")
             return
+        if state in ("FINISHED", "CANCELED", "SUSPENDED"):
+            raise StackError("unrelated_incompatible_restore_failure")
         time.sleep(1)
     raise StackError("incompatible_restore_not_rejected")
 

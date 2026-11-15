@@ -10,7 +10,7 @@ import tempfile
 import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import detection
@@ -362,6 +362,77 @@ class FailureDiagnosticTests(unittest.TestCase):
             self.assertEqual(result.exception.code, 1)
             self.assertEqual(json.loads(output.getvalue())["category"], expected)
             self.assertNotIn("private-value-sentinel", output.getvalue())
+
+
+class IncompatibleRestoreTests(unittest.TestCase):
+    def runtime(self, synchronous, *, detail="incompatible_detection_restore", created=None):
+        runtime = Mock()
+        config = {
+            "consumer_group": "group",
+            "broker": {"cluster_id": "cluster", "topics": {"input": {"id": "input-id"}}},
+        }
+        runtime.config.return_value = copy.deepcopy(config)
+        runtime.topics = ["input"]
+        old, new = "a" * 32, "b" * 32
+        runtime.stack.exec.side_effect = (
+            StackError("command_failed_job_submission_exit_1") if synchronous else None
+        )
+        runtime.stack.exec.return_value = "JobID " + new
+        overview_calls = 0
+
+        def rest(path):
+            nonlocal overview_calls
+            if path == "/jobs/overview":
+                overview_calls += 1
+                values = (
+                    [old] if overview_calls == 1 else ([old, new] if created is None else created)
+                )
+                return {"jobs": [{"jid": value, "state": "FAILED"} for value in values]}
+            if path == "/jobs/" + new:
+                return {"state": "FAILED"}
+            if path == "/jobs/" + new + "/exceptions":
+                return {"root-exception": detail}
+            raise AssertionError("unexpected REST path")
+
+        runtime.rest.side_effect = rest
+        return runtime, config
+
+    def test_async_and_synchronous_rejection_require_the_binding_failure(self):
+        for synchronous in (False, True):
+            runtime, original = self.runtime(synchronous)
+            detection.qualify_incompatible_restore(runtime, {"external_path": "file:///checkpoint"})
+            self.assertEqual(runtime.config.return_value, original)
+            runtime.stop.assert_called_once()
+            runtime.stack.exec.assert_called_once()
+            self.assertIn("group-incompatible", runtime.stack.exec.call_args.args)
+            runtime.rest.assert_any_call("/jobs/" + "b" * 32 + "/exceptions")
+
+    def test_unrelated_failure_and_ambiguous_job_are_not_a_pass(self):
+        for synchronous in (False, True):
+            runtime, _ = self.runtime(synchronous, detail="OutOfMemoryError private-value-sentinel")
+            with self.assertRaisesRegex(StackError, "unrelated_incompatible_restore_failure"):
+                detection.qualify_incompatible_restore(
+                    runtime, {"external_path": "file:///checkpoint"}
+                )
+        runtime, _ = self.runtime(True, created=["a" * 32, "b" * 32, "c" * 32])
+        with self.assertRaisesRegex(StackError, "ambiguous_incompatible_restore_job"):
+            detection.qualify_incompatible_restore(runtime, {"external_path": "file:///checkpoint"})
+
+    def test_no_new_job_and_daemon_errors_are_not_a_pass(self):
+        runtime, _ = self.runtime(True, created=["a" * 32])
+        with (
+            patch.object(detection.time, "monotonic", side_effect=[0, 1, 11]),
+            patch.object(detection.time, "sleep"),
+        ):
+            with self.assertRaisesRegex(StackError, "missing_incompatible_restore_job"):
+                detection.qualify_incompatible_restore(
+                    runtime, {"external_path": "file:///checkpoint"}
+                )
+        runtime, _ = self.runtime(True)
+        runtime.stack.exec.side_effect = StackError("docker_daemon_api_failure")
+        with self.assertRaisesRegex(StackError, "docker_daemon_api_failure"):
+            detection.qualify_incompatible_restore(runtime, {"external_path": "file:///checkpoint"})
+        runtime.stack.exec.assert_called_once()
 
 
 if __name__ == "__main__":

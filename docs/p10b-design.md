@@ -83,3 +83,15 @@ operation category. Qualification now emits fixed, value-free categories and
 separate shutdown/startup/submission/accounting phases. Unknown exception text is
 never emitted, and failure still exits nonzero. The next AMD64 run must identify
 the failing operation before any recovery behavior is changed.
+
+The diagnostic run on 2d60c2c completed legacy AMD64 recovery, then failed at the
+mapped incompatible-restore probe: the Flink CLI returned exit 1 before the harness
+obtained a JobID. The probe previously assumed successful detached submission
+followed by asynchronous job failure. It now supports both client timings. On a
+submission exit 1, compare pre/post REST job identities, require exactly one new
+job, then require FAILED state and the specific incompatible_detection_restore
+marker. Exit status alone is never a pass; unrelated failures, missing/ambiguous
+new jobs and daemon errors remain failures. Never retry the mutating submission or
+modify the valid runtime configuration. Unknown failure details stay redacted.
+The original 8e561ec legacy failure remains unclassified in its historical logs;
+the later legacy pass does not establish its cause.

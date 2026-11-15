@@ -27,6 +27,59 @@ VERSION = "1.0.0"
 FIXTURES = ROOT / "contracts/detection/v1/fixtures"
 
 
+def failure_category(error):
+    """Emit fixed operational categories only; never exception text or input values."""
+    if isinstance(error, StackError):
+        category = str(error)
+        known = {
+            "command_timeout",
+            "command_failed",
+            "docker_unavailable",
+            "docker_daemon_api_failure",
+            "docker_setup_failure",
+            "job_terminated_before_checkpoint",
+            "completed_checkpoint_timeout",
+            "missing_submitted_job_id",
+            "job_already_active",
+            "unknown_checkpoint_owner",
+            "unsafe_checkpoint_uri",
+            "detection_accounting_timeout",
+            "independent_expectation_failed",
+            "quarantine_reference_mismatch",
+            "detection_input_reference_mismatch",
+            "detection_output_schema_invalid",
+            "detection_output_key_mismatch",
+            "mapped_version_attribution_mismatch",
+            "unstable_duplicate_result",
+            "result_identity_collision",
+            "unexpected_detection_output",
+            "qualified_bundle_changed",
+            "missing_detection_metrics",
+            "payload_leaked_to_logs",
+            "replay_isolation_failed",
+            "input_checkpoint_progress_timeout",
+            "job_cancellation_timeout",
+            "incompatible_restore_not_rejected",
+            "unrelated_incompatible_restore_failure",
+            "checkpoint_crossed_failed_sink",
+        }
+        if category in known:
+            return category
+        command = re.fullmatch(
+            r"command_failed(?:_(?:job_submission|checkpoint_metadata|internal_http|topic_configuration))?_exit_([0-9]{1,3})",
+            category,
+        )
+        if command and 1 <= int(command[1]) <= 255:
+            return category
+    if isinstance(error, KeyError):
+        return "unexpected_document_shape"
+    if isinstance(error, json.JSONDecodeError):
+        return "invalid_json"
+    if isinstance(error, OSError):
+        return "io_error"
+    return "detection_operation_failed"
+
+
 def build(mapped=False):
     run(
         [
@@ -635,10 +688,13 @@ def qualify(mapped=False):
                 resumed = test.start(restore=checkpoint["external_path"])
                 test.accounted(expected, invalid)
                 checkpoint = test.wait_checkpoint(resumed["job_id"])
-            stage("jobmanager_restore")
+            stage("jobmanager_shutdown")
             test.stack.down()
+            stage("jobmanager_startup")
             test.stack.up("core")
+            stage("jobmanager_restore_submission")
             test.start(restore=checkpoint["external_path"])
+            stage("jobmanager_result_accounting")
             results = test.accounted(expected, invalid)
             stage("metrics_and_logs")
             if not any("detectbridge_detection" in m for m in test.metrics().values()):
@@ -658,15 +714,14 @@ def qualify(mapped=False):
             save(report, result)
             return result
         except BaseException as error:
-            save(
-                report,
-                {
-                    "status": "failed",
-                    "project": project,
-                    "phase": phase,
-                    "category": type(error).__name__,
-                },
-            )
+            failure = {
+                "status": "failed",
+                "project": project,
+                "phase": phase,
+                "category": failure_category(error),
+            }
+            save(report, failure)
+            print(json.dumps(failure), flush=True)
             raise
         finally:
             if (test.stack.folder / "state.json").exists():
@@ -713,8 +768,8 @@ def main():
                     else getattr(test, args.command)()
                 )
         print(json.dumps(result))
-    except Exception:
-        print(json.dumps({"status": "failed", "category": "detection_operation_failed"}))
+    except Exception as error:
+        print(json.dumps({"status": "failed", "category": failure_category(error)}))
         raise SystemExit(1) from None
 
 

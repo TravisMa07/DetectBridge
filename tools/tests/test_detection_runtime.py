@@ -2,11 +2,13 @@
 
 import base64
 import copy
+import io
 import json
 import subprocess
 import sys
 import tempfile
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 
@@ -318,6 +320,48 @@ class RuntimeAccountingTests(unittest.TestCase):
             row[field] = value
             with self.subTest(field=field), self.assertRaises(StackError):
                 self.account(runtime, plan, {}, invalid, [], [row])
+
+
+class FailureDiagnosticTests(unittest.TestCase):
+    def test_only_fixed_categories_leave_failure_boundary(self):
+        for category in (
+            "command_failed_checkpoint_metadata_exit_1",
+            "job_terminated_before_checkpoint",
+            "detection_output_key_mismatch",
+            "command_failed_internal_http_exit_22",
+        ):
+            self.assertEqual(detection.failure_category(StackError(category)), category)
+        for error in (
+            StackError("private-value-sentinel"),
+            ValueError("private-value-sentinel"),
+            StackError("command_failed_job_submission_exit_999 private-value-sentinel"),
+        ):
+            self.assertEqual(detection.failure_category(error), "detection_operation_failed")
+        self.assertEqual(
+            detection.failure_category(KeyError("private-value-sentinel")),
+            "unexpected_document_shape",
+        )
+        self.assertEqual(detection.failure_category(OSError("private-value-sentinel")), "io_error")
+
+    def test_cli_failure_remains_nonzero_and_redacted(self):
+        for error, expected in (
+            (
+                StackError("command_failed_checkpoint_metadata_exit_1"),
+                "command_failed_checkpoint_metadata_exit_1",
+            ),
+            (ValueError("private-value-sentinel"), "detection_operation_failed"),
+        ):
+            output = io.StringIO()
+            with (
+                patch.object(sys, "argv", ["detection.py", "verify"]),
+                patch.object(detection, "qualify", side_effect=error),
+                redirect_stdout(output),
+            ):
+                with self.assertRaises(SystemExit) as result:
+                    detection.main()
+            self.assertEqual(result.exception.code, 1)
+            self.assertEqual(json.loads(output.getvalue())["category"], expected)
+            self.assertNotIn("private-value-sentinel", output.getvalue())
 
 
 if __name__ == "__main__":

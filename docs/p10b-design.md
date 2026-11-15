@@ -73,3 +73,13 @@ restore rejection. Owner semantic review remains separate.
 A literal system-shasum checkpoint vector pins the legacy v1 fingerprint preimage
 independently of the new overload. A correct result body with an incorrect Kafka
 key is explicitly rejected by qualification regression tests.
+
+## AMD64 CI investigation
+
+The first PR check on 8e561ec failed during legacy JobManager restoration before
+mapped qualification began. The aggregate correctly failed because detection
+failed; no check is waived or reclassified. The prior generic CLI failure hid the
+operation category. Qualification now emits fixed, value-free categories and
+separate shutdown/startup/submission/accounting phases. Unknown exception text is
+never emitted, and failure still exits nonzero. The next AMD64 run must identify
+the failing operation before any recovery behavior is changed.

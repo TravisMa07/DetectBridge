@@ -85,8 +85,10 @@ become default repository templates only after authorized merge.
   statuses or close issues; no privileged Actions board automation was introduced.
 - Twelve milestones exist: M0–M7 and four expansion milestones. Only the blocked
   marker was added to the existing labels.
-- Main governance ruleset is active with no bypass actors; merge settings are
-  squash-only with automatic merging disabled and merged branches deleted.
+- Main governance ruleset is active with no bypass actors. P01 initially configured
+  squash-only merges; the owner-authorized [history restoration](history-restoration.md)
+  changes the current policy to merge commits only. Automatic merging remains
+  disabled and merged branches are deleted.
 - Workflow permissions are read-only and cannot approve PRs. Private vulnerability
   reporting is enabled. The owner can still edit repository protections.
 - Initial CI success: [run 43231652914](https://github.com/TravisMa07/DetectBridge/actions/runs/43231652914).

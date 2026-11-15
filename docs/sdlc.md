@@ -19,7 +19,8 @@ advance. Resolve the owning PR's details before its implementation.
 
 - One integration branch, `main`; short-lived feature/fix/docs/chore branches.
 - Draft PRs early; no long-lived `develop` or milestone branches.
-- Squash merges; delete completed branches; no automatic merging.
+- Use regular merge commits to preserve individual commits and their timestamps;
+  delete completed branches; no automatic merging. Squash and rebase merging are disabled.
 - Require up-to-date branches, passing checks, and resolved review conversations.
 - Protect `main` against direct pushes after bootstrap, force pushes, and deletion.
 - The owner explicitly authorizes every merge and release. CI success is not
@@ -75,7 +76,7 @@ generate the expected result solely by running the implementation under test.
 ## GitHub setup sequence (P01)
 
 1. Verify the owner, public repository identity, permissions, and feature access.
-2. Configure squash-only merges, delete-branch-on-merge, and disable auto-merge.
+2. Configure merge-commit-only merges, delete-branch-on-merge, and disable auto-merge.
 3. Add issue/PR templates and real CI; observe successful checks before requiring them.
 4. Apply main-branch protections, including strict `required-checks` and resolved
    conversations, without a required second-account approval. Verify enforcement
@@ -89,3 +90,7 @@ setup and provide the exact remaining manual steps. Do not claim remote settings
 were applied from local configuration files alone.
 
 See [release policy](releases.md) for qualification, publication, migration and maintenance.
+
+The owner-authorized November 2026 history migration is recorded in the
+[history restoration notes](history-restoration.md). It is a one-time exception
+to the force-push prohibition, not permission for future history rewrites.

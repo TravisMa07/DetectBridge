@@ -69,3 +69,7 @@ if offsets/hashes/counts agreed. The qualifier now checks input-derived expectat
 and has tampered-row regressions. Initial runtime evidence is superseded for final
 acceptance by qualification with those stronger checks and actual changed-group
 restore rejection. Owner semantic review remains separate.
+
+A literal system-shasum checkpoint vector pins the legacy v1 fingerprint preimage
+independently of the new overload. A correct result body with an incorrect Kafka
+key is explicitly rejected by qualification regression tests.

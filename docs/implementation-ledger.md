@@ -82,3 +82,21 @@ its expected fail-closed aggregate result. Root cause is not yet established:
 the existing CLI logged only a generic failure. A diagnostic follow-up adds
 redacted failure categories and narrower recovery phases, with nonzero-exit and
 redaction regressions. Existing local ARM64 passes do not override this CI failure.
+
+[Diagnostic AMD64 run 43676210039](https://github.com/TravisMa07/DetectBridge/actions/runs/43676210039)
+qualified legacy v1 recovery on 2d60c2c (11 valid, 2 invalid inputs), then failed at
+the mapped incompatible-restore probe with command_failed_job_submission_exit_1.
+The probe assumed the CLI would return a JobID before asynchronous failure. The
+follow-up handles a synchronous CLI failure only by verifying one newly submitted
+FAILED job and the exact binding-rejection marker through REST. No unrelated
+submission failure is accepted, and no mutation is retried. Local locked checks
+pass with 121 Python tests; fresh mapped ARM64 qualification and AMD64 confirmation
+remain separate from that unit/check evidence.
+
+The follow-up's fresh ARM64 mapped qualification passed with 16 valid and 2
+invalid inputs, including the strict incompatible-restore proof and subsequent
+checkpoint/JobManager recovery, attribution, metrics and value-free logs. Project
+`detectbridge-p10-test-65b32a68c093` was cleaned. Runtime JAR remains
+`59a3bca0f6ff994ffb687485b9b2fffd0a7657085a36f5493b3e9ecec54c4c39`;
+this change affects qualification, not evaluator semantics or production bindings.
+AMD64 confirmation remains pending; unrelated CLI failures remain failures.

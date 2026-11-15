@@ -17,6 +17,7 @@ def artifacts():
         *ROOT.glob("*-gradle.lockfile"),
         *ROOT.glob("packages/transport-*/gradle.lockfile"),
         *ROOT.glob("packages/windows-adapters/gradle.lockfile"),
+        *ROOT.glob("packages/linux-adapters/gradle.lockfile"),
     ]
     for path in sorted(paths):
         for line in path.read_text().splitlines():

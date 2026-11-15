@@ -1,0 +1,236 @@
+{
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": "1.0.0"
+    },
+    "kind": {
+      "const": "preservation"
+    },
+    "code": {
+      "enum": [
+        "identity_missing",
+        "extraction_failed",
+        "unsupported_source",
+        "output_limit",
+        "late_evidence",
+        "after_dataset_end"
+      ]
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "run_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "source": {
+      "$ref": "urn:detectbridge:contracts:1.0.0:common#/$defs/source"
+    },
+    "member": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "record_id": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "cursor": {
+              "$ref": "urn:detectbridge:contracts:1.0.0:common#/$defs/cursor"
+            },
+            "first_observed": {
+              "$ref": "urn:detectbridge:contracts:1.0.0:common#/$defs/timestamp"
+            },
+            "raw_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "evidence_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "encoding": {
+              "enum": [
+                "utf-8",
+                "base64"
+              ]
+            },
+            "media_type": {
+              "type": "string",
+              "minLength": 1
+            },
+            "retention": {
+              "enum": [
+                "raw_inline",
+                "raw_reference"
+              ]
+            },
+            "reference": {
+              "type": "object",
+              "properties": {
+                "uri": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "object_sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                "byte_range": {
+                  "type": "object",
+                  "properties": {
+                    "offset": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9223372036854775807
+                    },
+                    "length": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 9223372036854775807
+                    }
+                  },
+                  "required": [
+                    "offset",
+                    "length"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "uri",
+                "object_sha256"
+              ],
+              "additionalProperties": false
+            },
+            "context_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "record_id",
+            "cursor",
+            "first_observed",
+            "raw_sha256",
+            "evidence_sha256",
+            "encoding",
+            "media_type",
+            "retention",
+            "context_sha256"
+          ],
+          "additionalProperties": false,
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "retention": {
+                    "const": "raw_reference"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "reference"
+                ]
+              },
+              "else": {
+                "not": {
+                  "required": [
+                    "reference"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "record_id": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "evidence_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "raw_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "retention": {
+              "const": "retained_raw"
+            },
+            "context_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "record_id",
+            "evidence_sha256",
+            "raw_sha256",
+            "retention",
+            "context_sha256"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "context": {
+      "$ref": "urn:detectbridge:linux:1.0.0:context"
+    },
+    "original_manifest_id": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "original_event_id": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    }
+  },
+  "required": [
+    "version",
+    "kind",
+    "code",
+    "id",
+    "run_id",
+    "source",
+    "member",
+    "context"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:linux:1.0.0:preservation",
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "code": {
+            "const": "late_evidence"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "original_manifest_id"
+        ]
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "original_event_id"
+        ]
+      },
+      "then": {
+        "required": [
+          "original_manifest_id"
+        ]
+      }
+    }
+  ]
+}

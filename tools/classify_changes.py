@@ -213,6 +213,52 @@ def needs_windows(paths):
     )
 
 
+def needs_linux(paths):
+    shared = {
+        "pyproject.toml",
+        "uv.lock",
+        "settings.gradle.kts",
+        "settings-gradle.lockfile",
+        "build.gradle.kts",
+        "gradle.properties",
+        "gradlew",
+        "gradlew.bat",
+        "tools/dev.py",
+        "tools/toolchains.json",
+        "tools/check_gate.py",
+        "tools/classify_changes.py",
+        "tools/dependency_inventory.py",
+        "tools/check_contracts.py",
+        "tools/datasets.py",
+        "docs/linux-dependencies.json",
+        "docs/transport-dependencies.json",
+    }
+    return any(
+        (
+            p in shared
+            or p.startswith(
+                (
+                    "packages/linux-adapters/",
+                    "packages/detection-evaluator/",
+                    "packages/transport-contracts/",
+                    "contracts/v1/",
+                    "contracts/detection/",
+                    "catalog/datasets/",
+                    "catalog/recordings/",
+                    "gradle/",
+                    ".github/workflows/",
+                    "tools/detection_compile",
+                    "tools/detection_mapping",
+                    "tools/check_linux",
+                    "tools/tests/test_linux",
+                )
+            )
+        )
+        for p in paths
+        if not (p.endswith(".md") or p == "LICENSE")
+    )
+
+
 if __name__ == "__main__":
     base = os.environ.get("CHANGE_BASE", "")
     head = os.environ.get("CHANGE_HEAD", "HEAD")
@@ -231,4 +277,5 @@ if __name__ == "__main__":
         output.write(f"stack={str(needs_stack([p for p in paths if p])).lower()}\n")
         output.write(f"transport={str(needs_transport([p for p in paths if p])).lower()}\n")
         output.write(f"writer={str(needs_writer([p for p in paths if p])).lower()}\n")
+        output.write(f"linux={str(needs_linux([p for p in paths if p])).lower()}\n")
         output.write(f"windows={str(needs_windows([p for p in paths if p])).lower()}\n")

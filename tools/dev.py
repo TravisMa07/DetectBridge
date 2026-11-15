@@ -203,11 +203,14 @@ def check():
     run(["uv", "run", "--locked", "python", "tools/check_transport.py"])
     run(["uv", "run", "--locked", "python", "tools/check_writer.py"])
     run(["uv", "run", "--locked", "python", "tools/check_windows.py"])
+    run(["uv", "run", "--locked", "python", "tools/check_linux.py"])
     run(["uv", "run", "--locked", "python", "tools/dependency_inventory.py"])
     run(["uv", "run", "--locked", "python", "tools/check_repo.py"])
     run(["uv", "run", "--locked", "ruff", "check", "tools"])
     run(["uv", "run", "--locked", "ruff", "format", "--check", "tools"])
     run(["uv", "run", "--locked", "mypy"])
+    run(["uv", "run", "--locked", "ruff", "check", "packages/linux-adapters"])
+    run(["uv", "run", "--locked", "ruff", "format", "--check", "packages/linux-adapters"])
     run(["uv", "run", "--locked", "ruff", "check", "packages/windows-adapters"])
     run(["uv", "run", "--locked", "ruff", "format", "--check", "packages/windows-adapters"])
 
@@ -228,12 +231,31 @@ def java():
             ":transport-job:shadowJar",
             ":windows-adapters:test",
             ":windows-adapters:installDist",
+            ":linux-adapters:test",
+            ":linux-adapters:jar",
+            ":linux-adapters:installDist",
         ]
     )
 
     run(["uv", "run", "--locked", "python", "tools/check_transport.py", "--artifacts"])
     run(["uv", "run", "--locked", "python", "tools/check_detection.py", "--java"])
     run(["uv", "run", "--locked", "python", "tools/check_writer.py", "--artifacts"])
+    run(["uv", "run", "--locked", "python", "tools/check_linux.py", "--artifacts"])
+    run(
+        [
+            "uv",
+            "run",
+            "--locked",
+            "python",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "packages/linux-adapters/recording",
+            "-p",
+            "test_*.py",
+        ]
+    )
     run(["uv", "run", "--locked", "python", "tools/check_windows.py", "--artifacts"])
     run(
         [
@@ -250,6 +272,36 @@ def java():
             "test_*.py",
         ]
     )
+
+
+def linux():
+    run(
+        [
+            ROOT / "gradlew",
+            "--console=plain",
+            ":linux-adapters:test",
+            ":linux-adapters:jar",
+            ":linux-adapters:installDist",
+        ]
+    )
+    run(["uv", "run", "--locked", "python", "tools/check_linux.py", "--artifacts"])
+    run(
+        [
+            "uv",
+            "run",
+            "--locked",
+            "python",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "packages/linux-adapters/recording",
+            "-p",
+            "test_*.py",
+        ]
+    )
+    run(["uv", "run", "--locked", "ruff", "check", "packages/linux-adapters"])
+    run(["uv", "run", "--locked", "ruff", "format", "--check", "packages/linux-adapters"])
 
 
 def windows():
@@ -323,7 +375,8 @@ def smoke():
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "command", choices=["doctor", "bootstrap", "check", "smoke", "java", "windows", "verify"]
+        "command",
+        choices=["doctor", "bootstrap", "check", "smoke", "java", "windows", "linux", "verify"],
     )
     args = parser.parse_args()
     try:

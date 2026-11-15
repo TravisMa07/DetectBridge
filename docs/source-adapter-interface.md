@@ -73,3 +73,21 @@ checkpointed failure behavior are owned by P12 under the accepted plan.
 
 P13 owns production adapter→evaluation→writer integration and detection identities.
 This interface introduces no archive, activation, management API or UI.
+
+## Concrete context reconciliation for the first adapters
+
+P11 and P12a retain module-local validators over the same named JSON boundary.
+`source_contract` wraps id/version/sha256/snapshot; `mapping_profile` wraps
+id/version/sha256/declaration. Both validators bind these to immutable module
+resources. `host_binding` uses host_id/source/revision/sha256/provenance/kind,
+where kind is reviewed or synthetic, and its SHA-256 covers the canonical object
+without sha256. The source must match the raw envelope. Windows additionally
+requires Computer binding; Linux accepts optional computer display context.
+`source_generation` contains id/provenance; Windows can additionally bind known
+command-line capture configuration. `receipt` contains optional actual received
+and processed timestamps. Required identity remains source specific: audit
+assembly requires reviewed host and generation scope, while missing scope produces
+separate skipped preservation. A synthetic binding is never recorded provenance.
+Linux bounds context to 64 KiB and provenance arrays to 16 entries; Windows uses
+its documented parser/context bounds. Different admission limits do not rewrite
+the context's meaning or P03 identities. No shared unused adapter library is added.

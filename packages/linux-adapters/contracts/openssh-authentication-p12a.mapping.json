@@ -1,0 +1,45 @@
+{
+  "version": "1.0.0",
+  "id": "openssh-authentication-p12a",
+  "source": {
+    "id": "openssh-authentication-p12a",
+    "version": "1.0.0",
+    "sha256": "e5c86909e6b464f962d941f58b227377b84a99d77cc9d63c456a3c110fc27100"
+  },
+  "fields": [
+    {
+      "alias": "Image",
+      "target": "process.executable",
+      "type": "string",
+      "cardinality": "scalar",
+      "capability": "unsupported",
+      "transform": "identity-string/1.0.0"
+    },
+    {
+      "alias": "CommandLine",
+      "target": "process.command_line",
+      "type": "string",
+      "cardinality": "scalar",
+      "capability": "unsupported",
+      "transform": "identity-string/1.0.0"
+    },
+    {
+      "alias": "ProcessId",
+      "target": "process.pid",
+      "type": "integer",
+      "cardinality": "scalar",
+      "capability": "unsupported",
+      "transform": "decimal-integer/1.0.0"
+    },
+    {
+      "alias": "User",
+      "target": "user.name",
+      "type": "string",
+      "cardinality": "scalar",
+      "capability": "available",
+      "transform": "identity-string/1.0.0",
+      "source_path": "/user"
+    }
+  ],
+  "sha256": "7c22da04863a7d1564f56a6a344119f597e74a58a246f2c4c45b1a3e11a2c061"
+}

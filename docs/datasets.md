@@ -127,3 +127,10 @@ gh workflow run hygiene.yml --ref feat/p04-dataset-catalog-acquisition -f acquir
 The optional acquisition job is deliberately not a dependency of required-checks.
 It never runs on ordinary PR events. Review its own conclusion separately from
 required-checks. No secrets or deployment credentials are passed.
+
+P12a also owns an [opt-in local recording catalog](../catalog/recordings/README.md)
+for a real controlled OpenSSH9 password capture. It preserves original native
+messages alongside a versioned RFC5424 collector rendering and independent
+expectations. It is not fetched by P04's public dataset downloader and does not
+change that closed manifest schema. Payloads remain ignored; local verification
+requires the catalog's exact hashes and trusted container/generation metadata.

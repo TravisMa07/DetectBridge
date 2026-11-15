@@ -107,3 +107,11 @@ Gradle/toolchain and shared CI changes. The fail-closed aggregator requires it w
 applicable and rejects unexpected skip/cancellation. Ordinary checks use original
 synthetic bytes and never download telemetry. Recorded qualification is opt-in
 against the reviewed local dataset cache; see [the guide](windows-adapters.md).
+
+P12a adds `uv run --locked python tools/dev.py linux`: real Linux parser, bounded
+assembly, offline replay and independent recording-verifier regressions, production
+jar/notice/profile checks and subsystem lint/format. Root `java` includes Linux
+alongside Windows and existing consumers. The fail-closed `linux-verification` CI
+gate runs on the Linux subsystem and shared contract/compiler/build/gate changes.
+Recorded payloads remain opt-in and absent from ordinary CI; see the
+[P12a runbook](p12-runbook.md) and [local recording catalog](../catalog/recordings/README.md).

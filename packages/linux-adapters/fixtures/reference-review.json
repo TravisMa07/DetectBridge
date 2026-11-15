@@ -1,0 +1,181 @@
+{
+  "version": "1.0.0",
+  "reviewed_on": "2026-11-15",
+  "status": "source definitions reviewed; no recorded acceptance",
+  "artifacts": [
+    {
+      "repository": "https://github.com/torvalds/linux",
+      "revision": "adc218676eef25575469234709c2d87185ca223a",
+      "path": "kernel/auditsc.c",
+      "sha256": "95709941d08be16783730fb7768c799f82d239286c14e2f42a515b069b0add2a",
+      "bytes": 83696,
+      "terms": "GPL-2.0-or-later",
+      "use": "Reference review only; no upstream bytes redistributed"
+    },
+    {
+      "repository": "https://github.com/torvalds/linux",
+      "revision": "adc218676eef25575469234709c2d87185ca223a",
+      "path": "kernel/audit.c",
+      "sha256": "f3c88ae426ac29832ce91bf1b25182e8b39745e1e02f12342bf970b6c5c1fe78",
+      "bytes": 66667,
+      "terms": "GPL-2.0-or-later",
+      "use": "Reference review only; no upstream bytes redistributed"
+    },
+    {
+      "repository": "https://github.com/torvalds/linux",
+      "revision": "adc218676eef25575469234709c2d87185ca223a",
+      "path": "include/uapi/linux/audit.h",
+      "sha256": "a3397fb1b873e6621c1bd299754d02f53a11e8d9ae70def8774e7212a3bf8641",
+      "bytes": 21759,
+      "terms": "GPL-2.0+ WITH Linux-syscall-note",
+      "use": "Reference review only; no upstream bytes redistributed"
+    },
+    {
+      "repository": "https://github.com/torvalds/linux",
+      "revision": "adc218676eef25575469234709c2d87185ca223a",
+      "path": "include/uapi/linux/elf-em.h",
+      "sha256": "e72cca577a97d1fccc7f4e5d37b39b401a527a97f02e589255c247b63cb227d2",
+      "bytes": 2627,
+      "terms": "GPL-2.0 WITH Linux-syscall-note",
+      "use": "Reference review only; no upstream bytes redistributed"
+    },
+    {
+      "repository": "https://github.com/torvalds/linux",
+      "revision": "adc218676eef25575469234709c2d87185ca223a",
+      "path": "arch/x86/entry/syscalls/syscall_64.tbl",
+      "sha256": "980ce3115028c71c5618e7864d262017bde8103bcfe7b413147a14fd312c92ac",
+      "bytes": 15472,
+      "terms": "GPL-2.0 WITH Linux-syscall-note",
+      "use": "Reference review only; no upstream bytes redistributed"
+    },
+    {
+      "repository": "https://github.com/torvalds/linux",
+      "revision": "adc218676eef25575469234709c2d87185ca223a",
+      "path": "arch/x86/entry/syscalls/syscall_32.tbl",
+      "sha256": "48deaff56363a5889acd966b5a9df8cf084e8951c45fddd7a2f33f3b8bc4d81d",
+      "bytes": 18509,
+      "terms": "GPL-2.0 WITH Linux-syscall-note",
+      "use": "Reference review only; no upstream bytes redistributed"
+    },
+    {
+      "repository": "https://github.com/torvalds/linux",
+      "revision": "adc218676eef25575469234709c2d87185ca223a",
+      "path": "scripts/syscall.tbl",
+      "sha256": "8872daa692005172eccfee147ee38591ce2c005103026ea33a049f044418d41d",
+      "bytes": 17237,
+      "terms": "GPL-2.0 WITH Linux-syscall-note",
+      "use": "Reference review only; no upstream bytes redistributed"
+    },
+    {
+      "repository": "https://github.com/torvalds/linux",
+      "revision": "adc218676eef25575469234709c2d87185ca223a",
+      "path": "arch/arm64/tools/syscall_64.tbl",
+      "sha256": "e0a5d9a188af7952060d69e4e248675df79a583610ae535e68787bb5481a30db",
+      "bytes": 28,
+      "terms": "symlink to scripts/syscall.tbl",
+      "use": "Reference review only; no upstream bytes redistributed"
+    },
+    {
+      "repository": "https://github.com/torvalds/linux",
+      "revision": "adc218676eef25575469234709c2d87185ca223a",
+      "path": "arch/arm64/kernel/Makefile.syscalls",
+      "sha256": "27e95d7bd10c3ab67c8a3f16c7dfe5da30c586c2fda3993c42025109a22098c5",
+      "bytes": 148,
+      "terms": "GPL-2.0",
+      "use": "Reference review only; no upstream bytes redistributed"
+    },
+    {
+      "repository": "https://github.com/torvalds/linux",
+      "revision": "adc218676eef25575469234709c2d87185ca223a",
+      "path": "arch/arm64/include/uapi/asm/unistd.h",
+      "sha256": "cc7ad787b726c5a50b9ed3765977beadc8867f7933a9f9daa1747d77ce7bda06",
+      "bytes": 90,
+      "terms": "GPL-2.0 WITH Linux-syscall-note",
+      "use": "Reference review only; no upstream bytes redistributed"
+    },
+    {
+      "repository": "https://github.com/openssh/openssh-portable",
+      "revision": "d76b2675116617394cd355a3437b4963a562b64d",
+      "path": "auth.c",
+      "sha256": "a5514a5c1d58cda453a934ff1be418ca178afcad5ddc9b9406ad4d09eb8c2807",
+      "bytes": 21809,
+      "terms": "OpenSSH per-file BSD/ISC-style terms; see retained LICENCE",
+      "use": "Reference review only; no upstream bytes redistributed"
+    },
+    {
+      "repository": "https://github.com/openssh/openssh-portable",
+      "revision": "d76b2675116617394cd355a3437b4963a562b64d",
+      "path": "LICENCE",
+      "sha256": "5bb5b160726ef5756e4f32fe95b35249c294962419650f48d05134b486d27ccb",
+      "bytes": 21140,
+      "terms": "OpenSSH per-file BSD/ISC-style terms; see retained LICENCE",
+      "use": "Reference review only; no upstream bytes redistributed"
+    },
+    {
+      "repository": "https://github.com/logpai/loghub",
+      "revision": "dd61d0952749ee7963bde24220d1be5ede023033",
+      "path": "README.md",
+      "sha256": "b9819b1e12d959a0c046a9a4213b4e4d7bd0647fe474dba0137af5770bc004fd",
+      "bytes": 6954,
+      "terms": "Loghub research/academic use notice, attribution/citation and notice retention; not approved for acquisition",
+      "use": "Reference review only; no upstream bytes redistributed"
+    },
+    {
+      "repository": "https://github.com/logpai/loghub",
+      "revision": "dd61d0952749ee7963bde24220d1be5ede023033",
+      "path": "LICENSE",
+      "sha256": "9ffa6ae259833cdc6e7ed8a0219fec72ef6455fb457b3c44096cb1ac1f0696d4",
+      "bytes": 553,
+      "terms": "Loghub research/academic use notice, attribution/citation and notice retention; not approved for acquisition",
+      "use": "Reference review only; no upstream bytes redistributed"
+    },
+    {
+      "repository": "https://github.com/logpai/loghub",
+      "revision": "dd61d0952749ee7963bde24220d1be5ede023033",
+      "path": "OpenSSH/README.md",
+      "sha256": "49ba1285a035cbc6928bb4446a925687f1835739f5cf76da55b1a65d765770fc",
+      "bytes": 634,
+      "terms": "Loghub research/academic use notice, attribution/citation and notice retention; not approved for acquisition",
+      "use": "Reference review only; no upstream bytes redistributed"
+    },
+    {
+      "repository": "https://github.com/logpai/loghub",
+      "revision": "dd61d0952749ee7963bde24220d1be5ede023033",
+      "path": "OpenSSH/OpenSSH_2k.log",
+      "sha256": "1e4912727fa88245113d41b16a0cd25ceadba7f931e1c406542885b91254264f",
+      "bytes": 225216,
+      "terms": "Loghub research/academic use notice, attribution/citation and notice retention; not approved for acquisition",
+      "use": "Reference review only; no upstream bytes redistributed"
+    },
+    {
+      "repository": "https://github.com/rsyslog/rsyslog",
+      "revision": "a2d0282d5b8202080713bafa7a722770250394c0",
+      "path": "COPYING",
+      "sha256": "054b3a047d9232376a46b87356b19b0c0c2924cb5e6911ab96a01fc4b515f083",
+      "bytes": 35146,
+      "terms": "GPL-3.0/LGPL-3.0 per component; reference only, not bundled",
+      "use": "Reference review only; no upstream bytes redistributed"
+    },
+    {
+      "repository": "https://github.com/rsyslog/rsyslog",
+      "revision": "a2d0282d5b8202080713bafa7a722770250394c0",
+      "path": "COPYING.LESSER",
+      "sha256": "4038442ca5bde8ffd243cfc235cb4455e7d618d47558ea3d8284733f71d904ed",
+      "bytes": 7639,
+      "terms": "GPL-3.0/LGPL-3.0 per component; reference only, not bundled",
+      "use": "Reference review only; no upstream bytes redistributed"
+    }
+  ],
+  "recording_candidates": [
+    {
+      "repository": "https://github.com/splunk/attack_data",
+      "revision": "4b19e4b6824a8ba91b0f5345a3a8de488619e823",
+      "path": "datasets/emerging_threats/sshhole/syslog.log",
+      "sha256": "61ed48173a6280af7ccf7217b7465d722477961cc456297a9ad9a480f375a0d3",
+      "bytes": 346,
+      "scenario_sha256": "191be6983eaa3f77be9c5f4affce69a6a92a429b04e383a6fc6c773a8b48ba15",
+      "status": "rejected: not RFC5424; scenario does not pin OpenSSH9.x; no trusted host/generation binding",
+      "terms_review": "Existing pinned repository root Apache-2.0; no additional ancestor LICENSE/NOTICE entries in pinned tree. Not promoted to acquisition catalog."
+    }
+  ]
+}

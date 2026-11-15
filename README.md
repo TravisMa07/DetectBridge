@@ -14,9 +14,9 @@ references. P08 adds a local OpenSearch metadata writer; qualification status is
 recorded in the writer guide. P09 adds a bounded synthetic normalized-fixture
 compiler/Java evaluator slice and a separate Flink job, with merged-main AMD64
 semantic/recovery CI passed and independent owner semantic review pending.
-P10a adds [source mapping/provenance compatibility](docs/p10-design.md) and an
-offline v2 plan reader for review; optimized selection and v2 runtime qualification
-remain P10b.
+P10a adds [source mapping/provenance compatibility](docs/p10-design.md).
+[P10b](docs/p10b-design.md) adds source-indexed evaluation and a separate v2 runtime
+for review; independent owner semantic acceptance remains pending.
 Production detection, management API, UI and detection-to-OpenSearch integration
 remain pending.
 P06 provides local Kafka/Flink infrastructure and optional authenticated OpenSearch.

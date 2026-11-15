@@ -11,8 +11,12 @@ public final class BundleBinding {
 
   public static String fingerprint(
       String bundle, String cluster, String group, Map<String, String> topics) {
-    return Json.sha(
-        Json.bytes(List.of(bundle, Evaluator.VERSION, cluster, group, new TreeMap<>(topics))));
+    return fingerprint(bundle, Evaluator.VERSION, cluster, group, topics);
+  }
+
+  public static String fingerprint(
+      String bundle, String evaluator, String cluster, String group, Map<String, String> topics) {
+    return Json.sha(Json.bytes(List.of(bundle, evaluator, cluster, group, new TreeMap<>(topics))));
   }
 
   public static void requireRestored(String expected, Iterable<String> state) {

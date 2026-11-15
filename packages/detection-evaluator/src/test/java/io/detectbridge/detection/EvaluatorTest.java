@@ -155,6 +155,8 @@ class EvaluatorTest {
   void checkpointBindingRejectsChangedPlanGroupOrTopic() {
     Map<String, String> topics = Map.of("input", "uuid-a", "output", "uuid-b");
     String fingerprint = BundleBinding.fingerprint("bundle-a", "cluster-a", "group-a", topics);
+    // Literal legacy preimage independently hashed using the system shasum utility.
+    assertEquals("7108114d777a902c9180463d710c96b2851d3986e45be59cb77429a54e0951f8", fingerprint);
     assertDoesNotThrow(() -> BundleBinding.requireRestored(fingerprint, List.of(fingerprint)));
     for (String changed :
         List.of(

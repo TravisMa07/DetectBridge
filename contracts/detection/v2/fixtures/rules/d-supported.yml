@@ -1,0 +1,9 @@
+title: Original synthetic P10 selection d-supported
+id: 70000000-0000-4000-8000-000000000014
+license: Apache-2.0
+logsource:
+  product: windows
+detection:
+  selection:
+    Image: x
+  condition: selection

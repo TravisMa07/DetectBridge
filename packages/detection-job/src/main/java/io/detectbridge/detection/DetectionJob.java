@@ -66,6 +66,7 @@ public final class DetectionJob {
 
   public static class Route extends RichMapFunction<WireRecord, RoutedRecord>
       implements CheckpointedFunction {
+    private final DetectionMode mode;
     private final String bootstrap;
     private final String cluster;
     private final Map<String, String> ids;
@@ -79,6 +80,12 @@ public final class DetectionJob {
 
     public Route(
         String bootstrap, String cluster, Map<String, String> ids, byte[] plan, String group) {
+      this(bootstrap, cluster, ids, plan, group, DetectionMode.LEGACY);
+    }
+
+    Route(String bootstrap, String cluster, Map<String, String> ids, byte[] plan,
+        String group, DetectionMode mode) {
+      this.mode = mode;
       this.bootstrap = bootstrap;
       this.cluster = cluster;
       this.ids = ids;
@@ -88,9 +95,9 @@ public final class DetectionJob {
 
     @Override
     public void open(OpenContext context) throws Exception {
-      DetectionBroker.verify(bootstrap, cluster, ids);
+      DetectionBroker.verify(bootstrap, cluster, ids, mode.topics);
       evaluator = new Evaluator(plan);
-      evaluator.requireLegacyDeployment();
+      mode.require(evaluator);
       var metrics = getRuntimeContext().getMetricGroup().addGroup("detectbridge_detection");
       seen = metrics.counter("seen_total");
       valid = metrics.counter("valid_total");
@@ -133,7 +140,7 @@ public final class DetectionJob {
         valid.inc();
         for (String outcome : Evaluator.OUTCOMES)
           outcomes.get(outcome).inc(result.get("counts").get(outcome).asLong());
-        output.topic = DetectionBroker.OUTPUT;
+        output.topic = mode.output;
         output.key = result.get("result_id").asString().getBytes(StandardCharsets.UTF_8);
         output.value = Json.bytes(result);
       } catch (IllegalArgumentException ex) {
@@ -145,7 +152,7 @@ public final class DetectionJob {
                     ids.get(input.topic),
                     String.valueOf(input.partition),
                     String.valueOf(input.offset)));
-        output.topic = DetectionBroker.QUARANTINE;
+        output.topic = mode.quarantine;
         output.key = identity.getBytes(StandardCharsets.UTF_8);
         output.value =
             Json.bytes(
@@ -168,7 +175,7 @@ public final class DetectionJob {
 
     @Override
     public void snapshotState(FunctionSnapshotContext context) throws Exception {
-      DetectionBroker.verify(bootstrap, cluster, ids);
+      DetectionBroker.verify(bootstrap, cluster, ids, mode.topics);
       binding.clear();
       binding.add(fingerprint);
     }
@@ -176,12 +183,12 @@ public final class DetectionJob {
     @Override
     public void initializeState(FunctionInitializationContext context) throws Exception {
       Evaluator checked = new Evaluator(plan);
-      checked.requireLegacyDeployment();
-      fingerprint = BundleBinding.fingerprint(checked.bundle(), cluster, group, ids);
+      mode.require(checked);
+      fingerprint = mode.binding(checked, cluster, group, ids);
       binding =
           context
               .getOperatorStateStore()
-              .getListState(new ListStateDescriptor<>("detection-binding-v1", String.class));
+              .getListState(new ListStateDescriptor<>("detection-binding-" + mode.suffix, String.class));
       if (context.isRestored()) {
         BundleBinding.requireRestored(fingerprint, binding.get());
       }
@@ -198,19 +205,23 @@ public final class DetectionJob {
   }
 
   public static void main(String[] args) throws Exception {
+    run(args, DetectionMode.LEGACY);
+  }
+
+  static void run(String[] args, DetectionMode mode) throws Exception {
     if (args.length != 7) throw new IllegalArgumentException("invalid_detection_configuration");
     String bootstrap = args[0], group = args[1], cluster = args[2];
     byte[] plan = Evaluate.bounded(java.nio.file.Path.of(args[6]), 4 * 1024 * 1024);
-    new Evaluator(plan).requireLegacyDeployment();
+    mode.require(new Evaluator(plan));
     Map<String, String> ids =
         Map.of(
-            DetectionBroker.INPUT,
+            mode.input,
             args[3],
-            DetectionBroker.OUTPUT,
+            mode.output,
             args[4],
-            DetectionBroker.QUARANTINE,
+            mode.quarantine,
             args[5]);
-    DetectionBroker.verify(bootstrap, cluster, ids);
+    DetectionBroker.verify(bootstrap, cluster, ids, mode.topics);
     Configuration config = new Configuration();
     config.setString("execution.checkpointing.storage", "filesystem");
     config.setString("execution.checkpointing.dir", "file:///state/checkpoints");
@@ -228,7 +239,7 @@ public final class DetectionJob {
     KafkaSource<WireRecord> source =
         KafkaSource.<WireRecord>builder()
             .setBootstrapServers(bootstrap)
-            .setTopics(DetectionBroker.INPUT)
+            .setTopics(mode.input)
             .setGroupId(group)
             .setStartingOffsets(OffsetsInitializer.earliest())
             .setDeserializer(new Decode())
@@ -247,14 +258,14 @@ public final class DetectionJob {
             .setDeliveryGuarantee(DeliveryGuarantee.AT_LEAST_ONCE)
             .build();
     env.fromSource(source, WatermarkStrategy.noWatermarks(), "Detection Kafka input")
-        .uid("detection-kafka-source-v1")
-        .map(new Route(bootstrap, cluster, ids, plan, group))
+        .uid("detection-kafka-source-" + mode.suffix)
+        .map(new Route(bootstrap, cluster, ids, plan, group, mode))
         .returns(TypeInformation.of(RoutedRecord.class))
         .name("Detection validation and quarantine")
-        .uid("detection-contract-router-v1")
+        .uid("detection-contract-router-" + mode.suffix)
         .sinkTo(sink)
         .name("Detection Kafka output")
-        .uid("detection-kafka-sink-v1");
-    env.execute("DetectBridge detection slice v1");
+        .uid("detection-kafka-sink-" + mode.suffix);
+    env.execute("DetectBridge detection slice " + mode.suffix);
   }
 }

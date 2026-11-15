@@ -100,14 +100,14 @@ public final class DetectionPublisher {
     emit(Map.of("type", "end"));
   }
 
-  private static void quarantineIsr(String bootstrap, String value) throws Exception {
+  private static void quarantineIsr(String bootstrap, String value, String topic) throws Exception {
     if (!List.of("1", "2").contains(value))
       throw new IllegalArgumentException("invalid_fault_policy");
     try (var admin =
         org.apache.kafka.clients.admin.Admin.create(DetectionBroker.properties(bootstrap))) {
       var resource =
           new org.apache.kafka.common.config.ConfigResource(
-              org.apache.kafka.common.config.ConfigResource.Type.TOPIC, DetectionBroker.QUARANTINE);
+              org.apache.kafka.common.config.ConfigResource.Type.TOPIC, topic);
       var change =
           new org.apache.kafka.clients.admin.AlterConfigOp(
               new org.apache.kafka.clients.admin.ConfigEntry("min.insync.replicas", value),
@@ -130,17 +130,27 @@ public final class DetectionPublisher {
   }
 
   public static void main(String[] args) {
+    execute(args, DetectionMode.LEGACY);
+  }
+
+  static void execute(String[] args, DetectionMode mode) {
     try {
       switch (args[1]) {
-        case "quarantine-isr" -> quarantineIsr(args[0], args[2]);
+        case "quarantine-isr" -> quarantineIsr(args[0], args[2], mode.quarantine);
         case "init", "describe" ->
             emit(
                 DetectionBroker.describe(
-                    args[0], args[1].equals("init"), args.length > 2 ? args[2] : null));
-        case "inject" -> publish(args[0], args[2], false);
+                    args[0], args[1].equals("init"), args.length > 2 ? args[2] : null, mode.topics));
+        case "inject" -> {
+          Contracts.check(mode.topics.contains(args[2]), "topic_boundary_mismatch");
+          publish(args[0], args[2], false);
+        }
         case "group-offset" ->
-            emit(Map.of("offset", DetectionBroker.groupOffset(args[0], args[2])));
-        case "read" -> read(args[0], args[2], Long.parseLong(args[3]), Long.parseLong(args[4]));
+            emit(Map.of("offset", DetectionBroker.groupOffset(args[0], args[2], mode.input)));
+        case "read" -> {
+          Contracts.check(mode.topics.contains(args[2]), "topic_boundary_mismatch");
+          read(args[0], args[2], Long.parseLong(args[3]), Long.parseLong(args[4]));
+        }
         default -> throw new IllegalArgumentException("unknown_operation");
       }
     } catch (Exception ex) {

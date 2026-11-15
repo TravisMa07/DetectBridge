@@ -171,3 +171,8 @@ P10a refines A04/A05 with versioned source mapping/candidate provenance and
 explicit legacy/v2 offline semantic modes in [design notes](p10-design.md).
 It preserves the accepted boundaries; P10b owns selection/runtime acceptance,
 P11/P12 own adapters, and P15 owns activation.
+
+P10b implements source-only candidate indexing with an exhaustive reference and a
+separate v2 detection deployment in [design notes](p10b-design.md). P09 topics and
+checkpoint bindings remain independent. The [adapter boundary](source-adapter-interface.md)
+specifies P11/P12 obligations without claiming parser implementation.

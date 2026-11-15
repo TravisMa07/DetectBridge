@@ -1,0 +1,45 @@
+{
+  "version": "1.0.0",
+  "id": "linux-audit-execution-fixture",
+  "source": {
+    "id": "linux-audit-execution",
+    "version": "1.0.0",
+    "sha256": "f471840a5bca41b50b7fc9b7581260b3b8a4eb35c24afa34fc3c6552fe4e79de"
+  },
+  "fields": [
+    {
+      "alias": "Image",
+      "target": "process.executable",
+      "type": "string",
+      "cardinality": "scalar",
+      "capability": "available",
+      "transform": "identity-string/1.0.0",
+      "source_path": "/exe"
+    },
+    {
+      "alias": "CommandLine",
+      "target": "process.command_line",
+      "type": "string",
+      "cardinality": "scalar",
+      "capability": "unsupported",
+      "transform": "identity-string/1.0.0"
+    },
+    {
+      "alias": "ProcessId",
+      "target": "process.pid",
+      "type": "integer",
+      "cardinality": "scalar",
+      "capability": "unsupported",
+      "transform": "decimal-integer/1.0.0"
+    },
+    {
+      "alias": "User",
+      "target": "user.name",
+      "type": "string",
+      "cardinality": "scalar",
+      "capability": "unsupported",
+      "transform": "identity-string/1.0.0"
+    }
+  ],
+  "sha256": "f3c258a5d2c3da441e94c7293a2895527b32c92b84f775e85795452478b6112e"
+}

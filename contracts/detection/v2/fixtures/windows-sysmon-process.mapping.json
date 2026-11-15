@@ -1,0 +1,46 @@
+{
+  "version": "1.0.0",
+  "id": "windows-sysmon-process-fixture",
+  "source": {
+    "id": "windows-sysmon-process",
+    "version": "1.0.0",
+    "sha256": "ea1884dc5579bce5ce7367aee41c8fb783e6a15a54be7fecc537d8ef385d4dc8"
+  },
+  "fields": [
+    {
+      "alias": "Image",
+      "target": "process.executable",
+      "type": "string",
+      "cardinality": "scalar",
+      "capability": "available",
+      "transform": "identity-string/1.0.0",
+      "source_path": "/Image"
+    },
+    {
+      "alias": "CommandLine",
+      "target": "process.command_line",
+      "type": "string",
+      "cardinality": "scalar",
+      "capability": "conditional",
+      "transform": "identity-string/1.0.0",
+      "source_path": "/CommandLine"
+    },
+    {
+      "alias": "ProcessId",
+      "target": "process.pid",
+      "type": "integer",
+      "cardinality": "scalar",
+      "capability": "unsupported",
+      "transform": "decimal-integer/1.0.0"
+    },
+    {
+      "alias": "User",
+      "target": "user.name",
+      "type": "string",
+      "cardinality": "scalar",
+      "capability": "unsupported",
+      "transform": "identity-string/1.0.0"
+    }
+  ],
+  "sha256": "315f626f2f1e8ec15ea460d0dc1521c6875021c9ea149322e5d3b9fd3525c59c"
+}

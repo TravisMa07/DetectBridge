@@ -81,3 +81,26 @@ quarantine sink, and writes ignored local reports. It cleans only its test proje
 CI runs Linux AMD64 qualification when detection/shared dependencies change.
 Independent owner review of expected semantics is pending; passing tests alone do
 not establish that review, production coverage, or throughput capacity.
+
+## P10 offline mapping compatibility
+
+P10a adds [typed source mapping and candidate provenance](p10-design.md). See the
+[feature matrix](compatibility.md) and [implementation ledger](implementation-ledger.md).
+To prepare both legacy and v2 synthetic plans:
+
+```sh
+uv run --locked python tools/check_mapping.py --prepare
+uv run --locked python tools/dev.py java
+.cache/jdk/bin/java -jar packages/detection-evaluator/build/libs/evaluator.jar .cache/detection/mapped-plan.json contracts/detection/v1/fixtures/positive.event.json
+```
+
+Compile v2 by supplying `--mapping` once per exact source snapshot and
+`--provenance` pointing to the JSON candidate manifest array in addition to the
+existing rules/`--source`/`--output` arguments. `--analyze` with the same inputs
+publishes a bounded candidate disposition report instead of an executable bundle;
+it includes rejected candidates and never partially activates supported ones.
+Original files and notices must remain accessible by their recorded hashes.
+
+The new offline mode emits result 2.0.0. P09's deployed job rejects v2 plans to
+protect its v1 result topic; keep its existing commands/projects/checkpoints.
+P10b must provide separately versioned deployment and recovery evidence.

@@ -90,6 +90,7 @@ public final class DetectionJob {
     public void open(OpenContext context) throws Exception {
       DetectionBroker.verify(bootstrap, cluster, ids);
       evaluator = new Evaluator(plan);
+      evaluator.requireLegacyDeployment();
       var metrics = getRuntimeContext().getMetricGroup().addGroup("detectbridge_detection");
       seen = metrics.counter("seen_total");
       valid = metrics.counter("valid_total");
@@ -175,6 +176,7 @@ public final class DetectionJob {
     @Override
     public void initializeState(FunctionInitializationContext context) throws Exception {
       Evaluator checked = new Evaluator(plan);
+      checked.requireLegacyDeployment();
       fingerprint = BundleBinding.fingerprint(checked.bundle(), cluster, group, ids);
       binding =
           context
@@ -199,7 +201,7 @@ public final class DetectionJob {
     if (args.length != 7) throw new IllegalArgumentException("invalid_detection_configuration");
     String bootstrap = args[0], group = args[1], cluster = args[2];
     byte[] plan = Evaluate.bounded(java.nio.file.Path.of(args[6]), 4 * 1024 * 1024);
-    new Evaluator(plan);
+    new Evaluator(plan).requireLegacyDeployment();
     Map<String, String> ids =
         Map.of(
             DetectionBroker.INPUT,

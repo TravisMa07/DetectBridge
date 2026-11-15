@@ -1,0 +1,45 @@
+{
+  "version": "1.0.0",
+  "id": "openssh-authentication-fixture",
+  "source": {
+    "id": "openssh-authentication",
+    "version": "1.0.0",
+    "sha256": "79847a2eef5f43b53cc92bd739d3651d564a109fa89bc139c677a008b522d880"
+  },
+  "fields": [
+    {
+      "alias": "Image",
+      "target": "process.executable",
+      "type": "string",
+      "cardinality": "scalar",
+      "capability": "unsupported",
+      "transform": "identity-string/1.0.0"
+    },
+    {
+      "alias": "CommandLine",
+      "target": "process.command_line",
+      "type": "string",
+      "cardinality": "scalar",
+      "capability": "unsupported",
+      "transform": "identity-string/1.0.0"
+    },
+    {
+      "alias": "ProcessId",
+      "target": "process.pid",
+      "type": "integer",
+      "cardinality": "scalar",
+      "capability": "unsupported",
+      "transform": "decimal-integer/1.0.0"
+    },
+    {
+      "alias": "User",
+      "target": "user.name",
+      "type": "string",
+      "cardinality": "scalar",
+      "capability": "available",
+      "transform": "identity-string/1.0.0",
+      "source_path": "/user"
+    }
+  ],
+  "sha256": "9fe5b418b679e67155be7e9a5881a1858d304bc43683ac20c721b5fc430e440c"
+}

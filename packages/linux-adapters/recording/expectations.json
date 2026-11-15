@@ -1,0 +1,21 @@
+{
+  "version": "1.0.0",
+  "scope": "Real loopback password authentication, independently specified before final capture",
+  "user": "bridgeauth",
+  "source_ip": "127.0.0.1",
+  "actions": [
+    {
+      "action": "accepted-password",
+      "client_exit": 0,
+      "event_outcome": "success"
+    },
+    {
+      "action": "failed-password",
+      "client_exit": 255,
+      "event_outcome": "failure"
+    }
+  ],
+  "all_other_daemon_messages": "unsupported_source; preserve exact original bytes",
+  "eligible_event_count": 2,
+  "command_line": "unsupported; never manufactured"
+}

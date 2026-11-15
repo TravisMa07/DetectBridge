@@ -1,0 +1,90 @@
+# P12a Linux adapter design
+
+Status: implementation design, recorded before code on 2026-11-15. Owner authorized
+dependent implementation after P10; no additional semantic approval is inferred.
+P12b checkpointed Flink qualification requires a separately authorized P12a merge.
+
+## Ownership and boundary
+
+Base: `df3144822ddd5694b9244ae29eb4a3c9e2815376`. Linux owns
+`packages/linux-adapters/`, this design and the Linux runbook. Shared integration
+is a separate commit for orchestrator reconciliation. P03 remains unchanged.
+Module-local Java APIs consume the exact JSON context in
+[source-adapter-interface.md](source-adapter-interface.md). Context snapshots and
+mapping hashes are bound on admission; immutable evidence is explicitly resolved
+and verified. No competing shared library or production pipeline is introduced.
+
+## Source review and fixed policy
+
+Authoritative Linux reference: v6.12 commit
+`adc218676eef25575469234709c2d87185ca223a`, specifically
+[kernel/auditsc.c](https://github.com/torvalds/linux/blob/adc218676eef25575469234709c2d87185ca223a/kernel/auditsc.c),
+[kernel/audit.c](https://github.com/torvalds/linux/blob/adc218676eef25575469234709c2d87185ca223a/kernel/audit.c),
+[audit.h](https://github.com/torvalds/linux/blob/adc218676eef25575469234709c2d87185ca223a/include/uapi/linux/audit.h),
+[x86-64 table](https://github.com/torvalds/linux/blob/adc218676eef25575469234709c2d87185ca223a/arch/x86/entry/syscalls/syscall_64.tbl),
+[i386 table](https://github.com/torvalds/linux/blob/adc218676eef25575469234709c2d87185ca223a/arch/x86/entry/syscalls/syscall_32.tbl)
+and [generic table](https://github.com/torvalds/linux/blob/adc218676eef25575469234709c2d87185ca223a/include/uapi/asm-generic/unistd.h).
+Only execution pairs are supported: c000003e/59,322 (x86-64),
+40000003/11,358 (i386), c00000b7/221,281 (AArch64). x32 is excluded.
+Unknown ABI/syscall/type is unsupported, retained, and prevents eligibility.
+These are factual numeric definitions; no upstream implementation is copied.
+
+Audit strings are quoted literal bytes or even-length hex; no shell escaping.
+EXECVE fragments use ordered aN[F], aN_len measures emitted characters (twice
+bytes for hex), not decoded Unicode length. Decode after concatenating bytes;
+non-UTF-8/NUL arguments remain preserved but cannot populate ECS strings.
+PROCTITLE is preserved, never a replacement for missing EXECVE arguments.
+All tokens, encodings, duplicate occurrences and PATH items survive in source_fields.
+
+Auth reference is [OpenSSH 9.9p2 auth.c](https://github.com/openssh/openssh-portable/blob/V_9_9_P2/auth.c)
+and [RFC5424](https://www.rfc-editor.org/rfc/rfc5424.html). Only the exact
+Accepted/Failed password body is supported, with literal IP and port 1–65535.
+Accept RFC5424 version 1, valid bounded header and structured data; preserve
+header strings. NIL timestamp falls back to original first observation; malformed
+timestamps are invalid. No DNS or hostname-derived host identity. APP-NAME sshd
+or sshd-session is required (9.8 split); daemon version is capture provenance,
+never inferred from message text. Other auth grammars remain unsupported.
+
+## Assembly and durability
+
+Key is run + source namespace/instance + reviewed host ID/binding + explicit
+provenance-bearing generation + exact audit timestamp/serial. Missing scope emits
+separate identity_missing diagnostics. Configuration is fixed per group; differing
+context snapshots conflict rather than silently changing attribution.
+
+Eligibility independently requires exactly one successful supported SYSCALL with
+exit=0, executable and PID; EXECVE argc with all contiguous argument positions and
+fragments/lengths consistent; exactly one CWD; SYSCALL items matching all contiguous
+PATH item slots. Multiple occurrences of singleton/argument/path slots conflict,
+even with identical bytes at distinct positions. EOE is closure only. Missing EOE
+can still be structurally sufficient at explicit boundary/end/timeout; resource
+closure always skips. No arbitrary file.path or synthesized command_line.
+
+Bounds: 256 members / 1 MiB original bytes per group, 1024 open groups, 32 MiB
+serialized pending state including contexts/evidence/encoding overhead, absolute
+30s age, 16 runs, 100000 closed keys AND 32 MiB serialized closed-key knowledge.
+Output documents have a separate 1 MiB bound; oversized output becomes a bounded
+preservation diagnostic with membership references rather than truncated evidence.
+Clock is injected. Pressure closes oldest pending groups as incomplete. Admission
+stops if a closed-key/run budget cannot be retained. Closed keys never expire or
+reopen, including after dataset_end; no implicit lifecycle garbage collection.
+
+Each operation works on a private state copy. Caller-supplied commit must atomically
+persist outputs AND next snapshot before success. A commit failure leaves in-memory
+state unchanged and input visibly retryable. This is an offline transactional API
+requirement, not a claim of an implemented durable sink or Flink recovery. Evidence
+references already point at retained original bytes. Redelivery of a record ID is
+idempotent only with identical immutable raw/context content; disagreement is an
+integrity error. Late evidence emits immutable separate links, never mutating the
+original manifest/event. Closed receipt knowledge is budgeted and backpressures.
+State restore binds exact policy/state version and validates shape/bounds before use.
+
+## Acceptance boundaries
+
+Independent literal cases and reasoning precede implementation in
+[expectations](../packages/linux-adapters/fixtures/expectations.md). Author review
+of these expectations is pending. Synthetic qualification cannot replace reviewed
+recordings. Existing audit excerpts lack trusted host/generation and completeness.
+No suitable exact public auth recording has yet been substantiated; the runbook
+records source research and a real instrumented capture proposal. This remains an
+acceptance blocker. No P12 completion, checkpoint recovery, capacity or AMD64 claim.

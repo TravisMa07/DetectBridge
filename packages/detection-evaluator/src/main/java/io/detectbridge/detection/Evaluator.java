@@ -37,6 +37,8 @@ public final class Evaluator {
   private final Contracts contracts = new Contracts();
   private final Normalized normalized = new Normalized(contracts);
   private final JsonNode plan;
+  private final MappingProfiles mappings;
+  private final boolean mapped;
   private final Map<String, JsonNode> sources = new HashMap<>();
 
   public Evaluator(byte[] bytes) {
@@ -49,6 +51,7 @@ public final class Evaluator {
       plan = BUNDLE_JSON.readTree(bytes);
       Normalized.unicode(plan);
       contracts.require("detection", "plan", plan);
+      mapped = plan.get("version").asString().equals("2.0.0");
       ObjectNode unhashed = ((ObjectNode) plan).deepCopy();
       unhashed.remove("bundle_sha256");
       check(Json.sha(Json.bytes(canonical(unhashed))).equals(bundle()), "bundle_hash_mismatch");
@@ -71,11 +74,16 @@ public final class Evaluator {
         total += count;
         check(count <= 4096 && total <= 65536, "node_limit");
       }
+      mappings = mapped ? new MappingProfiles(plan, sources) : null;
     } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException("invalid_bundle");
     } catch (Exception e) {
       throw new IllegalArgumentException("invalid_bundle");
     }
+  }
+
+  public void requireLegacyDeployment() {
+    check(!mapped, "versioned_detection_deployment_required");
   }
 
   public String bundle() {
@@ -193,6 +201,7 @@ public final class Evaluator {
         for (var p : rule.get("logsource").properties())
           if (!source.get("sigma").path(p.getKey()).equals(p.getValue())) applicable = false;
         if (!applicable) outcome = "inapplicable";
+        else if (mapped && mappings.blocked(source, rule)) outcome = "configuration_blocked";
         else if (!db.get("quality").get("eligibility").asString().equals("eligible"))
           outcome = "quality_skipped";
         else
@@ -212,14 +221,15 @@ public final class Evaluator {
     }
     String id = event.get("event").get("id").asString(), run = db.get("run_id").asString();
     Map<String, Object> output = new LinkedHashMap<>();
-    output.put("version", "1.0.0");
+    output.put("version", mapped ? "2.0.0" : "1.0.0");
     output.put("result_id", Json.identity(List.of(id, run, bundle())));
     output.put("event_id", id);
     output.put("run_id", run);
     output.put("bundle_sha256", bundle());
-    output.put("evaluator", VERSION);
-    output.put("compiler", "detectbridge/1.0.0");
-    output.put("mapping_version", "fixture/1.0.0");
+    output.put("evaluator", plan.get("evaluator").asString());
+    output.put("compiler", plan.get("compiler").asString());
+    output.put("mapping_version", plan.get("mapping_version").asString());
+    if (mapped) output.put("mapping_sha256", mappings.hash);
     output.put("input", location);
     output.put("matched", matched);
     output.put("counts", counts);

@@ -1,7 +1,6 @@
 """Bounded pySigma compiler; immutable JSON plans, no per-event Python."""
 
 import argparse
-import hashlib
 import json
 import os
 import re
@@ -9,9 +8,19 @@ import signal
 import tempfile
 import uuid
 from pathlib import Path
+from typing import Any
 
 import yaml
 from check_contracts import ContractValidator, StrictValidator, load_json
+from detection_mapping import (
+    MAPPING,
+    CompileError,
+    encoded,
+    require_schema,
+    sha,
+    validate_profiles,
+    validate_provenance,
+)
 from sigma.conditions import (
     ConditionAND,
     ConditionFieldEqualsValueExpression,
@@ -24,25 +33,7 @@ from sigma.types import SigmaNumber, SigmaString, SpecialChars
 
 ROOT = Path(__file__).resolve().parents[1]
 DIRECTORY = ROOT / "contracts/detection/v1"
-MAPPING = {
-    "Image": "process.executable",
-    "CommandLine": "process.command_line",
-    "ProcessId": "process.pid",
-    "User": "user.name",
-}
 VERSION = "1.0.0"
-
-
-def encoded(value):
-    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
-
-
-def sha(value):
-    return hashlib.sha256(value).hexdigest()
-
-
-class CompileError(ValueError):
-    """Only fixed categories may leave the compiler."""
 
 
 class Loader(yaml.SafeLoader):
@@ -173,7 +164,7 @@ def expression(node, budget, depth=1):
     return {"op": "string", "field": field, "tokens": tokens}
 
 
-def compile_rules(paths, sources):
+def compile_rules(paths, sources, *, mappings=None, provenance=None):
     if not 1 <= len(paths) <= 100 or not 1 <= len(sources) <= 16:
         raise CompileError("bundle_count_limit")
     validator = ContractValidator()
@@ -182,6 +173,17 @@ def compile_rules(paths, sources):
             raise CompileError("invalid_source_contract")
     if len({s["id"] for s in sources}) != len(sources):
         raise CompileError("duplicate_source")
+    mapped = mappings is not None or provenance is not None
+    profiles = validate_profiles(mappings, sources) if mapped else None
+    if mapped and (not isinstance(provenance, list) or len(provenance) != len(paths)):
+        raise CompileError("candidate_provenance_set")
+    candidates = {}
+    for candidate in provenance or []:
+        require_schema("candidate-provenance", candidate)
+        identity = candidate["rule_id"]
+        if identity in candidates:
+            raise CompileError("duplicate_candidate")
+        candidates[identity] = candidate
     rules, total, ids = [], 0, set()
     for path in paths:
         with Path(path).open("rb") as stream:
@@ -231,7 +233,16 @@ def compile_rules(paths, sources):
                 "expression": tree,
             }
         )
-    plan = {
+    if mapped:
+        for compiled in rules:
+            if compiled["id"] not in candidates:
+                raise CompileError("candidate_provenance_set")
+            candidate = candidates[compiled["id"]]
+            validate_provenance(
+                candidate, compiled["id"], compiled["revision"], parse(compiled["yaml"])
+            )
+            compiled["provenance"] = candidate
+    plan: dict[str, Any] = {
         "version": VERSION,
         "compiler": "detectbridge/1.0.0",
         "pysigma": "2.1.0",
@@ -241,10 +252,20 @@ def compile_rules(paths, sources):
         "sources": sorted(sources, key=lambda s: s["id"]),
         "rules": sorted(rules, key=lambda r: r["id"]),
     }
+    if mapped:
+        plan.update(
+            version="2.0.0",
+            compiler="detectbridge/2.0.0",
+            evaluator="detectbridge-java/2.0.0",
+            mapping_version="source-mappings/1.0.0",
+            mapping_profiles=profiles,
+        )
     plan["bundle_sha256"] = sha(encoded(plan))
     if len(encoded(plan)) + 1 > 4 * 1024 * 1024:
         raise CompileError("bundle_size_limit")
-    if next(
+    if mapped:
+        require_schema("plan", plan)
+    elif next(
         StrictValidator(
             load_json(DIRECTORY / "plan.schema.json"), registry=validator.registry
         ).iter_errors(plan),
@@ -252,6 +273,84 @@ def compile_rules(paths, sources):
     ):
         raise CompileError("invalid_plan")
     return plan
+
+
+def analyze_candidates(paths, sources, mappings, provenance):
+    """Report all submitted candidates without publishing a partial executable bundle."""
+    if not 1 <= len(paths) <= 100 or not isinstance(provenance, list):
+        raise CompileError("candidate_count_limit")
+    if len(provenance) != len(paths):
+        raise CompileError("candidate_provenance_set")
+    validator = ContractValidator()
+    if (
+        not 1 <= len(sources) <= 16
+        or any(validator.validate("source-contract", source) for source in sources)
+        or len({source["id"] for source in sources}) != len(sources)
+    ):
+        raise CompileError("invalid_source_contract")
+    profiles = validate_profiles(mappings, sources)
+    candidates = {}
+    ids = set()
+    for candidate in provenance:
+        require_schema("candidate-provenance", candidate)
+        if candidate["revision"] in candidates or candidate["rule_id"] in ids:
+            raise CompileError("duplicate_candidate")
+        candidates[candidate["revision"]] = candidate
+        ids.add(candidate["rule_id"])
+    rows, used = [], set()
+    for path in paths:
+        with Path(path).open("rb") as stream:
+            raw = stream.read(262145)
+        if len(raw) > 262144:
+            raise CompileError("rule_size_limit")
+        revision = sha(raw)
+        if revision not in candidates or revision in used:
+            raise CompileError("candidate_provenance_set")
+        used.add(revision)
+        candidate = candidates[revision]
+        validate_provenance(candidate, candidate["rule_id"], revision, {})
+        row = {"provenance": candidate, "revision": revision}
+        try:
+            plan = compile_rules([path], sources, mappings=profiles, provenance=[candidate])
+            rule = plan["rules"][0]
+
+            def fields(node):
+                if node["op"] in ("and", "or"):
+                    return set().union(*(fields(arg) for arg in node["args"]))
+                if node["op"] == "not":
+                    return fields(node["arg"])
+                return {node["field"]}
+
+            required = fields(rule["expression"])
+            dispositions = []
+            for source, profile in zip(plan["sources"], profiles, strict=True):
+                applicable = all(source["sigma"].get(k) == v for k, v in rule["logsource"].items())
+                blocked = any(
+                    f["capability"] == "unsupported" and f["target"] in required
+                    for f in profile["fields"]
+                )
+                dispositions.append(
+                    {
+                        "source_id": source["id"],
+                        "source_version": source["version"],
+                        "status": "inapplicable"
+                        if not applicable
+                        else "configuration_blocked"
+                        if blocked
+                        else "supported",
+                    }
+                )
+            row.update(status="compiled", sources=dispositions)
+        except CompileError as error:
+            if str(error) == "compiler_timeout":
+                raise
+            row.update(status="rejected", diagnostic={"category": str(error), "pointer": ""})
+        rows.append(row)
+    report = {"version": "1.0.0", "kind": "candidate-analysis", "candidates": rows}
+    require_schema("candidate-analysis", report)
+    if len(encoded(report)) > 4 * 1024 * 1024:
+        raise CompileError("candidate_report_limit")
+    return report
 
 
 def load_source(path):
@@ -280,6 +379,11 @@ def main():
     parser.add_argument("rules", nargs="+")
     parser.add_argument("--source", action="append", required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument(
+        "--analyze", action="store_true", help="Report every candidate; never publish a bundle"
+    )
+    parser.add_argument("--mapping", action="append", help="P10 mapping-profile JSON (one/source)")
+    parser.add_argument("--provenance", help="P10 JSON array of candidate provenance manifests")
     args = parser.parse_args()
 
     def timeout(signum, frame):
@@ -291,7 +395,15 @@ def main():
     try:
         if len(args.source) > 16 or len(args.rules) > 100:
             raise CompileError("bundle_count_limit")
-        plan = compile_rules(args.rules, [load_source(p) for p in args.source])
+        if args.mapping is not None and len(args.mapping) > 16:
+            raise CompileError("mapping_count_limit")
+        operation = analyze_candidates if args.analyze else compile_rules
+        plan = operation(
+            args.rules,
+            [load_source(p) for p in args.source],
+            mappings=[load_source(p) for p in args.mapping] if args.mapping is not None else None,
+            provenance=load_source(args.provenance) if args.provenance is not None else None,
+        )
         args.output.parent.mkdir(parents=True, exist_ok=True)
         with tempfile.NamedTemporaryFile(dir=args.output.parent, delete=False) as out:
             temporary = Path(out.name)

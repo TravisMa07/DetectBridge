@@ -1,7 +1,8 @@
 # P09 compiler and evaluator design
 
-Status: implemented in draft; runtime qualification and independent expectation
-review are required before acceptance.
+Status: merged in PR #34 as 4d7d685. Merged-main AMD64 semantic/runtime CI passed;
+independent owner expectation review remains required before semantic acceptance.
+[P10](p10-design.md) adds separately versioned offline mapping compatibility.
 
 ## Boundary and decisions
 

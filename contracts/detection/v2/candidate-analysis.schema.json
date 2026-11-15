@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:detection:1.0.0:candidate-analysis",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": "1.0.0"
+    },
+    "kind": {
+      "const": "candidate-analysis"
+    },
+    "candidates": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "provenance": {
+                "$ref": "urn:detectbridge:detection:1.0.0:candidate-provenance"
+              },
+              "revision": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "status": {
+                "const": "compiled"
+              },
+              "sources": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "source_id": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128
+                    },
+                    "source_version": {
+                      "const": "1.0.0"
+                    },
+                    "status": {
+                      "enum": [
+                        "supported",
+                        "inapplicable",
+                        "configuration_blocked"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "source_id",
+                    "source_version",
+                    "status"
+                  ],
+                  "additionalProperties": false
+                },
+                "minItems": 1,
+                "maxItems": 16
+              }
+            },
+            "required": [
+              "provenance",
+              "revision",
+              "status",
+              "sources"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "provenance": {
+                "$ref": "urn:detectbridge:detection:1.0.0:candidate-provenance"
+              },
+              "revision": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "status": {
+                "const": "rejected"
+              },
+              "diagnostic": {
+                "type": "object",
+                "properties": {
+                  "category": {
+                    "type": "string",
+                    "pattern": "^[a-z_]+$"
+                  },
+                  "pointer": {
+                    "const": ""
+                  }
+                },
+                "required": [
+                  "category",
+                  "pointer"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "provenance",
+              "revision",
+              "status",
+              "diagnostic"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      }
+    }
+  },
+  "required": [
+    "version",
+    "kind",
+    "candidates"
+  ],
+  "additionalProperties": false
+}

@@ -139,3 +139,18 @@ bounded output intents, timers, real Kafka/Flink failure qualification and exact
 accepted-input accounting. It is a proposal, not implemented recovery evidence.
 Recorded audit eligibility, Windows host binding and independent owner semantic
 review remain separate acceptance items; no P13 readiness is inferred from merges.
+
+## P12b implementation and qualification
+
+The owner authorized the P12b plan and implementation. The initial P12a
+merged-main run 43750911904 failed P10 incompatible restore with an unclassified
+cause; one unchanged failed-job rerun passed. No acceptance was relaxed. P11 #38
+and P12a #39 are merged; earlier unmerged/AMD64-pending entries above describe
+historical checkpoints rather than their current integration status.
+
+The checkpointed Linux implementation, prepared transition model, source/binding
+contracts, local evidence registration and real conditional CI/dev gate are now
+on feat/p12b-linux-qualification. The [P12b ledger](p12b-ledger.md) records exact
+artifact/runtime results, failed attempts, final-head evidence and remaining gates.
+No P13 production wiring, recorded audit eligibility, owner semantic approval,
+merge authorization or release is inferred from these checks.

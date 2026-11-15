@@ -1,10 +1,10 @@
 # Delivery roadmap and decision ownership
 
-P01–P10 are merged. The owner authorized P11/P12 implementation after P10
-completion. P11 adapters and offline qualification are implemented for review;
-recorded host-binding evidence and owner review remain acceptance blockers. P12a
-offline core and a reviewed local authentication recording are implemented for
-review. Recorded audit acceptance, P12b checkpoint qualification and owner review
+P01–P10, P11 #38 and P12a #39 are merged. The owner authorized P11/P12
+implementation after P10 completion. P11 adapters and offline qualification passed
+their PR CI; recorded host-binding evidence and owner review remain acceptance blockers. P12a
+offline core and a reviewed local authentication recording passed PR CI.
+Recorded audit acceptance, full P12b qualification and owner semantic review
 remain outstanding; later capabilities remain planned. See the
 [implementation ledger](implementation-ledger.md) for exact evidence and limits.
 P numbers are planning IDs, not GitHub PR numbers. Milestones require their
@@ -160,8 +160,8 @@ No application scaffolding, runtime capability claims or release tag.
 
 ### P11 — Windows adapters and quality
 
-- Local status: bounded Security/Sysmon adapter and offline runner implemented for
-  review; recorded preservation accounting passes, but no recorded eligible
+- Local status: bounded Security/Sysmon adapter and offline runner merged in #38
+  after AMD64 CI; recorded preservation accounting passes, but no recorded eligible
   coverage is claimed without trusted host bindings. See [design](p11-design.md).
 
 - Depends on: P04, P10.
@@ -175,9 +175,10 @@ No application scaffolding, runtime capability claims or release tag.
 
 ### P12 — Linux adapters and audit assembly
 
-- Local status: P12a bounded offline core implemented for review, with real
-  OpenSSH9 recording qualification; recorded audit evidence, owner review, AMD64
-  CI and P12b checkpoint qualification remain separate gates. Full P12 is incomplete.
+- Local status: P12a bounded offline core merged in #39 after AMD64 CI, with real
+  local OpenSSH9 recording qualification. Reviewed eligible audit evidence, owner
+  semantic review and P12b final qualification remain separate gates. Full P12 is
+  incomplete.
 
 - Depends on: P04, P10.
 - Deliver: audit execution and selected authentication adapters, bounded keyed

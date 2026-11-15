@@ -155,3 +155,10 @@ claim. Logs: `.cache/p11-compat-mapped-build.log`,
 `.cache/detection-v2-reports/`. Both temporary qualification stacks were cleaned up.
 AMD64 qualification remains pending CI. Trusted recorded host bindings remain an
 acceptance blocker. No merge, release, P13 integration or throughput claim.
+
+## Subsequent integration status
+
+P11 PR #38 passed required AMD64 jobs at 4f741c2 in run 43684323177 and the owner
+merged it as 46fb080013e4623eb019e6ada829fc909a7cbfe0. Earlier pending-CI/unmerged
+entries are historical. Trusted recorded host bindings and independent owner
+semantic review remain acceptance blockers; no recorded eligible claim is added.

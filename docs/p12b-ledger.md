@@ -1,6 +1,7 @@
 # P12b implementation ledger
 
-Status: implementation in progress; no P12b acceptance, merge or release claimed.
+Status: implementation complete for draft review; final-artifact ARM64 and AMD64
+qualification remain in progress. No full P12 acceptance, merge or release claimed.
 Branch: feat/p12b-linux-qualification. Base: P12a merge 9ea1c68 plus approved plan
 55a28f2. Design/semantic expectations were committed at 655e362 before wrapper
 code; detached transitions, independently computed cases and checkpoint model
@@ -33,7 +34,7 @@ relaxed. This historical failure and the rerun are distinct evidence.
   references as durable state. Recovery never reads these observation files.
 - Independent original input/expectation ledgers, exact source/member/byte/hash/
   scope/quality checks, physical duplicate accounting and meaningful component
-  classification/fail-closed CI aggregation. Actual runtime evidence pending.
+  classification/fail-closed CI aggregation. Exact runtime evidence follows below.
 
 The first exploratory replay exposed a verifier scope bug: manifest run_id lives
 under key. It was corrected against the existing contract with a regression. A
@@ -65,9 +66,43 @@ qualification ledger and expose pending intents/state/backlog; counters alone ar
 not accepted-input proof. Source payloads, evidence, images and build products stay
 ignored. Original synthetic fixtures are Apache-2.0 and clearly labelled synthetic.
 
+## ARM64 runtime evidence
+
+The corrected full run at 0b873ff passed on linux/arm64 in isolated project
+`detectbridge-p12-test-d0407d140056`: 52 default-profile inputs, 10 logical groups
+and 93 physical output rows (at-least-once delivery; this count is not unique
+logical documents). Exact source/member/hash/context, events, manifests,
+late links, reference ranges, quality and disposition accounting passed. Actual
+TaskManager and JobManager recovery, incompatible-binding rejection, explicit
+checkpoint restore and original idle deadlines passed.
+
+Actual 40-second broker pause retained the admitted group in completed checkpoint
+46 and recovered its original timeout closure. Actual RecordTooLarge failures for
+event/manifest/diagnostic/quarantine/receipt retained their blocked intents in
+completed checkpoints 51/56/61/66/71, respectively; restored healthy sinks drained
+all expected outputs. Reduced limits qualified four closures and closed-budget
+backlog with rejected original Kafka offset 8 retained. The byte-pressure profile
+qualified two closures. No arbitrary failure or config mismatch counted as the
+required producer rejection.
+
+Default artifact: bundle
+`3b6cceef2a3a832eb69fc4cd42c7f706b3e2c97ebd002cb610792ef29579a409`, JAR
+`ec0af7a812ee7366819af80a1827b7b53dc51f11ded5994fffaf8aba0cc9b3e0`.
+Evidence remains ignored in `.cache/p12b-qualified-run.log`, per-project original
+input/expectation ledgers and `.cache/linux-assembly-reports/`. Stacks/volumes were
+removed. A subsequent metadata-scope/runtime-contract/accounting correction at
+9a93070 has a fresh complete final-artifact run in progress; intermediate evidence
+is not silently attributed to that later artifact. Ordinary CI uses original
+synthetic cases, not the reviewed local authentication recording.
+
+Locked repository checks pass with 133 Python regressions; combined Java/P10
+semantic checks, 36 Linux and 10 assembly Java tests, six assembly Python oracle/
+gate/runtime-contract regressions, artifact/dependency/notice checks, lint/types
+and secret scanning pass. Exact final runtime artifacts/results will be appended.
+
 ## Remaining acceptance
 
-Complete ARM64 failure/resource qualification and actual AMD64 CI; owner review of
+Complete final-artifact ARM64 qualification and actual AMD64 CI; owner review of
 independent expectations/completeness policy; reviewed eligible audit provenance;
 separate owner merge authorization and merged-main qualification. Windows recorded
 host binding and full P12/P13 acceptance remain separate blockers. The existing

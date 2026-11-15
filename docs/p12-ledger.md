@@ -152,3 +152,13 @@ classification, source port, bundle hash, preservation reason and original curso
 Logs remain ignored at `replay-head.log` and `qualification-head.log` under the
 same recording directory. These results establish the selected local auth slice;
 they do not establish recorded audit eligibility or P12b recovery.
+
+## Subsequent integration status
+
+P12a PR #39 passed required AMD64 CI and the owner merged it as
+9ea1c68e0846e27ffa4ae94390429b5330ceb5b0. Merged-main run 43750911904 initially
+failed existing P10 incompatible restore with an unclassified cause; its unchanged
+failed-job rerun passed. Earlier pending-CI/unmerged entries describe historical
+status. See the [P12b ledger](p12b-ledger.md) for checkpointed qualification work.
+Reviewed eligible audit provenance and independent owner semantic/completeness
+review remain blockers for full P12; no P13 acceptance or release is claimed.

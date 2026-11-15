@@ -11,8 +11,9 @@
 - Linux owns module code/tests, source/profile/schema proposals, source review,
   synthetic expectations, design and runbook. Shared ownership remains with the
   orchestrator; actual root registration is a distinct integration commit.
-- Initial design/expectations commit: 6f65020. Implementation commit IDs are
-  recorded in the final handoff after commit creation.
+- Initial design/expectations commit: 6f65020.
+- Subsystem implementation: 232b634.
+- Separate shared integration proposal (root Gradle registration only): 3362780.
 
 ## Delivered offline core
 

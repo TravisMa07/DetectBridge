@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:assembly:1.0.0:wire",
+  "type": "object",
+  "properties": {
+    "input": {
+      "type": "object",
+      "properties": {
+        "cluster_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "topic_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "topic": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "partition": {
+          "const": 0
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "value_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "cluster_id",
+        "topic_id",
+        "topic",
+        "partition",
+        "offset",
+        "value_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "value_base64": {
+      "type": "string",
+      "maxLength": 2796204
+    },
+    "value_is_null": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "input",
+    "value_base64",
+    "value_is_null"
+  ],
+  "additionalProperties": false
+}

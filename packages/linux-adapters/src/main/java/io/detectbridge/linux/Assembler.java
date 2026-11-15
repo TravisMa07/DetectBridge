@@ -26,6 +26,53 @@ public final class Assembler {
   @FunctionalInterface
   public interface Commit { void persist(List<JsonNode> outputs, byte[] nextSnapshot) throws Exception; }
 
+  /** Pure proposal over detached state; no live admission or external durable callback. */
+  public record Prepared(byte[] nextSnapshot, List<JsonNode> outputs, boolean consumed) {
+    public Prepared { nextSnapshot = nextSnapshot.clone(); outputs = outputs.stream().map(JsonNode::deepCopy).toList(); }
+    @Override public byte[] nextSnapshot() { return nextSnapshot.clone(); }
+    @Override public List<JsonNode> outputs() { return outputs.stream().map(JsonNode::deepCopy).toList(); }
+  }
+  @FunctionalInterface private interface Proposal { void apply(Assembler fork, Commit capture) throws Exception; }
+  private static final class Drain extends RuntimeException {
+    final String id, reason;
+    Drain(String id, String reason) { this.id = id; this.reason = reason; }
+  }
+  private ObjectNode preparingOrigin;
+
+  public synchronized Prepared prepare(Boundary.Input input) throws Exception {
+    return propose((fork, capture) -> fork.accept(input, capture));
+  }
+  public synchronized Prepared prepareTick() throws Exception { return propose(Assembler::tick); }
+  public synchronized Prepared prepareEnd(String run) throws Exception {
+    return propose((fork, capture) -> fork.end(run, capture));
+  }
+  public synchronized Prepared prepareBoundary(String run, String namespace, String instance,
+      String host, String generation) throws Exception {
+    return propose((fork, capture) -> fork.boundary(run, namespace, instance, host, generation, capture));
+  }
+  public synchronized long nextDeadline() {
+    long deadline = Long.MAX_VALUE;
+    for (JsonNode group : state.get("groups"))
+      deadline = Math.min(deadline, Math.addExact(group.get("opened").asLong(), limits.ageMillis));
+    return deadline;
+  }
+  private Prepared propose(Proposal action) throws Exception {
+    Assembler fork = restore(clock, limits, snapshot());
+    fork.preparingOrigin = fork.state.deepCopy();
+    Prepared[] captured = new Prepared[1];
+    try {
+      action.apply(fork, (outputs, next) -> captured[0] = new Prepared(next, outputs, true));
+      // Exact same-ID retry intentionally does not call the offline Commit API.
+      return captured[0] == null ? new Prepared(snapshot(), List.of(), true) : captured[0];
+    } catch (Drain requested) {
+      Assembler single = restore(clock, limits, snapshot());
+      ObjectNode next = single.state.deepCopy(); List<JsonNode> outputs = new ArrayList<>();
+      single.close(next, outputs, requested.id, requested.reason);
+      single.validateState(next);
+      return new Prepared(Json.bytes(next), outputs, false);
+    }
+  }
+
   private final Clock clock;
   private final Limits limits;
   private final String binding;
@@ -166,6 +213,8 @@ public final class Assembler {
 
   private void close(ObjectNode next, List<JsonNode> outputs, String id, String closure) {
     ObjectNode group = object(object(next, "groups"), id);
+    if (preparingOrigin != null && preparingOrigin.path("groups").path(id).equals(group))
+      throw new Drain(id, closure);
     List<JsonNode> raws = new ArrayList<>(); List<Audit.Record> records = new ArrayList<>();
     boolean contextConflict = false;
     for (JsonNode member : group.get("members")) {

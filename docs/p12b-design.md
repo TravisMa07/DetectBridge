@@ -2,7 +2,7 @@
 
 Status: implementation authorized 2026-11-15; runtime qualification pending.
 Base is merged P12a 9ea1c68 plus the reviewed plan 55a28f2. Merged-main CI must
-pass before runtime wiring/qualification. Preserve ADR 0004 at-least-once output.
+pass before runtime qualification. Preserve ADR 0004 at-least-once output.
 
 ## Admission and durable intents
 
@@ -45,3 +45,13 @@ The runtime binding includes source/mapping content, parser/assembler/policy and
 state versions, limits/timer policy, Kafka cluster/topic IDs and group. Restore
 validates all state before releasing output or consuming new input. Parallelism
 and input partition count are one. No production rescaling or P13 integration.
+
+## Baseline qualification evidence
+
+The first merged-main run 43750911904 failed P10 incompatible_restore with
+unrelated_incompatible_restore_failure; required-checks correctly failed. No job
+exception artifact was retained, so the original cause is unclassified. One
+unchanged failed-job rerun was requested, without changing acceptance or treating
+an arbitrary failure as binding rejection. Isolated implementation/compile work
+may proceed while that reproduction runs; actual new-runtime qualification stays
+gated on the baseline result. This changes work ordering, not acceptance semantics.

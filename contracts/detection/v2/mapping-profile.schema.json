@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:detection:1.0.0:mapping-profile",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": "1.0.0"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "source": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "version": {
+          "const": "1.0.0"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "sha256"
+      ],
+      "additionalProperties": false
+    },
+    "fields": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "alias": {
+            "enum": [
+              "Image",
+              "CommandLine",
+              "ProcessId",
+              "User"
+            ]
+          },
+          "target": {
+            "enum": [
+              "process.executable",
+              "process.command_line",
+              "process.pid",
+              "user.name"
+            ]
+          },
+          "type": {
+            "enum": [
+              "string",
+              "integer"
+            ]
+          },
+          "cardinality": {
+            "const": "scalar"
+          },
+          "capability": {
+            "enum": [
+              "available",
+              "conditional",
+              "unsupported"
+            ]
+          },
+          "transform": {
+            "enum": [
+              "identity-string/1.0.0",
+              "decimal-integer/1.0.0",
+              "hex-integer/1.0.0",
+              "windows-account/1.0.0"
+            ]
+          },
+          "source_path": {
+            "type": "string",
+            "pattern": "^/(?:[^~/]|~[01])*(?:/(?:[^~/]|~[01])*)*$"
+          }
+        },
+        "required": [
+          "alias",
+          "target",
+          "type",
+          "cardinality",
+          "capability",
+          "transform"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 4,
+      "minItems": 4
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "required": [
+    "version",
+    "id",
+    "source",
+    "fields",
+    "sha256"
+  ],
+  "additionalProperties": false
+}

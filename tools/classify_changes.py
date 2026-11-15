@@ -158,7 +158,9 @@ def needs_detection(paths):
                 ".github/workflows/",
                 "tools/detection",
                 "tools/check_detection",
+                "tools/check_mapping",
                 "tools/tests/test_detection",
+                "tools/tests/test_mapping",
             )
         )
         for p in paths

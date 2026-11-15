@@ -166,3 +166,8 @@ It preserves P03/P05 contracts and P07 transport/checkpoint boundaries.
 P09 refines A04 with the bounded normalized-fixture slice in
 [owning design notes](p09-design.md) and the [detection guide](detection.md).
 Its separate evaluation-result contract does not freeze P13 detection outputs.
+
+P10a refines A04/A05 with versioned source mapping/candidate provenance and
+explicit legacy/v2 offline semantic modes in [design notes](p10-design.md).
+It preserves the accepted boundaries; P10b owns selection/runtime acceptance,
+P11/P12 own adapters, and P15 owns activation.

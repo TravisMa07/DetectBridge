@@ -149,6 +149,10 @@ class DetectionGateTests(unittest.TestCase):
             "contracts/detection/v1/plan.schema.json",
             "packages/transport-contracts/src/main/java/X.java",
             "tools/detection.py",
+            "tools/check_mapping.py",
+            "tools/detection_mapping.py",
+            "tools/tests/test_mapping.py",
+            "contracts/detection/v2/plan.schema.json",
             "gradle/verification-metadata.xml",
             "uv.lock",
         ):

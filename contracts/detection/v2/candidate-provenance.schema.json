@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:detection:1.0.0:candidate-provenance",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": "1.0.0"
+    },
+    "rule_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "revision": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "kind": {
+      "enum": [
+        "synthetic",
+        "upstream"
+      ]
+    },
+    "repository": {
+      "type": "string",
+      "pattern": "^https://[^?#@]+$",
+      "maxLength": 2048
+    },
+    "repository_revision": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "path": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\\\]+$"
+    },
+    "original_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "authors": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256
+      },
+      "maxItems": 32,
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "license": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024
+    },
+    "notices": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 4096
+      },
+      "maxItems": 16
+    },
+    "modifications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "input_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "output_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          }
+        },
+        "required": [
+          "input_sha256",
+          "output_sha256",
+          "description"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 32
+    }
+  },
+  "required": [
+    "version",
+    "rule_id",
+    "revision",
+    "kind",
+    "repository",
+    "repository_revision",
+    "path",
+    "original_sha256",
+    "authors",
+    "license",
+    "notices",
+    "modifications"
+  ],
+  "additionalProperties": false
+}

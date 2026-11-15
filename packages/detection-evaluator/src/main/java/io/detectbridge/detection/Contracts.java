@@ -19,7 +19,11 @@ public final class Contracts {
             "v1/source-contract",
             "detection/v1/plan",
             "detection/v1/result",
-            "detection/v1/quarantine")) {
+            "detection/v1/quarantine",
+            "detection/v2/plan",
+            "detection/v2/result",
+            "detection/v2/mapping-profile",
+            "detection/v2/candidate-provenance")) {
       try (var stream = Contracts.class.getResourceAsStream("/" + path + ".schema.json")) {
         String text =
             new String(Objects.requireNonNull(stream).readAllBytes(), StandardCharsets.UTF_8);
@@ -52,7 +56,12 @@ public final class Contracts {
   }
 
   public void require(String domain, String kind, JsonNode node) {
-    String id = "urn:detectbridge:" + domain + ":1.0.0:" + kind;
+    String version = "1.0.0";
+    if (domain.equals("detection") && (kind.equals("plan") || kind.equals("result"))) {
+      version = node.path("version").asString();
+      check(Set.of("1.0.0", "2.0.0").contains(version), "unsupported_detection_version");
+    }
+    String id = "urn:detectbridge:" + domain + ":" + version + ":" + kind;
     if (!registry
         .getSchema(SchemaLocation.of(id))
         .validate(node, c -> c.executionConfig(e -> e.formatAssertionsEnabled(true)))

@@ -9,7 +9,8 @@ from pathlib import Path
 
 import yaml
 from check_contracts import load_json
-from detection import FIXTURES, ROOT, prepare
+from check_mapping import check_mapped, prepare_mapped
+from detection import FIXTURES, ROOT
 from detection_compile import DIRECTORY, compile_rules, encoded
 from jsonschema import Draft202012Validator
 
@@ -24,7 +25,7 @@ def check(java=False):
     }
     if inventory["java_locks"] != locks:
         raise ValueError("detection_dependency_review_outdated")
-    prepare()
+    prepare_mapped()
     cases = load_json(FIXTURES / "semantic-cases.json")
     if not java:
         return
@@ -84,6 +85,7 @@ def check(java=False):
             elif result.returncode or json.loads(result.stdout)["counts"][case["expected"]] != 1:
                 raise ValueError("semantic_failure_" + case["name"])
     print(f"PASS: {len(cases)} independent YAML-to-Java semantic cases")
+    check_mapped(jar)
 
 
 if __name__ == "__main__":

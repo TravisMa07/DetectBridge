@@ -1,7 +1,8 @@
 # Delivery roadmap and decision ownership
 
-P01–P08 are merged. P09 is implemented in a draft PR; combined qualification
-and owner review remain required before acceptance. Subsequent PRs remain planned.
+P01–P09 are merged. P09 merged-main AMD64 qualification passed; independent
+semantic expectation review remains pending. P10a is implemented for review; P10b
+and subsequent deliverables remain planned. See the [implementation ledger](implementation-ledger.md).
 P numbers are planning IDs, not GitHub PR numbers. Milestones require their
 acceptance evidence and authorized merges; documentation alone does not complete
 a milestone.
@@ -115,7 +116,7 @@ No application scaffolding, runtime capability claims or release tag.
 
 - Local status: synthetic and four-artifact recorded ARM64 qualification passed;
   see the [validation record](writer.md#local-validation-record). Native AMD64 CI
-  and owner compatibility/code review remain required before merge.
+  passed on the merged commit; merge does not establish unrecorded review.
 - Depends on: P07.
 - Deliver: idempotent indexing, error index/quarantine, per-item retries and metrics.
 - Resolve: index templates, IDs, batching, retry bounds, permanent failure classes
@@ -137,6 +138,10 @@ No application scaffolding, runtime capability claims or release tag.
   no per-event Python calls. No native-engine comparison prerequisite.
 
 ### P10 — Compatibility matrix and mapping coverage
+
+- Local status: P10a mapping/provenance contracts and offline v2 reader implemented
+  for review. P10b selection equivalence, runtime qualification and complete
+  semantic acceptance remain pending. See [design notes](p10-design.md).
 
 - Depends on: P04, P09.
 - Deliver: supported-feature matrix, semantic regressions, mapping validation and

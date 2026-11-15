@@ -103,7 +103,7 @@ def cases():
         100,
         context(True),
     )
-    return dict(
+    result = dict(
         version="1.0.0",
         complete=complete,
         auth=auth,
@@ -118,6 +118,41 @@ def cases():
             auth_outcome="success",
         ),
     )
+
+    literal = json.loads(
+        (ROOT / "contracts/linux-assembly/v1/fixtures/identity-vectors.json").read_bytes()
+    )
+    if (
+        complete[0]["raw"]["record_id"] != literal["first_record_id"]
+        or ids != literal["complete_member_ids"]
+        or result["expected"]["event_id"] != literal["complete_event_id"]
+    ):
+        raise ValueError("assembly_independent_identity_drift")
+    return result
+
+
+def references():
+    body = cases()["auth"]["raw"]["evidence"]["inline"]
+    blob = (body + body).encode()
+    sha = hashlib.sha256(blob).hexdigest()
+    rows = []
+    for position in range(2):
+        row = record(
+            body, 500 + position, context(True, run="00000000-0000-4000-8000-000000000004")
+        )
+        raw = row["raw"]
+        raw["cursor"] = dict(kind="dataset", artifact_sha256=sha, position=position)
+        raw["record_id"] = identity(
+            [raw["source"]["namespace"], raw["source"]["instance"], ["dataset", sha, str(position)]]
+        )
+        raw["evidence"].pop("inline")
+        raw["evidence"]["reference"] = dict(
+            uri="urn:sha256:" + sha,
+            object_sha256=sha,
+            byte_range=dict(offset=position * len(body.encode()), length=len(body.encode())),
+        )
+        rows.append(row)
+    return sha, blob, rows
 
 
 def prepare():

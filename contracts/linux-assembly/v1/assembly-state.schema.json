@@ -74,6 +74,11 @@
     "received_hash": {
       "type": "string",
       "pattern": "^(?:[0-9a-f]{64})?$"
+    },
+    "retired_sequence": {
+      "type": "integer",
+      "minimum": -1,
+      "maximum": 9223372036854775807
     }
   },
   "required": [
@@ -85,7 +90,8 @@
     "outbox",
     "next_sequence",
     "received_offset",
-    "received_hash"
+    "received_hash",
+    "retired_sequence"
   ],
   "additionalProperties": false
 }

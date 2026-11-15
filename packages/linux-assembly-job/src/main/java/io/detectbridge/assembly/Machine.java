@@ -4,7 +4,6 @@ import static io.detectbridge.detection.Contracts.*;
 
 import io.detectbridge.linux.Assembler;
 import io.detectbridge.linux.Boundary;
-import io.detectbridge.linux.OpenSsh;
 import io.detectbridge.transport.Json;
 import java.time.Clock;
 import java.util.*;
@@ -37,7 +36,7 @@ public final class Machine {
     state = Json.MAPPER.createObjectNode(); state.put("version", "1.0.0"); state.put("binding", binding);
     state.set("assembler", parseState(new Assembler(clock, limits).snapshot()));
     state.putArray("inbox"); state.putArray("outbox"); state.put("next_sequence", 0);
-    state.put("received_offset", -1); state.put("received_hash", "");
+    state.put("retired_sequence", -1);state.put("received_offset", -1); state.put("received_hash", "");
   }
   public static byte[] inline(JsonNode raw) {
     var e = raw.get("evidence"); check(e.has("inline"), "registered_object_required");
@@ -82,6 +81,7 @@ public final class Machine {
   private void validateWire(JsonNode wire) {
     Schemas.require("wire", wire);
     var input = wire.get("input");
+    check(input.get("partition").isIntegralNumber() && input.get("offset").isIntegralNumber(),"assembly_integer_required");
     for (String key : List.of("cluster_id", "topic_id", "topic")) check(input.get(key).equals(source.get(key)), "assembly_input_destination");
     check(input.get("partition").asInt() == 0, "assembly_input_partition");
     byte[] value = Base64.getDecoder().decode(wire.get("value_base64").asString());
@@ -94,7 +94,7 @@ public final class Machine {
     if (offset == state.get("received_offset").asLong()) {
       check(digest.equals(state.get("received_hash").asString()), "assembly_input_conflict"); return;
     }
-    check(offset > state.get("received_offset").asLong(), "assembly_input_regression");
+    check(offset == state.get("received_offset").asLong()+1, "assembly_input_regression");
     ArrayNode next = inbox().deepCopy(); next.add(wire.deepCopy());
     check(next.size() <= QUEUE_COUNT && Json.bytes(next).length <= QUEUE_BYTES, "assembly_inbox_backlog");
     state.set("inbox", next); state.put("received_offset", offset); state.put("received_hash", digest);
@@ -109,17 +109,21 @@ public final class Machine {
       default -> output.get("id").asString();
     };
   }
+  static String transportId(String binding,JsonNode input,String category) {
+    return Json.identity(List.of(binding,input.get("cluster_id").asString(),input.get("topic_id").asString(),
+        input.get("partition").asInt(),input.get("offset").asLong(),input.get("value_sha256").asString(),category));
+  }
   private JsonNode receipt(JsonNode wire, JsonNode row) {
     var input = wire.get("input");
     ObjectNode doc = Json.MAPPER.createObjectNode(); doc.put("version", "1.0.0");
-    doc.put("id", Json.identity(List.of(binding, input))); doc.set("input", input.deepCopy());
+    doc.put("id", transportId(binding,input,"receipt")); doc.set("input", input.deepCopy());
     doc.put("kind", "input_receipt"); doc.put("action", row.get("kind").asString());
     if (row.has("raw")) doc.put("record_id", row.at("/raw/record_id").asString());
     return doc;
   }
   private JsonNode quarantine(JsonNode wire) {
     var input = wire.get("input");
-    return Json.MAPPER.valueToTree(Map.of("version", "1.0.0", "id", Json.identity(List.of(binding, input, "invalid_input")),
+    return Json.MAPPER.valueToTree(Map.of("version", "1.0.0", "id", transportId(binding,input,"invalid_input"),
         "kind", "quarantine", "category", "invalid_assembly_input", "input", input,
         "value_is_null", wire.get("value_is_null").asBoolean(),
         "value_size", Base64.getDecoder().decode(wire.get("value_base64").asString()).length));
@@ -141,7 +145,7 @@ public final class Machine {
           case "record" -> {
             var raw = row.get("raw"); var input = Boundary.resolve(raw, row.get("context"), e -> resolver.resolve(raw));
             if (row.at("/context/parser/id").asString().equals("openssh-password")) {
-              outputs.add(OpenSsh.adapt(input)); prepared = new Assembler.Prepared(core.snapshot(), List.of(), true);
+              prepared = core.prepareAuthentication(input);
             } else prepared = core.prepare(input);
           }
           case "run_end" -> {
@@ -193,6 +197,31 @@ public final class Machine {
     ObjectNode envelope = state.deepCopy(); envelope.put("sha256", hash(state));
     byte[] bytes = Json.bytes(envelope); check(bytes.length <= STATE_BYTES, "assembly_state_limit"); return bytes;
   }
+  /** Qualification evidence only, never a recovery source. No original bodies are copied. */
+  public synchronized JsonNode inventory(long checkpoint, byte[] snapshot) {
+    ObjectNode result=Json.MAPPER.createObjectNode(); result.put("version","1.0.0");result.put("checkpoint_id",checkpoint);
+    result.put("binding",binding);result.put("snapshot_sha256",Json.sha(snapshot));result.put("received_offset",state.get("received_offset").asLong());
+    ArrayNode groups=result.putArray("groups");
+    for(JsonNode group:state.at("/assembler/groups")) {
+      ObjectNode item=groups.addObject();item.set("key",group.get("key"));ArrayNode members=item.putArray("members");
+      for(JsonNode member:group.get("members")) members.add(Json.MAPPER.valueToTree(Map.of("record_id",member.at("/raw/record_id").asString(),
+          "evidence_sha256",member.at("/raw/evidence/sha256").asString(),"raw_sha256",hash(member.get("raw")),"context_sha256",hash(member.get("context")))));
+    }
+    ArrayNode pending=result.putArray("inbox");for(JsonNode wire:inbox())pending.add(wire.get("input"));
+    ArrayNode intents=result.putArray("outbox");
+    for(JsonNode intent:outbox()) {
+      ObjectNode item=intents.addObject();item.put("sequence",intent.get("sequence").asLong());item.set("kind",intent.get("kind"));item.set("key",intent.get("key"));
+      JsonNode doc=intent.get("document");item.put("document_sha256",Json.sha(Json.bytes(doc)));
+      String run=doc.at("/detectbridge/run_id").asString();if(run.isEmpty())run=doc.path("run_id").asString();item.put("run_id",run);
+      if(doc.has("input"))item.set("input",doc.get("input"));
+      ArrayNode refs=item.putArray("members");
+      JsonNode originals=doc.has("@timestamp")?doc.at("/detectbridge/evidence"):doc.path("members");
+      for(JsonNode original:originals) refs.add(Json.MAPPER.valueToTree(Map.of("record_id",original.get("record_id").asString(),
+          "evidence_sha256",original.has("evidence")?original.at("/evidence/sha256").asString():original.get("evidence_sha256").asString())));
+      if(doc.has("member"))refs.add(Json.MAPPER.valueToTree(Map.of("record_id",doc.at("/member/record_id").asString(),"evidence_sha256",doc.at("/member/evidence_sha256").asString())));
+    }
+    return result;
+  }
   public synchronized void abort(long checkpoint) { seals.remove(checkpoint); }
   public synchronized void complete(long checkpoint, Emit emit) throws Exception {
     Long through = seals.get(checkpoint); if (through == null) return;
@@ -205,13 +234,14 @@ public final class Machine {
       emit.emit(new Intent(intent.get("sequence").asLong(), intent.get("kind").asString(),
           intent.get("key").asString(), intent.get("document"))); count++;
     }
-    for (int i = 0; i < count; i++) outbox().remove(0);
+    for (int i = 0; i < count; i++) {state.put("retired_sequence",outbox().get(0).get("sequence").asLong());outbox().remove(0); }
   }
   public synchronized void releaseRestored(Emit emit) throws Exception { release(Long.MAX_VALUE, emit); }
   public static Machine restore(Clock clock, Assembler.Limits limits, String binding, JsonNode source, Resolver resolver, byte[] bytes) {
     JsonNode envelope = parseState(bytes); Schemas.require("state", envelope);
     ObjectNode unhashed = ((ObjectNode) envelope).deepCopy(); String digest = unhashed.remove("sha256").asString();
     check(hash(unhashed).equals(digest) && unhashed.get("binding").asString().equals(binding), "incompatible_assembly_restore");
+    for(String counter:List.of("next_sequence","received_offset","retired_sequence"))check(unhashed.get(counter).isIntegralNumber(),"assembly_integer_required");
     Machine machine = new Machine(clock, limits, binding, source, resolver); machine.state = unhashed;
     machine.assembler();
     check(machine.inbox().size() <= QUEUE_COUNT && machine.inboxBytes() <= QUEUE_BYTES
@@ -221,13 +251,14 @@ public final class Machine {
       machine.validateWire(wire); long offset = wire.at("/input/offset").asLong();
       check(offset > previous && offset <= unhashed.get("received_offset").asLong(), "assembly_input_order"); previous = offset;
     }
-    previous = -1;
+    previous = unhashed.get("retired_sequence").asLong();
     for (JsonNode intent : machine.outbox()) {
       long sequence = intent.get("sequence").asLong(); String kind = intent.get("kind").asString();
-      check(sequence > previous && sequence < unhashed.get("next_sequence").asLong(), "assembly_intent_order");
+      check(intent.get("sequence").isIntegralNumber() && sequence == previous+1 && sequence < unhashed.get("next_sequence").asLong(), "assembly_intent_order");
       validateDocument(kind, intent.get("document"));
       check(key(kind, intent.get("document")).equals(intent.get("key").asString()), "assembly_intent_key"); previous = sequence;
     }
+    check(previous+1==unhashed.get("next_sequence").asLong(),"assembly_retirement_order");
     return machine;
   }
   private static final class BoundaryText {

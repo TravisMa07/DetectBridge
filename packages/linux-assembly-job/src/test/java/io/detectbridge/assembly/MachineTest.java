@@ -24,6 +24,19 @@ class MachineTest {
     m.enqueue(Machine.wire(Json.bytes(row),"synthetic","input-id","input",offset));
     while(m.pump()) {}
   }
+  static JsonNode uniqueAuth(JsonNode original,int position) {
+    ObjectNode copy=(ObjectNode)original.deepCopy(); ObjectNode raw=(ObjectNode)copy.get("raw");
+    ((ObjectNode)raw.get("cursor")).put("value","auth-occurrence-"+position);
+    raw.put("record_id",Json.identity(List.of(raw.at("/source/namespace").asString(),raw.at("/source/instance").asString(),List.of("native",raw.at("/cursor/value").asString()))));return copy;
+  }
+  @Test void authRetriesAndRunEndUseTheSameBoundedLifecycle() throws Exception {
+    Machine m=machine(new Time());JsonNode auth=cases().get("auth");add(m,auth,0);add(m,auth,1);
+    JsonNode end=Json.MAPPER.valueToTree(Map.of("version","1.0.0","kind","run_end","run_id",auth.at("/context/run_id").asString(),
+        "control_id","00000000-0000-4000-8000-000000000001","provenance",List.of("synthetic:end")));
+    add(m,end,2);add(m,uniqueAuth(auth,9),3);List<Machine.Intent> output=new ArrayList<>();m.snapshot(1);m.complete(1,output::add);
+    assertEquals(1,output.stream().filter(i->i.kind().equals("event")).count());
+    assertEquals("after_dataset_end",output.stream().filter(i->i.kind().equals("diagnostic")).findFirst().orElseThrow().document().get("code").asString());
+  }
   @Test void noPublicationBeforeCheckpointAndExactMembershipSurvivesRestoredPrefix() throws Exception {
     Time time=new Time(); Machine m=machine(time);JsonNode cases=cases();long offset=0;
     for(JsonNode row:cases.get("complete")) add(m,row,offset++);
@@ -64,13 +77,31 @@ class MachineTest {
     ObjectNode corrupt=(ObjectNode)Machine.parseState(durable);corrupt.put("next_sequence",999);
     assertThrows(IllegalArgumentException.class,()->Machine.restore(time,Assembler.Limits.defaults(),BINDING,SOURCE,Machine::inline,Json.bytes(corrupt)));
     Machine queued=machine(time);
-    for(int i=0;i<64;i++)queued.enqueue(Machine.wire(Json.bytes(auth),"synthetic","input-id","input",i));
+    for(int i=0;i<64;i++)queued.enqueue(Machine.wire(Json.bytes(uniqueAuth(auth,i)),"synthetic","input-id","input",i));
     byte[] before=queued.snapshot(1);
     assertThrows(IllegalArgumentException.class,()->queued.enqueue(Machine.wire(Json.bytes(auth),"synthetic","input-id","input",64)));
     assertArrayEquals(before,queued.snapshot(2));assertEquals(64,queued.pendingInputs());
     List<Machine.Intent> emitted=new ArrayList<>();for(int i=0;i<64;i++)queued.pump();
     assertEquals(64,queued.pendingOutputs());assertEquals(32,queued.pendingInputs());
     queued.snapshot(3);queued.complete(3,emitted::add);while(queued.pump()){};assertEquals(0,queued.pendingInputs());
+  }
+  @Test void serializedByteCapsStopBeforeCountCapsAndDrainAfterCompletion() throws Exception {
+    Time time=new Time();Machine queued=machine(time);byte[] bytes=new byte[1024*1024];
+    for(int i=0;i<5;i++)queued.enqueue(Machine.wire(bytes,"synthetic","input-id","input",i));
+    byte[] before=queued.snapshot(1);
+    assertThrows(IllegalArgumentException.class,()->queued.enqueue(Machine.wire(bytes,"synthetic","input-id","input",5)));
+    assertArrayEquals(before,queued.snapshot(2));assertTrue(queued.inboxBytes()<=Machine.QUEUE_BYTES);
+    Machine outputs=machine(time);var auth=cases().get("auth");
+    String body="<38>1 2026-01-01T00:00:00Z lab sshd 7 - [lab a=\""+"x".repeat(380000)+"\"] Accepted password for alice from 192.0.2.1 port 2222 ssh2\n";
+    for(int i=0;i<12;i++) {
+      ObjectNode row=(ObjectNode)uniqueAuth(auth,i);ObjectNode evidence=(ObjectNode)row.at("/raw/evidence");
+      evidence.put("inline",body);evidence.put("sha256",Json.sha(body.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+      outputs.enqueue(Machine.wire(Json.bytes(row),"synthetic","input-id","input",i));
+    }
+    while(outputs.pump()){}
+    assertTrue(outputs.pendingOutputs()>0 && outputs.pendingOutputs()<64);assertTrue(outputs.pendingInputs()>0);
+    assertTrue(outputs.outboxBytes()<=Machine.QUEUE_BYTES);outputs.snapshot(1);outputs.complete(1,i->{});
+    while(outputs.pump()){};assertEquals(0,outputs.pendingInputs());
   }
   @Test void invalidInputProducesOnlyBoundedOriginalHashLocationQuarantine() throws Exception {
     Machine m=machine(new Time());byte[] bytes="private-body-sentinel".getBytes(java.nio.charset.StandardCharsets.UTF_8);

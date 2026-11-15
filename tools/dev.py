@@ -204,6 +204,7 @@ def check():
     run(["uv", "run", "--locked", "python", "tools/check_writer.py"])
     run(["uv", "run", "--locked", "python", "tools/check_windows.py"])
     run(["uv", "run", "--locked", "python", "tools/check_linux.py"])
+    run(["uv", "run", "--locked", "python", "tools/check_assembly.py"])
     run(["uv", "run", "--locked", "python", "tools/dependency_inventory.py"])
     run(["uv", "run", "--locked", "python", "tools/check_repo.py"])
     run(["uv", "run", "--locked", "ruff", "check", "tools"])
@@ -232,6 +233,8 @@ def java():
             ":windows-adapters:test",
             ":windows-adapters:installDist",
             ":linux-adapters:test",
+            ":linux-assembly-job:test",
+            ":linux-assembly-job:shadowJar",
             ":linux-adapters:jar",
             ":linux-adapters:installDist",
         ]
@@ -240,6 +243,7 @@ def java():
     run(["uv", "run", "--locked", "python", "tools/check_transport.py", "--artifacts"])
     run(["uv", "run", "--locked", "python", "tools/check_detection.py", "--java"])
     run(["uv", "run", "--locked", "python", "tools/check_writer.py", "--artifacts"])
+    run(["uv", "run", "--locked", "python", "tools/check_assembly.py", "--artifacts"])
     run(["uv", "run", "--locked", "python", "tools/check_linux.py", "--artifacts"])
     run(
         [
@@ -270,6 +274,35 @@ def java():
             "packages/windows-adapters",
             "-p",
             "test_*.py",
+        ]
+    )
+
+
+def assembly():
+    run(
+        [
+            ROOT / "gradlew",
+            "--console=plain",
+            ":linux-adapters:test",
+            ":linux-assembly-job:test",
+            ":linux-assembly-job:shadowJar",
+        ]
+    )
+    run(["uv", "run", "--locked", "python", "tools/check_assembly.py", "--artifacts"])
+
+    run(
+        [
+            "uv",
+            "run",
+            "--locked",
+            "python",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "tools/tests",
+            "-p",
+            "test_*assembly*.py",
         ]
     )
 
@@ -376,7 +409,17 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "command",
-        choices=["doctor", "bootstrap", "check", "smoke", "java", "windows", "linux", "verify"],
+        choices=[
+            "doctor",
+            "bootstrap",
+            "check",
+            "smoke",
+            "java",
+            "windows",
+            "linux",
+            "assembly",
+            "verify",
+        ],
     )
     args = parser.parse_args()
     try:

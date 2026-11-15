@@ -7,6 +7,7 @@ CONDITIONAL = {
     "detection-verification": "detection",
     "windows-verification": "windows",
     "linux-verification": "linux",
+    "linux-assembly-verification": "assembly",
     "toolchain-verification": "toolchains",
     "local-stack-verification": "stack",
     "transport-verification": "transport",

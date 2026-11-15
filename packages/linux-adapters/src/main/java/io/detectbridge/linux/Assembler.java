@@ -38,9 +38,30 @@ public final class Assembler {
     Drain(String id, String reason) { this.id = id; this.reason = reason; }
   }
   private ObjectNode preparingOrigin;
+  private Prepared proposalResult;
+  private static final Commit NO_DURABLE_CALLBACK = (outputs,next) -> {throw new IllegalStateException("preparation_invoked_durable_callback");};
 
   public synchronized Prepared prepare(Boundary.Input input) throws Exception {
     return propose((fork, capture) -> fork.accept(input, capture));
+  }
+  /** Stateful auth admission for a checkpoint wrapper that binds both source profiles. */
+  public synchronized Prepared prepareAuthentication(Boundary.Input input) throws Exception {
+    return propose((fork, capture) -> fork.authentication(input, capture));
+  }
+  private void authentication(Boundary.Input input, Commit commit) throws Exception {
+    Boundary.validateContext(input.raw(), input.context());
+    check(input.context().at("/parser/id").asString().equals("openssh-password"), "parser_binding");
+    check(Json.sha(input.bytes()).equals(input.raw().at("/evidence/sha256").asString()), "record_digest");
+    String run = input.context().get("run_id").asString();
+    String receipt = run + "/" + input.raw().get("record_id").asString();
+    String fingerprint = Boundary.hash(Json.MAPPER.valueToTree(List.of(input.raw(), Boundary.configuration(input.context()))));
+    if (state.get("receipts").has(receipt)) {
+      check(state.get("receipts").get(receipt).asString().equals(fingerprint), "conflicting_redelivery"); return;
+    }
+    ObjectNode next = state.deepCopy(); ObjectNode runs = object(next, "runs");
+    if (!runs.has(run)) { check(activeRuns(runs) < limits.runs, "run_limit_backlog"); runs.put(run,"active"); }
+    JsonNode result = runs.get(run).asString().equals("ended") ? Boundary.diagnostic(input,"after_dataset_end") : OpenSsh.adapt(input);
+    object(next,"receipts").put(receipt,fingerprint);persist(next,List.of(result),commit);
   }
   public synchronized Prepared prepareTick() throws Exception { return propose(Assembler::tick); }
   public synchronized Prepared prepareEnd(String run) throws Exception {
@@ -59,11 +80,10 @@ public final class Assembler {
   private Prepared propose(Proposal action) throws Exception {
     Assembler fork = restore(clock, limits, snapshot());
     fork.preparingOrigin = fork.state.deepCopy();
-    Prepared[] captured = new Prepared[1];
     try {
-      action.apply(fork, (outputs, next) -> captured[0] = new Prepared(next, outputs, true));
+      action.apply(fork, NO_DURABLE_CALLBACK);
       // Exact same-ID retry intentionally does not call the offline Commit API.
-      return captured[0] == null ? new Prepared(snapshot(), List.of(), true) : captured[0];
+      return fork.proposalResult == null ? new Prepared(snapshot(), List.of(), true) : fork.proposalResult;
     } catch (Drain requested) {
       Assembler single = restore(clock, limits, snapshot());
       ObjectNode next = single.state.deepCopy(); List<JsonNode> outputs = new ArrayList<>();
@@ -263,6 +283,7 @@ public final class Assembler {
     // Detached outputs/snapshot: callers cannot mutate the live state through commit arguments.
     for (JsonNode output : outputs) if (output.path("kind").asString().equals("preservation"))
       Boundary.schema("urn:detectbridge:linux:1.0.0:preservation", output);
+    if(preparingOrigin!=null) {proposalResult=new Prepared(Json.bytes(next),outputs,true);return;}
     commit.persist(outputs.stream().map(JsonNode::deepCopy).toList(), Json.bytes(next)); state = next;
   }
 

@@ -13,7 +13,7 @@ final class Schemas {
     Map<String,String> schemas = new HashMap<>();
     for (String path : List.of("v1/common.schema.json", "v1/raw-record.schema.json", "context.schema.json",
         "context-extension.schema.json", "manifest.schema.json", "preservation.schema.json", "state.schema.json",
-        "assembly-input.schema.json", "assembly-wire.schema.json", "assembly-state.schema.json",
+        "assembly-registration.schema.json", "assembly-input.schema.json", "assembly-wire.schema.json", "assembly-state.schema.json",
         "assembly-receipt.schema.json", "assembly-quarantine.schema.json")) {
       try (var in = Schemas.class.getResourceAsStream("/"+path)) {
         String text = new String(Objects.requireNonNull(in).readAllBytes(), StandardCharsets.UTF_8);

@@ -75,7 +75,8 @@
         "detection": "${{ steps.paths.outputs.detection }}",
         "writer": "${{ steps.paths.outputs.writer }}",
         "windows": "${{ steps.paths.outputs.windows }}",
-        "linux": "${{ steps.paths.outputs.linux }}"
+        "linux": "${{ steps.paths.outputs.linux }}",
+        "assembly": "${{ steps.paths.outputs.assembly }}"
       }
     },
     "repository-hygiene": {
@@ -194,7 +195,8 @@
         "detection-verification",
         "opensearch-writer-verification",
         "windows-verification",
-        "linux-verification"
+        "linux-verification",
+        "linux-assembly-verification"
       ]
     },
     "dataset-acquisition": {
@@ -482,6 +484,36 @@
         {
           "name": "Build and qualify Linux parser and bounded offline assembly",
           "run": "uv run --locked python tools/dev.py linux"
+        }
+      ]
+    },
+    "linux-assembly-verification": {
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 45,
+      "needs": [
+        "classify-changes"
+      ],
+      "if": "${{ needs.classify-changes.outputs.assembly == 'true' }}",
+      "steps": [
+        {
+          "uses": "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "with": {
+            "persist-credentials": false
+          }
+        },
+        {
+          "uses": "actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0",
+          "with": {
+            "python-version": "3.12.12"
+          }
+        },
+        {
+          "name": "Install pinned development tools",
+          "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
+        },
+        {
+          "name": "Qualify checkpointed Linux assembly and real recovery",
+          "run": "uv run --locked python tools/dev.py assembly\nuv run --locked python tools/linux_assembly.py build\nuv run --locked python tools/linux_assembly.py verify"
         }
       ]
     }

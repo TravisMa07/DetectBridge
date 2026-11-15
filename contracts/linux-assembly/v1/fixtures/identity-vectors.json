@@ -1,0 +1,14 @@
+{
+  "version": "1.0.0",
+  "provenance": "Independent P03 tuple/hash computation over original declared P12b facts; no adapter/evaluator output used",
+  "first_record_id": "sha256:2467884356723506d92f68f008f4470c5a80ff721ffe905210a1f668c2e7d4a6",
+  "complete_member_ids": [
+    "sha256:0479cf456f8dfca026511b105d6785318a031adc9c86193811b0ce8e1f008ba1",
+    "sha256:2467884356723506d92f68f008f4470c5a80ff721ffe905210a1f668c2e7d4a6",
+    "sha256:449be75bbcf88a2b572ddc1adc68f9dbf8a04b8b69baee1344a7f6c04158af82",
+    "sha256:6c09ff30c1aeb3350aa01e53a0a624109b846a34239c0f5b5c36367245285e6f",
+    "sha256:6ef8d7142055c195bf72edad3ef0138a7b476d2dcc67947ca6f5f0ffa10b2017",
+    "sha256:7eaf7b523f6e33da8a3425fc487370890f47a0818678931560476a59f551db90"
+  ],
+  "complete_event_id": "sha256:ac9572983d2c39a70067cbefd842d18b54cfac50b19daebdfde442ccb4068a56"
+}

@@ -55,3 +55,37 @@ unchanged failed-job rerun was requested, without changing acceptance or treatin
 an arbitrary failure as binding rejection. Isolated implementation/compile work
 may proceed while that reproduction runs; actual new-runtime qualification stays
 gated on the baseline result. This changes work ordering, not acceptance semantics.
+
+The unchanged failed-job rerun of merged-main 43750911904 passed. The initial P10
+failure remains unclassified; no check was relaxed. Runtime qualification is now
+unblocked. State-model tests cover detached one-group drains, durable prefixes,
+byte-identical recovery duplicates, aborted notification, deadline restore, bounded
+inbox/outbox and hash/location-only quarantine. Auth shares the runtime's bounded
+run/receipt lifecycle, including idempotent retries and immutable run end.
+
+Operator checkpoint inventories retain only IDs/hashes, scope keys, input
+locations and pending intent references in the isolated /state volume. They are
+qualification observations, never recovery/admission authority. A verifier may
+use them only for the exact checkpoint independently confirmed completed by Flink.
+Aborted/uncompleted inventories cannot establish durability. Original bodies stay
+in authoritative checkpoints/retained input; no body is copied to evidence logs.
+
+The first exploratory runtime replay exposed an oracle bug: manifest scope lives
+in key.run_id, not a top-level run_id. The verifier now follows the existing
+manifest contract and has a valid-manifest/wrong-scope regression. It did not
+weaken manifest content/identity comparisons. A missing diagnostic-handler import
+was also corrected. The exploratory failed run is not acceptance evidence.
+
+Registered local objects are capped at 128 entries, 32 MiB per object and 64 MiB
+total. The launcher verifies names/content, copies exact bytes into its ignored
+owned cache and mounts only those objects plus the immutable registration read
+only. The runtime validates the registration digest before restore/admission and
+at checkpoints; it verifies whole-object and record hashes, range/framing and
+dataset position on resolution. An absent registered object is visible I/O backlog,
+not a nonmatch. No URI selects a filesystem path or causes a network request.
+
+Prepared proposals now explicitly bypass the legacy external durable callback;
+a forbidden callback guards accidental use. Offline Commit semantics are unchanged.
+The runtime envelope binds auth contracts as well as audit contracts while sharing
+one bounded run/receipt lifecycle. Auth retries are idempotent and run-end prevents
+new auth admission just as it prevents new audit groups.

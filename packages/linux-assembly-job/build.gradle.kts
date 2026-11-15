@@ -8,6 +8,7 @@ dependencies {
     implementation(project(":detection-evaluator"))
     implementation(project(":linux-adapters"))
     implementation(libs.validator)
+    testImplementation(libs.flink.streaming)
     testImplementation(platform(libs.junit.bom))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
@@ -38,7 +39,11 @@ val prepareAssemblyCases by tasks.registering(Exec::class) {
     workingDir(rootProject.projectDir)
     commandLine("uv", "run", "--locked", "python", "tools/linux_assembly_cases.py")
     inputs.file(rootProject.file("tools/linux_assembly_cases.py"))
+    inputs.file(rootProject.file("contracts/linux-assembly/v1/fixtures/identity-vectors.json"))
     inputs.files(rootProject.fileTree("packages/linux-adapters/contracts"))
     outputs.file(rootProject.file(".cache/linux-assembly/cases.json"))
 }
 tasks.test { dependsOn(prepareAssemblyCases); inputs.file(rootProject.file(".cache/linux-assembly/cases.json")) }
+tasks.shadowJar {
+    from(rootProject.file("LICENSE")) { into("META-INF"); rename { "DetectBridge-LICENSE" } }
+}

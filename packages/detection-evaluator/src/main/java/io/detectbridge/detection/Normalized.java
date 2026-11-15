@@ -74,7 +74,8 @@ public final class Normalized {
       check(r.has("byte_range") || hash.equals(object), "whole_object_digest_mismatch");
       String text = r.get("uri").asString();
       URI uri = URI.create(text);
-      String scheme = uri.getScheme();
+      check(uri.getScheme() != null, "unsupported_evidence_scheme");
+      String scheme = uri.getScheme().toLowerCase(Locale.ROOT);
       check(List.of("urn", "https", "s3", "file").contains(scheme), "unsupported_evidence_scheme");
       check(
           uri.getRawUserInfo() == null

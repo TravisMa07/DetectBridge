@@ -33,7 +33,6 @@ public final class WindowsAdapter {
       bytes = resolver.resolve(raw);
       if (bytes == null || !Json.sha(bytes).equals(raw.get("evidence").get("sha256").asString())) throw new EvidenceResolver.IntegrityFailure();
     } catch (EvidenceResolver.IntegrityFailure ex) { return failure(raw, context, "extraction_failed", "evidence_integrity"); }
-    if (!raw.get("evidence").get("encoding").asString().equals("utf-8")) return failure(raw, context, "unsupported_source", "unsupported_encoding");
     WindowsXml xml;
     try { xml = WindowsXml.parse(bytes); }
     catch (Exception ex) { return failure(raw, context, "extraction_failed", "xml_or_limit"); }

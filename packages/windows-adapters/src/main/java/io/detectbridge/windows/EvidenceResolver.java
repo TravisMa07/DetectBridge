@@ -36,11 +36,13 @@ public interface EvidenceResolver {
           String hash = r.get("object_sha256").asString();
           check(hash.matches("[a-f0-9]{64}"), "object_hash");
           URI uri = URI.create(r.get("uri").asString());
-          check(Set.of("urn", "file", "https", "s3").contains(uri.getScheme()), "uri_scheme");
+          check(uri.getScheme() != null, "uri_scheme");
+          String scheme = uri.getScheme().toLowerCase(Locale.ROOT);
+          check(Set.of("urn", "file", "https", "s3").contains(scheme), "uri_scheme");
           check(uri.getRawUserInfo() == null && uri.getRawQuery() == null && uri.getRawFragment() == null
               && (uri.getRawAuthority() == null || !uri.getRawAuthority().contains("@")), "unsafe_uri");
-          if (uri.getScheme().equals("urn")) check(uri.toString().equals("urn:sha256:" + hash), "content_address");
-          if (Set.of("https", "s3").contains(uri.getScheme())) check(uri.getHost() != null, "uri_host");
+          if (scheme.equals("urn")) check(uri.toString().equals("urn:sha256:" + hash), "content_address");
+          if (Set.of("https", "s3").contains(scheme)) check(uri.getHost() != null, "uri_host");
           byte[] object;
           try (var in = Files.newInputStream(objects.resolve(hash))) { object = in.readNBytes(32 * 1024 * 1024 + 1); }
           check(object.length <= 32 * 1024 * 1024 && Json.sha(object).equals(hash), "object_integrity");

@@ -1,5 +1,6 @@
 """Synthetic regression tests for independent offline output verification."""
 
+import base64
 import copy
 import hashlib
 import json
@@ -188,6 +189,20 @@ class QualificationTests(unittest.TestCase):
         row["evaluation"]["input"] = dict(offset=0)
         with self.assertRaises(ValueError):
             self.verify(row)
+
+    def test_base64_evidence_representation_keeps_original_xml_semantics(self):
+        original = copy.deepcopy(self.original)
+        evidence = original["raw"]["evidence"]
+        evidence["inline"] = base64.b64encode(evidence["inline"].encode()).decode()
+        evidence["encoding"] = "base64"
+        row = copy.deepcopy(self.row)
+        row["raw"] = original["raw"]
+        row["event"]["detectbridge"]["evidence"][0]["evidence"] = evidence
+        row["evaluation"]["input"]["value_sha256"] = hashlib.sha256(
+            compact(row["event"])
+        ).hexdigest()
+        self.input.write_bytes(compact(original) + b"\n")
+        self.assertEqual(dict(records=1, supported_skipped=1), self.verify(row))
 
 
 if __name__ == "__main__":

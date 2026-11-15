@@ -100,3 +100,12 @@ binding provenance; implementation is not acceptance of that missing evidence.
 The context boundary accepts upper/lowercase canonical-width UUID spelling, as
 P03's UUID format permits, preserving the caller's exact run string. It still
 rejects abbreviated UUID spellings; no silent ID normalization is introduced.
+
+Independent review compatibility corrections: P03 `evidence.encoding` describes
+the stored representation. Both UTF-8 inline text and base64-encoded original XML
+bytes resolve before the strict UTF-8 parser runs. Invalid decoded UTF-8 remains a
+preservation diagnostic. URI scheme comparison is case insensitive in the local
+resolver and shared normalized-event validator, while the original locator is
+retained and canonical `urn:sha256:` spelling remains required. No schema or
+semantic version change is introduced. Literal adapter, consumer and independent
+verifier regressions cover these boundaries.

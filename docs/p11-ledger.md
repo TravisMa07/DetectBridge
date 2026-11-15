@@ -112,5 +112,13 @@ are retained. Integrated validation passed: root check (124 Python tests), combi
 Java verification, Windows gate (34 Java tests including UUID case preservation,
 five independent verifier regressions, packaging/licenses and lint/format). A
 fresh 7,018-row atomic runner/verifier pass confirms 361 supported/skipped and
-6,657 unsupported records. The post-compatibility-fix recorded rerun is in progress
-with its frozen plan and ignored local logs; no recorded host identity is inferred.
+6,657 unsupported records. The UUID compatibility rerun also passed with its frozen plan and ignored local
+logs; no recorded host identity is inferred.
+
+Independent review reproduced two P03 compatibility defects: base64 evidence
+representation was rejected before XML parsing, and URI schemes were compared
+case sensitively in the resolver and shared normalized-event consumer. Both are
+corrected with original evidence metadata retained. Added regressions cover
+base64 inline/reference XML, invalid UTF-8, mixed-case HTTPS/S3/file locators and
+continued rejection of unsafe locators and noncanonical content-addressed URNs.
+Final post-review validation is recorded below when complete.

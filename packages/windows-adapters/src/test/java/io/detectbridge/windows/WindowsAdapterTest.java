@@ -175,6 +175,39 @@ class WindowsAdapterTest {
     ((ObjectNode)r.at("/evidence/reference/byte_range")).put("length",Long.MAX_VALUE);
     assertThrows(EvidenceResolver.IntegrityFailure.class,()->EvidenceResolver.local(temp).resolve(r));
   }
+  @Test void evidenceRepresentationAndUriSpellingDoNotChangeDecodedXml() throws Exception {
+    String xml = fixture("security");
+    byte[] bytes = xml.getBytes(StandardCharsets.UTF_8);
+    var baseline = adapt(xml, "security", true).event();
+    var encoded = raw(xml);
+    ((ObjectNode) encoded.get("evidence")).put("encoding", "base64");
+    ((ObjectNode) encoded.get("evidence")).put("inline", Base64.getEncoder().encodeToString(bytes));
+    var event = new WindowsAdapter().adapt(encoded, EvidenceResolver.local(temp), context(encoded, "security", true)).event();
+    assertNotNull(event);
+    assertEquals(baseline.at("/event/id"), event.at("/event/id"));
+    assertEquals(baseline.get("process"), event.get("process"));
+    assertEquals(encoded.get("evidence"), event.at("/detectbridge/evidence/0/evidence"));
+    String hash = Json.sha(bytes);
+    Files.write(temp.resolve(hash), bytes);
+    for (String uri : List.of("https://example.com/evidence", "HTTPS://example.com/evidence",
+        "hTtPs://example.com/evidence", "s3://bucket/evidence", "S3://bucket/evidence",
+        "file:///evidence", "FILE:///evidence", "fIlE:///evidence")) {
+      var referenced = encoded.deepCopy();
+      ((ObjectNode) referenced.get("evidence")).remove("inline");
+      ((ObjectNode) referenced.get("evidence")).set("reference", Json.MAPPER.valueToTree(Map.of("uri", uri, "object_sha256", hash)));
+      var result = new WindowsAdapter().adapt(referenced, EvidenceResolver.local(temp), context(referenced, "security", true)).event();
+      assertNotNull(result, uri);
+      assertEquals(baseline.at("/event/id"), result.at("/event/id"));
+      assertEquals(baseline.get("process"), result.get("process"));
+      assertEquals(referenced.get("evidence"), result.at("/detectbridge/evidence/0/evidence"));
+    }
+    byte[] invalid = new byte[]{(byte) 0xff};
+    ((ObjectNode) encoded.get("evidence")).put("inline", Base64.getEncoder().encodeToString(invalid));
+    ((ObjectNode) encoded.get("evidence")).put("sha256", Json.sha(invalid));
+    var rejected = new WindowsAdapter().adapt(encoded, EvidenceResolver.local(temp), context(encoded, "security", true));
+    assertNull(rejected.event());
+    assertEquals("extraction_failed", rejected.diagnostic().get("code").asString());
+  }
   @Test void atomicInterruptedAndSuccessfulPublication() throws Exception {
     var r=raw(fixture("security")); var c=context(r,"security",true);
     var input=temp.resolve("input"); var output=temp.resolve("output");

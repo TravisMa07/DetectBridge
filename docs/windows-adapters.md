@@ -157,3 +157,8 @@ including preservation rows, raw/event/result contracts, exact reference hashes
 and complete input attribution. Supported records cannot count as unsupported,
 and unsupported source versions cannot count as normalized merely to satisfy
 aggregate totals. No host binding is invented to turn skipped into nonmatched.
+
+P03 evidence can carry the original UTF-8 XML as inline text, base64 inline bytes,
+or a locally registered object reference. Representation decoding precedes strict
+XML UTF-8 validation. Allowed URI schemes compare case insensitively; locator
+spelling is preserved. Content-addressed URNs retain their canonical spelling.

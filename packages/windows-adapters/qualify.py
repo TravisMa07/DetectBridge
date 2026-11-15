@@ -1,6 +1,7 @@
 """Independently verify recorded P11 output accounting; no telemetry values in reports."""
 
 import argparse
+import base64
 import hashlib
 import json
 import sys
@@ -44,7 +45,11 @@ def qualify(input_path, output_path, plan_path, expected_counts=None, objects=No
     def evidence(raw):
         e = raw["evidence"]
         if "inline" in e:
-            data = e["inline"].encode("utf-8")
+            data = (
+                e["inline"].encode("utf-8")
+                if e["encoding"] == "utf-8"
+                else base64.b64decode(e["inline"], validate=True)
+            )
         else:
             r = e["reference"]
             digest = r["object_sha256"]

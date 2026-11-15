@@ -221,4 +221,29 @@ class WindowsAdapterTest {
     assertFalse(failure.diagnostic().has("evidence"));
   }
 
+  @Test void hardProcessInterruptionCannotPublishPartialOutput() throws Exception {
+    var r=raw(fixture("security"));var c=context(r,"security",true);
+    Path input=temp.resolve("crash-input"), output=temp.resolve("crash-output");
+    byte[] row=Json.bytes(Map.of("raw",r,"context",c));
+    try(var stream=Files.newOutputStream(input)) {
+      for(int i=0;i<2000;i++){stream.write(row);stream.write('\n');}
+    }
+    Files.writeString(output,"previous-complete-output");
+    var child=new ProcessBuilder(Path.of(System.getProperty("java.home"),"bin/java").toString(),
+        "-cp",System.getProperty("windows.test.classpath"),Offline.class.getName(),input.toString(),output.toString(),temp.toString())
+        .redirectOutput(temp.resolve("child-stdout").toFile()).redirectError(temp.resolve("child-stderr").toFile()).start();
+    try {
+      long deadline=System.nanoTime()+java.util.concurrent.TimeUnit.SECONDS.toNanos(5);
+      boolean staging=false;
+      while(System.nanoTime()<deadline && child.isAlive()) {
+        try(var paths=Files.list(temp)) {staging=paths.anyMatch(p->p.getFileName().toString().startsWith(".windows-"));}
+        if(staging) break;
+        Thread.sleep(10);
+      }
+      assertTrue(staging,"Real runner must reach staging before interruption");
+      child.destroyForcibly();assertTrue(child.waitFor(5,java.util.concurrent.TimeUnit.SECONDS));
+      assertEquals("previous-complete-output",Files.readString(output));
+    } finally {if(child.isAlive()){child.destroyForcibly();child.waitFor();}}
+  }
+
 }

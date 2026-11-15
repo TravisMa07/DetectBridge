@@ -17,6 +17,10 @@ val prepareWindowsPlan = tasks.register<Exec>("prepareWindowsPlan") {
     commandLine("uv", "run", "--locked", "python", "packages/windows-adapters/prepare.py")
     inputs.files(fileTree("profiles"), fileTree("fixtures/rules"), file("prepare.py"))
     inputs.files(rootProject.fileTree("tools") { include("detection_compile.py", "detection_mapping.py", "check_contracts.py") }, rootProject.file("uv.lock"))
+    inputs.property("sourceRevision", providers.exec { commandLine("git", "rev-parse", "HEAD") }.standardOutput.asText)
     outputs.file(rootProject.file(".cache/windows/plan.json"))
 }
-tasks.test { dependsOn(prepareWindowsPlan, ":detection-evaluator:compileFixturePlan") }
+tasks.test {
+    dependsOn(prepareWindowsPlan, ":detection-evaluator:compileFixturePlan")
+    systemProperty("windows.test.classpath", sourceSets.test.get().runtimeClasspath.asPath)
+}

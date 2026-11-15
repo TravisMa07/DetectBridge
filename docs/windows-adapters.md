@@ -17,12 +17,16 @@ uv run --locked python tools/dev.py java
 JAVA_HOME="$PWD/.cache/jdk" GRADLE_USER_HOME="$PWD/.cache/gradle" ./gradlew --offline --console=plain :windows-adapters:test :windows-adapters:installDist
 uv run --locked ruff check packages/windows-adapters/*.py
 uv run --locked ruff format --check packages/windows-adapters/*.py
+uv run --locked python -m unittest discover -s packages/windows-adapters -p 'test_*.py' -v
 ```
 
 The module test task compiles original synthetic YAML through pinned pySigma/P10,
 then checks the same public Java evaluator on actual parser outputs. Independent
 literal expectations include all six evaluator outcomes and full normalized
-fixtures. No public recordings are required for ordinary tests.
+fixtures. Rule provenance must refer to committed bytes: commit new/changed
+synthetic YAML before qualification. Plan preparation rejects a mismatch against
+HEAD and Gradle includes the source revision in its task inputs. No public
+recordings are required for ordinary tests.
 
 ## Module-local input boundary
 
@@ -94,8 +98,22 @@ all records, supplying an actual immutable first observation at raw creation:
 
 ```sh
 uv run --locked python packages/windows-adapters/recorded.py --cache .cache/datasets --output .cache/windows/recorded-input.ndjson --first-observed ACTUAL_UTC_FIRST_OBSERVATION --run-id RUN_UUID
-JAVA_HOME="$PWD/.cache/jdk" packages/windows-adapters/build/install/windows-adapters/bin/windows-adapters .cache/windows/recorded-input.ndjson .cache/windows/recorded-output.ndjson .cache/datasets/objects/sha256 .cache/windows/plan.json
+cp .cache/windows/plan.json .cache/windows/recorded-plan.json
+JAVA_HOME="$PWD/.cache/jdk" packages/windows-adapters/build/install/windows-adapters/bin/windows-adapters .cache/windows/recorded-input.ndjson .cache/windows/recorded-output.ndjson .cache/datasets/objects/sha256 .cache/windows/recorded-plan.json
 ```
+
+Freeze the compiled plan before a recorded run (for example copy it to
+`.cache/windows/recorded-plan.json`) and use that copy for both the runner and
+verifier. After publication, run the independent verifier:
+
+```sh
+uv run --locked python packages/windows-adapters/qualify.py .cache/windows/recorded-input.ndjson .cache/windows/recorded-output.ndjson .cache/windows/recorded-plan.json .cache/datasets/objects/sha256
+```
+
+It checks complete accounting, unchanged raw/context, original evidence hashes and
+ranges, mapped source values, time representation/precision, identity, missing-host
+quality gates, all six literal outcome counts, rule diagnostics and frozen bundle
+attribution. Tampered output, missing/extra rows or a changed plan fails.
 
 Preparation verifies payload, license, scenario metadata and LFS pointer against
 the catalog, partitions original LF bytes and retains exact offsets/lengths/hashes.

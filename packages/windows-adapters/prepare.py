@@ -20,6 +20,11 @@ def prepare():
     revision = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
     provenance = []
     for path in paths:
+        committed = subprocess.check_output(
+            ["git", "show", f"{revision}:{path.relative_to(ROOT)}"], cwd=ROOT
+        )
+        if committed != path.read_bytes():
+            raise ValueError("synthetic_rule_revision_not_committed")
         digest = hashlib.sha256(path.read_bytes()).hexdigest()
         provenance.append(
             dict(

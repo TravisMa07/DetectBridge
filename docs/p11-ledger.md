@@ -225,3 +225,13 @@ A Windows-gate attempt reached passing Java/tests then failed import ordering in
 the new verifier; that formatting error was fixed. Final-head checks and owner
 semantic acceptance are recorded separately when observed; passing local evidence
 alone does not complete those gates or authorize a merge.
+
+Final local verification passed: locked root check (149 Python regressions,
+contracts/catalog/profiles/inventory, hygiene/secrets, lint/format/types), combined
+Java/semantic consumers (including 35 Windows, 20 evaluator and 39 Linux tests),
+and final owning Windows gate (13 Python regressions including seven new controlled-
+recording cases, installed artifacts and lint/format). No new runtime dependencies,
+Java adapter/evaluator behavior or checkpoint formats changed. Actual recorded
+verification was rerun on the final frozen catalog in both isolated runs and all
+six output tamper probes failed as required. Native AMD64 PR CI and owner semantic
+acceptance are pending at this checkpoint; they are not inferred from ARM64 checks.

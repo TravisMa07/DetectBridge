@@ -1,7 +1,9 @@
 # P13 bounded design and acceptance plan
 
 Status: proposed owning design notes; runtime implementation has not started.
-P13 remains blocked on P11 recorded identity evidence and semantic acceptance.
+A new [P11 controlled recording](p11-recording-review.md) supplies technical
+recorded identity/eligible evidence. P13 remains blocked on its owner semantic
+acceptance and implementation qualification/integration.
 This plan preserves A02–A07 and ADR 0008; it does not waive prerequisite gates.
 
 ## Prerequisite inspection — 2026-11-16
@@ -12,7 +14,7 @@ P11 #38, P12a #39, P12b #42 and P12c #43 are merged.
 | Dependency | Observed evidence | Remaining gate |
 | --- | --- | --- |
 | P08 | Merge `430609a`; [merged-main run 43652317692](https://github.com/TravisMa07/DetectBridge/actions/runs/43652317692) passed actual writer qualification and required-checks; recorded ARM64 evidence in writer guide | Metadata writer only; P13 must implement its own compatible projections/configuration/index permissions |
-| P11 | Merged #38; recorded original-byte preservation accounting and synthetic semantics in P11 ledger | Authoritative recorded Computer-to-host bindings and separate owner semantic acceptance |
+| P11 | Merged #38; old public recordings remain skipped. New controlled Windows capture and eligible offline qualification are in [completion review](p11-recording-review.md) | Owner acceptance of new bounded source scope plus final-head qualification/integration; old public bindings are still unavailable |
 | P12 | [PR #43](https://github.com/TravisMa07/DetectBridge/pull/43) records completed owner semantic/completeness review and separate merge authorization; exact head `adf71f8`, AMD64 run 43812450381 attempt 2 passed | [Merged-main run 43873905332](https://github.com/TravisMa07/DetectBridge/actions/runs/43873905332) passed including actual linux-assembly-verification and required-checks; optional recorded jobs and unaffected Windows job skipped |
 
 The initial P12c assembly attempt failed before tests on Maven Central HTTP 429;
@@ -51,7 +53,10 @@ obtain separate owner semantic acceptance. Existing 7,018-row evidence remains
 If original capture evidence cannot be obtained, a new controlled Windows recording
 with real host/capture provenance and reviewed usage terms can be proposed. That
 would qualify that new source scope; it would not repair identity in the old data.
-No such recording, scope substitution or acceptance is claimed here.
+That new controlled recording now exists with technical qualification in the
+[P11 review packet](p11-recording-review.md). Owner acceptance of its bounded
+source scope and implementation integration remain separate; old recordings
+are unchanged.
 
 ## Integration boundary
 

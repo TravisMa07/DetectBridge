@@ -4,6 +4,7 @@ import copy
 import json
 import os
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -191,6 +192,29 @@ class ControlledRecordingTests(unittest.TestCase):
                 self.plan,
                 replay[0]["context"]["run_id"],
             )
+
+    def test_failed_preparation_preserves_previous_output_and_value_free_error(self):
+        catalog = self.directory / "candidate.json"
+        catalog.write_bytes(subject.encoded(self.catalog))
+        destination = self.directory / "previous.ndjson"
+        destination.write_bytes(b"previous-complete-output\n")
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(MODULE / "recording.py"),
+                str(self.directory),
+                "--catalog",
+                str(catalog),
+                "--prepare",
+                str(destination),
+                "--run-id",
+                RUN,
+            ],
+            capture_output=True,
+        )
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual(destination.read_bytes(), b"previous-complete-output\n")
+        self.assertEqual(result.stderr, b'{"category":"controlled_windows_qualification_failed"}\n')
 
     def test_candidate_catalog_and_changed_original_cannot_pass_provenance(self):
         self.bypass.stop()

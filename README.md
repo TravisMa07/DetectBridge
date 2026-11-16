@@ -39,7 +39,7 @@ records completed bounded implementation, qualification, owner review and
 authorized integration separately from P13 requirements.
 Production detection, management API, UI and detection-to-OpenSearch integration
 remain pending. [P13 design and acceptance planning](docs/p13-design.md) records
-the unresolved P11 recorded host-binding/semantic gate; P13 runtime has not started.
+the P11 completion acceptance/integration gate; P13 runtime has not started.
 P06 provides local Kafka/Flink infrastructure and optional authenticated OpenSearch.
 Repository hygiene tooling and
 contributor templates were introduced in P01; P02 adds reproducible build tools,

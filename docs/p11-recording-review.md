@@ -74,6 +74,11 @@ remain ignored under `.cache/p11-windows-capture/`. Usage terms permit this loca
 qualification; Sysmon binaries and captured bodies are not published in Git.
 No archive, live host registry, P13 delivery or throughput claim follows.
 
+Local locked root checks passed with 149 Python tests; combined Java/semantic
+checks passed, including 35 Windows tests. The final owning Windows gate passed
+13 Python regressions, installed-artifact checks and lint/format. Native AMD64
+PR CI and owner semantic acceptance remain pending at this checkpoint.
+
 ## Owner acceptance items
 
 - [ ] Accept this new controlled capture as bounded recorded source/host evidence;

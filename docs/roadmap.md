@@ -8,7 +8,8 @@ P12b #42 is merged with final-artifact ARM64/final-head AMD64 qualification.
 Merged-main qualification also passed. P12c adds selected reviewed audit evidence
 and recorded qualification, merged in #43 as c024497 with completed owner
 semantic/completeness review recorded in its description. Its merged-main CI
-passed in run 43873905332. Windows trusted bindings and P11 semantic acceptance
+passed in run 43873905332. A new controlled Windows capture supplies technical
+identity/eligible evidence; P11 owner semantic acceptance and completion integration
 remain outstanding; later capabilities remain planned. See the
 [implementation ledger](implementation-ledger.md) for exact evidence and limits.
 P numbers are planning IDs, not GitHub PR numbers. Milestones require their
@@ -211,8 +212,8 @@ is recorded in the acceptance map; P13 acceptance is not implied.
 ### P13 — Integrated enrichment and evaluation outcomes
 
 - Local status: [bounded design/acceptance plan](p13-design.md) prepared; runtime
-  not implemented. P11 recorded identity evidence and semantic acceptance remain
-  blockers; merges alone do not make this item Ready.
+  not implemented. P11 controlled-source semantic acceptance and completion
+  qualification/integration remain blockers; merges alone do not make this item Ready.
 
 - Depends on: P08, P11, P12.
 - Deliver: tagged events, linked detections and quality/configuration diagnostics.

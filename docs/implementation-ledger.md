@@ -3,15 +3,17 @@
 The owner instructed implementation after reviewing the
 [consolidated plan](p10-p12-plan.md), and selected a reviewed OpenSSH recording for
 P12. Merge/release authorization remains separate for every PR/release. Planning
-children completed P11/P12 design read-only; they have not implemented adapters.
+children first completed P11/P12 design read-only; their later implementation
+and integration history is recorded below.
 
 | Unit | Owner | Base / branch / worktree | Dependencies | Status and blockers |
 | --- | --- | --- | --- | --- |
 | P10a | Main orchestrator | `4d7d685`; `feat/p10-mapping-contracts`; `/Users/travisma/GitHub_Projects/DetectBridge-p10a` | P04/P09 merged | Merged in [PR #36](https://github.com/TravisMa07/DetectBridge/pull/36) as `b45fba4`; semantic acceptance remains separately pending |
 | P10b | Main orchestrator | `b45fba4`; `feat/p10-source-selection`; `/Users/travisma/GitHub_Projects/DetectBridge-p10b` | P10a merged; merged-main checks recorded separately | Merged in [PR #37](https://github.com/TravisMa07/DetectBridge/pull/37) as `df31448`; merged-main checks passed; owner authorized P11/P12 |
-| P11 | Windows child; orchestrator integration | `df31448`; `feat/p11-windows-adapters`; `/Users/travisma/.t3/worktrees/DetectBridge/t3-689cf405-5fa25cc439f21f05` | P10 merged; owner authorized dependent work | Implemented/integrating for draft review; recorded trusted host bindings and eligibility acceptance remain blocked |
-| P12a | Linux child | `df31448`; isolated delegated worktree (handoff pending) | P10 merged; owner authorized dependent work | In progress; host/generation evidence and reviewed OpenSSH recording required |
-| P12b | Linux child | Not created | Authorized P12a merge + green main | Planned; actual checkpoint/recovery qualification required |
+| P11 | Windows child; orchestrator integration | `df31448`; `feat/p11-windows-adapters`; `/Users/travisma/.t3/worktrees/DetectBridge/t3-689cf405-5fa25cc439f21f05` | P10 merged; owner authorized dependent work | Merged in #38 as `46fb080`; recorded trusted host bindings and owner acceptance remain blocked |
+| P12a | Linux child | `df31448`; isolated P12a worktree; merged branch | P10 merged; owner authorized dependent work | Merged in #39 as `9ea1c68`; reviewed local OpenSSH9 slice passed; audit provenance and owner review remain open |
+| P12b | Main orchestrator | `9ea1c68`; `feat/p12b-linux-qualification` | P12a merged | Merged in #42 as `e2d06c3`; final ARM64/AMD64 and merged-main qualification passed |
+| P12c | Main orchestrator | `e2d06c3`; `feat/p12c-recorded-source-evidence` | P12b merged + reviewed local auth originals | Reviewed local audit + atomic offline replay and auth checkpoint qualification implemented; final qualification/review pending |
 | P13 | Unassigned | Not created | P08 + complete P11/P12 | Blocked |
 
 Shared ownership: orchestrator owns contracts/readers, Gradle registration,
@@ -162,3 +164,21 @@ TaskManager/JobManager/checkpoint recovery and both pressure profiles. Local loc
 checks passed with 133 Python regressions and combined Java/semantic consumers.
 Draft PR #42 targets main; actual linux-assembly-verification and shared AMD64
 jobs were created. Final-head AMD64 CI, owner review and merge remain pending.
+
+## P12c inspection and next slice
+
+PR #42 is observed merged as e2d06c3. Its final-head AMD64 run 43768117676
+passed; merged-main repository qualification 43804124770 was still in progress
+at inspection (successful dependency-automation runs do not establish that gate).
+It subsequently passed all required jobs. Earlier pending/unmerged P12b entries
+describe historical checkpoints.
+[Next-PR design](p12c-design.md): qualify the already reviewed local OpenSSH9
+recording through P12b checkpoint recovery and an isolated replay, preserving all
+11 originals and independent per-record expectations. No audit recording or Windows
+host binding is invented, and no owner semantic approval or P13 readiness follows.
+
+The owner expanded P12c to sustained roadmap work. A separate-kernel audit capture
+now has pinned local-use provenance, trusted guest/boot bindings and independently
+reviewed membership. Atomic audit replay and three real compiler/evaluator cases
+passed on all 30 original rows. The [P12c ledger](p12c-ledger.md) preserves exact
+artifacts, failures, runtime qualification and remaining owner/Windows gates.

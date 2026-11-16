@@ -1,7 +1,7 @@
 # P12b implementation ledger
 
-Status: implementation complete for draft review; final-artifact ARM64
-qualification passed; actual AMD64 CI remains pending. No full P12 acceptance, merge or release claimed.
+Status: merged in PR #42 as e2d06c3; final-artifact ARM64 and final-head AMD64
+qualification passed. Merged-main qualification subsequently passed during P12c work. No full P12 acceptance or release claimed.
 Branch: feat/p12b-linux-qualification. Base: P12a merge 9ea1c68 plus approved plan
 55a28f2. Design/semantic expectations were committed at 655e362 before wrapper
 code; detached transitions, independently computed cases and checkpoint model
@@ -136,8 +136,26 @@ pass; final PR-head CI remains required after evidence documentation updates.
 
 ## Remaining acceptance
 
-Actual final-PR-head AMD64 CI; owner review of
-independent expectations/completeness policy; reviewed eligible audit provenance;
-separate owner merge authorization and merged-main qualification. Windows recorded
+Owner review of independent expectations/completeness policy and P12c selected
+audit provenance. Merged-main qualification subsequently passed. Windows recorded
 host binding and full P12/P13 acceptance remain separate blockers. The existing
 reviewed local auth recording is not silently claimed replayed by ordinary CI.
+
+## Subsequent merge and AMD64 status
+
+GitHub inspection for P12c found #42 merged as
+`e2d06c3a8519673455f7662a0928c24823fe249e`. Its description records final-head
+[AMD64 run 43768117676](https://github.com/TravisMa07/DetectBridge/actions/runs/43768117676)
+passed on `fd3607e5397b16a0ca35447d65e61de5dbbafb69`, including actual
+linux-assembly-verification and all required shared consumers. Opt-in recorded
+jobs were skipped. Earlier pending/unmerged entries above are historical.
+Merged-main [run 43804124770](https://github.com/TravisMa07/DetectBridge/actions/runs/43804124770)
+was in progress at inspection; successful dependency-automation runs are not
+repository qualification. No owner semantic/completeness approval is inferred.
+The follow-up [P12c design](p12c-design.md) adds opt-in recorded authentication
+checkpoint evidence. It expanded at owner request to reviewed audit provenance and
+atomic offline replay; see its [ledger](p12c-ledger.md). Windows bindings and owner
+semantic acceptance remain open.
+
+Run 43804124770 subsequently passed all required merged-main jobs on e2d06c3,
+including actual linux-assembly-verification and the required-checks aggregate.

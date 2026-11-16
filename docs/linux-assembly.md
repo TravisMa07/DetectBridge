@@ -25,7 +25,7 @@ and immutable build/configuration metadata. Never overlap heavy local assembly,
 writer or detection runs. The verifier removes only its own temporary stacks and
 volumes. Original synthetic inputs and independent expectations are retained in
 ignored project ledgers before publication; real recording payloads are absent
-from ordinary CI. The reviewed P12a auth recording remains separate evidence.
+from ordinary CI. The reviewed P12a auth recording has a separate opt-in command below.
 
 For manual inspection, initialize a new unused project, then start it:
 
@@ -135,3 +135,32 @@ actual runtime evidence. See the ledger for completed versus pending checks.
 Full P12 still needs owner independent-expectation/completeness review and reviewed
 eligible audit evidence. P11's recorded host-binding blocker also remains before
 P13 acceptance. A green P12b gate cannot erase those requirements.
+
+## Opt-in reviewed authentication recovery
+
+[P12c design](p12c-design.md) adds this local-only command using the existing
+reviewed `openssh9-password-lab-v1` recording. Supply its original ignored capture
+directory explicitly, including every cataloged provenance artifact:
+
+```sh
+uv run --locked python tools/linux_assembly_recorded.py /absolute/path/to/p12-auth-reviewed-v1
+```
+
+Build the P12b artifact first using the commands above if it is absent. The command
+fails before runtime initialization when originals are missing or changed. It does
+not recapture, fetch or substitute evidence. It reuses catalog byte/context/native
+body checks, retains independent expectations before admission, requires actual
+event-sink RecordTooLarge failure, confirms a completed checkpoint retains a
+recorded event intent, restores healthy sinks and verifies exact output accounting.
+It then replays unchanged originals with a separate run ID. Event identity remains
+stable while processing attribution stays isolated. At-least-once duplicates must
+have identical bytes within a run and are counted separately.
+
+All 11 original rows are accounted for in each run: two eligible authentication
+events and nine unsupported preservation documents, plus input receipts. No Sigma
+evaluation is performed by this job. Local reports and original input/expectation
+ledgers stay under ignored `.cache/linux-assembly-*`; only owned runtime stacks
+and volumes are removed. Ordinary CI runs synthetic verifier regressions and the
+existing full P12b qualification; it does not claim access to this recording.
+Reviewed eligible audit evidence, trusted Windows bindings and independent owner
+semantic/completeness acceptance remain outstanding.

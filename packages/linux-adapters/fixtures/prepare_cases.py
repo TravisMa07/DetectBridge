@@ -41,7 +41,7 @@ def prepare():
         ]
         plan = compile_rules([rule], sources, mappings=mappings, provenance=[candidate])
         (destination / (rule.stem + ".json")).write_bytes(encoded(plan) + b"\n")
-    print("PASS: compiled four synthetic P12 plans; expectations are independent literals")
+    print("PASS: compiled original synthetic P12 plans; expectations are independent literals")
 
 
 if __name__ == "__main__":

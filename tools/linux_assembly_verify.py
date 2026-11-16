@@ -120,13 +120,17 @@ class Oracle:
         )
         return expected
 
-    def auth(self, row, outcome="success"):
+    def auth(self, row, outcome="success", *, expectation=None):
         raw, context = row["raw"], row["context"]
         event_id = identity(
             [raw["source"]["namespace"], raw["source"]["instance"], [raw["record_id"]]]
         )
         self.events[(context["run_id"], event_id)] = dict(
-            rows=[copy.deepcopy(row)], eligible=True, auth_outcome=outcome
+            rows=[copy.deepcopy(row)],
+            eligible=True,
+            auth_expectation=copy.deepcopy(expectation)
+            if expectation is not None
+            else dict(outcome=outcome, user="alice", source_ip="192.0.2.1", source_port=2222),
         )
 
     def diagnostic(self, row, code, original=None):
@@ -239,12 +243,43 @@ class Oracle:
                     "command_line" not in document.get("process", {})
                     and "path" not in document.get("file", {})
                 )
-                if "auth_outcome" in expected:
+                if "auth_expectation" in expected:
+                    auth = expected["auth_expectation"]
                     require(
-                        document["event"]["outcome"] == expected["auth_outcome"]
-                        and document["user"]["name"] == "alice"
+                        document["event"]["outcome"] == auth["outcome"]
+                        and document["user"]["name"] == auth["user"]
                     )
-                    require(document["source"] == dict(ip="192.0.2.1", port=2222))
+                    require(
+                        document["source"] == dict(ip=auth["source_ip"], port=auth["source_port"])
+                    )
+                    if "timestamp" in auth:
+                        from datetime import datetime
+
+                        require(
+                            datetime.fromisoformat(document["@timestamp"])
+                            == datetime.fromisoformat(auth["timestamp"])
+                        )
+                        require(db["time"]["source_value"] == auth["timestamp"])
+                        require(db["time"]["source_utc"] == document["@timestamp"])
+                        require(
+                            db["time"]["basis"] == "source" and db["time"]["quality"] == "valid"
+                        )
+                        require(
+                            document["source_fields"]["rfc5424"]["timestamp"] == auth["timestamp"]
+                        )
+                    require(db["quality"]["integrity"] == "sufficient")
+                    require(
+                        db["source_contract"]
+                        == {k: ctx["source_contract"][k] for k in ("id", "version")}
+                    )
+                    require(
+                        db["processing"]
+                        == dict(
+                            parser="openssh-password/1.0.0",
+                            mapping=ctx["mapping_profile"]["id"] + "/1.0.0",
+                            normalizer="linux-p12a/1.0.0",
+                        )
+                    )
                 elif expected["complete"]:
                     require(
                         document["process"]["executable"] == "/usr/bin/whoami"

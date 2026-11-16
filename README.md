@@ -22,10 +22,14 @@ formal semantic review history remains recorded separately.
 recorded preservation accounting; trusted recorded host bindings remain unavailable.
 [P12a Linux adapters](docs/p12-runbook.md) are merged and provide offline audit assembly
 and selected authentication parsing, with a small real reviewed local OpenSSH9
-recording. Recorded audit eligibility and owner semantic review remain pending.
+recording. A selected reviewed local audit capture and independent offline replay/evaluation
+are added in [P12c](docs/p12c-ledger.md); owner semantic/completeness acceptance
+remains pending.
 [P12b checkpoint qualification](docs/linux-assembly.md) now has an isolated
-implementation with final-artifact ARM64 qualification passed. Actual AMD64 CI
-and remaining acceptance gates are tracked in its ledger.
+implementation merged in #42 with final-artifact ARM64 and final-head AMD64
+qualification passed. Merged-main qualification also passed; exact evidence and remaining gates
+are tracked in its ledger. [P12c](docs/p12c-design.md) adds recorded source
+qualification, atomic audit replay and opt-in authentication checkpoint evidence.
 Production detection, management API, UI and detection-to-OpenSearch integration
 remain pending.
 P06 provides local Kafka/Flink infrastructure and optional authenticated OpenSearch.

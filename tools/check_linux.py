@@ -68,14 +68,20 @@ def check(artifacts=False):
                     continue
                 if json.loads(archive.read(resource.name)) != load_json(resource):
                     raise ValueError("linux_resource_packaging_mismatch")
-            if "io/detectbridge/linux/AuthReplay.class" not in names:
+            if not {
+                "io/detectbridge/linux/AuthReplay.class",
+                "io/detectbridge/linux/AuditReplay.class",
+            } <= set(names):
                 raise ValueError("linux_auth_replay_missing")
             if archive.read("META-INF/LICENSE") != (ROOT / "LICENSE").read_bytes():
                 raise ValueError("linux_project_license_missing")
             if archive.read("META-INF/ECS-NOTICE") != (ROOT / "contracts/v1/NOTICE").read_bytes():
                 raise ValueError("linux_ecs_notice_missing")
         distribution = MODULE / "build/install/linux-adapters"
-        if not (distribution / "bin/linux-adapters").is_file():
+        if not all(
+            (distribution / "bin" / name).is_file()
+            for name in ("linux-adapters", "linux-audit-replay")
+        ):
             raise ValueError("linux_auth_runner_missing")
         for target, original in (
             ("LICENSE", ROOT / "LICENSE"),

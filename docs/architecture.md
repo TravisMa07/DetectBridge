@@ -196,3 +196,10 @@ runtime/destination bindings. It preserves ADR 0004 at-least-once output and doe
 not implement P13. See [ADR 0012](decisions/0012-linux-assembly-qualification.md),
 [runbook](linux-assembly.md) and [qualification ledger](p12b-ledger.md) for exact
 acceptance status; implementation alone does not establish runtime qualification.
+
+P12c adds controlled recorded-source qualification and a non-resumable atomic
+offline audit replay command under existing A02/A03/A06 boundaries. The audit lab
+uses a separate emulated guest kernel; host audit state is untouched. Original
+evidence remains local, completeness expectations remain independent, P03/source
+snapshots and persisted runtime bindings remain unchanged, and no P13/archive
+service is introduced. See the [design](p12c-design.md) and [ledger](p12c-ledger.md).

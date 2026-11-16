@@ -235,3 +235,67 @@ known successful execution action, exact complete record membership and independ
 reviewed args/PATH counts. Existing excerpts remain skipped unless such provenance
 is substantiated. Full P12 still requires P12a, separately authorized P12b and both
 reviewed recorded acceptance gates; it does not unlock P13 here.
+
+## P12c reviewed audit recording and atomic offline replay
+
+The [P12c ledger](p12c-ledger.md) records a real, bounded, locally reviewed native
+audit capture. Its [catalog](../catalog/recordings/linux-audit-execve-lab-v1.json)
+pins original auditd output, complete guest serial, guest boot/container identity,
+zero-loss observations, source membership and local-use license provenance.
+Original action expectations precede capture; per-record/group expectations precede
+adapter/evaluator replay. Owner semantic/completeness acceptance is still pending.
+
+The guest is a separate emulated kernel inside an unprivileged networkless
+container. No host audit capabilities/devices/bind mounts are used. Building the
+lab image is explicit; running capture requires an immutable image ID and a new
+empty directory. New capture bytes require a new reviewed catalog, not automatic
+promotion or an overwrite of this recording. Original payloads and guest/image
+binaries must remain ignored. Primary sources and hashes are in its reference
+review; exact binaries, package versions and notices are retained locally.
+
+```sh
+docker build -t detectbridge-p12-audit-lab:pinned packages/linux-adapters/audit-recording
+uv run --locked python packages/linux-adapters/audit-recording/capture.py \
+  sha256:REVIEWED_IMMUTABLE_IMAGE_ID .cache/NEW_AUDIT_CAPTURE
+```
+
+To qualify the existing reviewed originals, build with `tools/dev.py linux`, then
+prepare exact retained raw/context inputs and copy a compiled plan to an immutable
+local frozen-plan path before replay. Example for the positive probe rule:
+
+```sh
+uv run --locked python tools/linux_assembly_audit_recording.py \
+  .cache/p12-audit-reviewed-v1 --prepare .cache/p12-audit-reviewed-v1/input.ndjson
+cp .cache/linux-adapters/plans/audit-probe-match.json \
+  .cache/p12-audit-reviewed-v1/frozen-audit-probe-match.json
+JAVA_HOME="$PWD/.cache/jdk" packages/linux-adapters/build/install/linux-adapters/bin/linux-audit-replay \
+  .cache/p12-audit-reviewed-v1/input.ndjson .cache/p12-audit-reviewed-v1/output.ndjson \
+  .cache/p12-audit-reviewed-v1/frozen-audit-probe-match.json
+uv run --locked python tools/linux_assembly_audit_recording.py \
+  .cache/p12-audit-reviewed-v1 --input .cache/p12-audit-reviewed-v1/input.ndjson \
+  --output .cache/p12-audit-reviewed-v1/output.ndjson \
+  --plan .cache/p12-audit-reviewed-v1/frozen-audit-probe-match.json --rule audit-probe-match
+```
+
+Repeat with separately frozen image-nonmatch and command-blocked plans. Never
+replace a reviewed frozen plan merely because compilation was rerun. The verifier
+checks original YAML/revision, independent literal predicate, source/mapping
+snapshots, bundle digest, exact counts/matches/diagnostics and input attribution.
+For the unsupported CommandLine rule, configuration blocking precedes source-quality
+skipping under existing P10 semantics; source quality remains explicitly skipped.
+
+`linux-audit-replay INPUT OUTPUT PLAN` accepts bounded inline raw/context NDJSON.
+It uses prepared transitions, a fixed offline clock and explicit dataset_end for
+all admitted runs. It does not model processing-time timeout replay. It writes a
+temporary file, forces it and atomically replaces OUTPUT only after successful
+complete processing; malformed input, reference resolution requests, exhausted
+state limits or evaluation/publication failures leave prior output intact. Output
+must differ from both input and plan, including existing symlink/hardlink aliases.
+It is non-resumable offline qualification, not a Commit API store or archive.
+
+Each local output row has version=1.0.0 and kind=input/event/manifest/preservation.
+Input rows retain raw and context unchanged; other rows contain document, and only
+event rows contain a separate P10 evaluation. Every original input occurrence is
+retained, even when adapter redelivery deduplicates its semantic output. This is
+an owning-command format, not a new P03/P13 wire contract. P03 events and separate
+module manifest/preservation/P10 result contracts stay unchanged.

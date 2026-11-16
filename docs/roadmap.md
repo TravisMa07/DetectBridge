@@ -4,7 +4,9 @@ P01–P10, P11 #38 and P12a #39 are merged. The owner authorized P11/P12
 implementation after P10 completion. P11 adapters and offline qualification passed
 their PR CI; recorded host-binding evidence and owner review remain acceptance blockers. P12a
 offline core and a reviewed local authentication recording passed PR CI.
-Recorded audit acceptance, full P12b qualification and owner semantic review
+P12b #42 is merged with final-artifact ARM64/final-head AMD64 qualification.
+Merged-main qualification also passed. P12c adds selected reviewed audit evidence
+and recorded qualification; owner semantic review and Windows trusted bindings
 remain outstanding; later capabilities remain planned. See the
 [implementation ledger](implementation-ledger.md) for exact evidence and limits.
 P numbers are planning IDs, not GitHub PR numbers. Milestones require their
@@ -176,8 +178,9 @@ No application scaffolding, runtime capability claims or release tag.
 ### P12 — Linux adapters and audit assembly
 
 - Local status: P12a bounded offline core merged in #39 after AMD64 CI, with real
-  local OpenSSH9 recording qualification. Reviewed eligible audit evidence, owner
-  semantic review and P12b final qualification remain separate gates. Full P12 is
+  local OpenSSH9 recording qualification. P12c adds one reviewed local eligible
+  audit slice and atomic offline evaluation; owner semantic/completeness review
+  remains open. P12b #42 is merged with ARM64/AMD64 and merged-main evidence. Full P12 is
   incomplete.
 
 - Depends on: P04, P10.
@@ -189,8 +192,12 @@ No application scaffolding, runtime capability claims or release tag.
   incomplete groups and multiple paths are tested. Closure is not proof of
   completeness. Known-bad evidence is retained with skipped-detection reasons.
 
-P12b checkpointed qualification is implemented for review in its owning branch;
-final-artifact ARM64 qualification passed and actual AMD64 CI remains pending.
+P12b checkpointed qualification is merged in #42; final-artifact ARM64 and
+final-head AMD64 and merged-main qualification passed. The owner expanded
+[P12c](p12c-design.md) from opt-in authentication checkpoint qualification to a
+reviewed local audit capture, atomic replay and independent source/evaluator
+acceptance evidence. Its [ledger](p12c-ledger.md) tracks qualification separately
+from owner semantic review and full P12 acceptance.
 See the [ledger](p12b-ledger.md) for exact evidence and limits. Full P12 and
 P13 acceptance are not implied.
 

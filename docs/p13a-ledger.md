@@ -17,13 +17,31 @@ are retained. Exhaustive comparison supplements those oracles.
 
 ## Executed verification
 
-Qualification is in progress; final results will be appended before handback.
+The implementation is [PR #46](https://github.com/TravisMa07/DetectBridge/pull/46).
+On code commit c8f7acff76d3a4d0149331f79550c178dc01f166, local macOS ARM64:
+
+- Locked `tools/dev.py check` passed: 150 Python regressions, contracts, lint,
+  format, types, links/Markdown, reviewed dependencies and repository hygiene.
+- Locked `tools/dev.py java` passed: all existing Java consumers/artifact checks,
+  25 evaluator, 36 Windows, 42 Linux and 10 assembly tests; 20 legacy plus 20 mapped
+  independent YAML-to-Java semantic cases and 12 independent mapping cases.
+  Mapped cases compare compact counts/matches/expanded membership to exhaustive
+  results, including invalid, absent/type/negation and quality/capability cases.
+- Locked `tools/dev.py windows`, `linux` and `assembly` all passed final reruns
+  on the same code commit, including subsystem Python, packaging/notice and
+  artifact/profile/lock regressions. Heavy runtime suites were not invoked.
+
+Test logs remain ignored under `.cache/p13a-*-final.log`. Native AMD64 PR CI and
+actual Kafka/Flink deployment qualification are separate from these local results.
+No heavy Docker runtime suite or recorded-source qualification was run in P13a.
+
 Initial component tests exposed a selection-test fixture carrying its legacy
 mapping name. The attribution gate correctly rejected it; the test now explicitly
 binds its synthetic P10 mapping. No production validation was weakened.
 Initial repository check failed Ruff formatting on two edited Python files; those
 files were formatted before rerunning. A later Markdown check rejected a line
-starting with PR number syntax; it was reworded. The new actual-audit receipt-clock
+starting with PR number syntax and an extra blank line in the final documentation
+update; both were corrected before passing the documentation check. The new actual-audit receipt-clock
 regression exposed a second receipt location in the linux.context extension.
 Semantic projection now excludes that receipt while retaining the complete original
 event and manifest retrieval links. Those failed attempts are not passes.
@@ -37,3 +55,17 @@ output overflow, replay and immutable late links. Recorded originals remain loca
 and unchanged. Ordinary CI has no implied access to them. No source-to-search,
 Kafka sink recovery, runtime memory/throughput, archive or release claim follows
 from these component/offline tests. P13b and P13c retain every full milestone gate.
+
+## Exact local artifacts
+
+Built on code commit c8f7acf with strict dependency verification and existing locks:
+
+| Artifact | SHA-256 |
+| --- | --- |
+| evaluator.jar | `00e3200d4ca99242985f9394f28fbcbc246b9b18307c2ab3d552a75e0e734ec9` |
+| windows-adapters.jar | `788c039e122c0fbadcc4b3d63b53dc1c74b68b7a9c689c836095784a16a5f1c6` |
+| linux-adapters.jar | `4fe031cb74e56b87740042b4908629608f43758ebb1da20ab883c8ac9e8b7294` |
+
+These identify offline implementation artifacts, not a qualified P13 deployment.
+The final documentation commit does not change production code; its CI state is
+reported in the PR. Owner review/merge and full P13 acceptance remain separate.

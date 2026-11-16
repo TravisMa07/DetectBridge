@@ -86,7 +86,18 @@ class Oracle:
         return event_id
 
     def group(self, rows, closure="source_boundary", findings=None):
-        manifest = self.native.group(rows, closure, findings or [])
+        execution = (
+            None
+            if findings
+            else dict(
+                executable="/usr/bin/whoami",
+                args=["whoami", "", "whoami"],
+                pid=42,
+                cwd="/tmp",
+                paths=[dict(item=0, name="/usr/bin/whoami"), dict(item=1, name="/lib/ld.so")],
+            )
+        )
+        manifest = self.native.group(rows, closure, findings or [], execution=execution)
         self.events[(rows[0]["context"]["run_id"], manifest["event_id"])] = dict(
             rows=copy.deepcopy(rows),
             scenario="audit_skipped" if findings else "audit",

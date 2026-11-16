@@ -31,7 +31,7 @@ public final class IntegrationPublisher {
     int c;
     while ((c = System.in.read()) != -1) {
       if (c == '\n') return bytes.toByteArray();
-      if (bytes.size() >= 2 * Json.MAX_VALUE) throw new IllegalArgumentException("ipc_limit");
+      if (bytes.size() >= 4 * Json.MAX_VALUE) throw new IllegalArgumentException("ipc_limit");
       bytes.write(c);
     }
     return bytes.size() == 0 ? null : bytes.toByteArray();
@@ -47,7 +47,7 @@ public final class IntegrationPublisher {
         byte[] key = input.get("key").isNull() ? null : DECODE.decode(input.get("key").asString());
         byte[] value =
             input.get("value").isNull() ? null : DECODE.decode(input.get("value").asString());
-        if ((value != null && value.length > Json.MAX_VALUE) || (key != null && key.length > 1024))
+        if ((value != null && value.length > 2 * Json.MAX_VALUE) || (key != null && key.length > 1024))
           throw new IllegalArgumentException("value_limit");
         var meta = producer.send(new ProducerRecord<>(topic, key, value)).get(35, TimeUnit.SECONDS);
         emit(

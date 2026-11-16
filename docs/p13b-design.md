@@ -59,7 +59,10 @@ committing its assembler state, input receipt and all derived output intents.
 At most 100 detections, one tagged event, three compact diagnostics, one manifest
 and one receipt (106 documents) fit an empty outbox; complete integration <=16 MiB
 plus <=1 MiB manifest/receipt fits the byte cap. Individual output <=2 MiB.
-Kafka topic/producer message limits are 4 MiB, including envelope/header headroom.
+Kafka input-topic limit is 2 MiB, matching the wire budget; output topics and
+producer requests allow 4 MiB, including envelope/header headroom. JSON frames
+larger than 1 MiB but within the input-topic bound become durable quarantine;
+the private publisher admits bounded invalid frames for real consumer testing.
 A proposal larger than an empty queue fails with visible backlog; a partially full
 queue defers it without committing state or consuming input. Nothing is truncated.
 

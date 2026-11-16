@@ -48,6 +48,12 @@ public final class IntegrationBroker {
           "max.message.bytes",
           "4194304");
 
+  /** Input cannot exceed the checkpoint wire budget; larger derived outputs have separate headroom. */
+  public static Map<String,String> settings(String name) {
+    Map<String,String> result = new LinkedHashMap<>(TOPIC_CONFIG);
+    if (name.equals(INPUT)) result.put("max.message.bytes", "2097152");
+    return Map.copyOf(result);
+  }
   private IntegrationBroker() {}
 
   public static Properties properties(String bootstrap) {
@@ -87,7 +93,7 @@ public final class IntegrationBroker {
         List<NewTopic> topics = new ArrayList<>();
         for (String name : topicNames)
           if (!existing.contains(name))
-            topics.add(new NewTopic(name, 1, (short) 1).configs(TOPIC_CONFIG));
+            topics.add(new NewTopic(name, 1, (short) 1).configs(settings(name)));
         if (!topics.isEmpty()) admin.createTopics(topics).all().get(15, TimeUnit.SECONDS);
       }
       var descriptions = admin.describeTopics(topicNames).allTopicNames().get(15, TimeUnit.SECONDS);
@@ -100,7 +106,7 @@ public final class IntegrationBroker {
         var config =
             admin.describeConfigs(List.of(resource)).all().get(15, TimeUnit.SECONDS).get(resource);
         Map<String, String> settings = new LinkedHashMap<>();
-        for (var entry : TOPIC_CONFIG.entrySet()) {
+        for (var entry : settings(name).entrySet()) {
           ConfigEntry actual = config.get(entry.getKey());
           if (actual == null || !entry.getValue().equals(actual.value()))
             throw new IllegalStateException("topic_config_mismatch");

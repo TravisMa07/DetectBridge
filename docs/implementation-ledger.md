@@ -229,3 +229,15 @@ offline producers/verification consumers. Legacy result APIs remain compatible.
 [P13a ledger](p13a-ledger.md) records actual checks and limits. Production P13b
 wiring, P13c search, complete source-to-search/recovery qualification, owner review,
 merge and release remain separate. No checkpoint or P08 index is adopted/changed.
+
+## P13b integrated runtime
+
+P13a #46 is owner-merged as e09c271; exact PR-head and merged-main 43954609201
+passed every applicable job. The [P13b design](p13b-design.md) and literal counts
+were committed before implementation. The isolated Kafka/Flink job uses actual
+Windows/Linux adapters, P12 prepared transitions and compact attributed evaluation
+before committing bounded output intents. New topics/groups/checkpoint bindings
+and the explicit runtime output profile preserve existing P07–P12 deployments.
+[Qualification](p13b-ledger.md) records actual source, restart, producer rejection,
+checkpoint and replay evidence, failures and exact artifacts. P13c search/full P13
+recorded source-to-search acceptance, owner merge and release remain separate.

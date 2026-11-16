@@ -72,3 +72,28 @@ original member/event/input reference, a completed idle prefix before each fault
 and an expired audit group's closure by the first restored checkpoint. Inventories
 carry bounded IDs/hashes and admission/deadline metadata, never evidence bodies.
 The following qualification uses a newly frozen artifact with those observations.
+
+An ingress review aligned the input topic's message limit with the 2 MiB internal
+wire bound while retaining 4 MiB output headroom. This prevents Kafka accepting a
+value beyond the bounded wire's capacity under the managed topic policy. The
+actual runtime suite includes an acknowledged frame just over the 1 MiB JSON
+limit and requires original-hash/location quarantine rather than an event, loss
+or indefinite retry. This uses a newly frozen final artifact.
+
+## Completed intermediate ARM64 runtime qualification
+
+Code a50a687, project detectbridge-p13-test-73035eefc646: actual source/evaluation,
+TaskManager, explicit/incompatible restore, JobManager, 40-second broker pause,
+expired deadline at the first restored checkpoint and all seven required sinks
+passed. There were 43 accepted inputs, 20 logical events, 102 logical documents
+and 144 physical outputs; duplicates retained identical canonical bytes/IDs.
+Blocked original-source intents were confirmed in completed checkpoints 38/45/52/
+59/66/73/81 for tagged/detection/processing/manifest/preservation/quarantine/receipt.
+Every original input was retrieved and rehashed. Metrics and payload-log isolation
+passed. Only that owned stack/volumes were removed; original ledgers remain local.
+
+Bundle `c7428de22979df1df05c696e6d7a433aecd3e424c36662091fa25464faaac4d4`,
+JAR `25df4e83ff99bcb12fcb0269d8a8ace2f852f6cb9ca861a8680fff379cbb92b7`,
+image `sha256:44677f5d93eca4ec405b4f5c075db38df0e8effb4404a01314b557f1a0ef0437`.
+This is intermediate evidence, superseded by final ingress-bound artifact checks
+below; it is not silently attributed to later code/artifacts.

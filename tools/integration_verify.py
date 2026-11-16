@@ -181,7 +181,15 @@ def verify():
             unsupported_replay = copy.deepcopy(unsupported)
             unsupported_replay["context"]["run_id"] = run2
             oracle.preservation(unsupported_replay, "unsupported_source")
-            send([unsupported, unsupported_replay, b"private-body-sentinel", None])
+            send(
+                [
+                    unsupported,
+                    unsupported_replay,
+                    b"private-body-sentinel",
+                    None,
+                    b"x" * (1048576 + 1),
+                ]
+            )
             wait_outputs(test, oracle)
             stage("explicit_restore_incompatible_binding_jobmanager_restart")
             checkpoint = test.wait_checkpoint(job["job_id"])

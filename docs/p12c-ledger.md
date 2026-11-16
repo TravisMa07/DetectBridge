@@ -150,3 +150,17 @@ Locked diagnostic-head repository check passed with 145 Python tests, lint/forma
 types, source/contracts/catalog/deployment/inventory checks, hygiene and secrets.
 The existing 39 Linux Java cases and combined semantic/component checks remain
 passed; this follow-up changes qualification diagnostics/verification only.
+
+## Observation metadata correction
+
+Independent review found the original capture script labelled capture-start time
+as first_observed, preceding later generated source events. Original capture
+manifest, capture source, serial/native bytes and their hashes remain unchanged.
+The catalog now records audit-recording-context/1.1.0 and the exact correction:
+prepared envelope first_observed uses the original manifest's completed timestamp,
+a conservative observation of the complete batch. Exact per-row observation times
+are unavailable. This is not a fabricated per-message receipt or source-time change.
+Future capture code records capture_started separately and observation after capture.
+The original capture script remains bound to its original revision/hash; current
+capture code is not silently attributed to historical bytes. Corrected prepared
+inputs/results are qualified separately below; old output snapshots remain local.

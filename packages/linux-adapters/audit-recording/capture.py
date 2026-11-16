@@ -112,7 +112,8 @@ def capture(image, destination):
             status="unreviewed-capture",
             image_id=image,
             container_id=container,
-            first_observed=started,
+            capture_started=started,
+            first_observed=datetime.now(UTC).isoformat().replace("+00:00", "Z"),
             completed=datetime.now(UTC).isoformat().replace("+00:00", "Z"),
             artifacts=[
                 dict(

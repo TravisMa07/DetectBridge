@@ -73,7 +73,6 @@ def artifacts(catalog, directory):
         <= names
     )
     for name in (
-        "capture.py",
         "Dockerfile",
         "guest-init",
         "build-initramfs.py",
@@ -82,7 +81,14 @@ def artifacts(catalog, directory):
     ):
         require((directory / name).read_bytes() == (HERE / name).read_bytes())
     a = catalog["acquisition"]
-    require(sha((ROOT / a["capture_path"]).read_bytes()) == a["capture_sha256"])
+    # Historical capture source is pinned by the reviewed catalog and original
+    # artifact; newer capture tooling must not rewrite that provenance.
+    require(sha((directory / "capture.py").read_bytes()) == a["capture_sha256"])
+    captured = json.loads((directory / "capture-manifest.json").read_bytes())
+    require(catalog["processing_metadata"]["version"] == "1.1.0")
+    correction = catalog["processing_metadata"]["correction"]
+    require(correction["original_value"] == captured["first_observed"])
+    require(a["first_observed"] == correction["corrected_value"] == captured["completed"])
     expected = catalog["independent_expectations"]
     require(sha((ROOT / expected["path"]).read_bytes()) == expected["sha256"])
     extracted = capture_module().extract((directory / "guest.serial").read_bytes())

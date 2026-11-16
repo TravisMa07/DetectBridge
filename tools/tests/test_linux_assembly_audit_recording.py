@@ -12,6 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from linux_assembly_audit_recording import (
     capture_module,
     expected_documents,
+    observation,
     sha,
     status,
     verify_evaluation,
@@ -37,6 +38,25 @@ class AuditEvidenceTests(unittest.TestCase):
         ):
             with self.assertRaises(ValueError):
                 module.extract(changed)
+
+    def test_batch_observation_uses_retained_completion_without_rewriting_original_metadata(self):
+        captured = dict(first_observed="2026-01-01T00:00:00Z", completed="2026-01-01T00:00:05Z")
+        catalog = dict(
+            acquisition=dict(first_observed=captured["completed"]),
+            processing_metadata=dict(
+                version="1.1.0",
+                correction=dict(
+                    original_value=captured["first_observed"], corrected_value=captured["completed"]
+                ),
+            ),
+        )
+        observation(catalog, captured)
+        self.assertEqual(captured["first_observed"], "2026-01-01T00:00:00Z")
+        for incorrect in (captured["first_observed"], "2026-01-01T00:00:04Z"):
+            changed = copy.deepcopy(catalog)
+            changed["acquisition"]["first_observed"] = incorrect
+            with self.assertRaises(StackError):
+                observation(changed, captured)
 
     def test_loss_or_unavailable_daemon_cannot_be_called_complete(self):
         original = b"enabled 1\npid 86\nlost 0\nbacklog 0\nbacklog_limit 8192\nrate_limit 0\n"

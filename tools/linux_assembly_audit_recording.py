@@ -16,7 +16,7 @@ from linux_assembly_verify import manifest, member, require
 
 CATALOG = ROOT / "catalog/recordings/linux-audit-execve-lab-v1.json"
 HERE = ROOT / "packages/linux-adapters/audit-recording"
-RUN = "00000000-0000-4000-8000-000000000013"
+RUN = "00000000-0000-4000-8000-000000000014"
 
 
 def sha(data):
@@ -43,6 +43,21 @@ def status(data):
     require(result["lost"] == result["backlog"] == result["rate_limit"] == 0)
     require(result["backlog_limit"] == 8192)
     return result
+
+
+def observation(catalog, captured):
+    require(catalog["processing_metadata"]["version"] == "1.1.0")
+    correction = catalog["processing_metadata"]["correction"]
+    require(correction["original_value"] == captured["first_observed"])
+    require(
+        catalog["acquisition"]["first_observed"]
+        == correction["corrected_value"]
+        == captured["completed"]
+    )
+    require(
+        datetime.fromisoformat(captured["completed"])
+        >= datetime.fromisoformat(captured["first_observed"])
+    )
 
 
 def artifacts(catalog, directory):
@@ -85,10 +100,7 @@ def artifacts(catalog, directory):
     # artifact; newer capture tooling must not rewrite that provenance.
     require(sha((directory / "capture.py").read_bytes()) == a["capture_sha256"])
     captured = json.loads((directory / "capture-manifest.json").read_bytes())
-    require(catalog["processing_metadata"]["version"] == "1.1.0")
-    correction = catalog["processing_metadata"]["correction"]
-    require(correction["original_value"] == captured["first_observed"])
-    require(a["first_observed"] == correction["corrected_value"] == captured["completed"])
+    observation(catalog, captured)
     expected = catalog["independent_expectations"]
     require(sha((ROOT / expected["path"]).read_bytes()) == expected["sha256"])
     extracted = capture_module().extract((directory / "guest.serial").read_bytes())

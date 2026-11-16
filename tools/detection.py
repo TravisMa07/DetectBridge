@@ -67,6 +67,12 @@ def failure_category(error):
         }
         if category in known:
             return category
+        if re.fullmatch(
+            r"command_failed_broker_(?:init|describe|read|publish|inject|group_offset|sink_policy)"
+            r"(?:_(?:TimeoutException|IllegalArgumentException|IllegalStateException))?",
+            category,
+        ):
+            return category
         command = re.fullmatch(
             r"command_failed(?:_(?:job_submission|checkpoint_metadata|internal_http|topic_configuration))?_exit_([0-9]{1,3})",
             category,

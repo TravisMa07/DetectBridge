@@ -88,13 +88,31 @@ def run(args, *, env=None, data=None, timeout=120, check=True):
                 if setup_failure
                 else "command_failed"
             )
-            if (
-                not daemon_error
-                and not setup_failure
-                and "io.detectbridge.transport.Publisher" in command
-            ):
-                operation = command[command.index("io.detectbridge.transport.Publisher") + 2]
-                if operation in ("init", "describe", "read", "publish", "inject", "group-offset"):
+            publisher = next(
+                (
+                    name
+                    for name in (
+                        "io.detectbridge.transport.Publisher",
+                        "io.detectbridge.detection.DetectionPublisher",
+                        "io.detectbridge.detection.DetectionV2Publisher",
+                        "io.detectbridge.assembly.AssemblyPublisher",
+                    )
+                    if name in command
+                ),
+                None,
+            )
+            if not daemon_error and not setup_failure and publisher is not None:
+                operation_index = command.index(publisher) + 2
+                operation = command[operation_index] if operation_index < len(command) else ""
+                if operation in (
+                    "init",
+                    "describe",
+                    "read",
+                    "publish",
+                    "inject",
+                    "group-offset",
+                    "sink-policy",
+                ):
                     category += "_broker_" + operation.replace("-", "_")
                 try:
                     detail = json.loads(result.stdout.splitlines()[-1])

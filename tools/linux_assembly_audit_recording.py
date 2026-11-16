@@ -257,8 +257,30 @@ def verify_event(catalog, group, rows, event):
         )
     )
     require(event["@timestamp"] == db["time"]["source_utc"])
-    require(db["quality"]["eligibility"] == ("eligible" if eligible else "skipped"))
-    require(db["quality"]["integrity"] == ("sufficient" if eligible else "insufficient"))
+    quality_diagnostics = [] if eligible else [dict(code="assembly_insufficient", field="")]
+    if any(finding.startswith("unsupported_") for finding in group["findings"]):
+        quality_diagnostics.append(dict(code="unsupported_source", field=""))
+    require(
+        db["quality"]
+        == dict(
+            eligibility="eligible" if eligible else "skipped",
+            integrity="sufficient" if eligible else "insufficient",
+            diagnostics=quality_diagnostics,
+        )
+    )
+    require(
+        db["assembly"]
+        == dict(
+            mode="assembled",
+            closure=group["closure"],
+            quality="source_indicated" if eligible else "known_missing",
+            assembler_version="1.0.0",
+        )
+    )
+    require(
+        event["event"]["provider"] == "auditd"
+        and event["event"]["dataset"] == ctx["source_contract"]["id"]
+    )
     require(
         db["extensions"]["linux.context"]
         == dict(

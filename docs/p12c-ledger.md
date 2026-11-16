@@ -112,3 +112,41 @@ Windows trusted recorded host bindings, owner independent-expectation/completene
 review, PR AMD64 qualification and separate owner merge authorization remain open.
 The selected local audit recording does not establish general corpus coverage,
 throughput, production source wiring, archive durability or P13 readiness.
+
+## Final-package qualification investigation
+
+P12c's packaged ARM64 artifact is bundle
+`5961fc44ac1548b52c59874f353a733672b4a49bb8b039e3d224f6e5d5de0c9d`, JAR
+`364a342363e51c04b1e0af41bd61442eb2df8bc9daccfd2cc20731ffd4364745`, image
+`sha256:8657fd0209075125403843931cd3dbcd83c750541b54d70a46b269f13028ad75`.
+No source parser, mapping snapshot or checkpoint semantics changed; the new offline
+runner is included in packaging, so old artifact evidence is not silently reused.
+
+The first full final-package ARM64 run in project
+`detectbridge-p12-test-6260dc2fe497` failed during required-output fault setup at
+linux_assembly.py:695/fault:308/helper_run:200/stack.run:118 with command_failed.
+Checkpoint/binding/TaskManager/JobManager phases, actual broker-pause recovery and
+the event-sink fault/restore preceded this failure; none makes the full run a pass.
+The failure occurred while configuring the manifest-sink fault, before its input
+was injected. Resource profiles did not run. Exact cause remains unclassified;
+original ledgers/report are retained, and owned stacks/volumes were removed.
+
+A focused, separate project `detectbridge-p12-probe-4622fcc580bd` completed 60
+read-back-verified sink-policy changes across all five output kinds without
+reproducing the failure. This is administrative probe evidence only, not recovery
+qualification or a reason to waive the failed run. No mutation was retried.
+
+Shared diagnostics now recognize assembly/detection publishers, retain sanitized
+operation/exception types, and preserve an owned helper's body-free exit/OOM/state
+observation before cleanup. Reports retain redacted trace locations and completed
+checkpoint inventories where available. Regressions verify no raw body disclosure,
+mutation retry or conversion of failure to success. A fresh full diagnostic run is
+in progress with all producer-rejection/checkpoint/accounting assertions unchanged.
+
+A seventh actual-recording tamper probe also rejects changed source-quality
+diagnostics. Source-quality and closure fields are now checked as complete objects.
+
+Locked diagnostic-head repository check passed with 145 Python tests, lint/format,
+types, source/contracts/catalog/deployment/inventory checks, hygiene and secrets.
+The existing 39 Linux Java cases and combined semantic/component checks remain
+passed; this follow-up changes qualification diagnostics/verification only.

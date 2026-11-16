@@ -188,7 +188,7 @@ def qualify(directory):
                     for frame in traceback.extract_tb(error.__traceback__)[-4:]
                 ],
             )
-            if re.fullmatch(r"[a-z0-9_]+", str(error)):
+            if re.fullmatch(r"[A-Za-z0-9_]+", str(error)):
                 diagnostic["category"] = str(error)
             try:
                 current = test.latest_job()

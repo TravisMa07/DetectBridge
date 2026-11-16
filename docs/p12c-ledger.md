@@ -1,5 +1,11 @@
 # P12c recorded source acceptance evidence
 
+Current status: implementation and final-artifact local ARM64 qualification passed;
+[draft PR #43](https://github.com/TravisMa07/DetectBridge/pull/43) is unmerged.
+Actual final-head AMD64 qualification, owner semantic/completeness review and
+trusted Windows recorded host bindings remain separate gates. Earlier failures
+and superseded observation metadata are retained below, not counted as passes.
+
 Branch: feat/p12c-recorded-source-evidence, based on merged P12b e2d06c3.
 Owner requested continued roadmap implementation beyond the initial small auth
 qualification slice. [Design](p12c-design.md) records the expanded audit scope.
@@ -175,3 +181,56 @@ qualification-context-1.1.log/json in the same ignored recording directory.
 Locked repository checks passed with 146 Python tests, lint/format/types, contracts,
 inventories, hygiene and secrets; seventeen owning recording/assembly regressions
 pass. The frozen rule bundles and original telemetry hashes did not change.
+
+## Successful final-artifact ARM64 suite
+
+The fresh diagnostic run passed on the same immutable P12c artifact above, with
+no assertion relaxation or mutation retry. Default project
+`detectbridge-p12-test-45fc12277c40` accounted for all 52 inputs, ten audit groups,
+83 logical documents and 93 physical rows including ten byte-identical recovery
+duplicates. Exact source/member/evidence/context/scope/quality, registered ranges,
+immutable late links, actual TaskManager/checkpoint/JobManager recovery and strict
+incompatible-binding rejection passed. Completed checkpoint 43 retained the group
+through an actual 40-second broker pause and preserved its original deadline.
+Actual RecordTooLarge event/manifest/diagnostic/quarantine/receipt failures retained
+blocked intents in independently confirmed completed checkpoints 51/57/62/67/72;
+healthy restored sinks drained the required outputs. Metrics/value-free logs passed.
+
+Both profiles passed on that artifact: `detectbridge-p12-limits-1f501fbcef71`
+qualified four closures and closed-budget rejection retaining original Kafka offset
+8; `detectbridge-p12-bytes-d87b5ad051b5` qualified two closures under serialized
+pending-byte pressure. All three owned stacks and volumes were removed. Original
+input/expectation ledgers and `.cache/p12c-diagnostic-assembly-qualification.log`,
+per-project reports and aggregate `.cache/linux-assembly-reports/qualification.json`
+remain ignored. The report's baseline_main_run=43750911904 is the historical P12b
+baseline reference, not a claim about P12c merged-main CI; the inspected current
+base is e2d06c3 with successful repository run 43804124770.
+
+The first final-package run's administrative manifest-fault setup failure remains
+unclassified and separately recorded above. Neither this fresh pass nor the
+60-change administrative probe is used to invent its cause or call it flaky.
+
+## Final-artifact recorded authentication
+
+`detectbridge-p12-recorded-71f48c040ef3` qualified the original reviewed OpenSSH9
+recording on the same final P12c bundle 5961fc44 / JAR 364a3423. All 22 admissions
+(11 originals plus isolated replay) produced four eligible events, 18 exact
+unsupported preservation documents and 44 logical outputs. There were 77 physical
+rows, including 33 byte-identical at-least-once duplicates. Actual RecordTooLarge
+event rejection retained original event/member/evidence attribution in independently
+confirmed completed checkpoint 2. Explicit healthy-sink restore and separate
+replay run ebdac370-15d5-4304-baf7-0febc5ac5d64 drained all required outputs.
+
+Original source bytes, host/generation/context, all per-record fields and quality,
+receipts, runtime/destination binding and logical/physical accounting passed.
+The original recording was read from the P12a checkout's ignored cache, not
+recaptured, published or made available to ordinary CI. Its catalog digest is
+97ae15e085dfe40c5e5687ecc6a69a34be9af899089259489bb8575d60d168f7.
+Owned stack and volumes were removed. Final log is
+`.cache/p12c-final-package-recorded-qualification.log`; report and original input/
+expectation/checkpoint observations are in the ignored project paths. No later
+runtime Java code or artifact changes followed this qualification.
+
+All local acceptance checks are recorded above. PR-head AMD64 status must be read
+from the actual final head; earlier/head/base CI passes are not silently attributed
+to it. Owner review packet and separate merge authorization remain open.

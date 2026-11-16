@@ -13,7 +13,7 @@ and integration history is recorded below.
 | P11 | Windows child; orchestrator integration | `df31448`; `feat/p11-windows-adapters`; `/Users/travisma/.t3/worktrees/DetectBridge/t3-689cf405-5fa25cc439f21f05` | P10 merged; owner authorized dependent work | Merged in #38 as `46fb080`; recorded trusted host bindings and owner acceptance remain blocked |
 | P12a | Linux child | `df31448`; isolated P12a worktree; merged branch | P10 merged; owner authorized dependent work | Merged in #39 as `9ea1c68`; reviewed local OpenSSH9 slice passed; audit provenance and owner review remain open |
 | P12b | Main orchestrator | `9ea1c68`; `feat/p12b-linux-qualification` | P12a merged | Merged in #42 as `e2d06c3`; final ARM64/AMD64 and merged-main qualification passed |
-| P12c | Main orchestrator | `e2d06c3`; `feat/p12c-recorded-source-evidence` | P12b merged + reviewed local auth originals | Reviewed local audit + atomic offline replay and auth checkpoint qualification implemented; final qualification/review pending |
+| P12c | Main orchestrator | `e2d06c3`; `feat/p12c-recorded-source-evidence` | P12b merged + reviewed local auth originals | Implemented in draft #43; corrected audit offline and final-artifact ARM64 full/auth qualification passed; PR-head CI/owner review pending |
 | P13 | Unassigned | Not created | P08 + complete P11/P12 | Blocked |
 
 Shared ownership: orchestrator owns contracts/readers, Gradle registration,
@@ -182,3 +182,9 @@ now has pinned local-use provenance, trusted guest/boot bindings and independent
 reviewed membership. Atomic audit replay and three real compiler/evaluator cases
 passed on all 30 original rows. The [P12c ledger](p12c-ledger.md) preserves exact
 artifacts, failures, runtime qualification and remaining owner/Windows gates.
+
+P12c final local evidence passed: corrected audit context/1.1.0 across all three
+frozen rule cases, 146 Python regressions, combined Java/semantic consumers, full
+ARM64 assembly/five-sink/broker/recovery and both resource profiles, plus final-
+artifact real auth checkpoint restore and isolated replay. Draft #43 remains
+unmerged. Exact artifact IDs, failed attempts and remaining gates are in its ledger.

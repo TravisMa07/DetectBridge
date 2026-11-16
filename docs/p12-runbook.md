@@ -285,6 +285,7 @@ For the unsupported CommandLine rule, configuration blocking precedes source-qua
 skipping under existing P10 semantics; source quality remains explicitly skipped.
 
 `linux-audit-replay INPUT OUTPUT PLAN` accepts bounded inline raw/context NDJSON.
+Its row bound is 1 MiB including raw/context, with at most 16 admitted run IDs.
 It uses prepared transitions, a fixed offline clock and explicit dataset_end for
 all admitted runs. It does not model processing-time timeout replay. It writes a
 temporary file, forces it and atomically replaces OUTPUT only after successful
@@ -306,3 +307,8 @@ completion time as conservative complete-batch observation, not an invented per-
 receipt. Original source/manifest bytes and source-time fields remain unchanged.
 Corrected processing uses a separate run ID ending 0014; old 0013 output snapshots
 remain local and are not silently overwritten or adopted as corrected evidence.
+
+The optional audit lab image currently targets linux/arm64 and this one controlled
+AArch64 recording. It is not built by ordinary CI. Kafka/Flink runtime portability
+and PR AMD64 checks remain separate; this local capture does not establish an
+AMD64 lab build or general recorded-corpus coverage.

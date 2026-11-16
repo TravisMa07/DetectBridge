@@ -1,6 +1,10 @@
 # P12c owner review packet
 
-Review is pending. Passing checks or merging another PR does not fill these items.
+Historical packet: PR #43 subsequently recorded owner semantic/completeness
+approval and merge authorization explicitly in its checked description, then merged
+as c024497. The original per-item checklist below is retained as review context,
+not a new pending approval request. See the [P13 audit](p13-handoff.md) for current
+merged-main and Windows readiness. Passing checks alone did not supply approval.
 Implementation/local evidence is recorded separately in the [ledger](p12c-ledger.md).
 
 - [ ] Review [independent action expectations](../packages/linux-adapters/audit-recording/expectations.json)

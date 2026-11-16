@@ -23,8 +23,9 @@ recorded preservation accounting; trusted recorded host bindings remain unavaila
 [P12a Linux adapters](docs/p12-runbook.md) are merged and provide offline audit assembly
 and selected authentication parsing, with a small real reviewed local OpenSSH9
 recording. A selected reviewed local audit capture and independent offline replay/evaluation
-are added in [P12c](docs/p12c-ledger.md); owner semantic/completeness acceptance
-remains pending.
+are merged in [P12c #43](https://github.com/TravisMa07/DetectBridge/pull/43).
+Its owner semantic/completeness approval is recorded in the PR description;
+merged-main qualification remains a separate gate.
 [P12b checkpoint qualification](docs/linux-assembly.md) now has an isolated
 implementation merged in #42 with final-artifact ARM64 and final-head AMD64
 qualification passed. Merged-main qualification also passed; exact evidence and remaining gates
@@ -72,6 +73,7 @@ caps are planned; finite operational limits are still required.
 - [OpenSearch metadata writer](docs/writer.md)
 - [SDLC and review policy](docs/sdlc.md)
 - [Milestones, PR ownership, and acceptance gates](docs/roadmap.md)
+- [P13 orchestrator handoff and prerequisite audit](docs/p13-handoff.md)
 - [Release and recovery policy](docs/releases.md)
 - [Development and contribution guide](CONTRIBUTING.md)
 - [Security reporting](SECURITY.md)

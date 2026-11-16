@@ -5,9 +5,10 @@ implementation after P10 completion. P11 adapters and offline qualification pass
 their PR CI; recorded host-binding evidence and owner review remain acceptance blockers. P12a
 offline core and a reviewed local authentication recording passed PR CI.
 P12b #42 is merged with final-artifact ARM64/final-head AMD64 qualification.
-Merged-main qualification also passed. P12c adds selected reviewed audit evidence
-and recorded qualification; owner semantic review and Windows trusted bindings
-remain outstanding; later capabilities remain planned. See the
+P12b merged-main qualification also passed. P12c #43 merged as c024497 with
+explicit owner semantic/completeness approval recorded in its description; its
+merged-main qualification is tracked separately. Windows trusted bindings and
+P11 acceptance remain outstanding; later capabilities remain planned. See the
 [implementation ledger](implementation-ledger.md) for exact evidence and limits.
 P numbers are planning IDs, not GitHub PR numbers. Milestones require their
 acceptance evidence and authorized merges; documentation alone does not complete
@@ -180,9 +181,11 @@ No application scaffolding, runtime capability claims or release tag.
 - Local status: P12a bounded offline core merged in #39 after AMD64 CI, with real
   local OpenSSH9 recording qualification. P12c adds one reviewed local eligible
   audit slice, offline evaluation and real audit/auth checkpoint recovery; bounded
-  implementation/local evidence is complete. Owner semantic/completeness review
-  remains open. P12b #42 is merged with ARM64/AMD64 and merged-main evidence.
-  P12 acceptance/integration is incomplete; see the [acceptance map](p12-acceptance.md).
+  implementation/local evidence is complete. P12c #43 merged as c024497 with
+  owner semantic/completeness approval explicitly recorded in the PR description.
+  Its merged-main qualification was running at the P13 handoff audit. P12b #42
+  already has ARM64/AMD64 and merged-main evidence; see the
+  [acceptance map](p12-acceptance.md).
 
 - Depends on: P04, P10.
 - Deliver: audit execution and selected authentication adapters, bounded keyed
@@ -204,6 +207,10 @@ P13 acceptance are not implied.
 
 ### P13 — Integrated enrichment and evaluation outcomes
 
+- Readiness: not Ready. The [orchestrator handoff](p13-handoff.md) audits exact
+  prerequisites, missing Windows identity/acceptance evidence, current-main CI and
+  the source/evaluator/writer integration boundaries. Do not infer readiness from
+  P11/P12 implementation merges.
 - Depends on: P08, P11, P12.
 - Deliver: tagged events, linked detections and quality/configuration diagnostics.
 - Resolve: match metadata, diagnostics aggregation, evidence references and

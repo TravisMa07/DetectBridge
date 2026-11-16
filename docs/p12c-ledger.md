@@ -1,11 +1,12 @@
 # P12c recorded source acceptance evidence
 
-Current status: implementation and final-artifact local ARM64 qualification passed;
-[draft PR #43](https://github.com/TravisMa07/DetectBridge/pull/43) is unmerged.
-Actual final-head AMD64 qualification and owner semantic/completeness review
-remain P12 acceptance gates. Trusted Windows recording bindings are separate
-P11/P13 requirements. Earlier failures
-and superseded observation metadata are retained below, not counted as passes.
+Current status: [PR #43](https://github.com/TravisMa07/DetectBridge/pull/43) is merged
+as c024497. Its description explicitly marks owner semantic/completeness review
+and merge authorization complete. Exact PR-head adf71f8 passed AMD64 qualification
+in run 43812450381 attempt 2; current merged-main run 43873905332 was still running
+at the P13 handoff audit. Earlier draft/pending/failure entries below are historical.
+The [P13 handoff](p13-handoff.md) records remaining Windows/P11 prerequisites; they
+are not unfinished Linux implementation.
 
 Branch: feat/p12c-recorded-source-evidence, based on merged P12b e2d06c3.
 Owner requested continued roadmap implementation beyond the initial small auth
@@ -290,3 +291,19 @@ owning Python regressions. No new runtime artifact was produced or silently
 attributed; the JAR remains 364a3423. Recorded runtime timeout closure is actual
 evidence; exact deadline identity is additionally covered by independent state
 serialization/model tests, not a throughput or wall-clock accuracy claim.
+
+## Subsequent owner acceptance and merge
+
+GitHub inspection for the P13 handoff found PR #43 merged as
+c02449745ddb87605d0bd85841f77fdad2fb382a. Owner semantic/completeness approval
+and merge authorization are explicit checked entries in the PR description; a
+generic praise comment is not used as the approval source. The original review
+packet and prior pending checkpoints remain historical. The PR description also
+records exact-head AMD64 success on adf71f8301d0b6c8ebcd4dc81d590186b6288ee3
+in run 43812450381 attempt 2, after a classified HTTP 429 dependency-bootstrap
+failure on the first attempt. No assertion/dependency pin was relaxed.
+
+Merged-main run 43873905332 must be read independently before claiming full SDLC
+completion. It was running at this audit; recorded local payloads were not replayed
+by ordinary CI. P13 remains blocked separately on Windows identity/acceptance
+evidence as detailed in its handoff. No P13 runtime implementation is claimed.

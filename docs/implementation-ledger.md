@@ -194,3 +194,21 @@ checkpoint/TaskManager/deadline recovery and eligible-event sink failure/restore
 with both complete isolated runs and all 63 record/control admissions accounted for.
 [Acceptance map](p12-acceptance.md) distinguishes bounded implementation completion
 from pending owner semantic review, actual PR-head CI and authorized integration.
+
+## P13 handoff audit after the P12c merge
+
+PR #43 merged as c02449745ddb87605d0bd85841f77fdad2fb382a. Its description
+explicitly marks owner semantic/completeness review and merge authorization
+complete, superseding the earlier pre-merge pending entries. Exact PR head adf71f8
+passed AMD64 run 43812450381 attempt 2; the initial Maven HTTP 429 bootstrap failure
+and unchanged successful failed-job rerun remain distinct. Current merged-main run
+43873905332 was still running when audited; no pass is inferred from the merge or
+from unrelated successful Dependabot checks.
+
+[The P13 handoff](p13-handoff.md) records the prerequisite closure procedure and
+bounded integration plan. P08 and the P11/P12 implementations exist, but P13 is
+not Ready: trusted eligible recorded Windows host bindings and its separate
+semantic acceptance remain unresolved in the P11 ledger. No Windows binding,
+P13 service, source-to-detection writer projection, merge or release was invented
+by this documentation audit. Linux original integrity was reverified read-only
+(30 audit rows, 11 auth rows); no new runtime/performance qualification was run.

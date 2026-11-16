@@ -203,3 +203,9 @@ uses a separate emulated guest kernel; host audit state is untouched. Original
 evidence remains local, completeness expectations remain independent, P03/source
 snapshots and persisted runtime bindings remain unchanged, and no P13/archive
 service is introduced. See the [design](p12c-design.md) and [ledger](p12c-ledger.md).
+
+P12c subsequently merged in #43 as c024497 with owner semantic/completeness
+approval explicitly recorded in the PR description. Earlier P12a pending-audit
+wording describes that historical stage. Its merged-main qualification and P11's
+remaining trusted Windows evidence are audited in the [P13 handoff](p13-handoff.md);
+these do not change accepted architecture or assert P13 implementation/readiness.

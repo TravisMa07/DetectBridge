@@ -551,7 +551,7 @@
             "if-no-files-found": "error",
             "retention-days": 7
           },
-          "if": "${{ always() && hashFiles(format('{0}/detectbridge-p11-sealed/recording.p7m', runner.temp)) != '' }}"
+          "if": "${{ always() }}"
         }
       ]
     }

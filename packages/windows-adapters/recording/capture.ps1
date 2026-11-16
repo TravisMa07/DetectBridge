@@ -88,7 +88,7 @@ try {
             foreach ($action in $actions) {
                 $candidates = @($events | Where-Object {
                     $xml = [xml]$_.ToXml()
-                    $data = @{}; foreach ($item in $xml.Event.EventData.Data) { $data[[string]$item.Name] = [string]$item.'#text' }
+                    $data = @{}; foreach ($item in $xml.Event.EventData.Data) { $data[$item.GetAttribute('Name')] = $item.InnerText }
                     $nativePid = if ($family -eq 'security') { [Convert]::ToInt32($data['NewProcessId'], 16) } else { [int]$data['ProcessId'] }
                     $image = if ($family -eq 'security') { $data['NewProcessName'] } else { $data['Image'] }
                     $nativePid -eq $action.pid -and $image -ieq $action.image

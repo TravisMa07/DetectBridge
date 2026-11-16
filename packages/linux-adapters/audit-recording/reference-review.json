@@ -1,0 +1,71 @@
+{
+  "version": "1.0.0",
+  "scope": "Primary documentation review for isolated direct-kernel guest boot, no-fork native RAW audit capture and execution watch; no upstream implementation copied",
+  "use": "Facts and command options only; full originals remain ignored. Original capture/probe/replay code is Apache-2.0; upstream files retain their notices.",
+  "limitations": "QEMU Debian downstream patch version and actual Linux/audit binaries are pinned separately in the local recording package inventory and image hashes. This documentation review is not runtime evidence or an advisory-remediation claim.",
+  "references": [
+    {
+      "repository": "linux-audit/audit-userspace",
+      "revision": "81fa28e0e8b4be83ddba03de8b816a3df510c17e",
+      "tag_context": "v3.0.9",
+      "path": "docs/auditd.8",
+      "url": "https://raw.githubusercontent.com/linux-audit/audit-userspace/81fa28e0e8b4be83ddba03de8b816a3df510c17e/docs/auditd.8",
+      "sha256": "470ea9698f80fb432655069ae15882cfefcd0bc9ed99898e42c28fd4aa783650",
+      "size_bytes": 4241
+    },
+    {
+      "repository": "linux-audit/audit-userspace",
+      "revision": "81fa28e0e8b4be83ddba03de8b816a3df510c17e",
+      "tag_context": "v3.0.9",
+      "path": "docs/auditd.conf.5",
+      "url": "https://raw.githubusercontent.com/linux-audit/audit-userspace/81fa28e0e8b4be83ddba03de8b816a3df510c17e/docs/auditd.conf.5",
+      "sha256": "c443b2f98eeb40cf81918d65729c9ad46465fb866bd8a839d47cf4497f73b1db",
+      "size_bytes": 21699
+    },
+    {
+      "repository": "linux-audit/audit-userspace",
+      "revision": "81fa28e0e8b4be83ddba03de8b816a3df510c17e",
+      "tag_context": "v3.0.9",
+      "path": "docs/auditctl.8",
+      "url": "https://raw.githubusercontent.com/linux-audit/audit-userspace/81fa28e0e8b4be83ddba03de8b816a3df510c17e/docs/auditctl.8",
+      "sha256": "2429dd6935e0d2c634b3a80039452f61d71d26fca6b986ddd49daa2c3c58359c",
+      "size_bytes": 19956
+    },
+    {
+      "repository": "linux-audit/audit-userspace",
+      "revision": "81fa28e0e8b4be83ddba03de8b816a3df510c17e",
+      "tag_context": "v3.0.9",
+      "path": "COPYING",
+      "url": "https://raw.githubusercontent.com/linux-audit/audit-userspace/81fa28e0e8b4be83ddba03de8b816a3df510c17e/COPYING",
+      "sha256": "32b1062f7da84967e7019d01ab805935caa7ab7321a7ced0e30ebe75e5df1670",
+      "size_bytes": 17992
+    },
+    {
+      "repository": "qemu/qemu",
+      "revision": "b67b00e6b4c7831a3f5bc684bc0df7a9bfd1bd56",
+      "tag_context": "v7.2.0",
+      "path": "docs/system/arm/virt.rst",
+      "url": "https://raw.githubusercontent.com/qemu/qemu/b67b00e6b4c7831a3f5bc684bc0df7a9bfd1bd56/docs/system/arm/virt.rst",
+      "sha256": "b61dd60fc05c289e1371bf1f4b873534981d8f6e7d4bf325cfc10eb97222ca2d",
+      "size_bytes": 6829
+    },
+    {
+      "repository": "qemu/qemu",
+      "revision": "b67b00e6b4c7831a3f5bc684bc0df7a9bfd1bd56",
+      "tag_context": "v7.2.0",
+      "path": "docs/system/linuxboot.rst",
+      "url": "https://raw.githubusercontent.com/qemu/qemu/b67b00e6b4c7831a3f5bc684bc0df7a9bfd1bd56/docs/system/linuxboot.rst",
+      "sha256": "89635d98dc4a55e94a6b4871f6366cb2e7bc17fc1c3fad9cd0518c19ffce9058",
+      "size_bytes": 944
+    },
+    {
+      "repository": "qemu/qemu",
+      "revision": "b67b00e6b4c7831a3f5bc684bc0df7a9bfd1bd56",
+      "tag_context": "v7.2.0",
+      "path": "COPYING",
+      "url": "https://raw.githubusercontent.com/qemu/qemu/b67b00e6b4c7831a3f5bc684bc0df7a9bfd1bd56/COPYING",
+      "sha256": "6f04ae8364d0079a192b14635f4b1da294ce18724c034c39a6a41d1b09df6100",
+      "size_bytes": 17992
+    }
+  ]
+}

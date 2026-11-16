@@ -198,6 +198,31 @@ class Transport:
     def helper_run(self, args, *, timeout, data=None):
         try:
             return run(args, timeout=timeout, data=data)
+        except StackError:
+            # Preserve body-free process observations before owned-helper cleanup.
+            # Never retry a failed mutation or turn an observation into success.
+            try:
+                name = args[args.index("--name") + 1]
+                container = json.loads(run(["docker", "inspect", name]).stdout)[0]
+                if (
+                    container["Config"]["Labels"].get("io.detectbridge.helper.project")
+                    == self.project
+                ):
+                    state = container["State"]
+                    save(
+                        self.folder / "last-helper-failure.json",
+                        {
+                            "container_id": container["Id"],
+                            "exit_code": state["ExitCode"],
+                            "oom_killed": state["OOMKilled"],
+                            "status": state["Status"],
+                            "started_at": state["StartedAt"],
+                            "finished_at": state["FinishedAt"],
+                        },
+                    )
+            except Exception:
+                pass
+            raise
         finally:
             self.remove_helper(args)
 

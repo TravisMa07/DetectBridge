@@ -29,3 +29,11 @@ tasks.installDist {
     from(rootProject.file("LICENSE"))
     from(rootProject.file("contracts/v1/NOTICE")) { rename { "ECS-NOTICE" } }
 }
+
+val auditReplayScripts by tasks.registering(CreateStartScripts::class) {
+    applicationName = "linux-audit-replay"
+    mainClass.set("io.detectbridge.linux.AuditReplay")
+    classpath = tasks.jar.get().outputs.files + configurations.runtimeClasspath.get()
+    outputDir = layout.buildDirectory.dir("auditScripts").get().asFile
+}
+distributions { main { contents { from(auditReplayScripts) { into("bin"); filePermissions { unix("rwxr-xr-x") } } } } }

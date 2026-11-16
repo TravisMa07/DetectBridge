@@ -162,3 +162,14 @@ failed-job rerun passed. Earlier pending-CI/unmerged entries describe historical
 status. See the [P12b ledger](p12b-ledger.md) for checkpointed qualification work.
 Reviewed eligible audit provenance and independent owner semantic/completeness
 review remain blockers for full P12; no P13 acceptance or release is claimed.
+
+## P12c selected recorded-audit follow-up
+
+The owner requested sustained roadmap implementation after P12b #42 merged.
+[P12c](p12c-ledger.md) now provides a separate-guest Linux audit capture, local-use
+provenance and trusted guest/boot bindings, frozen independent membership/counts,
+an atomic offline audit runner and three independently expected P10 rule outcomes.
+All 30 native rows are retained and accounted for; one selected execve is eligible.
+Earlier unavailable-audit entries remain historical. This is a bounded new local
+evidence slice, not broad audit compatibility or owner completeness acceptance.
+Windows trusted bindings, owner review and new-PR qualification remain separate.

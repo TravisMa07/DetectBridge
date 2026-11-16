@@ -258,6 +258,42 @@ class TransportTests(unittest.TestCase):
         self.assertEqual(args[args.index("--memory") + 1], "512m")
         self.assertTrue(args[args.index("--name") + 1].startswith(self.value.project + "-helper-"))
 
+    def test_failed_helper_retains_owned_process_state_without_bodies_or_mutation_retry(self):
+        import subprocess
+
+        name = self.value.project + "-helper-" + "a" * 12
+        args = ["docker", "run", "--name", name, "owned-image", "private-source-body"]
+        observation = [
+            {
+                "Id": "owned-id",
+                "Config": {"Labels": {"io.detectbridge.helper.project": self.value.project}},
+                "State": {
+                    "ExitCode": 137,
+                    "OOMKilled": True,
+                    "Status": "exited",
+                    "StartedAt": "start",
+                    "FinishedAt": "finish",
+                    "Error": "private-source-body",
+                },
+            }
+        ]
+        inspected = subprocess.CompletedProcess([], 0, json.dumps(observation), "")
+        with (
+            patch.object(
+                transport, "run", side_effect=[transport.StackError("command_failed"), inspected]
+            ) as execution,
+            patch.object(self.value, "remove_helper") as cleanup,
+        ):
+            with self.assertRaisesRegex(transport.StackError, "command_failed"):
+                self.value.helper_run(args, timeout=10)
+            self.assertEqual(execution.call_count, 2)
+            self.assertEqual(execution.call_args_list[1].args[0], ["docker", "inspect", name])
+            cleanup.assert_called_once_with(args)
+        retained = (self.value.folder / "last-helper-failure.json").read_text()
+        self.assertTrue(json.loads(retained)["oom_killed"])
+        self.assertEqual(json.loads(retained)["exit_code"], 137)
+        self.assertNotIn("private-source-body", retained)
+
     def test_read_helpers_retry_only_docker_setup_failures(self):
         for category in ("docker_setup_failure", "docker_daemon_api_failure"):
             self.value.helper_run = Mock(side_effect=[transport.StackError(category), "ok"])

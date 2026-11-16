@@ -1,0 +1,107 @@
+# P12c — Recorded Linux source qualification
+
+Completes bounded recorded-source implementation after merged P12b #42, based on
+main e2d06c3. It adds a controlled audit capture, atomic offline audit replay and
+opt-in real audit/auth checkpoint qualification. No source parser, semantic policy,
+state format or production pipeline is changed.
+Accepted A02/A03/A06 and ADR 0012 remain unchanged.
+
+## Authentication checkpoint qualification
+
+Require P12b's immutable built artifact and all original local artifacts from the
+reviewed openssh9-password-lab-v1 catalog. Reuse its native/collector body check,
+package/container/host binding and byte hashes before starting any runtime. Missing
+or changed originals fail; never recapture or generate a substitute automatically.
+The recording is in the P12a checkout's ignored cache; an explicit directory is
+required. Catalog terms permit local qualification, not public payload publication.
+
+Freeze expected events from the reviewed catalog before injection: all 11 rows,
+two eligible password outcomes (user, endpoint, source time), nine exact unsupported
+preservation documents. Retain original input/context and independent expectations
+in the exclusive ignored project before Kafka admission. The evaluator is not an
+oracle; P12b emits no evaluation results.
+
+Force actual event-sink RecordTooLarge failure using P12b's read-back-verified
+policy. Independently confirm the completed checkpoint retains blocked event
+intents. Restore the same bound artifact with healthy output, account for all
+original inputs and logical outputs, then replay unchanged evidence under a new
+run ID. Verify stable evidence/event IDs and isolated processing attribution.
+Count physical recovery duplicates separately and require byte identity. Existing
+strict incompatible-restore, all-sink and broker qualification stays intact.
+
+## Acceptance and exclusions
+
+- Local original hashes/provenance and all per-record expected outcomes verified.
+- Real required-sink failure, completed-checkpoint retention and explicit restore
+  drain the original recording without missing/unexpected logical documents.
+- Separate replay run preserves evidence identity and original context bindings.
+- Tests reject same-count semantic changes, changed original bytes and scope;
+  existing synthetic tests still execute without local recording access.
+- Locked repository/component checks pass. Record actual local runtime outcome
+  and PR CI separately; missing recording is a failure of the opt-in command.
+
+The bounded eligible audit evidence is specified below. No trusted Windows
+recording binding, owner semantic approval, full P12/P13 readiness, performance,
+release or merge authorization is created. Owner completeness/expectation review remains required. Evidence and build
+artifacts stay ignored. No public fixture or new third-party dependency is added.
+
+## Controlled audit capture and offline replay
+
+Provide a reviewed eligible Linux audit recording and its bounded offline
+replay/independent qualification path alongside authentication recovery.
+Windows trusted bindings and independent owner acceptance stay open.
+
+Capture runs in a disposable QEMU guest kernel inside an unprivileged, networkless
+container. The container never receives audit capabilities, host devices or host
+filesystem mounts. Only the guest audit subsystem is configured; Docker Desktop's
+host-kernel audit state is untouched. Use a pinned Debian base, exact package
+versions, retained package copyrights and immutable image/kernel/initramfs hashes.
+No VM/runtime/dataset artifact is committed. QEMU direct kernel/initramfs boot and
+native auditd RAW output follow primary upstream documentation; record the final
+reference revisions/hashes with the capture review.
+
+Before capture, independently specify one successful native AArch64 execve of an
+original static probe at /usr/local/bin/bridge-audit-probe. Expected arguments are
+[path, alpha, empty, alpha, two words], with CWD /, uid/euid 0 and a successful
+zero exit. Preserve all audit daemon output, not just selected execution rows.
+Capture boot ID, kernel command line/config/version, audit rules and before/after
+status (enabled, lost, backlog), action exit, exact guest files/config and complete
+serial capture. Require zero lost records, a drained audit backlog, independently
+reviewed complete execution membership/counts and trusted guest/generation binding.
+Fresh guest identity is not inferred from a display hostname or audit serial.
+
+Implement bounded inline offline audit replay through the existing assembler and
+P10 evaluator with atomic output publication. Input retention, immutable manifests,
+quality and source/mapping/parser attribution remain unchanged. Require independent
+positive/negative/configuration-blocked evaluation expectations, plus synthetic
+incomplete/late/isolation and failed-publication regressions. Frozen plans and
+recording expectations must never be generated by the evaluator under test.
+No general-purpose VM service, archive, production source, P13 wiring or rule
+activation is added. If actual isolated capture cannot be qualified, record that
+failure and retain the audit acceptance gate rather than promoting synthetic data.
+
+## P12 completion — recorded audit runtime
+
+Qualify the reviewed real audit capture through the existing checkpointed job as
+well as offline evaluation. Admit its six execution members first, retaining
+unchanged dataset positions/bytes/context. Confirm the still-open complete group's
+member IDs/hashes in a completed checkpoint, restart TaskManager, and require its
+original processing-time deadline to close it eligible. Native EOE is absent;
+reviewed membership/counts, not the timeout, establish completeness. Then admit all
+remaining originals and explicit run end, accounting for every input/control.
+
+Replay the complete recording in an isolated second run. Admit the six execution
+members plus an explicit reviewed source boundary while the required event sink
+actually rejects output. Require RecordTooLarge and a confirmed completed checkpoint
+retaining that second run's eligible event and exact six original members. Restore
+healthy output, then admit the remaining originals and run end. This deliberately
+records execution-first cross-group admission order; no source bytes or within-group
+order are rewritten. Verify ten groups and three diagnostics per run, every receipt,
+full source fields, stable evidence/event identity and physical duplicate bytes.
+
+No evaluator or P13 wiring is introduced into the Flink job. Existing source,
+state, timer, queue, broker and incompatible-binding checks stay unchanged.
+
+This completes the recorded audit runtime evidence path within P12. Owner semantic
+acceptance and merge authorization are separate; Windows host evidence is a P11/P13
+dependency and is not mislabelled as unfinished Linux implementation.

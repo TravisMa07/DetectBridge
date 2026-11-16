@@ -303,6 +303,49 @@ class StackTests(unittest.TestCase):
                     stack.run(["docker", "exec", "owned-container", *args])
                 self.assertEqual(str(raised.exception), "command_failed_" + category + "_exit_22")
 
+    def test_assembly_broker_failure_identifies_operation_and_redacted_type_without_retry(self):
+        import subprocess
+
+        command = [
+            "docker",
+            "run",
+            "owned-image",
+            "java",
+            "-cp",
+            "classpath",
+            "io.detectbridge.assembly.AssemblyPublisher",
+            "private-bootstrap",
+            "sink-policy",
+            "private-topic",
+            "1",
+        ]
+        for reason, suffix in (
+            ("TimeoutException", "_TimeoutException"),
+            ("private-value\nsecret", ""),
+        ):
+            failed = subprocess.CompletedProcess(
+                [], 1, json.dumps(dict(status="failed", reason_type=reason)), "private-source-body"
+            )
+            with patch.object(stack.subprocess, "run", return_value=failed) as execution:
+                with self.assertRaises(stack.StackError) as raised:
+                    stack.run(command)
+                self.assertEqual(
+                    str(raised.exception), "command_failed_broker_sink_policy" + suffix
+                )
+                execution.assert_called_once()
+        from detection import failure_category
+
+        self.assertEqual(
+            failure_category(
+                stack.StackError("command_failed_broker_sink_policy_TimeoutException")
+            ),
+            "command_failed_broker_sink_policy_TimeoutException",
+        )
+        self.assertEqual(
+            failure_category(stack.StackError("command_failed_broker_sink_policy_private_value")),
+            "detection_operation_failed",
+        )
+
     def test_helper_lifetime_is_explicit_and_cleanup_is_scoped(self):
         import subprocess
         from typing import Any, cast

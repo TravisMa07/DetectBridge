@@ -164,3 +164,14 @@ Future capture code records capture_started separately and observation after cap
 The original capture script remains bound to its original revision/hash; current
 capture code is not silently attributed to historical bytes. Corrected prepared
 inputs/results are qualified separately below; old output snapshots remain local.
+
+Corrected context/1.1.0 was frozen at 7d5ecad/15841b1 before its fresh replay.
+All three frozen rule plans again qualified all 30 original rows under separate
+run 00000000-0000-4000-8000-000000000014: one eligible/nine skipped groups and
+three extraction-failed preservation documents. All seven same-count tamper probes
+were rerun against these corrected outputs and rejected. Old run-0013 files remain
+untouched. Corrected artifacts are input-context-1.1.ndjson, output-context-1.1-*,
+qualification-context-1.1.log/json in the same ignored recording directory.
+Locked repository checks passed with 146 Python tests, lint/format/types, contracts,
+inventories, hygiene and secrets; seventeen owning recording/assembly regressions
+pass. The frozen rule bundles and original telemetry hashes did not change.

@@ -265,15 +265,15 @@ local frozen-plan path before replay. Example for the positive probe rule:
 
 ```sh
 uv run --locked python tools/linux_assembly_audit_recording.py \
-  .cache/p12-audit-reviewed-v1 --prepare .cache/p12-audit-reviewed-v1/input.ndjson
-cp .cache/linux-adapters/plans/audit-probe-match.json \
+  .cache/p12-audit-reviewed-v1 --prepare .cache/p12-audit-reviewed-v1/input-context-1.1.ndjson
+cp -n .cache/linux-adapters/plans/audit-probe-match.json \
   .cache/p12-audit-reviewed-v1/frozen-audit-probe-match.json
 JAVA_HOME="$PWD/.cache/jdk" packages/linux-adapters/build/install/linux-adapters/bin/linux-audit-replay \
-  .cache/p12-audit-reviewed-v1/input.ndjson .cache/p12-audit-reviewed-v1/output.ndjson \
+  .cache/p12-audit-reviewed-v1/input-context-1.1.ndjson .cache/p12-audit-reviewed-v1/output-context-1.1.ndjson \
   .cache/p12-audit-reviewed-v1/frozen-audit-probe-match.json
 uv run --locked python tools/linux_assembly_audit_recording.py \
-  .cache/p12-audit-reviewed-v1 --input .cache/p12-audit-reviewed-v1/input.ndjson \
-  --output .cache/p12-audit-reviewed-v1/output.ndjson \
+  .cache/p12-audit-reviewed-v1 --input .cache/p12-audit-reviewed-v1/input-context-1.1.ndjson \
+  --output .cache/p12-audit-reviewed-v1/output-context-1.1.ndjson \
   --plan .cache/p12-audit-reviewed-v1/frozen-audit-probe-match.json --rule audit-probe-match
 ```
 
@@ -299,3 +299,10 @@ event rows contain a separate P10 evaluation. Every original input occurrence is
 retained, even when adapter redelivery deduplicates its semantic output. This is
 an owning-command format, not a new P03/P13 wire contract. P03 events and separate
 module manifest/preservation/P10 result contracts stay unchanged.
+
+The catalog records audit-recording-context/1.1.0: the original v1 script labelled
+capture start as first_observed. Corrected envelopes use the original manifest
+completion time as conservative complete-batch observation, not an invented per-row
+receipt. Original source/manifest bytes and source-time fields remain unchanged.
+Corrected processing uses a separate run ID ending 0014; old 0013 output snapshots
+remain local and are not silently overwritten or adopted as corrected evidence.

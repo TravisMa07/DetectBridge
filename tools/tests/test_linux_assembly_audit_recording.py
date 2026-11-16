@@ -41,7 +41,7 @@ class AuditEvidenceTests(unittest.TestCase):
 
     def test_batch_observation_uses_retained_completion_without_rewriting_original_metadata(self):
         captured = dict(first_observed="2026-01-01T00:00:00Z", completed="2026-01-01T00:00:05Z")
-        catalog = dict(
+        catalog: dict[str, Any] = dict(
             acquisition=dict(first_observed=captured["completed"]),
             processing_metadata=dict(
                 version="1.1.0",

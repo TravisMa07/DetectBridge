@@ -11,6 +11,10 @@ Implementation/local evidence is recorded separately in the [ledger](p12c-ledger
   ID, immutable image/kernel/initramfs and raw serial; no display-hostname or serial
   identity inference. Capture is local-use only; binary and payload publication
   is excluded by the recorded terms review.
+- [ ] Review observation metadata: original capture start was mislabelled as
+  first_observed. Versioned context/1.1.0 uses the retained capture-completion
+  timestamp and an isolated new run; source/manifest bytes and source times stay
+  unchanged. Exact per-row observation is unavailable.
 - [ ] Review completeness: one SYSCALL with two PATHs, five positional arguments
   including empty/repeated/space-bearing values, CWD and PROCTITLE, enabled daemon
   with lost=0/backlog=0, exact watch and successful original action. Native EOE is

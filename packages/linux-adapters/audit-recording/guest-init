@@ -1,0 +1,50 @@
+#!/bin/busybox sh
+# Original disposable guest capture protocol, Apache-2.0.
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev
+mkdir -p /run /var/log/audit /tmp
+hostname detectbridge-audit-lab
+cd /
+# No host audit state is accessible: this is a separate emulated guest kernel.
+cat /proc/sys/kernel/random/boot_id > /tmp/boot-id
+cat /proc/cmdline > /tmp/cmdline
+uname -a > /tmp/kernel-version
+/sbin/auditd -n > /tmp/auditd.stderr 2>&1 &
+daemon=$!
+sleep 2
+capture_status=0
+kill -0 "$daemon" 2>/dev/null || capture_status=1
+/sbin/auditctl -e 1 > /tmp/setup 2>&1 || capture_status=1
+/sbin/auditctl -b 8192 >> /tmp/setup 2>&1 || capture_status=1
+/sbin/auditctl -r 0 >> /tmp/setup 2>&1 || capture_status=1
+/sbin/auditctl -w /usr/local/bin/bridge-audit-probe -p x -k detectbridge-p12c >> /tmp/setup 2>&1 || capture_status=1
+/sbin/auditctl -l > /tmp/rules 2>&1 || capture_status=1
+/sbin/auditctl -s > /tmp/status-before 2>&1 || capture_status=1
+/usr/local/bin/bridge-audit-probe alpha '' alpha 'two words' > /tmp/action.stdout 2>&1
+echo $? > /tmp/action-exit
+sleep 3
+/sbin/auditctl -s > /tmp/status-after 2>&1 || capture_status=1
+# Shut down the sole audit daemon after draining; preserve all native messages.
+kill -TERM "$daemon" || capture_status=1
+wait "$daemon" || capture_status=1
+sync
+emit() {
+  echo "DB_ARTIFACT_BEGIN:$1:$(sha256sum "$2" | cut -d' ' -f1)"
+  base64 "$2"
+  echo "DB_ARTIFACT_END:$1"
+}
+emit boot-id /tmp/boot-id
+emit cmdline /tmp/cmdline
+emit kernel-version /tmp/kernel-version
+emit setup /tmp/setup
+emit rules /tmp/rules
+emit status-before /tmp/status-before
+emit status-after /tmp/status-after
+emit action-exit /tmp/action-exit
+emit action.stdout /tmp/action.stdout
+emit auditd.stderr /tmp/auditd.stderr
+[ ! -f /var/log/audit/audit.log ] || emit audit.native /var/log/audit/audit.log
+echo "DB_CAPTURE_EXIT:$capture_status"
+poweroff -f

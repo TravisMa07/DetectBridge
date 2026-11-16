@@ -1,0 +1,12 @@
+title: Controlled Windows cmd process
+id: 71110000-0000-4000-8000-000000000001
+status: test
+author: DetectBridge contributors
+license: Apache-2.0
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selected:
+    Image|endswith: '\cmd.exe'
+  condition: selected

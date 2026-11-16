@@ -1,0 +1,12 @@
+title: Controlled Windows Linux inapplicable rule
+id: 71110000-0000-4000-8000-000000000003
+status: test
+author: DetectBridge contributors
+license: Apache-2.0
+logsource:
+  product: linux
+  category: process_creation
+detection:
+  selected:
+    Image: '/usr/bin/false'
+  condition: selected

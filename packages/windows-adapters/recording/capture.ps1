@@ -15,6 +15,7 @@ function Native($exe, $arguments, $name) {
     & $exe @arguments *> (Join-Path $directory $name)
     if ($LASTEXITCODE -ne 0) { throw 'native_capture_operation_failed' }
 }
+$failed = $false
 $installed = $false
 $policySaved = $false
 $key = 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\Audit'
@@ -114,13 +115,14 @@ try {
 } catch {
     # Details and any source values remain local to this disposable runner.
     [IO.File]::WriteAllText((Join-Path $directory 'capture-error.txt'), $_.ToString(), $utf8)
-    throw 'windows_recording_failed_no_plaintext_upload'
+    $failed = $true
+    Write-Output ('capture_failure_line_' + $_.InvocationInfo.ScriptLineNumber)
 } finally {
     if ($installed) { & $sysmon -u force *> (Join-Path $directory 'sysmon-uninstall.txt') }
     if ($policySaved) { & auditpol.exe /restore "/file:$directory\audit-policy-before.csv" *> (Join-Path $directory 'audit-restore.txt') }
     if ($null -eq $oldValue) { Remove-ItemProperty $key -Name ProcessCreationIncludeCmdLine_Enabled -ErrorAction SilentlyContinue } else { Set-ItemProperty $key -Name ProcessCreationIncludeCmdLine_Enabled -Value $oldValue }
 }
-# Encrypt only after successful capture. No private keys or executable packages in the archive.
+# Encrypt success or failed-attempt evidence. No executable packages are uploaded.
 Add-Type -AssemblyName System.Security.Cryptography.Pkcs
 $archive = Join-Path $env:RUNNER_TEMP 'detectbridge-p11-originals.zip'
 Compress-Archive -Path "$directory\*" -DestinationPath $archive
@@ -128,4 +130,7 @@ $content = [Security.Cryptography.Pkcs.ContentInfo]::new([IO.File]::ReadAllBytes
 $envelope = [Security.Cryptography.Pkcs.EnvelopedCms]::new($content, [Security.Cryptography.Pkcs.AlgorithmIdentifier]::new([Security.Cryptography.Oid]::new('2.16.840.1.101.3.4.1.42')))
 $envelope.Encrypt([Security.Cryptography.Pkcs.CmsRecipient]::new($certificate))
 [IO.File]::WriteAllBytes((Join-Path $sealed 'recording.p7m'), $envelope.Encode())
+
+
+if ($failed) { throw 'windows_recording_failed_encrypted_evidence_only' }
 Write-Output 'Controlled recording encrypted; no source values logged.'

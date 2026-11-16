@@ -97,3 +97,26 @@ JAR `25df4e83ff99bcb12fcb0269d8a8ace2f852f6cb9ca861a8680fff379cbb92b7`,
 image `sha256:44677f5d93eca4ec405b4f5c075db38df0e8effb4404a01314b557f1a0ef0437`.
 This is intermediate evidence, superseded by final ingress-bound artifact checks
 below; it is not silently attributed to later code/artifacts.
+
+## Final ingress regression and retained failures
+
+Code 012056a passed locked check, Java, integration, Windows, Linux and assembly
+checks serially, then built its frozen runtime artifact. The initial overlapping
+Gradle invocations collided in generated test-result files; they reached no runtime.
+Only generated integration test output was cleared before those serial checks.
+
+Runtime project detectbridge-p13-test-21c3cea48595 passed the audit TaskManager
+phase but failed publishing the new oversized-source probe. Its private Base64
+IPC envelope exceeded the shared source mapper's 1 MiB string limit before Kafka
+admission. A focused regression reproduces that rejection, then proves the separate
+bounded 4 MiB IPC parser carries a 2 MiB source while source parsing still rejects
+it. IPC duplicate keys, trailing values, nesting and total-size bounds stay strict.
+The source JSON parser and wire/topic bounds are unchanged. The failed artifact
+(bundle 39124a013b0536664425972f9bb77e3f402e3d5f168e20e7e3608224c23156bb,
+JAR 065d833a20f5ac5611e88536efe5c1dafad1870fefcdcd9fecbb389e75663a3c)
+is not a passing runtime qualification. Original inputs/acks/failure observations
+remain local; its owned stack was removed.
+
+Intermediate code a50a687 also passed all applicable native AMD64 CI checks in
+43962035651, including the actual integration runtime suite. That result is
+attributed to that code, not the subsequent ingress changes.

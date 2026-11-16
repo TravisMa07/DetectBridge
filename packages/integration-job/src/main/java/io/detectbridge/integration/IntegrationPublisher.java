@@ -18,6 +18,22 @@ import tools.jackson.databind.JsonNode;
 
 /** Private bounded JSON-line IPC. Payload IPC is never forwarded to operator logs. */
 public final class IntegrationPublisher {
+  private static final tools.jackson.databind.json.JsonMapper IPC_JSON =
+      tools.jackson.databind.json.JsonMapper.builder(
+              tools.jackson.core.json.JsonFactory.builder()
+                  .enable(tools.jackson.core.StreamReadFeature.STRICT_DUPLICATE_DETECTION)
+                  .streamReadConstraints(tools.jackson.core.StreamReadConstraints.builder()
+                      .maxNestingDepth(8).maxStringLength(4 * Json.MAX_VALUE)
+                      .maxNumberLength(128).build())
+                  .build())
+          .enable(tools.jackson.databind.DeserializationFeature.FAIL_ON_TRAILING_TOKENS)
+          .build();
+
+  static JsonNode ipc(byte[] bytes) {
+    if (bytes.length > 4 * Json.MAX_VALUE) throw new IllegalArgumentException("ipc_limit");
+    return IPC_JSON.readTree(bytes);
+  }
+
   private static final Base64.Decoder DECODE = Base64.getDecoder();
   private static final Base64.Encoder ENCODE = Base64.getEncoder();
 
@@ -43,7 +59,7 @@ public final class IntegrationPublisher {
         new KafkaProducer<>(IntegrationBroker.producerProperties(bootstrap))) {
       byte[] line;
       while ((line = line()) != null) {
-        JsonNode input = Json.MAPPER.readTree(line);
+        JsonNode input = ipc(line);
         byte[] key = input.get("key").isNull() ? null : DECODE.decode(input.get("key").asString());
         byte[] value =
             input.get("value").isNull() ? null : DECODE.decode(input.get("value").asString());

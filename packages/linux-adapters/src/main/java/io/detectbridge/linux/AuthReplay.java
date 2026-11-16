@@ -3,6 +3,7 @@ package io.detectbridge.linux;
 import static io.detectbridge.detection.Contracts.check;
 
 import io.detectbridge.detection.Evaluator;
+import io.detectbridge.detection.IntegrationOutputs;
 import io.detectbridge.transport.Json;
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -17,8 +18,14 @@ public final class AuthReplay {
   private AuthReplay() {}
 
   static long replay(Path input, Path output, Path plan) throws Exception {
+    return replay(input, output, plan, false);
+  }
+  public static long replay(Path input, Path output, Path plan, boolean integrated) throws Exception {
+    check(!plan.toRealPath().equals(output.toAbsolutePath().normalize())
+        && (!Files.exists(output) || (!Files.isSameFile(plan, output) && !Files.isSameFile(input, output))), "distinct_output_required");
     check(!input.toRealPath().equals(output.toAbsolutePath().normalize()), "distinct_output_required");
-    Evaluator evaluator = new Evaluator(Files.readAllBytes(plan));
+    Evaluator evaluator = new Evaluator(io.detectbridge.detection.Evaluate.bounded(plan, 4 * 1024 * 1024));
+    IntegrationOutputs outputs = integrated ? new IntegrationOutputs(evaluator) : null;
     Path destination = output.toAbsolutePath();
     Path temp = Files.createTempFile(destination.getParent(), ".auth-replay-", ".tmp");
     long count = 0;
@@ -40,7 +47,8 @@ public final class AuthReplay {
           result.put("version", "1.0.0"); result.set("raw", resolved.raw()); result.set("context", resolved.context());
           if (adapted.has("@timestamp")) {
             result.set("event", adapted); byte[] bytes = Json.bytes(adapted);
-            result.set("evaluation", evaluator.evaluate(bytes, Map.of("cluster_id", "offline", "topic_id", "offline",
+            if (integrated) result.set("integration", outputs.process(adapted, null));
+            else result.set("evaluation", evaluator.evaluate(bytes, Map.of("cluster_id", "offline", "topic_id", "offline",
                 "topic", "linux-auth-offline", "partition", 0, "offset", count, "value_sha256", Json.sha(bytes))));
           } else result.set("preservation", adapted);
           byte[] data = Json.bytes(result);
@@ -65,8 +73,8 @@ public final class AuthReplay {
 
   public static void main(String[] args) {
     try {
-      check(args.length == 3, "arguments");
-      long count = replay(Path.of(args[0]), Path.of(args[1]), Path.of(args[2]));
+      check(args.length == 3 || (args.length == 4 && args[3].equals("--integrated")), "arguments");
+      long count = replay(Path.of(args[0]), Path.of(args[1]), Path.of(args[2]), args.length == 4);
       System.out.println("{\"status\":\"published\",\"records\":" + count + "}");
     } catch (Exception e) {
       System.err.println("{\"category\":\"auth_replay_failed\"}"); System.exit(1);

@@ -212,9 +212,11 @@ is recorded in the acceptance map; P13 acceptance is not implied.
 
 ### P13 — Integrated enrichment and evaluation outcomes
 
-- Local status: [bounded design/acceptance plan](p13-design.md) prepared; runtime
-  not implemented. P11 controlled-source semantics are owner-accepted; completion
-  qualification and separately authorized integration remain blockers; merges alone do not make this item Ready.
+- Local status: [P13a](p13a-design.md) implements compact evaluation and attributed
+  outputs through real offline Windows/Linux consumers; [qualification](p13a-ledger.md)
+  remains separate from owner review and merge. P08/P11/P12 bounded prerequisites
+  are complete. Production Kafka/Flink wiring (P13b), search (P13c) and full P13
+  source-to-search/recovery acceptance remain unimplemented.
 
 - Depends on: P08, P11, P12.
 - Deliver: tagged events, linked detections and quality/configuration diagnostics.

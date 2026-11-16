@@ -145,3 +145,25 @@ match metadata and diagnostics. Retain original input topics while output/quaran
 references depend on them. Heavy legacy/mapped qualification runs are sequential.
 No recorded source eligibility, production detection, archive or throughput claim
 follows. Independent owner semantic acceptance remains pending.
+
+## P13a compact mapped API and offline outputs
+
+`Evaluator.evaluateCompact(bytes)` accepts mapped v2 bundles and returns compact
+1.0.0 counts, ordered matches and at most three grouped diagnostic references.
+The evaluator CLI accepts `--compact` in place of `--exhaustive`. Legacy APIs and
+CLI default results remain unchanged. `IntegrationOutputs.process(event, manifest)`
+wraps unchanged P03 events with attributed deterministic tags, linked detections
+and grouped diagnostics; `verify` consumes these documents against the pinned plan
+and original manifest. Source quality remains distinct from coverage.
+
+The Windows Offline, Linux AuthReplay and AuditReplay installed commands accept
+an explicit final `--integrated` argument after their mapped plan. Audit output
+binds the validated original manifest and exact members; standalone events reject
+an assembly manifest. Malformed/unsupported input remains preservation output.
+Resolver I/O still fails the offline transaction for retry. Output overflow also
+fails atomically without replacing a prior publication. Retain original raw/context
+rows and immutable bundles/manifests. Tagged events remain unchanged;
+`IntegrationOutputs.contentHash` excludes receipt/processing clocks from semantic
+content comparisons, as do processing identities. [Contracts/decisions](p13a-design.md) and
+[qualification](p13a-ledger.md) specify limits and acceptance status. These are
+actual offline consumers, not the separate P13b Kafka/Flink deployment.

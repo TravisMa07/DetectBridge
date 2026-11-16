@@ -7,9 +7,10 @@ Kafka/Flink integration; P13c owns search. No new runtime deployment is introduc
 ## Concrete wire and bounds
 
 Integration contracts each start at 1.0.0 and reject other versions/unknown fields.
-`tagged-event` wraps `event` (unchanged P03), `processing_id`, `attribution`, six
+`compact-evaluation` contains version, six counts, ordered matched id/revision
+pairs and at most three category/rule_set groups. `tagged-event` wraps `event` (unchanged P03), `processing_id`, `attribution`, six
 `counts`, ordered `matches` (id/revision/detection_id), `tags` and `manifest`
-(null for standalone, otherwise manifest_id plus content sha256). `detection`
+(null for standalone, otherwise manifest_id, content sha256 and semantic_sha256). `detection`
 contains detection_id, processing_id, event_id, run_id, rule (pinned plan rule
 metadata excluding YAML/expression), attribution and manifest. `diagnostic` has
 diagnostic_id, processing_id, event_id, run_id, category, rule_set and attribution.
@@ -33,7 +34,7 @@ Overflow fails the complete offline transaction visibly, retaining prior output;
 no truncation, silent match loss or downgrade to nonmatch. Rule metadata excludes
 unbounded original YAML but retains ID, logsource, revision and provenance.
 
-Attribution contains pipeline `p13-offline/1.0.0`, bundle hash, source reference
+Attribution contains the original source namespace/instance, pipeline `p13-offline/1.0.0`, bundle hash, source reference
 with canonical snapshot hash (null hash for unknown source), selected mapping
 reference/hash (null for unknown), actual event processing versions, compiler,
 evaluator, selector, mapping-set hash and fixed enrichment policy/hash plus empty
@@ -52,13 +53,23 @@ integer values, identical to Contracts.canonical. Identity is `sha256:` plus SHA
 of canonical JSON array `[domain, ...parts]`, with domains
 `detectbridge.p13.processing/1`, `detectbridge.p13.detection/1`, and
 `detectbridge.p13.diagnostic/1`. Processing parts: pipeline, run_id, P03 event_id,
-semantic event hash, attribution, manifest reference. Detection parts: processing_id,
+semantic event hash, attribution, semantic manifest reference
+(null or {semantic_sha256}). Detection parts: processing_id,
 rule_id, revision. Diagnostic parts: processing_id, category, rule_set.sha256.
-Semantic event removes event.ingested and detectbridge.time.received/processed.
-The tagged wrapper likewise removes those nondeterministic receipt timestamps;
-raw input remains in the offline row. Kafka locations are outside these documents.
-Content changes therefore fail create-and-verify while identical logical processing
-has identical canonical content regardless of location/receipt time. Run changes
+Semantic event removes event.ingested, detectbridge.time.received/processed and
+the receipt member of the validated linux.context extension's original context.
+All decision context versions, source/mapping snapshots, host/generation binding
+and completeness metadata in that extension stay bound.
+The manifest semantic hash removes manifest_id and per-member context_sha256
+because P12 hashes the entire context, including receipt clocks. All other manifest
+content (raw/evidence membership, source/mapping, assembler/policy, quality and scope
+provenance) stays bound. The original manifest ID/hash remain retrieval attribution;
+semantic content comparison substitutes {semantic_sha256} for each manifest link.
+The tagged wrapper retains the unchanged event, including original receipt fields.
+`IntegrationOutputs.contentHash` excludes those same clocks for semantic duplicate/
+conflict comparisons. Kafka locations are outside these documents. Decision content
+changes therefore alter the semantic hash while identical logical processing has
+identical semantic content regardless of location/receipt time. Run changes
 and all decision-affecting attribution changes alter processing/detection IDs.
 
 Literal identity vectors and independent compact count/match expectations are

@@ -4,6 +4,7 @@ import static io.detectbridge.detection.Contracts.check;
 
 import io.detectbridge.detection.Evaluate;
 import io.detectbridge.detection.Evaluator;
+import io.detectbridge.detection.IntegrationOutputs;
 import io.detectbridge.transport.Json;
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -18,7 +19,16 @@ public final class Offline {
     return run(input, output, resolver, evaluator, () -> {});
   }
   static long run(Path input, Path output, EvidenceResolver resolver, Evaluator evaluator, BeforePublish hook) throws IOException {
+    return run(input, output, resolver, evaluator, hook, false);
+  }
+  public static long runIntegrated(Path input, Path output, EvidenceResolver resolver, Evaluator evaluator) throws IOException {
+    return run(input, output, resolver, evaluator, () -> {}, true);
+  }
+  private static long run(Path input, Path output, EvidenceResolver resolver, Evaluator evaluator, BeforePublish hook, boolean integrated) throws IOException {
+    check(!input.toRealPath().equals(output.toAbsolutePath().normalize())
+        && (!Files.exists(output) || !Files.isSameFile(input, output)), "distinct_output_required");
     var adapter = new WindowsAdapter();
+    IntegrationOutputs outputs = integrated ? new IntegrationOutputs(Objects.requireNonNull(evaluator)) : null;
     if (evaluator != null) evaluator.requireMappedDeployment();
     Path destination = output.toAbsolutePath(), parent = destination.getParent();
     Path temporary = Files.createTempFile(parent, ".windows-", ".tmp");
@@ -39,7 +49,8 @@ public final class Offline {
             published.put("event", result.event());
             if (evaluator != null) {
               byte[] event = Json.bytes(result.event());
-              published.put("evaluation", evaluator.evaluate(event, Map.of("cluster_id", "offline", "topic_id", "offline",
+              if (integrated) published.put("integration", outputs.process(result.event(), null));
+              else published.put("evaluation", evaluator.evaluate(event, Map.of("cluster_id", "offline", "topic_id", "offline",
                   "topic", "windows-offline", "partition", 0, "offset", count, "value_sha256", Json.sha(event))));
             }
           }
@@ -66,9 +77,13 @@ public final class Offline {
   }
   public static void main(String[] args) {
     try {
-      check(args.length == 3 || args.length == 4, "arguments");
-      Evaluator evaluator = args.length == 4 ? new Evaluator(Evaluate.bounded(Path.of(args[3]), 4 * 1024 * 1024)) : null;
-      long count = run(Path.of(args[0]), Path.of(args[1]), EvidenceResolver.local(Path.of(args[2])), evaluator);
+      check(args.length == 3 || args.length == 4 || (args.length == 5 && args[4].equals("--integrated")), "arguments");
+      Evaluator evaluator = args.length >= 4 ? new Evaluator(Evaluate.bounded(Path.of(args[3]), 4 * 1024 * 1024)) : null;
+      if (args.length >= 4) check(!Path.of(args[3]).toRealPath().equals(Path.of(args[1]).toAbsolutePath().normalize())
+          && (!Files.exists(Path.of(args[1])) || !Files.isSameFile(Path.of(args[3]), Path.of(args[1]))), "distinct_output_required");
+      long count = args.length == 5
+          ? runIntegrated(Path.of(args[0]), Path.of(args[1]), EvidenceResolver.local(Path.of(args[2])), evaluator)
+          : run(Path.of(args[0]), Path.of(args[1]), EvidenceResolver.local(Path.of(args[2])), evaluator);
       System.out.println(Json.MAPPER.writeValueAsString(Map.of("version", "1.0.0", "records", count, "publication", "complete")));
     } catch (Exception ex) {
       System.err.println("{\"category\":\"windows_offline_failure\"}"); System.exit(1);

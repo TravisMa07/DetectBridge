@@ -21,8 +21,8 @@ formal semantic review history remains recorded separately.
 [P11 Windows adapters](docs/windows-adapters.md) are merged with
 recorded preservation accounting. A [new controlled recording](docs/p11-recording-review.md)
 adds trusted host/capture evidence and eligible offline matching. The owner accepted
-its bounded semantics; final-head PR qualification and separately authorized
-integration remain pending. The older public
+its bounded semantics and merged completion #45 as `4ac31fa`; final-head and
+merged-main qualification passed. The older public
 recordings still lack trusted bindings.
 [P12a Linux adapters](docs/p12-runbook.md) are merged and provide offline audit assembly
 and selected authentication parsing, with a small real reviewed local OpenSSH9
@@ -39,8 +39,10 @@ recovery and isolated replay. The [P12 acceptance map](docs/p12-acceptance.md)
 records completed bounded implementation, qualification, owner review and
 authorized integration separately from P13 requirements.
 Production detection, management API, UI and detection-to-OpenSearch integration
-remain pending. [P13 design and acceptance planning](docs/p13-design.md) records
-the P11 completion acceptance/integration gate; P13 runtime has not started.
+remain pending. [P13a](docs/p13a-design.md) adds compact evaluation and attributed
+tagged/detection/diagnostic outputs through actual offline Windows/Linux consumers.
+[P13 acceptance](docs/p13-design.md) still requires production wiring and search;
+P13a does not complete the milestone. [Qualification status](docs/p13a-ledger.md).
 P06 provides local Kafka/Flink infrastructure and optional authenticated OpenSearch.
 Repository hygiene tooling and
 contributor templates were introduced in P01; P02 adds reproducible build tools,

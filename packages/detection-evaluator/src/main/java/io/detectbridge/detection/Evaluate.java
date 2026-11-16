@@ -16,7 +16,7 @@ public final class Evaluate {
 
   public static void main(String[] args) {
     try {
-      Contracts.check(args.length == 2 || (args.length == 3 && args[2].equals("--exhaustive")), "arguments");
+      Contracts.check(args.length == 2 || (args.length == 3 && (args[2].equals("--exhaustive") || args[2].equals("--compact"))), "arguments");
       Evaluator evaluator = new Evaluator(bounded(Path.of(args[0]), 4 * 1024 * 1024));
       byte[] event = bounded(Path.of(args[1]), 1024 * 1024);
       var location = Map.<String, Object>of(
@@ -32,7 +32,8 @@ public final class Evaluate {
                   0,
                   "value_sha256",
                   Json.sha(event));
-      System.out.println(args.length == 3
+      System.out.println(args.length == 3 && args[2].equals("--compact")
+          ? evaluator.evaluateCompact(event) : args.length == 3
           ? evaluator.evaluateExhaustive(event, location) : evaluator.evaluate(event, location));
     } catch (Exception e) {
       System.err.println("{\"category\":\"evaluation_input_failure\",\"pointer\":\"\"}");

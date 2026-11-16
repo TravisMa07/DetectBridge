@@ -209,14 +209,21 @@ P12c #43 merged as c024497 with completed bounded owner semantic/completeness
 review and separate merge authorization recorded in its description. Final-head
 AMD64 qualification and merged-main run 43873905332 passed.
 [P13 design notes](p13-design.md) propose integration under A02–A07
-and the explicit ADR 0008 projection compatibility review. P11 trusted recorded
-Old public Windows bindings remain unresolved; the new controlled-source owner
-acceptance is recorded below. P13 is not implemented.
+and the explicit ADR 0008 projection compatibility review. Older public Windows
+bindings remain unresolved; the new controlled-source owner acceptance is recorded
+below. Production P13 integration remains unimplemented.
 
 P11 controlled Windows source qualification adds a separately cataloged local
 capture with actual registry/VM/boot provenance, encrypted acquisition and frozen
 independent expectations under the unchanged A02/A03 adapter boundary. It does
 not repair old recording identities or implement a registry/P13 service. See the
 [owning design](p11-recording-design.md) and [review packet](p11-recording-review.md)
-for technical evidence and completed bounded owner semantic acceptance. Final-head
-qualification and separately authorized integration remain implementation PR gates.
+for technical evidence and completed bounded owner semantic acceptance. Completion
+PR #45 is owner-merged as 4ac31fa with final-head and merged-main qualification passed.
+
+P13a refines A02–A07 through separately versioned wrappers around unchanged P03,
+compact mapped evaluation with fixed grouped diagnostics, domain-separated output
+identities and deterministic pinned enrichment. Actual Windows/Linux offline
+runners consume it explicitly; legacy result contracts/deployments remain compatible.
+See [owning decisions](p13a-design.md) and [qualification](p13a-ledger.md).
+This does not implement P13b production recovery/wiring or P13c search projections.

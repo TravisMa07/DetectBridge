@@ -58,6 +58,27 @@ def evaluate_pair(jar, folder):
         selected.returncode == 0 and json.loads(selected.stdout) != json.loads(exhaustive.stdout)
     ):
         raise ValueError("selection_exhaustive_disagreement")
+    compact = subprocess.run([*command, "--compact"], capture_output=True, timeout=30)
+    if compact.returncode != selected.returncode:
+        raise ValueError("compact_admission_disagreement")
+    if selected.returncode == 0:
+        full, small = json.loads(selected.stdout), json.loads(compact.stdout)
+        if full["counts"] != small["counts"] or full["matched"] != small["matched"]:
+            raise ValueError("compact_semantic_disagreement")
+        rules = load_json(folder / "plan.json")["rules"]
+        expanded = {}
+        for group in small["diagnostics"]:
+            reference = group["rule_set"]
+            bits = int(reference["bits"], 16)
+            if reference["count"] != bits.bit_count() or reference["sha256"] != content_hash(
+                reference
+            ):
+                raise ValueError("compact_membership_integrity")
+            for position, rule in enumerate(rules):
+                if bits & (1 << position):
+                    expanded[rule["id"]] = group["category"]
+        if expanded != {d["rule_id"]: d["category"] for d in full["diagnostics"]}:
+            raise ValueError("compact_diagnostic_disagreement")
     return selected
 
 

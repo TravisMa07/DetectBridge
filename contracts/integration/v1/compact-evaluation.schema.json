@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:integration:1.0.0:compact-evaluation",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": "1.0.0"
+    },
+    "counts": {
+      "$ref": "urn:detectbridge:integration:1.0.0:common#/$defs/counts"
+    },
+    "matched": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revision": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "required": [
+          "id",
+          "revision"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "diagnostics": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "enum": [
+              "configuration_blocked",
+              "quality_skipped",
+              "evaluation_error"
+            ]
+          },
+          "rule_set": {
+            "$ref": "urn:detectbridge:integration:1.0.0:common#/$defs/rule_set"
+          }
+        },
+        "required": [
+          "category",
+          "rule_set"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "version",
+    "counts",
+    "matched",
+    "diagnostics"
+  ],
+  "additionalProperties": false
+}

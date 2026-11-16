@@ -1,0 +1,15 @@
+{
+  "version": "1.0.0",
+  "scope": "New controlled disposable Windows runner; not a binding for existing public recordings",
+  "actions": [
+    {"id": "cmd", "image": "C:\\Windows\\System32\\cmd.exe", "arguments": "/d /c exit 0", "exit_code": 0, "matched": true},
+    {"id": "hostname", "image": "C:\\Windows\\System32\\hostname.exe", "arguments": "", "exit_code": 0, "matched": false}
+  ],
+  "families": ["security", "sysmon"],
+  "eligible_events": 4,
+  "unsupported_events": 1,
+  "rule_counts": {
+    "cmd": {"matched": 1, "unmatched": 1, "inapplicable": 1, "configuration_blocked": 0, "quality_skipped": 0, "evaluation_error": 0},
+    "hostname": {"matched": 0, "unmatched": 2, "inapplicable": 1, "configuration_blocked": 0, "quality_skipped": 0, "evaluation_error": 0}
+  }
+}

@@ -138,7 +138,8 @@ Linux authentication/audit replay command after PLAN. Existing argument order an
 legacy default output stay compatible. The option emits an `integration` member
 instead of legacy `evaluation` on event rows. Raw/context, manifests and preservation
 rows remain retained. See [P13a decisions](p13a-design.md) and
-[qualification limits](p13a-ledger.md). No Kafka/OpenSearch P13 command exists yet.
+[qualification limits](p13a-ledger.md). Kafka/Flink commands are supplied by P13b
+below; OpenSearch integration remains P13c.
 
 ## P13b integrated runtime
 

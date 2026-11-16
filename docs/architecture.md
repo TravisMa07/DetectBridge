@@ -211,7 +211,7 @@ AMD64 qualification and merged-main run 43873905332 passed.
 [P13 design notes](p13-design.md) propose integration under A02–A07
 and the explicit ADR 0008 projection compatibility review. Older public Windows
 bindings remain unresolved; the new controlled-source owner acceptance is recorded
-below. Production P13 integration remains unimplemented.
+below. The subsequent P13a/P13b implementation boundaries are recorded below.
 
 P11 controlled Windows source qualification adds a separately cataloged local
 capture with actual registry/VM/boot provenance, encrypted acquisition and frozen

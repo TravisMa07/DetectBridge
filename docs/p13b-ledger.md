@@ -30,11 +30,15 @@ upstream pin or fresh security-remediation claim is made.
 
 ## Current checks
 
-The state-model, registered evidence, source/evaluation literal cases and artifact
-checks have passed during implementation. Full locked repository/Java and actual
-Docker qualification are in progress. Exact artifacts/results and any failed
-runtime attempts will be appended before handback. No synthetic/component pass
-establishes Kafka recovery, recorded-source or search acceptance.
+Code 082dab6 passed all six locked commands: `tools/dev.py check`, `java`,
+`integration`, `windows`, `linux` and `assembly`, run serially with pinned local
+JDK/Gradle and strict dependency verification. Java reports contain 25 evaluator,
+36 Windows, 42 Linux, 10 assembly and 10 integration tests, with zero failures,
+errors or skips. The root Java suite also passed 20 legacy/20 mapped independent
+YAML-to-Java cases and 12 independent mapping cases. Schema/installed artifact/
+license/dependency, Python oracle/gate and compact/exhaustive comparisons passed.
+Actual runtime results are recorded separately below. No synthetic/component
+pass establishes recorded-source or search acceptance.
 
 P13c search and complete recorded source-to-search acceptance remain separate.
 No throughput, archive, activation, API/UI or release claim is made.
@@ -120,3 +124,53 @@ remain local; its owned stack was removed.
 Intermediate code a50a687 also passed all applicable native AMD64 CI checks in
 43962035651, including the actual integration runtime suite. That result is
 attributed to that code, not the subsequent ingress changes.
+
+
+## Final ARM64 runtime qualification and handback
+
+[Implementation PR #47](https://github.com/TravisMa07/DetectBridge/pull/47), code
+`082dab684224ba2a5ce01a9c0b5ca4ffa85a7914`, project
+`detectbridge-p13-test-972da6e792a3`: the real serialized Kafka/Flink suite passed.
+44 original inputs produced 20 logical events and 103 logical output documents;
+145 physical outputs included 42 byte-identical stable-ID duplicate deliveries.
+Both Windows profiles, audit and authentication, all six outcomes, exact fields/
+counts/metadata/memberships/identities, registered range evidence and isolated
+replay passed against the independent oracle. The acknowledged frame over 1 MiB
+was quarantined with its original hash/location and no fabricated event.
+
+TaskManager restart, explicit restore, actual incompatible-group restore rejection,
+JobManager restart and a 40-second broker pause passed. The original expired audit
+deadline closed by the first restored checkpoint. Forced RecordTooLarge rejection
+and healthy explicit restore passed for all seven required routes; completed
+checkpoints retained the original blocked source/event/input references:
+
+| Route | Completed checkpoint | Blocked intents |
+| --- | --- | --- |
+| tagged | 44 | 1 |
+| detection | 52 | 1 |
+| processing | 59 | 2 |
+| manifest | 67 | 1 |
+| preservation | 75 | 1 |
+| quarantine | 82 | 1 |
+| receipt | 90 | 1 |
+
+Every admitted original Kafka value was retrieved and rehashed. Metrics and the
+payload-sentinel log regression passed. The suite removed only its owned stack
+and volumes; private source inputs, acknowledgements, checkpoint observations
+and result report remain under the ignored local integration runtime/report caches.
+
+Exact immutable artifacts:
+
+- Bundle: `444c8befd8e76f5f05b5307fc34625eb5f646ce8dbf56306e77e275256536058`.
+- JAR/publisher: `e1834614797a639dc5edc1d7d18b6a6b01e71581d7e6098700fe026c56fec50a`.
+- ARM64 image: `sha256:061667d1179542bdbdaec13d804a2cd0e6b2673c33926466b4dc7b51d87d1fc2`.
+- Evaluation bundle: `70ae5a44b59ef92aa68a18fb7d12e75263868fbdd0d46624ad8aa74251959acd`.
+
+Final-head native AMD64 CI remains pending at handback. Code run
+[43970750886](https://github.com/TravisMa07/DetectBridge/actions/runs/43970750886)
+was still running integration, detection and assembly when last inspected; every
+completed applicable job had succeeded. Earlier code's native pass is recorded
+separately above. The final documentation commit requires its own CI; no pending
+or opt-in skipped job is counted as qualification. Owner semantic review/merge
+remain separate. No new local recorded corpus, OpenSearch source-to-search,
+throughput, release or full P13 milestone acceptance is claimed.

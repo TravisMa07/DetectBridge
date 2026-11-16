@@ -63,6 +63,9 @@ Kafka input-topic limit is 2 MiB, matching the wire budget; output topics and
 producer requests allow 4 MiB, including envelope/header headroom. JSON frames
 larger than 1 MiB but within the input-topic bound become durable quarantine;
 the private publisher admits bounded invalid frames for real consumer testing.
+Its separate IPC JSON envelope is capped at 4 MiB with depth eight, strict duplicate
+keys/trailing-token rejection and a 2 MiB decoded-value cap. Base64 overhead does
+not relax the source JSON parser's 1 MiB limit.
 A proposal larger than an empty queue fails with visible backlog; a partially full
 queue defers it without committing state or consuming input. Nothing is truncated.
 

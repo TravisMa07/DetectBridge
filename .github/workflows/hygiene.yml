@@ -36,6 +36,12 @@
           "type": "boolean",
           "required": false,
           "default": false
+        },
+        "windows-recipient": {
+          "description": "Opt-in real disposable Windows capture: public RSA certificate (DER base64), private key stays local",
+          "type": "string",
+          "required": false,
+          "default": ""
         }
       }
     }
@@ -514,6 +520,38 @@
         {
           "name": "Qualify checkpointed Linux assembly and real recovery",
           "run": "uv run --locked python tools/dev.py assembly\nuv run --locked python tools/linux_assembly.py build\nuv run --locked python tools/linux_assembly.py verify"
+        }
+      ]
+    },
+    "controlled-windows-recording": {
+      "if": "${{ github.event_name == 'workflow_dispatch' && inputs.windows-recipient != '' }}",
+      "runs-on": "windows-2022",
+      "timeout-minutes": 10,
+      "steps": [
+        {
+          "uses": "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "with": {
+            "persist-credentials": false
+          }
+        },
+        {
+          "name": "Capture native events and encrypt originals",
+          "shell": "pwsh",
+          "env": {
+            "P11_RECIPIENT_CERT": "${{ inputs.windows-recipient }}"
+          },
+          "run": "./packages/windows-adapters/recording/capture.ps1"
+        },
+        {
+          "name": "Retain encrypted recording only",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "p11-controlled-windows-encrypted",
+            "path": "${{ runner.temp }}/detectbridge-p11-sealed/recording.p7m",
+            "if-no-files-found": "error",
+            "retention-days": 7
+          },
+          "if": "${{ always() }}"
         }
       ]
     }

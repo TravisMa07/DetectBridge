@@ -1,0 +1,258 @@
+{
+  "version": "1.0.0",
+  "id": "windows-process-lab-v1",
+  "kind": "local-controlled-recording",
+  "review_status": "reviewed",
+  "capture_run": {
+    "id": 43880077695,
+    "attempt": 1,
+    "commit": "f0ced8fe470dcb23c183979087125a77f66cf5a9",
+    "url": "https://github.com/TravisMa07/DetectBridge/actions/runs/43880077695"
+  },
+  "host_id": "windows-machineguid:b92d12c1-5ccd-417a-9a38-1deaa42e01ed",
+  "generation": "2026-11-16T13:50:44.7635520Z",
+  "observation_policy": {
+    "version": "per-record-capture-completion/1.0.0",
+    "description": "Retained selected XML capture-completion timestamps; exact first Get-WinEvent enumeration time is unavailable."
+  },
+  "artifacts": [
+    {
+      "filename": "action-expectations.json",
+      "sha256": "14218d7b9c15c861c50d32aa47d561e0056a2d96ab003cbd342113d9b20563d4",
+      "size_bytes": 794
+    },
+    {
+      "filename": "actions.json",
+      "sha256": "edcea44db4691bbf91c50ccf0313a0645a813ab3b9f319e95caa9a9c816ef57e",
+      "size_bytes": 733
+    },
+    {
+      "filename": "audit-backup.txt",
+      "sha256": "d5ac687c414a6758f60d6db6d9fa7f11bbbcd7249eae36ddc1135a433bd962ce",
+      "size_bytes": 42
+    },
+    {
+      "filename": "audit-policy-active.csv",
+      "sha256": "d32e18b1d9eb026cfc9a10c1b45b04efacb0252e6bd10358ff58534a1bf3250c",
+      "size_bytes": 184
+    },
+    {
+      "filename": "audit-policy-before.csv",
+      "sha256": "978d5cb57b69cce7144b7a9bc406734712f55a1532da0c852777980e235261bd",
+      "size_bytes": 6247
+    },
+    {
+      "filename": "audit-restore.txt",
+      "sha256": "d5ac687c414a6758f60d6db6d9fa7f11bbbcd7249eae36ddc1135a433bd962ce",
+      "size_bytes": 42
+    },
+    {
+      "filename": "audit-set.txt",
+      "sha256": "d5ac687c414a6758f60d6db6d9fa7f11bbbcd7249eae36ddc1135a433bd962ce",
+      "size_bytes": 42
+    },
+    {
+      "filename": "capture-complete.json",
+      "sha256": "a71503bcca3db781b618ff6af4f2a68241988dd14d570feb213ae28dabaa47f3",
+      "size_bytes": 81
+    },
+    {
+      "filename": "capture.ps1",
+      "sha256": "cbe93ce408ef808e87006dc0477cd4ead6d8efa336b40c6767a77d966defe36e",
+      "size_bytes": 10605
+    },
+    {
+      "filename": "command-line-policy.json",
+      "sha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
+      "size_bytes": 1
+    },
+    {
+      "filename": "host.json",
+      "sha256": "63bd4df5535fac4c91ee6cb0b144c8d34bd84f29b00ab560d81435a892215e8a",
+      "size_bytes": 1011
+    },
+    {
+      "filename": "security-cmd.xml",
+      "sha256": "ec9785f3d60b8d325748884383c6c4300bafb5d013b82eda7d2af575cff4b1d6",
+      "size_bytes": 1321
+    },
+    {
+      "filename": "security-hostname.xml",
+      "sha256": "1a423cac3f253339e41d379a939638685b43c6eb5613909e6f6218e5db78aee0",
+      "size_bytes": 1319
+    },
+    {
+      "filename": "selection.json",
+      "sha256": "51fd71902798d536d06d2aa1801dafbace72febbbc999d77c9d8ee3551e30ba5",
+      "size_bytes": 917
+    },
+    {
+      "filename": "sysmon-cmd.xml",
+      "sha256": "515db8c971dbdf08de20fc0f49e826dc567b8336e2ad0b56a1c4245dd51b5752",
+      "size_bytes": 1979
+    },
+    {
+      "filename": "sysmon-control.xml",
+      "sha256": "a3c289e9cff1257914150793356f3efe71bd1287362d26c4c7b976991b18d9fa",
+      "size_bytes": 752
+    },
+    {
+      "filename": "sysmon-hostname.xml",
+      "sha256": "bc736111d6da422bd2cf2d730b4a2d8f8959b9073e61ceb3eea40ee6944b7937",
+      "size_bytes": 1968
+    },
+    {
+      "filename": "sysmon-install.txt",
+      "sha256": "20c0915d15967a82e6becad181e5469dd76ec41d921c00a7ed23bf39df6e2ec6",
+      "size_bytes": 810
+    },
+    {
+      "filename": "sysmon-license.txt",
+      "sha256": "8329bcbadc7f81539a4969ca13f0be5b8eb7652b912324a1926fc9bfb6ec005a",
+      "size_bytes": 7490
+    },
+    {
+      "filename": "sysmon-uninstall.txt",
+      "sha256": "78fa53b56446757aebd041a6facc65506e78bc246a00873f619a58d13fa97e56",
+      "size_bytes": 998
+    },
+    {
+      "filename": "sysmon.json",
+      "sha256": "6471020c40274ee6c218f16411c469417971ee9eefd5ff0b0b7c5a0d6b00ac7c",
+      "size_bytes": 471
+    }
+  ],
+  "records": [
+    {
+      "observed_utc": "2026-11-16T13:53:42.8064689Z",
+      "action": "cmd",
+      "family": "security",
+      "event_record_id": 1564352,
+      "filename": "security-cmd.xml",
+      "sha256": "ec9785f3d60b8d325748884383c6c4300bafb5d013b82eda7d2af575cff4b1d6",
+      "size_bytes": 1321,
+      "computer": "runnervm9zap3",
+      "expected": {
+        "disposition": "eligible",
+        "image": "C:\\Windows\\System32\\cmd.exe",
+        "pid": 1620,
+        "parent_pid": 5892,
+        "command_line": "\"C:\\Windows\\System32\\cmd.exe\" /d /c exit 0",
+        "user": "runnervm9zap3\\runneradmin",
+        "source_time": "2026-11-16T13:53:41.2189847Z",
+        "counts": {
+          "matched": 1,
+          "unmatched": 1,
+          "inapplicable": 1,
+          "configuration_blocked": 0,
+          "quality_skipped": 0,
+          "evaluation_error": 0
+        }
+      }
+    },
+    {
+      "observed_utc": "2026-11-16T13:53:42.8069647Z",
+      "action": "hostname",
+      "family": "security",
+      "event_record_id": 1564353,
+      "filename": "security-hostname.xml",
+      "sha256": "1a423cac3f253339e41d379a939638685b43c6eb5613909e6f6218e5db78aee0",
+      "size_bytes": 1319,
+      "computer": "runnervm9zap3",
+      "expected": {
+        "disposition": "eligible",
+        "image": "C:\\Windows\\System32\\HOSTNAME.EXE",
+        "pid": 4972,
+        "parent_pid": 5892,
+        "command_line": "\"C:\\Windows\\System32\\hostname.exe\"",
+        "user": "runnervm9zap3\\runneradmin",
+        "source_time": "2026-11-16T13:53:41.2350868Z",
+        "counts": {
+          "matched": 0,
+          "unmatched": 2,
+          "inapplicable": 1,
+          "configuration_blocked": 0,
+          "quality_skipped": 0,
+          "evaluation_error": 0
+        }
+      }
+    },
+    {
+      "observed_utc": "2026-11-16T13:53:42.8180859Z",
+      "action": "cmd",
+      "family": "sysmon",
+      "event_record_id": 6,
+      "filename": "sysmon-cmd.xml",
+      "sha256": "515db8c971dbdf08de20fc0f49e826dc567b8336e2ad0b56a1c4245dd51b5752",
+      "size_bytes": 1979,
+      "computer": "runnervm9zap3",
+      "expected": {
+        "disposition": "eligible",
+        "image": "C:\\Windows\\System32\\cmd.exe",
+        "pid": 1620,
+        "parent_pid": 5892,
+        "command_line": "\"C:\\Windows\\System32\\cmd.exe\" /d /c exit 0",
+        "user": "runnervm9zap3\\runneradmin",
+        "source_time": "2026-11-16 13:53:41.218",
+        "counts": {
+          "matched": 1,
+          "unmatched": 1,
+          "inapplicable": 1,
+          "configuration_blocked": 0,
+          "quality_skipped": 0,
+          "evaluation_error": 0
+        }
+      }
+    },
+    {
+      "observed_utc": "2026-11-16T13:53:42.8184666Z",
+      "action": "hostname",
+      "family": "sysmon",
+      "event_record_id": 8,
+      "filename": "sysmon-hostname.xml",
+      "sha256": "bc736111d6da422bd2cf2d730b4a2d8f8959b9073e61ceb3eea40ee6944b7937",
+      "size_bytes": 1968,
+      "computer": "runnervm9zap3",
+      "expected": {
+        "disposition": "eligible",
+        "image": "C:\\Windows\\System32\\HOSTNAME.EXE",
+        "pid": 4972,
+        "parent_pid": 5892,
+        "command_line": "\"C:\\Windows\\System32\\hostname.exe\"",
+        "user": "runnervm9zap3\\runneradmin",
+        "source_time": "2026-11-16 13:53:41.235",
+        "counts": {
+          "matched": 0,
+          "unmatched": 2,
+          "inapplicable": 1,
+          "configuration_blocked": 0,
+          "quality_skipped": 0,
+          "evaluation_error": 0
+        }
+      }
+    },
+    {
+      "observed_utc": "2026-11-16T13:53:42.8241965Z",
+      "action": "service-state",
+      "family": "sysmon",
+      "event_record_id": 2,
+      "filename": "sysmon-control.xml",
+      "sha256": "a3c289e9cff1257914150793356f3efe71bd1287362d26c4c7b976991b18d9fa",
+      "size_bytes": 752,
+      "computer": "runnervm9zap3",
+      "expected": {
+        "disposition": "unsupported_source"
+      }
+    }
+  ],
+  "terms": {
+    "scope": "local-qualification-only",
+    "payload_publication": false,
+    "sysmon_binary_redistribution": false
+  },
+  "review": {
+    "provenance": "Technical source review of authenticated encrypted artifact 14231737714, original host/process/actions and pinned source/terms; local qualification only.",
+    "independent_expectations": "Action expectations committed before capture; all five native source rows inspected and frozen before adapter/evaluator use. Two cmd matches, six nonmatches and four Linux inapplicable outcomes; service-state preserved.",
+    "owner_semantic_acceptance": "pending; technical review does not assert owner acceptance"
+  }
+}

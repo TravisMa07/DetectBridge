@@ -186,8 +186,9 @@ P12a implements the offline Linux audit/authentication boundary with scope-keyed
 bounded transactional assembly, immutable membership/late links, module-local
 context/manifest/state schemas and an atomic authentication replay command. It
 does not deploy P12b Flink state or P13 production wiring. A small actual local
-OpenSSH9 capture qualifies the selected password grammar; recorded audit
-eligibility and complete P12 acceptance remain blocked. See the
+OpenSSH9 capture qualifies the selected password grammar. Later P12c selected
+audit evidence and owner acceptance are recorded below; the original P12a ledger
+retains its historical gaps. See the
 [P12a design](p12-design.md) and [ledger](p12-ledger.md).
 
 P12b's isolated checkpointed Linux assembly implementation refines A03/A06 through
@@ -203,3 +204,19 @@ uses a separate emulated guest kernel; host audit state is untouched. Original
 evidence remains local, completeness expectations remain independent, P03/source
 snapshots and persisted runtime bindings remain unchanged, and no P13/archive
 service is introduced. See the [design](p12c-design.md) and [ledger](p12c-ledger.md).
+
+P12c #43 merged as c024497 with completed bounded owner semantic/completeness
+review and separate merge authorization recorded in its description. Final-head
+AMD64 qualification and merged-main run 43873905332 passed.
+[P13 design notes](p13-design.md) propose integration under A02–A07
+and the explicit ADR 0008 projection compatibility review. P11 trusted recorded
+Old public Windows bindings remain unresolved; the new controlled-source owner
+acceptance is recorded below. P13 is not implemented.
+
+P11 controlled Windows source qualification adds a separately cataloged local
+capture with actual registry/VM/boot provenance, encrypted acquisition and frozen
+independent expectations under the unchanged A02/A03 adapter boundary. It does
+not repair old recording identities or implement a registry/P13 service. See the
+[owning design](p11-recording-design.md) and [review packet](p11-recording-review.md)
+for technical evidence and completed bounded owner semantic acceptance. Final-head
+qualification and separately authorized integration remain implementation PR gates.

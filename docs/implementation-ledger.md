@@ -11,10 +11,11 @@ and integration history is recorded below.
 | P10a | Main orchestrator | `4d7d685`; `feat/p10-mapping-contracts`; `/Users/travisma/GitHub_Projects/DetectBridge-p10a` | P04/P09 merged | Merged in [PR #36](https://github.com/TravisMa07/DetectBridge/pull/36) as `b45fba4`; semantic acceptance remains separately pending |
 | P10b | Main orchestrator | `b45fba4`; `feat/p10-source-selection`; `/Users/travisma/GitHub_Projects/DetectBridge-p10b` | P10a merged; merged-main checks recorded separately | Merged in [PR #37](https://github.com/TravisMa07/DetectBridge/pull/37) as `df31448`; merged-main checks passed; owner authorized P11/P12 |
 | P11 | Windows child; orchestrator integration | `df31448`; `feat/p11-windows-adapters`; `/Users/travisma/.t3/worktrees/DetectBridge/t3-689cf405-5fa25cc439f21f05` | P10 merged; owner authorized dependent work | Merged in #38 as `46fb080`; recorded trusted host bindings and owner acceptance remain blocked |
-| P12a | Linux child | `df31448`; isolated P12a worktree; merged branch | P10 merged; owner authorized dependent work | Merged in #39 as `9ea1c68`; reviewed local OpenSSH9 slice passed; audit provenance and owner review remain open |
+| P11 completion | Main orchestrator | `c024497` + `641923a`; `feat/p11-controlled-windows-recording` | P11 #38 merged; owner requested blocker implementation | New real controlled Windows identity/capture evidence and two ARM64 offline runs passed; owner accepted bounded semantics; final-head CI and separately authorized integration pending |
+| P12a | Linux child | `df31448`; isolated P12a worktree; merged branch | P10 merged; owner authorized dependent work | Merged in #39 as `9ea1c68`; reviewed local OpenSSH9 slice passed; later audit provenance and owner review completed by P12c #43 |
 | P12b | Main orchestrator | `9ea1c68`; `feat/p12b-linux-qualification` | P12a merged | Merged in #42 as `e2d06c3`; final ARM64/AMD64 and merged-main qualification passed |
-| P12c | Main orchestrator | `e2d06c3`; `feat/p12c-recorded-source-evidence` | P12b merged + reviewed local auth originals | Implemented in draft #43; corrected audit offline and final-artifact ARM64 full/auth qualification passed; PR-head CI/owner review pending |
-| P13 | Unassigned | Not created | P08 + complete P11/P12 | Blocked |
+| P12c | Main orchestrator | `e2d06c3`; `feat/p12c-recorded-source-evidence` | P12b merged + reviewed local auth originals | Merged #43 as `c024497`; ARM64 recorded/recovery and final-head AMD64 attempt 2 passed; owner semantic/completeness review recorded in #43; merged-main CI passed |
+| P13 | Main orchestrator | `c024497`; `docs/p13-prerequisites-design` | P08 + complete P11/P12 | [Design/acceptance plan](p13-design.md); runtime blocked on P11 completion qualification and separately authorized integration; P12 merged-main CI passed |
 
 Shared ownership: orchestrator owns contracts/readers, Gradle registration,
 root locks/inventories, CI/gates, dev commands and status docs. P10 owns generic
@@ -194,3 +195,21 @@ checkpoint/TaskManager/deadline recovery and eligible-event sink failure/restore
 with both complete isolated runs and all 63 record/control admissions accounted for.
 [Acceptance map](p12-acceptance.md) distinguishes bounded implementation completion
 from pending owner semantic review, actual PR-head CI and authorized integration.
+
+## P13 prerequisite refresh — 2026-11-16
+
+Main/origin-main remain c024497. P12c #43 explicitly records owner completed
+semantic/completeness review and merge authorization; historical pending entries
+above do not reopen that review. Exact final-head AMD64 run 43812450381 attempt 2
+passed on adf71f8 after unchanged rerun of the pre-test Maven HTTP 429 failure.
+Merged-main run 43873905332 subsequently passed, including actual
+linux-assembly-verification and required-checks. Optional recorded jobs and
+unaffected Windows verification were skipped.
+
+P08 merged-main run 43652317692 passed actual writer and required-checks jobs;
+its metadata-only writer needs explicit P13 projections/configuration/permissions.
+Rehashed Windows payloads and metadata still provide no trusted recorded bindings.
+The owner reports no additional authoritative evidence. P11 semantic acceptance
+remains unresolved. [P13 design](p13-design.md) records exact missing evidence and
+bounded delivery/acceptance slices. No runtime implementation, handoff-only PR,
+merge or release was performed.

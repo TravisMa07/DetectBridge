@@ -6,8 +6,11 @@ their PR CI; recorded host-binding evidence and owner review remain acceptance b
 offline core and a reviewed local authentication recording passed PR CI.
 P12b #42 is merged with final-artifact ARM64/final-head AMD64 qualification.
 Merged-main qualification also passed. P12c adds selected reviewed audit evidence
-and recorded qualification; owner semantic review and Windows trusted bindings
-remain outstanding; later capabilities remain planned. See the
+and recorded qualification, merged in #43 as c024497 with completed owner
+semantic/completeness review recorded in its description. Its merged-main CI
+passed in run 43873905332. A new controlled Windows capture supplies technical
+identity/eligible evidence with bounded owner semantic acceptance; completion PR
+qualification and separately authorized integration remain outstanding; later capabilities remain planned. See the
 [implementation ledger](implementation-ledger.md) for exact evidence and limits.
 P numbers are planning IDs, not GitHub PR numbers. Milestones require their
 acceptance evidence and authorized merges; documentation alone does not complete
@@ -164,7 +167,11 @@ No application scaffolding, runtime capability claims or release tag.
 
 - Local status: bounded Security/Sysmon adapter and offline runner merged in #38
   after AMD64 CI; recorded preservation accounting passes, but no recorded eligible
-  coverage is claimed without trusted host bindings. See [design](p11-design.md).
+  coverage for the old public recordings is claimed without trusted host bindings.
+  A [new controlled capture](p11-recording-review.md) passed local eligible offline
+  matching and received bounded owner semantic acceptance. Final-head PR
+  qualification and separately authorized integration remain gates.
+  See [design](p11-design.md).
 
 - Depends on: P04, P10.
 - Deliver: source contracts/adapters for selected Security and Sysmon formats,
@@ -181,8 +188,9 @@ No application scaffolding, runtime capability claims or release tag.
   local OpenSSH9 recording qualification. P12c adds one reviewed local eligible
   audit slice, offline evaluation and real audit/auth checkpoint recovery; bounded
   implementation/local evidence is complete. Owner semantic/completeness review
-  remains open. P12b #42 is merged with ARM64/AMD64 and merged-main evidence.
-  P12 acceptance/integration is incomplete; see the [acceptance map](p12-acceptance.md).
+  is complete per #43; merged-main CI passed in run 43873905332. P12b #42 is merged
+  with ARM64/AMD64 and merged-main evidence. Bounded P12 acceptance/integration
+  is complete; see the [acceptance map](p12-acceptance.md).
 
 - Depends on: P04, P10.
 - Deliver: audit execution and selected authentication adapters, bounded keyed
@@ -199,10 +207,14 @@ final-head AMD64 and merged-main qualification passed. The owner expanded
 reviewed local audit capture, atomic replay and independent source/evaluator
 acceptance evidence. Its [ledger](p12c-ledger.md) tracks qualification separately
 from owner semantic review and full P12 acceptance.
-See the [ledger](p12b-ledger.md) for exact evidence and limits. Full P12 and
-P13 acceptance are not implied.
+See the [ledger](p12b-ledger.md) for exact evidence and limits. P12 acceptance
+is recorded in the acceptance map; P13 acceptance is not implied.
 
 ### P13 — Integrated enrichment and evaluation outcomes
+
+- Local status: [bounded design/acceptance plan](p13-design.md) prepared; runtime
+  not implemented. P11 controlled-source semantics are owner-accepted; completion
+  qualification and separately authorized integration remain blockers; merges alone do not make this item Ready.
 
 - Depends on: P08, P11, P12.
 - Deliver: tagged events, linked detections and quality/configuration diagnostics.

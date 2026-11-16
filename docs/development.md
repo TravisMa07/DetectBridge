@@ -115,3 +115,11 @@ alongside Windows and existing consumers. The fail-closed `linux-verification` C
 gate runs on the Linux subsystem and shared contract/compiler/build/gate changes.
 Recorded payloads remain opt-in and absent from ordinary CI; see the
 [P12a runbook](p12-runbook.md) and [local recording catalog](../catalog/recordings/README.md).
+
+`uv run --locked python tools/dev.py assembly` checks P12b's real core/job,
+serializers/resolver, independent oracle and fail-closed gate tests. Root `java`
+includes its job build and resource/dependency checks. The separate
+linux-assembly-verification required job also runs actual isolated runtime
+qualification; see the [runbook](linux-assembly.md). CI targets main and concrete
+check creation must be confirmed before claiming monitoring. Local recorded
+payloads are not implicitly present or replayed in CI.

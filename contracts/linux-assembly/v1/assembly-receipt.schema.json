@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:assembly:1.0.0:receipt",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": "1.0.0"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "kind": {
+      "const": "input_receipt"
+    },
+    "input": {
+      "type": "object",
+      "properties": {
+        "cluster_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "topic_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "topic": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "partition": {
+          "const": 0
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "value_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "cluster_id",
+        "topic_id",
+        "topic",
+        "partition",
+        "offset",
+        "value_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "action": {
+      "enum": [
+        "record",
+        "run_end",
+        "source_boundary"
+      ]
+    },
+    "record_id": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    }
+  },
+  "required": [
+    "version",
+    "id",
+    "kind",
+    "input",
+    "action"
+  ],
+  "additionalProperties": false
+}

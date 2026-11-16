@@ -26,6 +26,73 @@ public final class Assembler {
   @FunctionalInterface
   public interface Commit { void persist(List<JsonNode> outputs, byte[] nextSnapshot) throws Exception; }
 
+  /** Pure proposal over detached state; no live admission or external durable callback. */
+  public record Prepared(byte[] nextSnapshot, List<JsonNode> outputs, boolean consumed) {
+    public Prepared { nextSnapshot = nextSnapshot.clone(); outputs = outputs.stream().map(JsonNode::deepCopy).toList(); }
+    @Override public byte[] nextSnapshot() { return nextSnapshot.clone(); }
+    @Override public List<JsonNode> outputs() { return outputs.stream().map(JsonNode::deepCopy).toList(); }
+  }
+  @FunctionalInterface private interface Proposal { void apply(Assembler fork, Commit capture) throws Exception; }
+  private static final class Drain extends RuntimeException {
+    final String id, reason;
+    Drain(String id, String reason) { this.id = id; this.reason = reason; }
+  }
+  private ObjectNode preparingOrigin;
+  private Prepared proposalResult;
+  private static final Commit NO_DURABLE_CALLBACK = (outputs,next) -> {throw new IllegalStateException("preparation_invoked_durable_callback");};
+
+  public synchronized Prepared prepare(Boundary.Input input) throws Exception {
+    return propose((fork, capture) -> fork.accept(input, capture));
+  }
+  /** Stateful auth admission for a checkpoint wrapper that binds both source profiles. */
+  public synchronized Prepared prepareAuthentication(Boundary.Input input) throws Exception {
+    return propose((fork, capture) -> fork.authentication(input, capture));
+  }
+  private void authentication(Boundary.Input input, Commit commit) throws Exception {
+    Boundary.validateContext(input.raw(), input.context());
+    check(input.context().at("/parser/id").asString().equals("openssh-password"), "parser_binding");
+    check(Json.sha(input.bytes()).equals(input.raw().at("/evidence/sha256").asString()), "record_digest");
+    String run = input.context().get("run_id").asString();
+    String receipt = run + "/" + input.raw().get("record_id").asString();
+    String fingerprint = Boundary.hash(Json.MAPPER.valueToTree(List.of(input.raw(), Boundary.configuration(input.context()))));
+    if (state.get("receipts").has(receipt)) {
+      check(state.get("receipts").get(receipt).asString().equals(fingerprint), "conflicting_redelivery"); return;
+    }
+    ObjectNode next = state.deepCopy(); ObjectNode runs = object(next, "runs");
+    if (!runs.has(run)) { check(activeRuns(runs) < limits.runs, "run_limit_backlog"); runs.put(run,"active"); }
+    JsonNode result = runs.get(run).asString().equals("ended") ? Boundary.diagnostic(input,"after_dataset_end") : OpenSsh.adapt(input);
+    object(next,"receipts").put(receipt,fingerprint);persist(next,List.of(result),commit);
+  }
+  public synchronized Prepared prepareTick() throws Exception { return propose(Assembler::tick); }
+  public synchronized Prepared prepareEnd(String run) throws Exception {
+    return propose((fork, capture) -> fork.end(run, capture));
+  }
+  public synchronized Prepared prepareBoundary(String run, String namespace, String instance,
+      String host, String generation) throws Exception {
+    return propose((fork, capture) -> fork.boundary(run, namespace, instance, host, generation, capture));
+  }
+  public synchronized long nextDeadline() {
+    long deadline = Long.MAX_VALUE;
+    for (JsonNode group : state.get("groups"))
+      deadline = Math.min(deadline, Math.addExact(group.get("opened").asLong(), limits.ageMillis));
+    return deadline;
+  }
+  private Prepared propose(Proposal action) throws Exception {
+    Assembler fork = restore(clock, limits, snapshot());
+    fork.preparingOrigin = fork.state.deepCopy();
+    try {
+      action.apply(fork, NO_DURABLE_CALLBACK);
+      // Exact same-ID retry intentionally does not call the offline Commit API.
+      return fork.proposalResult == null ? new Prepared(snapshot(), List.of(), true) : fork.proposalResult;
+    } catch (Drain requested) {
+      Assembler single = restore(clock, limits, snapshot());
+      ObjectNode next = single.state.deepCopy(); List<JsonNode> outputs = new ArrayList<>();
+      single.close(next, outputs, requested.id, requested.reason);
+      single.validateState(next);
+      return new Prepared(Json.bytes(next), outputs, false);
+    }
+  }
+
   private final Clock clock;
   private final Limits limits;
   private final String binding;
@@ -166,6 +233,8 @@ public final class Assembler {
 
   private void close(ObjectNode next, List<JsonNode> outputs, String id, String closure) {
     ObjectNode group = object(object(next, "groups"), id);
+    if (preparingOrigin != null && preparingOrigin.path("groups").path(id).equals(group))
+      throw new Drain(id, closure);
     List<JsonNode> raws = new ArrayList<>(); List<Audit.Record> records = new ArrayList<>();
     boolean contextConflict = false;
     for (JsonNode member : group.get("members")) {
@@ -214,6 +283,7 @@ public final class Assembler {
     // Detached outputs/snapshot: callers cannot mutate the live state through commit arguments.
     for (JsonNode output : outputs) if (output.path("kind").asString().equals("preservation"))
       Boundary.schema("urn:detectbridge:linux:1.0.0:preservation", output);
+    if(preparingOrigin!=null) {proposalResult=new Prepared(Json.bytes(next),outputs,true);return;}
     commit.persist(outputs.stream().map(JsonNode::deepCopy).toList(), Json.bytes(next)); state = next;
   }
 

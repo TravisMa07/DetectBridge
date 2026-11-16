@@ -50,6 +50,15 @@
           ]
         },
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-contracts/gradle.lockfile",
           "configurations": [
             "runtimeClasspath",
@@ -92,6 +101,14 @@
       "coordinate": "com.esotericsoftware:kryo:5.6.2",
       "uses": [
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
             "compileClasspath"
@@ -103,6 +120,14 @@
       "coordinate": "com.esotericsoftware:minlog:1.3.1",
       "uses": [
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
             "compileClasspath"
@@ -113,6 +138,14 @@
     {
       "coordinate": "com.esotericsoftware:reflectasm:1.11.9",
       "uses": [
+        {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
         {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
@@ -126,6 +159,15 @@
       "uses": [
         {
           "lockfile": "packages/linux-adapters/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
           "configurations": [
             "compileClasspath",
             "runtimeClasspath",
@@ -189,6 +231,15 @@
           ]
         },
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-contracts/gradle.lockfile",
           "configurations": [
             "compileClasspath",
@@ -239,6 +290,15 @@
       "coordinate": "com.fasterxml.jackson.core:jackson-core:2.18.11",
       "uses": [
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
             "compileClasspath",
@@ -252,6 +312,15 @@
     {
       "coordinate": "com.fasterxml.jackson.core:jackson-databind:2.18.11",
       "uses": [
+        {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
         {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
@@ -267,6 +336,15 @@
       "coordinate": "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.18.11",
       "uses": [
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
             "compileClasspath",
@@ -281,6 +359,15 @@
       "coordinate": "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.11",
       "uses": [
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
             "compileClasspath",
@@ -294,6 +381,15 @@
     {
       "coordinate": "com.fasterxml.jackson:jackson-bom:2.18.11",
       "uses": [
+        {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
         {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
@@ -310,6 +406,13 @@
       "uses": [
         {
           "lockfile": "packages/linux-adapters/gradle.lockfile",
+          "configurations": [
+            "runtimeClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
           "configurations": [
             "runtimeClasspath",
             "testRuntimeClasspath"
@@ -356,6 +459,14 @@
       "coordinate": "com.google.code.findbugs:jsr305:1.3.9",
       "uses": [
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
             "compileClasspath"
@@ -368,6 +479,15 @@
       "uses": [
         {
           "lockfile": "packages/linux-adapters/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
           "configurations": [
             "compileClasspath",
             "runtimeClasspath",
@@ -422,6 +542,14 @@
       "coordinate": "commons-cli:commons-cli:1.5.0",
       "uses": [
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
             "compileClasspath"
@@ -432,6 +560,14 @@
     {
       "coordinate": "commons-collections:commons-collections:3.2.2",
       "uses": [
+        {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
         {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
@@ -444,6 +580,14 @@
       "coordinate": "commons-io:commons-io:2.15.1",
       "uses": [
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
             "compileClasspath"
@@ -455,6 +599,14 @@
       "coordinate": "org.apache.commons:commons-compress:1.26.0",
       "uses": [
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
             "compileClasspath"
@@ -465,6 +617,15 @@
     {
       "coordinate": "org.apache.commons:commons-lang3:3.18.0",
       "uses": [
+        {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
         {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
@@ -480,6 +641,14 @@
       "coordinate": "org.apache.commons:commons-math3:3.6.1",
       "uses": [
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
             "compileClasspath"
@@ -490,6 +659,14 @@
     {
       "coordinate": "org.apache.commons:commons-text:1.10.0",
       "uses": [
+        {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
         {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
@@ -502,6 +679,14 @@
       "coordinate": "org.apache.flink:flink-annotations:2.2.1",
       "uses": [
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
             "compileClasspath"
@@ -513,6 +698,12 @@
       "coordinate": "org.apache.flink:flink-clients:2.2.1",
       "uses": [
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
             "compileClasspath"
@@ -523,6 +714,15 @@
     {
       "coordinate": "org.apache.flink:flink-connector-base:2.2.1",
       "uses": [
+        {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
         {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
@@ -538,6 +738,14 @@
       "coordinate": "org.apache.flink:flink-connector-datagen:2.2.1",
       "uses": [
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
             "compileClasspath"
@@ -548,6 +756,15 @@
     {
       "coordinate": "org.apache.flink:flink-connector-kafka:5.0.0-2.2",
       "uses": [
+        {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
         {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
@@ -563,6 +780,14 @@
       "coordinate": "org.apache.flink:flink-core-api:2.2.1",
       "uses": [
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
             "compileClasspath"
@@ -573,6 +798,14 @@
     {
       "coordinate": "org.apache.flink:flink-core:2.2.1",
       "uses": [
+        {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
         {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
@@ -585,6 +818,14 @@
       "coordinate": "org.apache.flink:flink-datastream-api:2.2.1",
       "uses": [
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
             "compileClasspath"
@@ -595,6 +836,12 @@
     {
       "coordinate": "org.apache.flink:flink-datastream:2.2.1",
       "uses": [
+        {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath"
+          ]
+        },
         {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
@@ -607,6 +854,14 @@
       "coordinate": "org.apache.flink:flink-file-sink-common:2.2.1",
       "uses": [
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
             "compileClasspath"
@@ -617,6 +872,14 @@
     {
       "coordinate": "org.apache.flink:flink-hadoop-fs:2.2.1",
       "uses": [
+        {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
         {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
@@ -629,6 +892,14 @@
       "coordinate": "org.apache.flink:flink-metrics-core:2.2.1",
       "uses": [
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
             "compileClasspath"
@@ -639,6 +910,14 @@
     {
       "coordinate": "org.apache.flink:flink-queryable-state-client-java:2.2.1",
       "uses": [
+        {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
         {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
@@ -651,6 +930,14 @@
       "coordinate": "org.apache.flink:flink-rpc-akka-loader:2.2.1",
       "uses": [
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
             "compileClasspath"
@@ -661,6 +948,14 @@
     {
       "coordinate": "org.apache.flink:flink-rpc-core:2.2.1",
       "uses": [
+        {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
         {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
@@ -673,6 +968,14 @@
       "coordinate": "org.apache.flink:flink-runtime:2.2.1",
       "uses": [
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
             "compileClasspath"
@@ -683,6 +986,14 @@
     {
       "coordinate": "org.apache.flink:flink-shaded-asm-9:9.6-20.0",
       "uses": [
+        {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
         {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
@@ -695,6 +1006,14 @@
       "coordinate": "org.apache.flink:flink-shaded-guava:33.4.0-jre-20.0",
       "uses": [
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
             "compileClasspath"
@@ -705,6 +1024,14 @@
     {
       "coordinate": "org.apache.flink:flink-shaded-jackson:2.18.2-20.0",
       "uses": [
+        {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
         {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
@@ -717,6 +1044,14 @@
       "coordinate": "org.apache.flink:flink-shaded-netty:4.1.100.Final-20.0",
       "uses": [
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
             "compileClasspath"
@@ -728,6 +1063,14 @@
       "coordinate": "org.apache.flink:flink-shaded-zookeeper-3:3.7.2-20.0",
       "uses": [
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
             "compileClasspath"
@@ -738,6 +1081,14 @@
     {
       "coordinate": "org.apache.flink:flink-streaming-java:2.2.1",
       "uses": [
+        {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
         {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
@@ -751,6 +1102,15 @@
       "uses": [
         {
           "lockfile": "packages/linux-adapters/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
           "configurations": [
             "compileClasspath",
             "runtimeClasspath",
@@ -815,6 +1175,12 @@
           ]
         },
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "testCompileClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-contracts/gradle.lockfile",
           "configurations": [
             "testCompileClasspath"
@@ -838,6 +1204,14 @@
       "coordinate": "org.javassist:javassist:3.24.0-GA",
       "uses": [
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
             "compileClasspath"
@@ -850,6 +1224,13 @@
       "uses": [
         {
           "lockfile": "packages/linux-adapters/gradle.lockfile",
+          "configurations": [
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
           "configurations": [
             "testCompileClasspath",
             "testRuntimeClasspath"
@@ -888,6 +1269,12 @@
           ]
         },
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-contracts/gradle.lockfile",
           "configurations": [
             "testRuntimeClasspath"
@@ -912,6 +1299,13 @@
       "uses": [
         {
           "lockfile": "packages/linux-adapters/gradle.lockfile",
+          "configurations": [
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
           "configurations": [
             "testCompileClasspath",
             "testRuntimeClasspath"
@@ -951,6 +1345,13 @@
           ]
         },
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-contracts/gradle.lockfile",
           "configurations": [
             "testCompileClasspath",
@@ -978,6 +1379,13 @@
       "uses": [
         {
           "lockfile": "packages/linux-adapters/gradle.lockfile",
+          "configurations": [
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
           "configurations": [
             "testCompileClasspath",
             "testRuntimeClasspath"
@@ -1016,6 +1424,12 @@
           ]
         },
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-contracts/gradle.lockfile",
           "configurations": [
             "testRuntimeClasspath"
@@ -1040,6 +1454,12 @@
       "uses": [
         {
           "lockfile": "packages/linux-adapters/gradle.lockfile",
+          "configurations": [
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
           "configurations": [
             "testRuntimeClasspath"
           ]
@@ -1075,6 +1495,13 @@
           ]
         },
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-contracts/gradle.lockfile",
           "configurations": [
             "testCompileClasspath",
@@ -1101,6 +1528,14 @@
       "coordinate": "org.objenesis:objenesis:3.4",
       "uses": [
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [
             "compileClasspath"
@@ -1113,6 +1548,13 @@
       "uses": [
         {
           "lockfile": "packages/linux-adapters/gradle.lockfile",
+          "configurations": [
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
           "configurations": [
             "testCompileClasspath",
             "testRuntimeClasspath"
@@ -1160,6 +1602,14 @@
           "configurations": [
             "compileClasspath",
             "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
             "testCompileClasspath",
             "testRuntimeClasspath"
           ]
@@ -1249,6 +1699,15 @@
           ]
         },
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-contracts/gradle.lockfile",
           "configurations": [
             "compileClasspath",
@@ -1302,6 +1761,15 @@
           ]
         },
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-contracts/gradle.lockfile",
           "configurations": [
             "runtimeClasspath",
@@ -1345,6 +1813,15 @@
       "uses": [
         {
           "lockfile": "packages/linux-adapters/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
           "configurations": [
             "compileClasspath",
             "runtimeClasspath",
@@ -1412,6 +1889,15 @@
           ]
         },
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-contracts/gradle.lockfile",
           "configurations": [
             "compileClasspath",
@@ -1463,6 +1949,15 @@
       "uses": [
         {
           "lockfile": "packages/linux-adapters/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
           "configurations": [
             "compileClasspath",
             "runtimeClasspath",
@@ -1526,6 +2021,15 @@
           ]
         },
         {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/transport-contracts/gradle.lockfile",
           "configurations": [
             "compileClasspath",
@@ -1575,6 +2079,14 @@
     {
       "coordinate": "tools.profiler:async-profiler:2.9",
       "uses": [
+        {
+          "lockfile": "packages/linux-assembly-job/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
         {
           "lockfile": "packages/transport-job/gradle.lockfile",
           "configurations": [

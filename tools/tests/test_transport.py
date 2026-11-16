@@ -319,6 +319,7 @@ class TransportTests(unittest.TestCase):
                             "writer": "false",
                             "windows": "false",
                             "linux": "false",
+                            "assembly": "false",
                         },
                     },
                     "repository-hygiene": {"result": "success"},
@@ -330,6 +331,7 @@ class TransportTests(unittest.TestCase):
                     "opensearch-writer-verification": {"result": "skipped"},
                     "windows-verification": {"result": "skipped"},
                     "linux-verification": {"result": "skipped"},
+                    "linux-assembly-verification": {"result": "skipped"},
                 }
                 self.assertEqual(
                     gate_passes(needs), result == ("success" if applicable == "true" else "skipped")

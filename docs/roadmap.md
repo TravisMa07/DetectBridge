@@ -9,8 +9,8 @@ Merged-main qualification also passed. P12c adds selected reviewed audit evidenc
 and recorded qualification, merged in #43 as c024497 with completed owner
 semantic/completeness review recorded in its description. Its merged-main CI
 passed in run 43873905332. A new controlled Windows capture supplies technical
-identity/eligible evidence; P11 owner semantic acceptance and completion integration
-remain outstanding; later capabilities remain planned. See the
+identity/eligible evidence with bounded owner semantic acceptance; completion PR
+qualification and separately authorized integration remain outstanding; later capabilities remain planned. See the
 [implementation ledger](implementation-ledger.md) for exact evidence and limits.
 P numbers are planning IDs, not GitHub PR numbers. Milestones require their
 acceptance evidence and authorized merges; documentation alone does not complete
@@ -169,7 +169,8 @@ No application scaffolding, runtime capability claims or release tag.
   after AMD64 CI; recorded preservation accounting passes, but no recorded eligible
   coverage for the old public recordings is claimed without trusted host bindings.
   A [new controlled capture](p11-recording-review.md) passed local eligible offline
-  matching; owner semantic acceptance and final-head PR qualification remain gates.
+  matching and received bounded owner semantic acceptance. Final-head PR
+  qualification and separately authorized integration remain gates.
   See [design](p11-design.md).
 
 - Depends on: P04, P10.
@@ -212,8 +213,8 @@ is recorded in the acceptance map; P13 acceptance is not implied.
 ### P13 — Integrated enrichment and evaluation outcomes
 
 - Local status: [bounded design/acceptance plan](p13-design.md) prepared; runtime
-  not implemented. P11 controlled-source semantic acceptance and completion
-  qualification/integration remain blockers; merges alone do not make this item Ready.
+  not implemented. P11 controlled-source semantics are owner-accepted; completion
+  qualification and separately authorized integration remain blockers; merges alone do not make this item Ready.
 
 - Depends on: P08, P11, P12.
 - Deliver: tagged events, linked detections and quality/configuration diagnostics.

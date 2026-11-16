@@ -20,8 +20,9 @@ merged with ARM64/AMD64 qualification evidence. The owner authorized P11/P12;
 formal semantic review history remains recorded separately.
 [P11 Windows adapters](docs/windows-adapters.md) are merged with
 recorded preservation accounting. A [new controlled recording](docs/p11-recording-review.md)
-adds trusted host/capture evidence and eligible offline matching; owner semantic
-acceptance and implementation PR qualification remain pending. The older public
+adds trusted host/capture evidence and eligible offline matching. The owner accepted
+its bounded semantics; final-head PR qualification and separately authorized
+integration remain pending. The older public
 recordings still lack trusted bindings.
 [P12a Linux adapters](docs/p12-runbook.md) are merged and provide offline audit assembly
 and selected authentication parsing, with a small real reviewed local OpenSSH9

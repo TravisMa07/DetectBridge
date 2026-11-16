@@ -235,3 +235,21 @@ Java adapter/evaluator behavior or checkpoint formats changed. Actual recorded
 verification was rerun on the final frozen catalog in both isolated runs and all
 six output tamper probes failed as required. Native AMD64 PR CI and owner semantic
 acceptance are pending at this checkpoint; they are not inferred from ARM64 checks.
+
+## Owner bounded semantic acceptance — 2026-11-16
+
+The owner explicitly accepted the concrete controlled-recording packet:
+“Accept bounded P11 semantics; merge remains separate.” This covers the new
+source/identity/mapping, observation policy, selected-source completeness limit and
+independent expectations in the [review packet](p11-recording-review.md). It does
+not invent bindings for old public recordings or authorize a merge/release.
+The frozen catalog's pending-owner text records its source-expectation freeze;
+this later acceptance supersedes that historical status without changing original
+metadata/context hashes or silently attributing previous runs to new contexts.
+
+[PR #45](https://github.com/TravisMa07/DetectBridge/pull/45) head 526620c had passed
+actual native AMD64 windows-verification, Linux, transport, toolchain, stack, hygiene
+and secret jobs at inspection in run 43882562523. Writer, detection and assembly
+were still running; aggregate completion was not yet observed. This does not claim
+final qualification for the subsequent acceptance-documentation head. Final-head
+CI and separate explicit merge authorization remain gates.

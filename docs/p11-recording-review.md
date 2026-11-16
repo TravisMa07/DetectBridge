@@ -1,6 +1,8 @@
 # P11 controlled recording: owner semantic review
 
-Status: technical evidence passed locally; owner semantic acceptance pending.
+Status: owner accepted the bounded P11 source/identity/mapping and observation
+policy on 2026-11-16: “Accept bounded P11 semantics; merge remains separate.”
+Technical evidence passed locally; final-head PR qualification remains separate.
 Merge authorization remains separate. This packet covers the new bounded capture,
 not host identity in the older public recordings and not P13 streaming integration.
 
@@ -77,16 +79,19 @@ No archive, live host registry, P13 delivery or throughput claim follows.
 Local locked root checks passed with 149 Python tests; combined Java/semantic
 checks passed, including 35 Windows tests. The final owning Windows gate passed
 13 Python regressions, installed-artifact checks and lint/format. Native AMD64
-PR CI and owner semantic acceptance remain pending at this checkpoint.
+PR CI remains a separate gate. Owner semantic acceptance is recorded above.
 
 ## Owner acceptance items
 
-- [ ] Accept this new controlled capture as bounded recorded source/host evidence;
+- [x] Accept this new controlled capture as bounded recorded source/host evidence;
   older 7,018 public rows retain missing-binding/unsupported status unchanged.
-- [ ] Accept exact Security/Sysmon mapping, time/observation policy, preservation
+- [x] Accept exact Security/Sysmon mapping, time/observation policy, preservation
   distinctions and independent positive/nonmatch/inapplicable expectations above.
-- [ ] Accept the selected-source completeness limit and continued synthetic
+- [x] Accept the selected-source completeness limit and continued synthetic
   qualification for skipped/blocked/error and malformed/absence/capture edge cases.
 
-This packet requests semantic acceptance only. Required CI and explicit merge
-permission still apply to the implementation PR. No release is proposed.
+The owner acceptance covers these three bounded items only. Required CI and
+explicit merge permission still apply to [PR #45](https://github.com/TravisMa07/DetectBridge/pull/45).
+No merge or release was authorized. The frozen catalog
+retains its source-expectation-freeze review metadata; its historical pending-owner
+entry is superseded by this owner acceptance without rewriting evidence/context hashes.

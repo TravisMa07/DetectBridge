@@ -238,8 +238,10 @@ These measurements establish compatibility and recovery behavior, not capacity.
   All three inputs had zero lag after crash recovery and full recreation.
   Pending-input shutdown took 15.692 seconds with exit code 143 and no OOM or
   forced termination.
-- Native Linux AMD64 qualification: pending GitHub Actions; review its result
-  separately from the local ARM64 evidence.
+- Native Linux AMD64 merged-main qualification: [run 43652317692](https://github.com/TravisMa07/DetectBridge/actions/runs/43652317692)
+  passed on `430609a17996470159f07fc0cfe53028e552a5ef`, including actual writer
+  verification and required-checks. The opt-in recorded job was skipped; local
+  recorded evidence above remains separate.
 
 Generated reports remain outside Git under `.cache/writer-reports/`; neither
 telemetry nor generated credentials are included in this change. Test projects

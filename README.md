@@ -23,18 +23,20 @@ recorded preservation accounting; trusted recorded host bindings remain unavaila
 [P12a Linux adapters](docs/p12-runbook.md) are merged and provide offline audit assembly
 and selected authentication parsing, with a small real reviewed local OpenSSH9
 recording. A selected reviewed local audit capture and independent offline replay/evaluation
-are added in [P12c](docs/p12c-ledger.md); owner semantic/completeness acceptance
-remains pending.
+are added in [P12c](docs/p12c-ledger.md). PR #43 records completed owner
+semantic/completeness review and merge authorization; it is merged as `c024497`.
+Merged-main qualification passed in run 43873905332.
 [P12b checkpoint qualification](docs/linux-assembly.md) now has an isolated
 implementation merged in #42 with final-artifact ARM64 and final-head AMD64
 qualification passed. Merged-main qualification also passed; exact evidence and remaining gates
 are tracked in its ledger. [P12c](docs/p12c-design.md) adds recorded source
 qualification, atomic audit replay and opt-in real audit/authentication checkpoint
 recovery and isolated replay. The [P12 acceptance map](docs/p12-acceptance.md)
-separates completed bounded implementation/local evidence from remaining review
-and integration gates.
+records completed bounded implementation, qualification, owner review and
+authorized integration separately from P13 requirements.
 Production detection, management API, UI and detection-to-OpenSearch integration
-remain pending.
+remain pending. [P13 design and acceptance planning](docs/p13-design.md) records
+the unresolved P11 recorded host-binding/semantic gate; P13 runtime has not started.
 P06 provides local Kafka/Flink infrastructure and optional authenticated OpenSearch.
 Repository hygiene tooling and
 contributor templates were introduced in P01; P02 adds reproducible build tools,

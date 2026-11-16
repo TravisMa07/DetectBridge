@@ -1,9 +1,15 @@
 # P12c recorded source acceptance evidence
 
-Current status: implementation and final-artifact local ARM64 qualification passed;
-[draft PR #43](https://github.com/TravisMa07/DetectBridge/pull/43) is unmerged.
-Actual final-head AMD64 qualification and owner semantic/completeness review
-remain P12 acceptance gates. Trusted Windows recording bindings are separate
+Current status (2026-11-16): [PR #43](https://github.com/TravisMa07/DetectBridge/pull/43)
+is merged as `c02449745ddb87605d0bd85841f77fdad2fb382a`. Its description records
+completed owner semantic/completeness review and separate explicit merge
+authorization. Final-head AMD64 run 43812450381 attempt 2 passed on `adf71f8`;
+[merged-main run 43873905332](https://github.com/TravisMa07/DetectBridge/actions/runs/43873905332)
+passed including linux-assembly-verification and required-checks. Optional recorded
+jobs and unaffected Windows verification were skipped. Earlier pending statements
+below are historical.
+The first assembly CI attempt failed before tests on Maven Central HTTP 429; the
+unchanged failed-job rerun passed without policy or assertion changes. Trusted Windows recording bindings are separate
 P11/P13 requirements. Earlier failures
 and superseded observation metadata are retained below, not counted as passes.
 

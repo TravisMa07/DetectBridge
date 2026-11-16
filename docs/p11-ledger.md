@@ -162,3 +162,14 @@ P11 PR #38 passed required AMD64 jobs at 4f741c2 in run 43684323177 and the owne
 merged it as 46fb080013e4623eb019e6ada829fc909a7cbfe0. Earlier pending-CI/unmerged
 entries are historical. Trusted recorded host bindings and independent owner
 semantic review remain acceptance blockers; no recorded eligible claim is added.
+
+## P13 prerequisite inspection — 2026-11-16
+
+Both original Windows payloads and the 1,259-byte scenario metadata were rehashed
+against the catalog. Security and Sysmon have distinct Computer display values;
+metadata supplies no stable host IDs or capture-scoped Computer bindings. The
+owner reports no additional authoritative evidence. P08 has replay metadata only,
+not a host-binding registry. Rule fixtures and synthetic bindings cannot supply
+recorded provenance. Separate P11 semantic acceptance remains unresolved.
+The [P13 plan](p13-design.md#exact-missing-windows-evidence) records exact evidence
+needed and preserves the existing 361 skipped/6,657 unsupported accounting.

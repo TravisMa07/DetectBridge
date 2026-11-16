@@ -1,7 +1,9 @@
 # ADR 0008 — Independent metadata indexing and durable writer failures
 
-Status: accepted; P08 implemented and qualified locally on ARM64. Native AMD64 CI
-and owner review remain pending.
+Status: accepted; P08 implemented and qualified locally on ARM64. Native AMD64
+merged-main run 43652317692 passed writer/required-checks on 430609a; CI does not
+establish unrecorded owner review. P13 projection compatibility planning is in
+[owning design notes](../p13-design.md); P13 remains unimplemented.
 
 Owner: P08, issue #8. This number follows the planning ID to avoid ADR filename
 collisions with parallel development in other worktrees.

@@ -35,6 +35,12 @@ class HygieneTests(unittest.TestCase):
             )
         )
 
+    def test_integration_contracts_select_all_real_consumers(self):
+        from classify_changes import needs_assembly, needs_detection, needs_linux, needs_windows
+
+        for classifier in (needs_assembly, needs_detection, needs_linux, needs_windows):
+            self.assertTrue(classifier(["contracts/integration/v1/detection.schema.json"]))
+
     def test_invalid_json_and_yaml(self):
         self.assertTrue(self.errors("sample.json", "{oops}\n"))
         self.assertTrue(self.errors("sample.yml", "x: [\n"))

@@ -213,3 +213,19 @@ The owner reports no additional authoritative evidence. P11 semantic acceptance
 remains unresolved. [P13 design](p13-design.md) records exact missing evidence and
 bounded delivery/acceptance slices. No runtime implementation, handoff-only PR,
 merge or release was performed.
+
+## P13a compact outputs and actual offline consumers
+
+Refreshed origin/main is 4ac31fa. P11 #45 is owner-merged after explicit bounded
+semantic acceptance; actual merged-main 43900545102 passed applicable jobs.
+P08/P11/P12 bounded prerequisites are complete; historical pending text above is
+not a reopened blocker or invented older review history.
+
+[P13a decisions](p13a-design.md) freeze wire shapes, bounds and domain-separated
+identities. Compact mapped evaluation accumulates three fixed bit sets rather
+than materializing legacy per-rule diagnostics. Separately versioned tagged-event,
+detection and diagnostic outputs have actual Windows, authentication and audit
+offline producers/verification consumers. Legacy result APIs remain compatible.
+[P13a ledger](p13a-ledger.md) records actual checks and limits. Production P13b
+wiring, P13c search, complete source-to-search/recovery qualification, owner review,
+merge and release remain separate. No checkpoint or P08 index is adopted/changed.

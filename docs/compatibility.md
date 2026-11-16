@@ -23,7 +23,9 @@ See [P10 design](p10-design.md) for provenance, quality precedence and limitatio
 | Known mismatching logsource | Inapplicable before capability/quality | P10 source-before-capability case |
 | Unknown source / insufficient event quality | Configuration-blocked / quality-skipped, distinct | P10 mapping cases; legacy fixture cases |
 | Optimized source selection | P10b loader-built source index; exhaustive reference retained | `SelectionTest`; mapped YAML-to-Java equivalence cases |
-| Production Windows/Linux parsing | Planned P11/P12 | Not claimed by normalized synthetic cases |
+| Bounded offline Windows/Linux parsing | P11/P12 implemented and owner-accepted within selected scope; production wiring remains P13b | [Windows](windows-adapters.md), [Linux acceptance](p12-acceptance.md) |
+| Compact mapped results | Same six counts and ordered matches; at most three immutable rule-membership groups | `SelectionTest`, independent YAML-to-Java cases via `--compact` |
+| Attributed integration outputs | Separate 1.0.0 tagged/detection/diagnostic wrappers; unchanged P03 events and legacy results | `IntegrationOutputsTest`, actual Windows/AuthReplay/AuditReplay integrated consumer tests |
 
 Legacy independent cases and rationales:
 [semantic-cases.json](../contracts/detection/v1/fixtures/semantic-cases.json).

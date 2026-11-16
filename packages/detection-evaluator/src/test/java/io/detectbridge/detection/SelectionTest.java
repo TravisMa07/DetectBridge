@@ -28,6 +28,26 @@ class SelectionTest {
     JsonNode exhaustive = evaluator.evaluate(bytes, EvaluatorTest.location(bytes), false, budget);
     JsonNode selected = evaluator.evaluate(bytes, EvaluatorTest.location(bytes), true, budget);
     assertEquals(exhaustive, selected);
+    JsonNode compact = evaluator.compact(bytes, true, budget);
+    assertEquals(compact, evaluator.compact(bytes, false, budget));
+    assertEquals(selected.get("counts"), compact.get("counts"));
+    assertEquals(selected.get("matched"), compact.get("matched"));
+    assertTrue(compact.get("diagnostics").size() <= 3);
+    Map<String, String> expanded = new TreeMap<>();
+    for (var group : compact.get("diagnostics")) {
+      var set = group.get("rule_set");
+      var bits = new java.math.BigInteger(set.get("bits").asString(), 16);
+      assertEquals(bits.bitCount(), set.get("count").asInt());
+      var unhashed = ((ObjectNode) set).deepCopy(); unhashed.remove("sha256");
+      assertEquals(Json.sha(Json.bytes(Contracts.canonical(unhashed))), set.get("sha256").asString());
+      var rules = evaluator.planSnapshot().get("rules");
+      for (int i = 0; i < rules.size(); i++) if (bits.testBit(i))
+        expanded.put(rules.get(i).get("id").asString(), group.get("category").asString());
+    }
+    Map<String, String> legacy = new TreeMap<>();
+    for (var diagnostic : selected.get("diagnostics"))
+      legacy.put(diagnostic.get("rule_id").asString(), diagnostic.get("category").asString());
+    assertEquals(legacy, expanded);
     assertEquals(4, selected.get("counts").propertyStream().mapToInt(p -> p.getValue().asInt()).sum());
     assertEquals(selected.get("matched").size(), selected.get("counts").get("matched").asInt());
     return selected;

@@ -42,6 +42,49 @@ class OfflineEvaluationTest {
     String large=fixture("security").replace("synthetic.exe &quot;α 😀&quot;","x".repeat(65536));
     counts(evaluate(event(large,"security",true),evaluator()),1,1,1,0,0,1);
   }
+  @Test void integratedConsumerRetainsAllSixOutcomesAndPreservation() throws Exception {
+    var processor = new io.detectbridge.detection.IntegrationOutputs(evaluator());
+    for (String family : List.of("security", "sysmon")) {
+      var r = raw(fixture(family)); var c = context(r, family, true);
+      var input = temp.resolve("integrated-input"); var output = temp.resolve("integrated-output");
+      Files.write(input, Json.bytes(Map.of("raw", r, "context", c)));
+      assertEquals(1, Offline.runIntegrated(input, output, EvidenceResolver.local(temp), evaluator()));
+      var row = Json.read(Files.readAllBytes(output)); var integration = row.get("integration");
+      counts(integration.get("tagged"), 1, 2, 1, 0, 0, 0);
+      assertEquals(1, integration.get("detections").size()); assertEquals(0, integration.get("diagnostics").size());
+      assertEquals(r, row.get("raw")); assertEquals(c, row.get("context"));
+      assertEquals(row.get("event"), integration.at("/tagged/event"));
+      assertEquals(c.at("/source_contract/sha256"), integration.at("/tagged/attribution/source_contract/sha256"));
+      assertEquals(c.at("/mapping_profile/sha256"), integration.at("/tagged/attribution/mapping_profile/sha256"));
+      processor.verify(integration, null, c);
+      var unrelated = new Evaluator(Files.readAllBytes(ROOT.resolve(".cache/detection/mapped-plan.json")));
+      Offline.runIntegrated(input, output, EvidenceResolver.local(temp), unrelated);
+      var blocked = Json.read(Files.readAllBytes(output)).get("integration");
+      counts(blocked.get("tagged"), 0, 0, 0, 1, 0, 0);
+      assertEquals(c.at("/source_contract/sha256"), blocked.at("/tagged/attribution/source_contract/sha256"));
+      new io.detectbridge.detection.IntegrationOutputs(unrelated).verify(blocked, null, c);
+      var skipped = processor.process(event(fixture(family), family, false), null);
+      counts(skipped.get("tagged"), 0, 0, 1, 0, 3, 0);
+      assertEquals(1, skipped.get("diagnostics").size()); assertEquals(3, skipped.at("/diagnostics/0/rule_set/count").asInt());
+      assertFalse(skipped.at("/tagged/event/detectbridge/quality/diagnostics").isEmpty());
+      assertEquals(0, skipped.get("detections").size());
+    }
+    var large = processor.process(event(fixture("security").replace("synthetic.exe &quot;α 😀&quot;", "x".repeat(65536)), "security", true), null);
+    counts(large.get("tagged"), 1, 1, 1, 0, 0, 1);
+    assertEquals("evaluation_error", large.at("/diagnostics/0/category").asString());
+    var r = raw("<invalid/>"); var c = context(r, "security", true);
+    var input = temp.resolve("preservation-input"); var output = temp.resolve("preservation-output");
+    Files.write(input, Json.bytes(Map.of("raw", r, "context", c)));
+    Offline.runIntegrated(input, output, EvidenceResolver.local(temp), evaluator());
+    var row = Json.read(Files.readAllBytes(output)); assertTrue(row.has("preservation")); assertFalse(row.has("integration"));
+    byte[] previous = Files.readAllBytes(output);
+    assertThrows(java.io.IOException.class, () -> Offline.runIntegrated(input, output, ignored -> { throw new java.io.IOException("unavailable"); }, evaluator()));
+    assertArrayEquals(previous, Files.readAllBytes(output));
+    ((ObjectNode) r.get("evidence")).put("sha256", "0".repeat(64));
+    Files.write(input, Json.bytes(Map.of("raw", r, "context", c)));
+    Offline.runIntegrated(input, output, EvidenceResolver.local(temp), evaluator());
+    row = Json.read(Files.readAllBytes(output)); assertTrue(row.has("preservation")); assertFalse(row.has("integration"));
+  }
   @Test void actualAtomicRunnerPublishesEvaluationAndContext() throws Exception {
     var r=raw(fixture("security"));var c=context(r,"security",true);
     var input=temp.resolve("input");var output=temp.resolve("output");

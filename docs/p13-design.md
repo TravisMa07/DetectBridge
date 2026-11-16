@@ -1,14 +1,27 @@
 # P13 bounded design and acceptance plan
 
-Status: proposed owning design notes; runtime implementation has not started.
-A new [P11 controlled recording](p11-recording-review.md) supplies technical
-recorded identity/eligible evidence with bounded owner semantic acceptance. P13
-remains blocked on completion PR qualification and separately authorized integration.
-This plan preserves A02–A07 and ADR 0008; it does not waive prerequisite gates.
+Status: P13a compact evaluation and attributed offline outputs are implemented on
+this branch; qualification is recorded in the [P13a ledger](p13a-ledger.md).
+P13 production Kafka/Flink and OpenSearch integration remain unimplemented.
+P08/P11/P12 prerequisites are complete within their owner-accepted bounded scope.
+This plan preserves A02–A07 and ADR 0008. Concrete P13a contracts, numerical bounds
+and identity preimages are in [owning notes](p13a-design.md).
 
-## Prerequisite inspection — 2026-11-16
+## Refreshed prerequisite evidence — 2026-11-16
 
-Local main and origin/main are `c02449745ddb87605d0bd85841f77fdad2fb382a`.
+Fetched origin/main is 4ac31fa50cf8f3a23db89afc7436710bfe7a9a93. P11 completion
+[PR #45](https://github.com/TravisMa07/DetectBridge/pull/45) is owner-merged after
+explicit bounded semantic acceptance. Actual merged-main
+[run 43900545102](https://github.com/TravisMa07/DetectBridge/actions/runs/43900545102)
+succeeded, including Windows, Linux, assembly, detection, writer, transport and
+required-checks; recorded/acquisition jobs were expected opt-in skips. P12c #43
+records completed owner semantic/completeness review and explicit merge authorization.
+Historical pending text below does not reopen those accepted prerequisites. Older
+public Windows missing bindings remain a preservation limit of that corpus.
+
+## Historical prerequisite inspection — before P11 completion
+
+The initial inspection used `c02449745ddb87605d0bd85841f77fdad2fb382a`.
 P11 #38, P12a #39, P12b #42 and P12c #43 are merged.
 
 | Dependency | Observed evidence | Remaining gate |
@@ -145,8 +158,8 @@ Failure-topic indexing failures block; never recursively generate diagnostics.
 
 ## Acceptance and bounded delivery slices
 
-1. Finish P11 prerequisite acceptance above. P12 merged-main CI passed;
-   do not turn an optional-recorded skip or merged PR into source acceptance.
+1. P08/P11/P12 bounded prerequisites are complete as refreshed above;
+   optional-recorded skips do not establish new recorded qualification.
 2. Freeze schemas, identity vectors, independent source/rule expectations and
    exact numerical payload/state/diagnostic limits; implement compact evaluation
    and attribution with real adapter/evaluator consumers and legacy regressions.

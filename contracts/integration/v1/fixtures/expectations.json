@@ -1,0 +1,16 @@
+{
+  "rationale": "Serialized selection-plan rules: Image x, Linux inapplicable, unsupported Windows alias, Image x. Shared budget seven permits only first applicable predicate. Membership bits use original plan positions.",
+  "counts": {
+    "matched": 1,
+    "unmatched": 0,
+    "inapplicable": 1,
+    "configuration_blocked": 1,
+    "quality_skipped": 0,
+    "evaluation_error": 1
+  },
+  "matched_ids": [
+    "70000000-0000-4000-8000-000000000011"
+  ],
+  "configuration_blocked_bits": "0000000000000000000000004",
+  "evaluation_error_bits": "0000000000000000000000008"
+}

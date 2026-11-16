@@ -3,6 +3,7 @@ package io.detectbridge.linux;
 import static io.detectbridge.detection.Contracts.check;
 
 import io.detectbridge.detection.Evaluator;
+import io.detectbridge.detection.IntegrationOutputs;
 import io.detectbridge.transport.Json;
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -19,18 +20,21 @@ public final class AuditReplay {
   private static final Clock CLOCK = Clock.fixed(Instant.EPOCH, ZoneOffset.UTC);
 
   static long replay(Path input, Path output, Path plan) throws Exception {
+    return replay(input, output, plan, false);
+  }
+  public static long replay(Path input, Path output, Path plan, boolean integrated) throws Exception {
     Path destination = output.toAbsolutePath().normalize();
     check(!input.toRealPath().equals(destination) && !plan.toRealPath().equals(destination), "distinct_output_required");
     if (Files.exists(destination)) {
       check(!Files.isSameFile(input, destination) && !Files.isSameFile(plan, destination), "distinct_output_required");
     }
-    Evaluator evaluator = new Evaluator(Files.readAllBytes(plan));
+    Evaluator evaluator = new Evaluator(io.detectbridge.detection.Evaluate.bounded(plan, 4 * 1024 * 1024));
     Path temp = Files.createTempFile(destination.getParent(), ".audit-replay-", ".tmp");
     long count = 0;
     try {
       try (InputStream in = Files.newInputStream(input);
            FileChannel out = FileChannel.open(temp, StandardOpenOption.WRITE)) {
-        Writer writer = new Writer(out, evaluator);
+        Writer writer = new Writer(out, evaluator, integrated);
         Assembler machine = new Assembler(CLOCK, Assembler.Limits.defaults());
         Set<String> runs = new LinkedHashSet<>();
         byte[] line;
@@ -73,7 +77,11 @@ public final class AuditReplay {
 
   private static final class Writer {
     final FileChannel out; final Evaluator evaluator; long events;
-    Writer(FileChannel out, Evaluator evaluator) { this.out = out; this.evaluator = evaluator; }
+    final IntegrationOutputs integration;
+    Writer(FileChannel out, Evaluator evaluator, boolean integrated) {
+      this.out = out; this.evaluator = evaluator;
+      integration = integrated ? new IntegrationOutputs(evaluator) : null;
+    }
     void write(JsonNode document) throws IOException {
       ByteBuffer buffer = ByteBuffer.wrap(Json.bytes(document));
       while (buffer.hasRemaining()) out.write(buffer);
@@ -85,7 +93,11 @@ public final class AuditReplay {
         var row = Json.MAPPER.createObjectNode(); row.put("version", "1.0.0"); row.set("document", document);
         if (document.has("@timestamp")) {
           row.put("kind", "event"); byte[] bytes = Json.bytes(document);
-          row.set("evaluation", evaluator.evaluate(bytes, Map.of("cluster_id", "offline", "topic_id", "offline",
+          if (integration != null) {
+            JsonNode manifest = documents.stream().filter(d -> d.has("manifest_id") && d.path("event_id").equals(document.at("/event/id"))).findFirst().orElseThrow();
+            Boundary.schema("urn:detectbridge:linux:1.0.0:manifest", manifest);
+            row.set("integration", integration.process(document, manifest));
+          } else row.set("evaluation", evaluator.evaluate(bytes, Map.of("cluster_id", "offline", "topic_id", "offline",
               "topic", "linux-audit-offline", "partition", 0, "offset", events++, "value_sha256", Json.sha(bytes))));
         } else row.put("kind", document.has("manifest_id") ? "manifest" : "preservation");
         write(row);
@@ -103,8 +115,8 @@ public final class AuditReplay {
 
   public static void main(String[] args) {
     try {
-      check(args.length == 3, "arguments");
-      long count = replay(Path.of(args[0]), Path.of(args[1]), Path.of(args[2]));
+      check(args.length == 3 || (args.length == 4 && args[3].equals("--integrated")), "arguments");
+      long count = replay(Path.of(args[0]), Path.of(args[1]), Path.of(args[2]), args.length == 4);
       System.out.println("{\"status\":\"published\",\"records\":" + count + "}");
     } catch (Exception e) {
       System.err.println("{\"category\":\"audit_replay_failed\"}"); System.exit(1);

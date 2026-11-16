@@ -123,3 +123,19 @@ linux-assembly-verification required job also runs actual isolated runtime
 qualification; see the [runbook](linux-assembly.md). CI targets main and concrete
 check creation must be confirmed before claiming monitoring. Local recorded
 payloads are not implicitly present or replayed in CI.
+
+## P13a compact/offline output checks
+
+`tools/dev.py java` includes compact/exhaustive Java comparisons and independent
+YAML-to-Java semantic expectations, plus actual integrated Windows/Linux offline
+consumer tests. Existing `windows`, `linux` and `assembly` commands retain their
+checks. Integration schema changes select the real detection, Windows, Linux and
+assembly gates; they do not create a placeholder P13 runtime CI job.
+
+After `tools/dev.py windows` or `linux` installs the relevant distribution, append
+`--integrated` to the Windows command after its mapped PLAN argument, or to the
+Linux authentication/audit replay command after PLAN. Existing argument order and
+legacy default output stay compatible. The option emits an `integration` member
+instead of legacy `evaluation` on event rows. Raw/context, manifests and preservation
+rows remain retained. See [P13a decisions](p13a-design.md) and
+[qualification limits](p13a-ledger.md). No Kafka/OpenSearch P13 command exists yet.

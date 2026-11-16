@@ -91,3 +91,16 @@ separate skipped preservation. A synthetic binding is never recorded provenance.
 Linux bounds context to 64 KiB and provenance arrays to 16 entries; Windows uses
 its documented parser/context bounds. Different admission limits do not rewrite
 the context's meaning or P03 identities. No shared unused adapter library is added.
+
+## P13a offline output consumer
+
+[P13a](p13a-design.md) implements explicit integration output modes in the actual
+Windows and Linux offline runners, using the compact mapped evaluator rather than
+allocating the legacy per-rule diagnostic list. It retains original raw/context
+and manifests beside separately versioned tagged/detection/grouped-diagnostic
+wrappers. Source quality remains in unchanged P03 events; unsupported/malformed
+rows remain preservation records. Audit processing checks manifest integrity,
+context, quality and exact membership. Receipt clocks and physical input locations
+are excluded from semantic identity/conflict hashes while original retrieval
+attribution is retained. Production Kafka/Flink and search integration remain
+P13b/P13c; no accepted P12 transition or checkpoint binding is changed here.

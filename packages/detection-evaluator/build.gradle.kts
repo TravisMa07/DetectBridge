@@ -12,7 +12,7 @@ dependencies {
 }
 application { mainClass.set("io.detectbridge.detection.Evaluate") }
 tasks.test { useJUnitPlatform(); systemProperty("repository.root", rootProject.projectDir) }
-sourceSets.main { resources { srcDir(rootProject.file("contracts")); include("detection/v1/*.schema.json", "detection/v2/*.schema.json") } }
+sourceSets.main { resources { srcDir(rootProject.file("contracts")); include("detection/v1/*.schema.json", "detection/v2/*.schema.json", "integration/v1/*.schema.json") } }
 tasks.shadowJar {
     archiveFileName.set("evaluator.jar")
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
@@ -32,6 +32,7 @@ val compileFixturePlan by tasks.registering(Exec::class) {
 }
 tasks.test {
     dependsOn(compileFixturePlan)
+    inputs.dir(rootProject.file("contracts/integration/v1/fixtures"))
     inputs.files(rootProject.fileTree("contracts/detection/v1/fixtures"), rootProject.fileTree("contracts/v1"), rootProject.fileTree("contracts/detection/v2"))
     inputs.files(rootProject.file(".cache/detection/plan.json"), rootProject.file(".cache/detection/mapped-plan.json"), rootProject.file(".cache/detection/selection-plan.json"))
 }

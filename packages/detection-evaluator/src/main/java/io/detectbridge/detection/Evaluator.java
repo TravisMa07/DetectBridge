@@ -221,7 +221,23 @@ public final class Evaluator {
     return evaluate(bytes, location, false, 1_000_000);
   }
 
+  /** Mapped compact evaluation accumulates three fixed membership sets, never per-rule rows. */
+  public JsonNode evaluateCompact(byte[] bytes) {
+    return compact(bytes, true, 1_000_000);
+  }
+
+  JsonNode compact(byte[] bytes, boolean indexed, int limit) {
+    requireMappedDeployment();
+    return evaluate(bytes, Map.of(), indexed, limit, true);
+  }
+
+  JsonNode planSnapshot() { return plan.deepCopy(); }
+
   JsonNode evaluate(byte[] bytes, Map<String, Object> location, boolean indexed, int limit) {
+    return evaluate(bytes, location, indexed, limit, false);
+  }
+
+  private JsonNode evaluate(byte[] bytes, Map<String, Object> location, boolean indexed, int limit, boolean compact) {
     JsonNode event = Json.read(bytes),
         db = event.path("detectbridge"),
         sc = db.path("source_contract");
@@ -230,6 +246,9 @@ public final class Evaluator {
     Map<String, Integer> counts = new LinkedHashMap<>();
     OUTCOMES.forEach(k -> counts.put(k, 0));
     List<Object> matched = new ArrayList<>(), diagnostics = new ArrayList<>();
+    Map<String, java.math.BigInteger> groups = new LinkedHashMap<>();
+    for (String category : List.of("configuration_blocked", "quality_skipped", "evaluation_error"))
+      groups.put(category, java.math.BigInteger.ZERO);
     Budget budget = new Budget(limit);
     Selection selection = indexed && mapped && source != null
         ? selections.get(sc.get("id").asString() + "/" + sc.get("version").asString()) : null;
@@ -264,9 +283,29 @@ public final class Evaluator {
       if (outcome.equals("matched"))
         matched.add(
             Map.of("id", rule.get("id").asString(), "revision", rule.get("revision").asString()));
-      if (List.of("configuration_blocked", "quality_skipped", "evaluation_error").contains(outcome))
-        diagnostics.add(
+      if (groups.containsKey(outcome)) {
+        if (compact) {
+          int position = 0;
+          while (!plan.get("rules").get(position).get("id").equals(rule.get("id"))) position++;
+          groups.put(outcome, groups.get(outcome).setBit(position));
+        } else diagnostics.add(
             Map.of("rule_id", rule.get("id").asString(), "category", outcome, "pointer", ""));
+      }
+    }
+    if (compact) {
+      for (var group : groups.entrySet()) {
+        if (group.getValue().signum() == 0) continue;
+        var reference = Json.MAPPER.createObjectNode();
+        reference.put("version", "bundle-bits/1.0.0");
+        reference.put("bundle_sha256", bundle());
+        reference.put("bits", String.format(Locale.ROOT, "%025x", group.getValue()));
+        reference.put("count", group.getValue().bitCount());
+        reference.put("sha256", Json.sha(Json.bytes(canonical(reference))));
+        diagnostics.add(Map.of("category", group.getKey(), "rule_set", reference));
+      }
+      JsonNode compactResult = Json.MAPPER.valueToTree(Map.of("version", "1.0.0", "counts", counts, "matched", matched, "diagnostics", diagnostics));
+      contracts.require("integration", "compact-evaluation", compactResult);
+      return compactResult;
     }
     String id = event.get("event").get("id").asString(), run = db.get("run_id").asString();
     Map<String, Object> output = new LinkedHashMap<>();

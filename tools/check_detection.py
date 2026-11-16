@@ -24,6 +24,8 @@ from jsonschema import Draft202012Validator
 def check(java=False):
     for path in DIRECTORY.glob("*.schema.json"):
         Draft202012Validator.check_schema(load_json(path))
+    for path in (ROOT / "contracts/integration/v1").glob("*.schema.json"):
+        Draft202012Validator.check_schema(load_json(path))
     inventory = load_json(ROOT / "docs/detection-dependencies.json")
     locks = {
         str(p.relative_to(ROOT)): p.read_text()
@@ -46,6 +48,9 @@ def check(java=False):
                 n.startswith("META-INF/LICENSE") for n in names
             ):
                 raise ValueError("invalid_detection_artifact")
+            for kind in ("common", "compact-evaluation", "tagged-event", "detection", "diagnostic"):
+                if f"integration/v1/{kind}.schema.json" not in names:
+                    raise ValueError("missing_integration_contract")
             if any("/fixtures/" in n or n.startswith("sigma/") for n in names):
                 raise ValueError("unexpected_runtime_content")
     source = load_json(ROOT / "contracts/v1/examples/windows-security-4688.source.json")
@@ -111,7 +116,7 @@ def check(java=False):
             if not valid:
                 raise ValueError("mapped_semantic_failure_" + case["name"])
     print(
-        f"PASS: {len(cases)} legacy plus {len(cases)} mapped independent YAML-to-Java cases; mapped exhaustive equivalence"
+        f"PASS: {len(cases)} legacy plus {len(cases)} mapped independent YAML-to-Java cases; mapped exhaustive/compact equivalence"
     )
     check_mapped(jar)
 

@@ -2,8 +2,9 @@
 
 Current status: implementation and final-artifact local ARM64 qualification passed;
 [draft PR #43](https://github.com/TravisMa07/DetectBridge/pull/43) is unmerged.
-Actual final-head AMD64 qualification, owner semantic/completeness review and
-trusted Windows recorded host bindings remain separate gates. Earlier failures
+Actual final-head AMD64 qualification and owner semantic/completeness review
+remain P12 acceptance gates. Trusted Windows recording bindings are separate
+P11/P13 requirements. Earlier failures
 and superseded observation metadata are retained below, not counted as passes.
 
 Branch: feat/p12c-recorded-source-evidence, based on merged P12b e2d06c3.
@@ -234,3 +235,58 @@ runtime Java code or artifact changes followed this qualification.
 All local acceptance checks are recorded above. PR-head AMD64 status must be read
 from the actual final head; earlier/head/base CI passes are not silently attributed
 to it. Owner review packet and separate merge authorization remain open.
+
+## P12 completion — real audit checkpoint/replay
+
+The remaining recorded-audit runtime path is implemented by
+`tools/linux_assembly_audit_runtime.py`. It uses the unchanged qualified bundle
+5961fc44 / JAR 364a3423 and the corrected context/1.1.0 catalog. No runtime Java,
+source/mapping snapshot, checkpoint/state format, timer or broker policy changed.
+
+Actual ARM64 project `detectbridge-p12-audit-7970e0af42a1` qualified both complete
+runs of the 30-row recording. Its execution-first admission order was explicitly
+specified before runtime and retained alongside original unchanged dataset positions,
+source bytes and reviewed context. Completed checkpoint 5 retained the still-open
+six-member execution group with exact source/member/raw/context hashes. Actual
+TaskManager restart preserved it and its original absolute deadline; it closed as
+an eligible timeout event. Remaining originals and explicit run end accounted for
+all ten groups and three direct preservation diagnostics in the first run.
+
+Isolated replay run `6e095bf7-f1cb-4d71-bfff-1d8e4a3728da` admitted unchanged
+originals. Its explicit source boundary closed the complete execution while actual
+RecordTooLarge rejection blocked the event sink. Independently confirmed completed
+checkpoint 16 retained that run's eligible event and all six exact original members.
+Healthy-sink explicit checkpoint restore drained the event; remaining originals
+and run end completed the second full recording.
+
+All 63 admissions (60 original record occurrences and three separately attributed
+controls) were accounted for: 20 events, 20 manifests, six preservation diagnostics,
+63 receipts, 109 logical documents and 117 physical rows including eight stable
+byte-identical recovery duplicates. Ten event/evidence identities were identical
+across the two isolated runs; closure/manifests and processing attribution remained
+run-specific. Full original fields/tokens, source times, provenance, quality and
+runtime/input binding checks passed, not just counters. The job does not evaluate
+Sigma; the independent offline P10 cases remain separate evidence.
+
+The owned stack/volumes were removed. Original input/ack/expectation/catalog ledgers,
+open/blocked checkpoint observations and reports remain ignored. Final log:
+`.cache/p12-completion-audit-runtime.log`; report:
+`.cache/linux-assembly-reports/detectbridge-p12-audit-7970e0af42a1.json`.
+Locked repository checks pass with 149 Python tests, twenty owning assembly/recording
+regressions, lint/format/types, contracts/catalog/inventory/hygiene and secrets.
+The preflight now also verifies exhaustive independent catalog membership before
+Docker and retains explicit group expectations for subsequent runs. Those additions
+do not alter the runtime protocol or the already qualified original/expected data.
+
+The [P12 acceptance map](p12-acceptance.md) now separates completed bounded Linux
+implementation/local evidence from owner semantic acceptance and integration gates.
+Windows trusted recorded bindings belong to P11/P13; they are not unfinished Linux
+implementation. Actual final-head AMD64 checks, owner review and separately
+explicit merge authorization still apply before claiming P12 accepted/merged.
+
+Targeted locked `tools/dev.py assembly` also passed after the completion work: Linux
+and assembly Java tests, shadow-JAR/schema/license/dependency checks and twenty
+owning Python regressions. No new runtime artifact was produced or silently
+attributed; the JAR remains 364a3423. Recorded runtime timeout closure is actual
+evidence; exact deadline identity is additionally covered by independent state
+serialization/model tests, not a throughput or wall-clock accuracy claim.

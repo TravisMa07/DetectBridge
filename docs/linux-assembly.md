@@ -164,3 +164,34 @@ and volumes are removed. Ordinary CI runs synthetic verifier regressions and the
 existing full P12b qualification; it does not claim access to this recording.
 Reviewed eligible audit evidence, trusted Windows bindings and independent owner
 semantic/completeness acceptance remain outstanding.
+
+## Opt-in reviewed audit checkpoint recovery
+
+```sh
+uv run --locked python tools/linux_assembly_audit_runtime.py .cache/p12-audit-reviewed-v1
+```
+
+This command requires the pinned complete original recording and the existing
+immutable P12b/P12c build artifact. It preflights provenance and exhaustive source
+membership before runtime mutation. It admits the six execution members first,
+checks the open group's exact members/hashes in a completed checkpoint, restarts
+TaskManager and requires its original deadline to close an eligible timeout event.
+Remaining original rows and explicit run end complete the first full recording.
+
+An isolated second run retains unchanged original bytes, dataset positions and
+source context. An explicit reviewed source-boundary control closes the execution
+while actual RecordTooLarge failure blocks its required event sink. A confirmed
+completed checkpoint must retain that run's eligible event and exact original
+members. Healthy-sink restore drains the output, then remaining originals and run
+end complete replay. Both runs require ten groups and three preservation diagnostics,
+full source/token/quality/provenance checks, exact receipts and stable event/evidence
+identity. Every physical duplicate must have identical bytes within its run.
+
+Execution-first admission intentionally reorders independent groups for fault
+qualification; within-group order and original LF objects are unchanged. Each
+original occurrence is admitted once per run. Controls have separate identities and
+reviewed provenance. This is an opt-in local qualification path, not ordinary-CI
+recording acquisition or P13 evaluation. Original input/ack/expectation ledgers and
+checkpoint observations remain ignored; only the owned stack/volumes are removed.
+The [P12 acceptance map](p12-acceptance.md) separates implementation evidence from
+owner semantic acceptance and merge authorization.

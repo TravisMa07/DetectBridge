@@ -28,13 +28,13 @@ Implementation/local evidence is recorded separately in the [ledger](p12c-ledger
   predicates are quality_skipped for those same source events. The eligible
   event's independently expected match/nonmatch/block remain distinct.
 - [ ] Review atomic offline replay/publication boundaries and the recorded auth
-  checkpoint fault/recovery evidence. The local replay file is non-resumable;
+  and audit checkpoint fault/recovery evidence. The local replay file is non-resumable;
   completed Flink checkpoints remain the runtime recovery authority. Strict
   binding rejection and all required sink/broker checks remain intact.
 
 [Existing P12a semantic cases](../packages/linux-adapters/fixtures/expectations.md)
 and [P12b independent vectors](../contracts/linux-assembly/v1/fixtures/expectations.md)
-remain part of the owner completeness/semantic review. Broader P11/P12 acceptance
-still needs trusted Windows recording bindings and the outstanding owner reviews.
+remain part of the owner completeness/semantic review. P12 acceptance still needs the outstanding owner review and authorized integration.
+Trusted Windows recording bindings remain a separate P11/P13 requirement.
 P13 production wiring stays blocked. Any PR merge or release needs separate
 explicit owner authorization.

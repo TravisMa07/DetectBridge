@@ -179,9 +179,10 @@ No application scaffolding, runtime capability claims or release tag.
 
 - Local status: P12a bounded offline core merged in #39 after AMD64 CI, with real
   local OpenSSH9 recording qualification. P12c adds one reviewed local eligible
-  audit slice and atomic offline evaluation; owner semantic/completeness review
-  remains open. P12b #42 is merged with ARM64/AMD64 and merged-main evidence. Full P12 is
-  incomplete.
+  audit slice, offline evaluation and real audit/auth checkpoint recovery; bounded
+  implementation/local evidence is complete. Owner semantic/completeness review
+  remains open. P12b #42 is merged with ARM64/AMD64 and merged-main evidence.
+  P12 acceptance/integration is incomplete; see the [acceptance map](p12-acceptance.md).
 
 - Depends on: P04, P10.
 - Deliver: audit execution and selected authentication adapters, bounded keyed

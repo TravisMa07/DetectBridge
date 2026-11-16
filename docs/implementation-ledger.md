@@ -188,3 +188,9 @@ frozen rule cases, 146 Python regressions, combined Java/semantic consumers, ful
 ARM64 assembly/five-sink/broker/recovery and both resource profiles, plus final-
 artifact real auth checkpoint restore and isolated replay. Draft #43 remains
 unmerged. Exact artifact IDs, failed attempts and remaining gates are in its ledger.
+
+The final P12 technical evidence gap is now qualified: real recorded audit group
+checkpoint/TaskManager/deadline recovery and eligible-event sink failure/restore,
+with both complete isolated runs and all 63 record/control admissions accounted for.
+[Acceptance map](p12-acceptance.md) distinguishes bounded implementation completion
+from pending owner semantic review, actual PR-head CI and authorized integration.

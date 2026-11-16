@@ -110,7 +110,7 @@ class Oracle:
         self.schemas = {s["$id"]: s for s in schemas}
         self.physical = 0
 
-    def group(self, rows, closure="source_boundary", findings=None):
+    def group(self, rows, closure="source_boundary", findings=None, *, execution=None):
         rows = copy.deepcopy(rows)
         expected = manifest(rows, closure, findings or [])
         run = rows[0]["context"]["run_id"]
@@ -118,6 +118,8 @@ class Oracle:
         self.events[(run, expected["event_id"])] = dict(
             rows=rows, eligible=not expected["findings"], complete=not expected["findings"]
         )
+        if execution is not None:
+            self.events[(run, expected["event_id"])]["execution"] = copy.deepcopy(execution)
         return expected
 
     def auth(self, row, outcome="success", *, expectation=None):
@@ -280,6 +282,18 @@ class Oracle:
                             normalizer="linux-p12a/1.0.0",
                         )
                     )
+                elif "execution" in expected:
+                    execution = expected["execution"]
+                    require(
+                        document["process"]
+                        == dict(
+                            executable=execution["executable"],
+                            args=execution["args"],
+                            pid=execution["pid"],
+                            working_directory=execution["cwd"],
+                        )
+                    )
+                    require(document["source_fields"]["paths"] == execution["paths"])
                 elif expected["complete"]:
                     require(
                         document["process"]["executable"] == "/usr/bin/whoami"

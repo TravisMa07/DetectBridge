@@ -1,10 +1,12 @@
-# P12c — Reviewed authentication checkpoint qualification
+# P12c — Recorded Linux source qualification
 
-Small follow-up to merged P12b #42, based on main e2d06c3. This adds an opt-in
-qualification command, not a parser, policy, state format or production pipeline.
+Completes bounded recorded-source implementation after merged P12b #42, based on
+main e2d06c3. It adds a controlled audit capture, atomic offline audit replay and
+opt-in real audit/auth checkpoint qualification. No source parser, semantic policy,
+state format or production pipeline is changed.
 Accepted A02/A03/A06 and ADR 0012 remain unchanged.
 
-## Dependencies and scope
+## Authentication checkpoint qualification
 
 Require P12b's immutable built artifact and all original local artifacts from the
 reviewed openssh9-password-lab-v1 catalog. Reuse its native/collector body check,
@@ -38,17 +40,16 @@ strict incompatible-restore, all-sink and broker qualification stays intact.
 - Locked repository/component checks pass. Record actual local runtime outcome
   and PR CI separately; missing recording is a failure of the opt-in command.
 
-No eligible audit evidence, trusted Windows recording binding, owner semantic
-approval, full P12/P13 readiness, performance, release or merge authorization is
-created. Owner completeness/expectation review remains required. Evidence and build
+The bounded eligible audit evidence is specified below. No trusted Windows
+recording binding, owner semantic approval, full P12/P13 readiness, performance,
+release or merge authorization is created. Owner completeness/expectation review remains required. Evidence and build
 artifacts stay ignored. No public fixture or new third-party dependency is added.
 
-## Expanded roadmap scope
+## Controlled audit capture and offline replay
 
-The owner requested sustained roadmap implementation after the initial small-PR
-plan. Extend this PR to a reviewed eligible Linux audit recording and its bounded
-offline replay/independent qualification path. Keep the authentication checkpoint
-slice above. Windows trusted bindings and independent owner acceptance stay open.
+Provide a reviewed eligible Linux audit recording and its bounded offline
+replay/independent qualification path alongside authentication recovery.
+Windows trusted bindings and independent owner acceptance stay open.
 
 Capture runs in a disposable QEMU guest kernel inside an unprivileged, networkless
 container. The container never receives audit capabilities, host devices or host
@@ -82,20 +83,22 @@ failure and retain the audit acceptance gate rather than promoting synthetic dat
 ## P12 completion — recorded audit runtime
 
 Qualify the reviewed real audit capture through the existing checkpointed job as
-well as offline evaluation. Admit the six execution members first, retaining their
-unchanged original dataset positions/bytes/context. Confirm a partial group's
-member IDs/hashes in a completed checkpoint, restart TaskManager, then admit the
-remaining members and an explicit reviewed source-boundary control. The boundary
-closes this complete group; it does not supply missing evidence. This deliberate
-cross-group admission order is recorded before Kafka admission and is not a
-rewrite of original LF order or source membership.
+well as offline evaluation. Admit its six execution members first, retaining
+unchanged dataset positions/bytes/context. Confirm the still-open complete group's
+member IDs/hashes in a completed checkpoint, restart TaskManager, and require its
+original processing-time deadline to close it eligible. Native EOE is absent;
+reviewed membership/counts, not the timeout, establish completeness. Then admit all
+remaining originals and explicit run end, accounting for every input/control.
 
-Require actual event RecordTooLarge failure and a confirmed completed checkpoint
-retaining the eligible event's exact original members. Restore healthy output,
-then admit all remaining original rows and explicit run end. Independently account
-for all ten groups/three diagnostics, source fields and every input/control receipt.
-Repeat the complete capture in an isolated new run, with dataset_end closure for
-all groups and stable evidence/event identity. Check physical duplicates separately.
+Replay the complete recording in an isolated second run. Admit the six execution
+members plus an explicit reviewed source boundary while the required event sink
+actually rejects output. Require RecordTooLarge and a confirmed completed checkpoint
+retaining that second run's eligible event and exact six original members. Restore
+healthy output, then admit the remaining originals and run end. This deliberately
+records execution-first cross-group admission order; no source bytes or within-group
+order are rewritten. Verify ten groups and three diagnostics per run, every receipt,
+full source fields, stable evidence/event identity and physical duplicate bytes.
+
 No evaluator or P13 wiring is introduced into the Flink job. Existing source,
 state, timer, queue, broker and incompatible-binding checks stay unchanged.
 

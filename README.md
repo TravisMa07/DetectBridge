@@ -29,7 +29,10 @@ remains pending.
 implementation merged in #42 with final-artifact ARM64 and final-head AMD64
 qualification passed. Merged-main qualification also passed; exact evidence and remaining gates
 are tracked in its ledger. [P12c](docs/p12c-design.md) adds recorded source
-qualification, atomic audit replay and opt-in authentication checkpoint evidence.
+qualification, atomic audit replay and opt-in real audit/authentication checkpoint
+recovery and isolated replay. The [P12 acceptance map](docs/p12-acceptance.md)
+separates completed bounded implementation/local evidence from remaining review
+and integration gates.
 Production detection, management API, UI and detection-to-OpenSearch integration
 remain pending.
 P06 provides local Kafka/Flink infrastructure and optional authenticated OpenSearch.

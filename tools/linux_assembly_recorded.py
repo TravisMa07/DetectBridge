@@ -88,6 +88,7 @@ def retain(test, oracle, rows):
     save(
         test.folder / "independent-expectations.json",
         dict(
+            groups=list(oracle.groups.values()),
             events=[
                 dict(run=key[0], id=key[1], expected=value) for key, value in oracle.events.items()
             ],

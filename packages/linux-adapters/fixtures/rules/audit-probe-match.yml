@@ -1,0 +1,11 @@
+title: Original P12c controlled audit probe image
+id: 72000000-0000-4000-8000-000000000005
+status: test
+license: Apache-2.0
+logsource:
+  product: linux
+  category: process_creation
+detection:
+  selection:
+    Image: /usr/local/bin/bridge-audit-probe
+  condition: selection

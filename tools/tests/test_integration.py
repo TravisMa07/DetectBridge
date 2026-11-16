@@ -14,10 +14,30 @@ from classify_changes import needs_integration
 from integration import INPUT, TOPICS, Integration
 from integration_cases import digest, encoded
 from integration_oracle import Oracle, identity
+from integration_verify import exception_classes
 from linux_assembly_verify import transport_id
 
 
 class IntegrationTests(unittest.TestCase):
+    def test_failure_log_retains_only_bounded_exception_class_names(self):
+        detail = {
+            "root-exception": "org.apache.flink.FlinkException: private-body-sentinel\n"
+            "Caused by: java.util.concurrent.TimeoutException: sensitive source"
+        }
+        self.assertEqual(
+            ["java.util.concurrent.TimeoutException", "org.apache.flink.FlinkException"],
+            exception_classes(detail),
+        )
+        self.assertNotIn("private-body-sentinel", str(exception_classes(detail)))
+        self.assertLessEqual(
+            len(
+                exception_classes(
+                    {"root": " ".join(f"example.Failure{i}Exception" for i in range(100))}
+                )
+            ),
+            64,
+        )
+
     def test_real_contracts_and_project_isolation(self):
         check()
         self.assertEqual(8, len(TOPICS))

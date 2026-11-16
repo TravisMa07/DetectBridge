@@ -173,3 +173,26 @@ separately above. The final documentation commit requires its own CI; no pending
 or opt-in skipped job is counted as qualification. Owner semantic review/merge
 remain separate. No new local recorded corpus, OpenSearch source-to-search,
 throughput, release or full P13 milestone acceptance is claimed.
+
+## Native CI failure follow-up
+
+Final documentation head 32f0930 failed run
+[43973410719](https://github.com/TravisMa07/DetectBridge/actions/runs/43973410719).
+Linux verification stopped during bootstrap on Maven Central HTTP 429, before
+adapter tests. Integration Java/schema/oracle checks passed, followed by actual
+AMD64 source/replay, TaskManager, explicit/incompatible restore, JobManager and
+broker-pause phases. Tagged and detection sink rejection/restore passed (completed
+checkpoints 66 and 78). Processing-sink qualification then failed with
+`assembly_unrelated_pressure_failure`; its REST exception hash was
+`3221917157d10965fa904b719b2cd10507802a4eeb896f673c62c6d66a172298` and none of the
+reported known markers matched. This is a failed native qualification, with the
+underlying exception unavailable from that run's retained public logs. It is not
+attributed to Maven throttling or treated as a passing producer-rejection case.
+
+The follow-up retains narrowly selected original exception/container-state/helper
+metadata and the report as a seven-day failure artifact from the synthetic CI
+suite. Public logs add bounded exception class names, without exception messages
+or source bodies; a regression verifies that boundary. This observation change
+preserves every sink failure assertion and runtime policy. Workflow lint, focused
+Python regressions and Python lint passed. A fresh native run must establish the
+actual cause and pass all required cases before claiming final AMD64 qualification.

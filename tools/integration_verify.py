@@ -4,6 +4,7 @@ import base64
 import copy
 import hashlib
 import json
+import re
 import time
 import traceback
 import uuid
@@ -24,6 +25,19 @@ from linux_assembly import wait_failure
 from linux_assembly_cases import PARTS, audit, context, record, references
 from linux_assembly_verify import require
 from stack import project_lock, run, save
+
+
+def exception_classes(detail):
+    """Bounded class names only; never copy exception messages/source bodies to logs."""
+    text = json.dumps(detail)[:1048576]
+    return sorted(
+        set(
+            re.findall(
+                r"\b(?:[a-zA-Z_$][a-zA-Z0-9_$]*\.)+[A-Za-z_$][A-Za-z0-9_$]*(?:Exception|Error)\b",
+                text,
+            )
+        )
+    )[:64]
 
 
 def wait_outputs(test, oracle, timeout=180):
@@ -458,6 +472,7 @@ def verify():
                 save(test.folder / "original-exceptions.json", original_exceptions)
                 details = json.dumps(original_exceptions)
                 failure["exception_sha256"] = hashlib.sha256(details.encode()).hexdigest()
+                failure["exception_classes"] = exception_classes(original_exceptions)
                 failure["known_markers"] = [
                     m
                     for m in (
@@ -469,6 +484,26 @@ def verify():
                     )
                     if m in details
                 ]
+            except Exception:
+                pass
+            try:
+                states = []
+                for container in test.stack.containers():
+                    state = json.loads(
+                        run(
+                            ["docker", "inspect", "--format", "{{json .State}}", container["Id"]]
+                        ).stdout
+                    )
+                    states.append(
+                        {
+                            "id": container["Id"],
+                            **{
+                                key: state[key]
+                                for key in ("Status", "OOMKilled", "ExitCode", "Error")
+                            },
+                        }
+                    )
+                save(test.folder / "failure-container-states.json", states)
             except Exception:
                 pass
             save(report, failure)

@@ -584,6 +584,18 @@
         {
           "name": "Qualify integrated adapters, evaluation and checkpoint recovery",
           "run": "uv run --locked python tools/dev.py integration\nuv run --locked python tools/integration.py build\nuv run --locked python tools/integration.py verify"
+        },
+        {
+          "name": "Retain synthetic integration failure diagnostics",
+          "if": "${{ failure() }}",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "p13-integration-failure-diagnostics",
+            "path": ".cache/integration-reports/*.json\n.cache/integration-runtime/*/original-exceptions.json\n.cache/integration-runtime/*/failure-container-states.json\n.cache/integration-runtime/*/last-helper-failure.json",
+            "include-hidden-files": true,
+            "if-no-files-found": "warn",
+            "retention-days": 7
+          }
         }
       ]
     }

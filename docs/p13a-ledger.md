@@ -82,3 +82,24 @@ original decision versions, host/generation provenance and completeness metadata
 Actual Windows and audit consumer regressions now exercise unrelated bundles,
 retain the real source hashes and preserve exact configuration-blocked counts.
 Component tests passed; final code-head qualification/artifacts follow below.
+
+## Final code-head qualification
+
+Final production code commit: `f171ca7a7c24ab77d2ae30bba75c591c403b78cb`. All five locked commands passed on local
+macOS ARM64: `tools/dev.py check`, `java`, `windows`, `linux`, `assembly`.
+This supersedes the earlier code/artifact set above. The same 150 root Python
+regressions, 25 evaluator/36 Windows/42 Linux/10 assembly Java tests, independent
+20 legacy + 20 mapped semantic cases and 12 mapping cases passed, with compact/
+exhaustive equivalence and installed production contract/artifact checks.
+Logs: `.cache/p13a-f171ca7-{check,java,windows,linux,assembly}.log`.
+
+| Final offline artifact | SHA-256 |
+| --- | --- |
+| evaluator.jar | `ea3c52fafcdb9274a43cb2a8ecfee0551d1919b040a1270b28f18ac05a1f50b4` |
+| windows-adapters.jar | `2aa7e178d0215df1337fe206a3fa8a0006d133ff32d499778f6e0a2f60062449` |
+| linux-adapters.jar | `91069d2f56c7182308350114d617cd90448a73e1ac79d41a1bf71759a293a587` |
+
+The subsequent documentation-only commit records these results; repository/document
+checks pass on that final documentation. PR #46 is handed back for owner review.
+Native AMD64 CI is pending at handback, separate from local qualification; no new
+recorded replay, heavy Docker runtime suite, merge or release was performed.

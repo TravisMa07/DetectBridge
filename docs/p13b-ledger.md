@@ -125,7 +125,6 @@ Intermediate code a50a687 also passed all applicable native AMD64 CI checks in
 43962035651, including the actual integration runtime suite. That result is
 attributed to that code, not the subsequent ingress changes.
 
-
 ## Final ARM64 runtime qualification and handback
 
 [Implementation PR #47](https://github.com/TravisMa07/DetectBridge/pull/47), code

@@ -69,3 +69,16 @@ Built on code commit c8f7acf with strict dependency verification and existing lo
 These identify offline implementation artifacts, not a qualified P13 deployment.
 The final documentation commit does not change production code; its CI state is
 reported in the PR. Owner review/merge and full P13 acceptance remain separate.
+
+## Adapter context attribution correction
+
+Final review found that a source absent from the evaluator bundle still needs
+configuration-blocked outputs with original audit manifest attribution. Source and
+mapping hashes now come from the validated adapter context, independent of rule
+bundle coverage; normalized-only callers without context retain explicit null
+unknown references. Windows supplies its original context explicitly; Linux uses
+its validated context extension. A receipt-free context fingerprint also binds
+original decision versions, host/generation provenance and completeness metadata.
+Actual Windows and audit consumer regressions now exercise unrelated bundles,
+retain the real source hashes and preserve exact configuration-blocked counts.
+Component tests passed; final code-head qualification/artifacts follow below.

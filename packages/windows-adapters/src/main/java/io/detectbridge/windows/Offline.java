@@ -49,7 +49,7 @@ public final class Offline {
             published.put("event", result.event());
             if (evaluator != null) {
               byte[] event = Json.bytes(result.event());
-              if (integrated) published.put("integration", outputs.process(result.event(), null));
+              if (integrated) published.put("integration", outputs.process(result.event(), null, row.get("context")));
               else published.put("evaluation", evaluator.evaluate(event, Map.of("cluster_id", "offline", "topic_id", "offline",
                   "topic", "windows-offline", "partition", 0, "offset", count, "value_sha256", Json.sha(event))));
             }

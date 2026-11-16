@@ -40,14 +40,27 @@ public final class IntegrationOutputs {
   }
 
   public JsonNode process(JsonNode event, JsonNode manifest) {
+    return process(event, manifest, adapterContext(event));
+  }
+
+  private static JsonNode adapterContext(JsonNode event) {
+    JsonNode context = event.at("/detectbridge/extensions/linux.context/context");
+    return context.isObject() ? context : null;
+  }
+
+  public JsonNode process(JsonNode event, JsonNode manifest, JsonNode context) {
     check(Json.bytes(event).length <= 1024 * 1024, "integration_event_limit");
     JsonNode compact = evaluator.evaluateCompact(Json.bytes(event));
-    return outputs(event, manifest, compact);
+    return outputs(event, manifest, compact, context);
   }
 
   /** Consumer verification requires the pinned plan and original audit manifest. */
   public void verify(JsonNode integration, JsonNode manifest) {
-    JsonNode expected = process(integration.path("tagged").path("event"), manifest);
+    verify(integration, manifest, adapterContext(integration.path("tagged").path("event")));
+  }
+
+  public void verify(JsonNode integration, JsonNode manifest, JsonNode context) {
+    JsonNode expected = process(integration.path("tagged").path("event"), manifest, context);
     check(canonical(expected).equals(canonical(integration)), "integration_content_mismatch");
   }
 
@@ -76,6 +89,10 @@ public final class IntegrationOutputs {
   }
 
   JsonNode outputs(JsonNode input, JsonNode manifest, JsonNode compact) {
+    return outputs(input, manifest, compact, adapterContext(input));
+  }
+
+  private JsonNode outputs(JsonNode input, JsonNode manifest, JsonNode compact, JsonNode adapterContext) {
     ObjectNode event = ((ObjectNode) input).deepCopy();
     JsonNode db = event.get("detectbridge");
     JsonNode source = null, mapping = null;
@@ -85,7 +102,30 @@ public final class IntegrationOutputs {
     if (source != null) for (var candidate : plan.get("mapping_profiles"))
       if (candidate.get("source").get("id").equals(source.get("id"))
           && candidate.get("source").get("version").equals(source.get("version"))) mapping = candidate;
+    JsonNode decisionContext = null;
+    if (adapterContext != null && !adapterContext.isNull()) {
+      check(Set.of("1.0.0", "1.1.0").contains(adapterContext.path("version").asString())
+          && adapterContext.path("run_id").equals(db.get("run_id"))
+          && adapterContext.path("source").equals(db.get("source")), "integration_context_binding");
+      JsonNode actualSource = adapterContext.at("/source_contract/snapshot"), actualMapping = adapterContext.at("/mapping_profile/declaration");
+      check(actualSource.path("id").equals(db.at("/source_contract/id"))
+          && actualSource.path("version").equals(db.at("/source_contract/version"))
+          && hash(actualSource).equals(adapterContext.at("/source_contract/sha256").asString())
+          && (source == null || source.equals(actualSource))
+          && (mapping == null || mapping.equals(actualMapping))
+          && (adapterContext.at("/parser/id").asString() + "/" + adapterContext.at("/parser/version").asString()).equals(db.at("/processing/parser").asString()), "integration_context_attribution");
+      ObjectNode mappingBody = ((ObjectNode) actualMapping).deepCopy(); mappingBody.remove("sha256");
+      check(hash(mappingBody).equals(actualMapping.path("sha256").asString())
+          && actualMapping.at("/source/id").equals(actualSource.get("id"))
+          && actualMapping.at("/source/version").equals(actualSource.get("version"))
+          && actualMapping.at("/source/sha256").asString().equals(hash(actualSource)), "integration_context_mapping");
+      ObjectNode semanticContext = ((ObjectNode) adapterContext).deepCopy(); semanticContext.remove("receipt");
+      decisionContext = semanticContext;
+      source = actualSource; mapping = actualMapping;
+    }
     var attribution = Json.MAPPER.createObjectNode();
+    if (decisionContext == null) attribution.putNull("context_sha256");
+    else attribution.put("context_sha256", hash(decisionContext));
     attribution.put("pipeline", PIPELINE); attribution.put("bundle_sha256", evaluator.bundle());
     attribution.set("source", db.get("source"));
     var sourceRef = ((ObjectNode) db.get("source_contract")).deepCopy();

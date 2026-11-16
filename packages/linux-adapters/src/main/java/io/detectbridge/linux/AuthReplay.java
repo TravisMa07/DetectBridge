@@ -47,7 +47,7 @@ public final class AuthReplay {
           result.put("version", "1.0.0"); result.set("raw", resolved.raw()); result.set("context", resolved.context());
           if (adapted.has("@timestamp")) {
             result.set("event", adapted); byte[] bytes = Json.bytes(adapted);
-            if (integrated) result.set("integration", outputs.process(adapted, null));
+            if (integrated) result.set("integration", outputs.process(adapted, null, resolved.context()));
             else result.set("evaluation", evaluator.evaluate(bytes, Map.of("cluster_id", "offline", "topic_id", "offline",
                 "topic", "linux-auth-offline", "partition", 0, "offset", count, "value_sha256", Json.sha(bytes))));
           } else result.set("preservation", adapted);

@@ -56,7 +56,13 @@ class OfflineEvaluationTest {
       assertEquals(row.get("event"), integration.at("/tagged/event"));
       assertEquals(c.at("/source_contract/sha256"), integration.at("/tagged/attribution/source_contract/sha256"));
       assertEquals(c.at("/mapping_profile/sha256"), integration.at("/tagged/attribution/mapping_profile/sha256"));
-      processor.verify(integration, null);
+      processor.verify(integration, null, c);
+      var unrelated = new Evaluator(Files.readAllBytes(ROOT.resolve(".cache/detection/mapped-plan.json")));
+      Offline.runIntegrated(input, output, EvidenceResolver.local(temp), unrelated);
+      var blocked = Json.read(Files.readAllBytes(output)).get("integration");
+      counts(blocked.get("tagged"), 0, 0, 0, 1, 0, 0);
+      assertEquals(c.at("/source_contract/sha256"), blocked.at("/tagged/attribution/source_contract/sha256"));
+      new io.detectbridge.detection.IntegrationOutputs(unrelated).verify(blocked, null, c);
       var skipped = processor.process(event(fixture(family), family, false), null);
       counts(skipped.get("tagged"), 0, 0, 1, 0, 3, 0);
       assertEquals(1, skipped.get("diagnostics").size()); assertEquals(3, skipped.at("/diagnostics/0/rule_set/count").asInt());

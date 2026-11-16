@@ -154,7 +154,9 @@ The evaluator CLI accepts `--compact` in place of `--exhaustive`. Legacy APIs an
 CLI default results remain unchanged. `IntegrationOutputs.process(event, manifest)`
 wraps unchanged P03 events with attributed deterministic tags, linked detections
 and grouped diagnostics; `verify` consumes these documents against the pinned plan
-and original manifest. Source quality remains distinct from coverage.
+and original manifest. Windows context is supplied with the three-argument
+`process`/`verify` overloads; Linux extracts its original context extension.
+Actual source attribution remains available when the evaluator bundle lacks a source. Source quality remains distinct from coverage.
 
 The Windows Offline, Linux AuthReplay and AuditReplay installed commands accept
 an explicit final `--integrated` argument after their mapped plan. Audit output

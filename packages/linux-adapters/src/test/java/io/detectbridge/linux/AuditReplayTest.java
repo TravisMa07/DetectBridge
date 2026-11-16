@@ -98,6 +98,12 @@ class AuditReplayTest {
       var manifests = published.stream().filter(n -> n.path("kind").asString().equals("manifest")).map(n -> n.get("document")).toList();
       var evaluator = new io.detectbridge.detection.Evaluator(Files.readAllBytes(plan(name)));
       var processor = new io.detectbridge.detection.IntegrationOutputs(evaluator);
+      var unknown = new io.detectbridge.detection.IntegrationOutputs(new io.detectbridge.detection.Evaluator(Files.readAllBytes(
+          Path.of(System.getProperty("repository.root"), ".cache/detection/mapped-plan.json"))));
+      var blocked = unknown.process(events.get(0).get("document"), manifests.get(0));
+      assertEquals(1, blocked.at("/tagged/counts/configuration_blocked").asInt());
+      assertEquals(manifests.get(0).get("source_sha256"), blocked.at("/tagged/attribution/source_contract/sha256"));
+      unknown.verify(blocked, manifests.get(0));
       for (int i = 0; i < 2; i++) {
         var integration = events.get(i).get("integration"); var event = events.get(i).get("document"); var manifest = manifests.get(i);
         String expected = name.equals("command-blocked") ? "configuration_blocked" : i == 1 ? "quality_skipped" : name.equals("image-match") ? "matched" : "unmatched";

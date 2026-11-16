@@ -35,8 +35,12 @@ no truncation, silent match loss or downgrade to nonmatch. Rule metadata exclude
 unbounded original YAML but retains ID, logsource, revision and provenance.
 
 Attribution contains the original source namespace/instance, pipeline `p13-offline/1.0.0`, bundle hash, source reference
-with canonical snapshot hash (null hash for unknown source), selected mapping
-reference/hash (null for unknown), actual event processing versions, compiler,
+with actual canonical snapshot hash and parser mapping reference/hash from the
+validated adapter context, including when the evaluator bundle lacks that source.
+Normalized-only callers without context use bundle references (null when unknown).
+The context_sha256 covers the original adapter context excluding receipt clocks;
+Linux context is extracted from its validated extension, Windows supplies it explicitly.
+Attribution also contains actual event processing versions, compiler,
 evaluator, selector, mapping-set hash and fixed enrichment policy/hash plus empty
 external_inputs. The enrichment policy emits ordered nonzero `coverage:<outcome>`
 tags and `quality:<eligibility>`; pinned rule metadata is enrichment. There are no

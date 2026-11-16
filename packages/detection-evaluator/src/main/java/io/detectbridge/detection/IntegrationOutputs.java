@@ -14,11 +14,18 @@ public final class IntegrationOutputs {
       "id", "coverage-and-rule-metadata", "version", "1.0.0",
       "tags", List.of("nonzero-coverage-in-outcome-order", "quality-eligibility"),
       "rule_metadata", "plan-without-yaml-and-expression", "external_inputs", List.of()));
+  public static final String RUNTIME_PIPELINE = "p13-runtime/1.0.0";
+  private final String pipeline, outputVersion;
   private final Evaluator evaluator;
   private final JsonNode plan;
   private final Contracts contracts = new Contracts();
 
   public IntegrationOutputs(Evaluator evaluator) {
+    this(evaluator, PIPELINE);
+  }
+  public IntegrationOutputs(Evaluator evaluator, String pipeline) {
+    check(Set.of(PIPELINE, RUNTIME_PIPELINE).contains(pipeline), "unsupported_integration_pipeline");
+    this.pipeline = pipeline; this.outputVersion = pipeline.equals(PIPELINE) ? "1.0.0" : "1.1.0";
     evaluator.requireMappedDeployment(); this.evaluator = evaluator; this.plan = evaluator.planSnapshot();
   }
 
@@ -126,7 +133,7 @@ public final class IntegrationOutputs {
     var attribution = Json.MAPPER.createObjectNode();
     if (decisionContext == null) attribution.putNull("context_sha256");
     else attribution.put("context_sha256", hash(decisionContext));
-    attribution.put("pipeline", PIPELINE); attribution.put("bundle_sha256", evaluator.bundle());
+    attribution.put("pipeline", pipeline); attribution.put("bundle_sha256", evaluator.bundle());
     attribution.set("source", db.get("source"));
     var sourceRef = ((ObjectNode) db.get("source_contract")).deepCopy();
     if (source == null) sourceRef.putNull("sha256"); else sourceRef.put("sha256", hash(source));
@@ -171,10 +178,10 @@ public final class IntegrationOutputs {
       manifestRef = Json.MAPPER.valueToTree(Map.of("manifest_id", manifest.get("manifest_id"), "sha256", hash(manifest), "semantic_sha256", manifestSemanticHash(manifest)));
     } else check(manifest == null || manifest.isNull(), "integration_unexpected_manifest");
     String eventId = event.at("/event/id").asString(), runId = db.get("run_id").asString();
-    String processingId = identity("detectbridge.p13.processing/1", PIPELINE, runId, eventId, hash(semanticEvent(event)), attribution,
+    String processingId = identity("detectbridge.p13.processing/1", pipeline, runId, eventId, hash(semanticEvent(event)), attribution,
         manifestRef.isNull() ? null : Map.of("semantic_sha256", manifestRef.get("semantic_sha256")));
     ObjectNode result = Json.MAPPER.createObjectNode();
-    ObjectNode tagged = result.putObject("tagged"); tagged.put("version", "1.0.0");
+    ObjectNode tagged = result.putObject("tagged"); tagged.put("version", outputVersion);
     tagged.put("processing_id", processingId); tagged.set("event", event); tagged.set("attribution", attribution);
     tagged.set("manifest", manifestRef); tagged.set("counts", compact.get("counts"));
     var links = tagged.putArray("matches"); var detections = result.putArray("detections");
@@ -205,8 +212,8 @@ public final class IntegrationOutputs {
     return result;
   }
 
-  private static void base(ObjectNode node, String processing, String event, String run, JsonNode attribution) {
-    node.put("version", "1.0.0"); node.put("processing_id", processing); node.put("event_id", event);
+  private void base(ObjectNode node, String processing, String event, String run, JsonNode attribution) {
+    node.put("version", outputVersion); node.put("processing_id", processing); node.put("event_id", event);
     node.put("run_id", run); node.set("attribution", attribution);
   }
   private void require(String kind, JsonNode document, int limit) {

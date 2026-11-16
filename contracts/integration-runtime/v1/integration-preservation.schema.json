@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:integration-runtime:1.0.0:preservation",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": "1.0.0"
+    },
+    "preservation_id": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "adapter": {
+      "enum": [
+        "windows",
+        "linux"
+      ]
+    },
+    "run_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "source": {
+      "$ref": "urn:detectbridge:contracts:1.0.0:common#/$defs/source"
+    },
+    "diagnostic": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "version",
+    "preservation_id",
+    "adapter",
+    "run_id",
+    "source",
+    "diagnostic"
+  ],
+  "additionalProperties": false
+}

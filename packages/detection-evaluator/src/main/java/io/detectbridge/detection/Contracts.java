@@ -28,7 +28,9 @@ public final class Contracts {
             "integration/v1/compact-evaluation",
             "integration/v1/tagged-event",
             "integration/v1/detection",
-            "integration/v1/diagnostic")) {
+            "integration/v1/diagnostic",
+            "integration/v1.1/common", "integration/v1.1/tagged-event",
+            "integration/v1.1/detection", "integration/v1.1/diagnostic")) {
       try (var stream = Contracts.class.getResourceAsStream("/" + path + ".schema.json")) {
         String text =
             new String(Objects.requireNonNull(stream).readAllBytes(), StandardCharsets.UTF_8);
@@ -66,7 +68,10 @@ public final class Contracts {
       version = node.path("version").asString();
       check(Set.of("1.0.0", "2.0.0").contains(version), "unsupported_detection_version");
     }
-    if (domain.equals("integration")) check(node.path("version").asString().equals("1.0.0"), "unsupported_integration_version");
+    if (domain.equals("integration")) {
+      version = node.path("version").asString();
+      check(Set.of("1.0.0", "1.1.0").contains(version), "unsupported_integration_version");
+    }
     String id = "urn:detectbridge:" + domain + ":" + version + ":" + kind;
     if (!registry
         .getSchema(SchemaLocation.of(id))

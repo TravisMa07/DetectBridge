@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:integration-runtime:1.0.0:input",
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": "1.0.0"
+        },
+        "kind": {
+          "const": "record"
+        },
+        "raw": {
+          "$ref": "urn:detectbridge:contracts:1.0.0:raw-record"
+        },
+        "context": {
+          "$ref": "urn:detectbridge:linux:1.0.0:context"
+        }
+      },
+      "required": [
+        "version",
+        "kind",
+        "raw",
+        "context"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": "1.0.0"
+        },
+        "kind": {
+          "const": "windows_record"
+        },
+        "raw": {
+          "$ref": "urn:detectbridge:contracts:1.0.0:raw-record"
+        },
+        "context": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "version",
+        "kind",
+        "raw",
+        "context"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": "1.0.0"
+        },
+        "control_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "run_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "provenance": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "minItems": 1,
+          "maxItems": 16
+        },
+        "kind": {
+          "const": "run_end"
+        }
+      },
+      "required": [
+        "version",
+        "control_id",
+        "run_id",
+        "provenance",
+        "kind"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": "1.0.0"
+        },
+        "control_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "run_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "provenance": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "minItems": 1,
+          "maxItems": 16
+        },
+        "kind": {
+          "const": "source_boundary"
+        },
+        "source": {
+          "$ref": "urn:detectbridge:contracts:1.0.0:common#/$defs/source"
+        },
+        "host_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "generation": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        }
+      },
+      "required": [
+        "version",
+        "control_id",
+        "run_id",
+        "provenance",
+        "kind",
+        "source",
+        "host_id",
+        "generation"
+      ],
+      "additionalProperties": false
+    }
+  ]
+}

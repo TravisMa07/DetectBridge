@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:integration:1.1.0:diagnostic",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": "1.1.0"
+    },
+    "processing_id": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "event_id": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "run_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "attribution": {
+      "$ref": "urn:detectbridge:integration:1.1.0:common#/$defs/attribution"
+    },
+    "diagnostic_id": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "category": {
+      "enum": [
+        "configuration_blocked",
+        "quality_skipped",
+        "evaluation_error"
+      ]
+    },
+    "rule_set": {
+      "$ref": "urn:detectbridge:integration:1.1.0:common#/$defs/rule_set"
+    }
+  },
+  "required": [
+    "version",
+    "processing_id",
+    "event_id",
+    "run_id",
+    "attribution",
+    "diagnostic_id",
+    "category",
+    "rule_set"
+  ],
+  "additionalProperties": false
+}

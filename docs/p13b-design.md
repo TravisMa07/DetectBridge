@@ -1,7 +1,7 @@
 # P13b integrated Kafka/Flink runtime
 
 Status: owning implementation notes, recorded before code. Base e09c271 (owner
-merged P13a #46); P13a PR-head checks passed, merged-main 43954609201 is pending.
+merged P13a #46); P13a PR-head checks and merged-main 43954609201 passed.
 No runtime qualification begins until that baseline succeeds. A02–A07 and P12's
 accepted prepared-transition semantics remain unchanged. P13c search is separate.
 
@@ -23,7 +23,7 @@ Eight isolated topics: integration.input, tagged-events, detections,
 processing-diagnostics, manifests, preservation, quarantine, receipts, each suffixed
 .v1 and prefixed detectbridge.
 Each is a single partition, replication one, indefinite retention in this bounded
-local deployment. Consumer group detectbridge-integration-v1-<pipeline UUID>;
+local deployment. Consumer group `detectbridge-integration-v1-<pipeline UUID>`;
 state/project/cache/image paths are separate from P07–P12. No OpenSearch dependency.
 
 P13a output 1.0.0 pins pipeline p13-offline/1.0.0. Runtime output uses separately

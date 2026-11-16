@@ -14,3 +14,6 @@ include("linux-adapters")
 project(":linux-adapters").projectDir = file("packages/linux-adapters")
 include("linux-assembly-job")
 project(":linux-assembly-job").projectDir = file("packages/linux-assembly-job")
+
+include("integration-job")
+project(":integration-job").projectDir = file("packages/integration-job")

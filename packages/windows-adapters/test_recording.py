@@ -10,7 +10,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import recording as subject
-from recording_plan import prepare
+from recording_plan import prepare, validate_rules
 
 ROOT = Path(__file__).resolve().parents[2]
 MODULE = Path(__file__).resolve().parent
@@ -121,6 +121,18 @@ class ControlledRecordingTests(unittest.TestCase):
             RUN,
         )
 
+    def test_frozen_plan_keeps_its_committed_revision(self):
+        revision = subprocess.check_output(
+            ["git", "log", "-1", "--format=%H", "--", "packages/windows-adapters/recording/rules"],
+            cwd=ROOT,
+            text=True,
+        ).strip()
+        frozen = prepare(revision)
+        validate_rules(frozen)
+        frozen["rules"][0]["expression"] = frozen["rules"][1]["expression"]
+        with self.assertRaises(ValueError):
+            validate_rules(frozen)
+
     def test_literal_counts_and_real_adapter_evaluator(self):
         self.assertEqual(
             self.verify(), dict(records=5, eligible=4, unsupported=1, matched=2, unmatched=6)
@@ -128,6 +140,10 @@ class ControlledRecordingTests(unittest.TestCase):
 
     def test_same_count_field_quality_and_outcome_tampering_rejected(self):
         changes = [
+            lambda r: r[0]["event"]["source_fields"]["windows_system"]["values"].update(
+                Computer="forged"
+            ),
+            lambda r: r[0]["event"]["user"].update(id="wrong-sid"),
             lambda r: r[0]["event"]["host"].update(id="made-up-host"),
             lambda r: r[0]["event"]["process"].update(pid=99),
             lambda r: r[0]["event"]["detectbridge"]["quality"].update(eligibility="skipped"),

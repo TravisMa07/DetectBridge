@@ -170,7 +170,7 @@ def review(directory, run):
     seen = set()
     for item in selected:
         family, action_id = item["family"], item["action"]
-        require(family in SIGNATURES)
+        require(family in SIGNATURES and action_id in ("cmd", "hostname", "service-state"))
         expected_name = (
             f"{family}-control.xml" if action_id == "service-state" else f"{family}-{action_id}.xml"
         )
@@ -261,6 +261,10 @@ def review(directory, run):
         ),
         host_id="windows-machineguid:" + host["machine_guid"].lower(),
         generation=host["boot_utc"],
+        observation_policy=dict(
+            version="per-record-capture-completion/1.0.0",
+            description="Retained selected XML capture-completion timestamps; exact first Get-WinEvent enumeration time is unavailable.",
+        ),
         artifacts=artifacts,
         records=rows,
         terms=dict(
@@ -431,8 +435,27 @@ def verify(catalog, directory, supplied, published, plan, run_id):
         require(event["user"]["domain"] + "\\" + event["user"]["name"] == ex["user"])
         require(event["host"] == dict(id=catalog["host_id"], name=item["computer"]))
         system, fields, _ = xml_record((directory / item["filename"]).read_bytes())
-        for name, value in fields.items():
-            require(event["source_fields"][name] == value)
+        system_values = {child.tag.removeprefix(NS): child.text or "" for child in system}
+        system_attributes = {child.tag.removeprefix(NS): child.attrib for child in system}
+        require(
+            event["source_fields"]
+            == dict(fields, windows_system=dict(values=system_values, attributes=system_attributes))
+        )
+        security = item["family"] == "security"
+        if security:
+            require(event["user"].get("id") == fields["SubjectUserSid"])
+        else:
+            for key, source_name in (
+                ("entity_id", "ProcessGuid"),
+                ("working_directory", "CurrentDirectory"),
+            ):
+                require(event["process"].get(key) == (fields.get(source_name) or None))
+            for key, source_name in (
+                ("entity_id", "ParentProcessGuid"),
+                ("executable", "ParentImage"),
+                ("command_line", "ParentCommandLine"),
+            ):
+                require(event["process"]["parent"].get(key) == (fields.get(source_name) or None))
         db = event["detectbridge"]
         require(
             db["quality"] == dict(integrity="sufficient", eligibility="eligible", diagnostics=[])
@@ -471,7 +494,27 @@ def verify(catalog, directory, supplied, published, plan, run_id):
         event_id = identity(
             [raw["source"]["namespace"], raw["source"]["instance"], [raw["record_id"]]]
         )
-        require(event["event"]["id"] == event_id)
+        require(
+            event["event"]
+            == dict(
+                id=event_id,
+                kind="event",
+                category=["process"],
+                type=["start"],
+                code="4688" if security else "1",
+                created=raw["first_observed"],
+                provider=SIGNATURES[item["family"]][0],
+            )
+        )
+        require(
+            db["assembly"]
+            == dict(
+                mode="standalone",
+                closure="not_required",
+                quality="source_indicated",
+                assembler_version="1.0.0",
+            )
+        )
         require_schema("result", evaluation)
         require(evaluation["counts"] == ex["counts"] and evaluation["diagnostics"] == [])
         matches = (

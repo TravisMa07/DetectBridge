@@ -1,0 +1,28 @@
+{
+  "version": "1.0.0",
+  "kind": "independent-action-expectations",
+  "execution": {
+    "executable": "/usr/local/bin/bridge-audit-probe",
+    "args": ["/usr/local/bin/bridge-audit-probe", "alpha", "", "alpha", "two words"],
+    "cwd": "/",
+    "architecture": "c00000b7",
+    "syscall": 221,
+    "success": true,
+    "uid": 0,
+    "euid": 0,
+    "action_exit": 0
+  },
+  "capture": {
+    "lost_before": 0,
+    "lost_after": 0,
+    "backlog_after": 0,
+    "scope": "Disposable guest boot; no audit configuration of the container host"
+  },
+  "eligibility": "Requires independently reviewed SYSCALL/EXECVE/CWD/PATH membership and complete declared counts; closure alone never proves completeness",
+  "all_other_audit_messages": "Retain original bytes; independently classify unsupported/non-execution diagnostics",
+  "evaluation": {
+    "executable_equals_probe": "matched",
+    "executable_equals_bin_false": "unmatched",
+    "command_line_rule": "configuration_blocked"
+  }
+}

@@ -7,6 +7,7 @@ import os
 import sys
 import tempfile
 import uuid
+import zipfile
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from pathlib import Path
@@ -85,7 +86,31 @@ def atomic(path, data):
 
 def review(directory, run):
     """Produce a candidate catalog from originals, before any adapter/evaluator use."""
-    require(run["event"] == "workflow_dispatch" and run["conclusion"] == "success")
+    require(run["event"] == "workflow_dispatch")
+    job = load(directory.parent / "job.json")
+    require(job["run_id"] == run["id"] and job["head_sha"] == run["head_sha"])
+    require(job["name"] == "controlled-windows-recording" and job["conclusion"] == "success")
+    require(all(step["conclusion"] == "success" for step in job["steps"]))
+    artifact = load(directory.parent / "artifact.json")
+    require(artifact["name"] == "p11-controlled-windows-encrypted")
+    require(
+        artifact["workflow_run"]["id"] == run["id"]
+        and artifact["workflow_run"]["head_sha"] == run["head_sha"]
+    )
+    transport = directory.parent / "transport.zip"
+    require(transport.stat().st_size == artifact["size_in_bytes"] <= LIMIT)
+    require("sha256:" + sha(transport.read_bytes()) == artifact["digest"])
+    with zipfile.ZipFile(transport) as archive:
+        require(archive.namelist() == ["recording.p7m"])
+        require(archive.getinfo("recording.p7m").file_size <= LIMIT)
+        require(archive.read("recording.p7m") == (directory.parent / "recording.p7m").read_bytes())
+    with zipfile.ZipFile(directory.parent / "originals.zip") as archive:
+        require(set(archive.namelist()) == {p.name for p in directory.iterdir()})
+        require(len(archive.namelist()) == len(set(archive.namelist())) <= 64)
+        require(sum(i.file_size for i in archive.infolist()) <= LIMIT)
+        for info in archive.infolist():
+            require(Path(info.filename).name == info.filename)
+            require(archive.read(info) == (directory / info.filename).read_bytes())
     host = load(directory / "host.json")
     origin = host["origin"]
     require(origin["repository"] == "TravisMa07/DetectBridge")
@@ -99,13 +124,28 @@ def review(directory, run):
     # Resolve committed script bytes from the actual capture head, not current HEAD.
     import subprocess
 
+    checkout = []
     for name in ("capture.ps1", "expectations.json"):
         captured = directory / ("action-expectations.json" if name.endswith("json") else name)
         committed = subprocess.check_output(
             ["git", "show", f"{origin['commit']}:packages/windows-adapters/recording/{name}"],
             cwd=ROOT,
         )
-        require(captured.read_bytes() == committed)
+        retained = captured.read_bytes()
+        transform = "identity/1.0.0" if retained == committed else "git-lf-to-crlf/1.0.0"
+        require(
+            retained == committed
+            if transform.startswith("identity")
+            else retained == committed.replace(b"\n", b"\r\n")
+        )
+        checkout.append(
+            dict(
+                filename=captured.name,
+                git_blob_sha256=sha(committed),
+                retained_sha256=sha(retained),
+                transform=transform,
+            )
+        )
     require(load(directory / "command-line-policy.json") == 1)
     require("Success" in (directory / "audit-policy-active.csv").read_text(encoding="utf-8-sig"))
     sysmon = load(directory / "sysmon.json")
@@ -131,7 +171,10 @@ def review(directory, run):
     for item in selected:
         family, action_id = item["family"], item["action"]
         require(family in SIGNATURES)
-        require(item["filename"] == f"{family}-{action_id}.xml")
+        expected_name = (
+            f"{family}-control.xml" if action_id == "service-state" else f"{family}-{action_id}.xml"
+        )
+        require(item["filename"] == expected_name)
         data = (directory / item["filename"]).read_bytes()
         system, fields, signature = xml_record(data)
         computer = system.findtext(NS + "Computer")
@@ -251,14 +294,7 @@ def artifacts(catalog, directory):
         <= seen
     )
     # Recheck provenance/independent action relations; a catalog hash is not authenticity.
-    run = dict(
-        id=catalog["capture_run"]["id"],
-        run_attempt=catalog["capture_run"]["attempt"],
-        head_sha=catalog["capture_run"]["commit"],
-        html_url=catalog["capture_run"]["url"],
-        event="workflow_dispatch",
-        conclusion="success",
-    )
+    run = load(directory.parent / "run.json")
     candidate = review(directory, run)
     candidate["review_status"] = "reviewed"
     candidate["review"] = catalog["review"]

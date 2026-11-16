@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -16,8 +17,13 @@ from detection_compile import compile_rules  # noqa: E402
 MODULE = Path(__file__).resolve().parent
 
 
-def rule_inputs():
-    revision = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+def rule_inputs(revision=None):
+    if revision is None:
+        revision = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True
+        ).strip()
+    if not re.fullmatch(r"[a-f0-9]{40}", revision):
+        raise ValueError("recording_rule_revision_invalid")
     paths = sorted((MODULE / "recording/rules").glob("*.yml"))
     provenance = []
     for path in paths:
@@ -47,8 +53,8 @@ def rule_inputs():
     return paths, provenance
 
 
-def prepare():
-    paths, provenance = rule_inputs()
+def prepare(revision=None):
+    paths, provenance = rule_inputs(revision)
     sources = [
         json.loads((MODULE / f"profiles/{f}.source.json").read_bytes())
         for f in ("security", "sysmon")
@@ -61,7 +67,10 @@ def prepare():
 
 
 def validate_rules(plan):
-    expected = prepare()
+    revisions = {rule["provenance"]["repository_revision"] for rule in plan["rules"]}
+    if len(revisions) != 1:
+        raise ValueError("recording_rule_revisions_mixed")
+    expected = prepare(revisions.pop())
     # Compilation is deterministic for the pinned source revision. Complete tree,
     # source snapshots and provenance must agree, not only outcome counts.
     if plan != expected:

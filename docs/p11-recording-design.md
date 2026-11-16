@@ -21,7 +21,7 @@ Synthetic P11 tests retain all six outcomes and disabled/absent/error edge cover
 
 Pin Sysmon archive SHA-256 00ecf1b46aec99299d3ae0bca79dc621458bd014b20b509d7c5c8e8c8611aa54
 and retain its EULA SHA-256 8329bcbadc7f81539a4969ca13f0be5b8eb7652b912324a1926fc9bfb6ec005a.
-Source: https://download.sysinternals.com/files/Sysmon.zip. Inspected installation
+Source: [Microsoft Sysmon archive](https://download.sysinternals.com/files/Sysmon.zip). Inspected installation
 and use terms permit copies on the user's devices; no package/binary redistribution
 or software-hosting service is introduced. Install only in the owned ephemeral
 runner, verify Microsoft Authenticode signature and retain binary/version/signature

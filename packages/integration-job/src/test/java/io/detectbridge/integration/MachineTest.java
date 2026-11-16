@@ -85,6 +85,9 @@ class MachineTest {
   }
   @Test void absoluteAuditDeadlineAndImmutableLateLinksSurviveRestore() throws Exception {
     Time time=new Time();Machine machine=machine(time);var rows=cases().get("complete");add(machine,rows.get(0),0);byte[] durable=machine.snapshot(1);
+    assertEquals(31000,machine.inventory(1,durable).get("next_deadline").asLong());
+    assertEquals(1000,machine.inventory(1,durable).at("/groups/0/opened").asLong());
+    assertEquals(31000,machine.inventory(1,durable).at("/groups/0/deadline").asLong());
     time.millis+=30000;machine=Machine.restore(time,Assembler.Limits.defaults(),BINDING,SOURCE,Machine::inline,evaluator(),durable);machine.releaseRestored(i->{});
     assertTrue(machine.pump());add(machine,rows.get(5),1);var output=release(machine,2);
     var manifest=output.stream().filter(i->i.kind().equals("manifest")).findFirst().orElseThrow().document();
@@ -101,6 +104,16 @@ class MachineTest {
     Machine huge=new Machine(time,Assembler.Limits.defaults(),BINDING,SOURCE,Machine::inline,new Evaluator(Json.bytes(plan)));
     huge.enqueue(Machine.wire(Json.bytes(cases().get("windows")),"synthetic","input-id","input",0));before=huge.snapshot(1);
     assertThrows(IllegalArgumentException.class,huge::pump);assertArrayEquals(before,huge.snapshot(2));
+  }
+  @Test void reusedLinuxCursorWithChangedEvidenceFailsAsConflictingRedelivery() throws Exception {
+    Machine machine=machine(new Time());long offset=0;
+    for(var row:cases().get("complete"))add(machine,row,offset++);
+    var conflict=((ObjectNode)cases().at("/complete/2")).deepCopy();
+    String body="type=EOE msg=audit(1767225600.001:999):\n";
+    var evidence=(ObjectNode)conflict.at("/raw/evidence");evidence.put("inline",body);evidence.put("sha256",Json.sha(body.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+    machine.enqueue(Machine.wire(Json.bytes(conflict),"synthetic","input-id","input",offset));
+    assertEquals("conflicting_redelivery",assertThrows(IllegalArgumentException.class,machine::pump).getMessage());
+    assertEquals(1,machine.pendingInputs());
   }
   @Test void queueAndWindowsKnowledgeExhaustionRetainBacklogWithoutPartialAdmission() throws Exception {
     Machine queued=machine(new Time());byte[] value="null".getBytes();

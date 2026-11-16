@@ -227,3 +227,12 @@ identities and deterministic pinned enrichment. Actual Windows/Linux offline
 runners consume it explicitly; legacy result contracts/deployments remain compatible.
 See [owning decisions](p13a-design.md) and [qualification](p13a-ledger.md).
 This does not implement P13b production recovery/wiring or P13c search projections.
+
+P13b adds an isolated Kafka/Flink deployment of the actual adapters, prepared audit
+assembler and compact evaluation before atomic intent commit. Its versioned
+state/topics/group and artifact/plan/destination/evidence bindings reject old
+checkpoint adoption. [Design](p13b-design.md) retains A02–A07 checkpoint-prefix
+release, immutable memberships/late links and bounded visible backlog; an explicit
+1.1.0 runtime output profile preserves P13a offline 1.0.0 contracts. Existing P12
+implementation/deployment is unchanged. [Qualification](p13b-ledger.md) separates
+actual runtime failures/recovery from component checks; search remains P13c.

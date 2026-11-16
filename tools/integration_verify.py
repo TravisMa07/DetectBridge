@@ -42,6 +42,17 @@ def wait_outputs(test, oracle, timeout=180):
     raise RuntimeError("integration_accounting_timeout")
 
 
+def idle_checkpoint(test, job, timeout=120):
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        checkpoint = test.wait_checkpoint(job["job_id"])
+        inventory = checkpoint_inventory(test, checkpoint)
+        if not inventory["inbox"] and not inventory["outbox"]:
+            return checkpoint
+        time.sleep(1)
+    raise RuntimeError("integration_intents_not_retired")
+
+
 def verify():
     project = "detectbridge-p13-test-" + uuid.uuid4().hex[:12]
     test = Integration(project)
@@ -103,6 +114,9 @@ def verify():
                 values = retain(rows)
                 acks = test.inject_rows(values)
                 oracle.register(rows, acks)
+                with (test.folder / "original-acks.ndjson").open("ab") as ledger:
+                    for ack in acks:
+                        ledger.write(encoded(ack) + b"\n")
                 return acks
 
             stage("audit_partial_checkpoint_taskmanager_restart")
@@ -185,6 +199,13 @@ def verify():
             ack = send([paused])
             test.wait_input_checkpoint(ack[-1]["offset"])
             checkpoint = test.wait_checkpoint(job["job_id"])
+            before_pause = checkpoint_inventory(test, checkpoint)
+            paused_state = next(
+                g
+                for g in before_pause["groups"]
+                if g["members"][0]["record_id"] == paused["raw"]["record_id"]
+            )
+            require(paused_state["deadline"] == paused_state["opened"] + 30000)
             require(
                 any(
                     g["members"][0]["record_id"] == paused["raw"]["record_id"]
@@ -217,10 +238,24 @@ def verify():
             ):
                 test.stop()
             job = test.start(restore=checkpoint["external_path"])
+            first_restored = checkpoint_inventory(test, test.wait_checkpoint(job["job_id"]))
+            require(
+                not any(
+                    g["members"][0]["record_id"] == paused["raw"]["record_id"]
+                    for g in first_restored["groups"]
+                )
+            )
+            require(
+                any(
+                    i["kind"] == "manifest" and i["key"] == paused_manifest["manifest_id"]
+                    for i in first_restored["outbox"]
+                )
+            )
             wait_outputs(test, oracle)
             stage("every_required_sink_rejection_and_healthy_restore")
             faults = []
             for number, kind in enumerate(ROUTES):
+                stage("required_sink_" + kind)
                 if kind == "tagged":
                     rows = [
                         record(audit(part, str(700 + number)), 1000 + number * 10 + i, context())
@@ -228,7 +263,7 @@ def verify():
                     ]
                     oracle.group(rows)
                 elif kind in ("processing", "manifest"):
-                    rows = [record(audit("EOE", str(700 + number)), 1000 + number, context())]
+                    rows = [record(audit("EOE", str(700 + number)), 2000 + number * 10, context())]
                     oracle.group(rows, findings=["syscall_missing"])
                 elif kind == "preservation":
                     rows = [
@@ -236,7 +271,7 @@ def verify():
                             fixtures["auth"]["raw"]["evidence"]["inline"].replace(
                                 "password", "publickey"
                             ),
-                            1000 + number,
+                            2000 + number * 10,
                             context(True),
                         )
                     ]
@@ -262,13 +297,13 @@ def verify():
                     rows = [
                         record(
                             fixtures["auth"]["raw"]["evidence"]["inline"],
-                            1000 + number,
+                            2000 + number * 10,
                             context(True),
                         )
                     ]
                     oracle.event(rows[0], "auth")
                 values = retain(rows)
-                test.wait_checkpoint(job["job_id"])
+                idle_checkpoint(test, job)
                 test.fault(kind, "2")
                 try:
                     ipc = "".join(
@@ -293,12 +328,49 @@ def verify():
                         if json.loads(line).get("type") == "ack"
                     ]
                     oracle.register(rows, acks)
+                    with (test.folder / "original-acks.ndjson").open("ab") as ledger:
+                        for ack in acks:
+                            ledger.write(encoded(ack) + b"\n")
                     wait_failure(test, job, "RecordTooLarge", timeout=180)
                     checkpoint = test.rest("/jobs/" + job["job_id"] + "/checkpoints")["latest"][
                         "completed"
                     ]
                     evidence = checkpoint_inventory(test, checkpoint)
-                    require(any(i["kind"] == kind for i in evidence["outbox"]))
+                    blocked = [i for i in evidence["outbox"] if i["kind"] == kind]
+                    require(bool(blocked))
+                    if kind in ("tagged", "manifest", "preservation"):
+                        expected_members = sorted(row["raw"]["record_id"] for row in rows)
+                        require(
+                            any(
+                                sorted(m["record_id"] for m in i["members"]) == expected_members
+                                for i in blocked
+                            )
+                        )
+                    elif kind in ("detection", "processing"):
+                        ctx = rows[0]["context"]
+                        from integration_cases import identity
+
+                        expected_event = identity(
+                            [
+                                ctx["source"]["namespace"],
+                                ctx["source"]["instance"],
+                                sorted(row["raw"]["record_id"] for row in rows),
+                            ]
+                        )
+                        require(
+                            any(
+                                i["event_id"] == expected_event and i["run_id"] == ctx["run_id"]
+                                for i in blocked
+                            )
+                        )
+                    else:
+                        require(
+                            any(
+                                i["input"]["offset"] == acks[-1]["offset"]
+                                and i["input"]["value_sha256"] == acks[-1]["value_sha256"]
+                                for i in blocked
+                            )
+                        )
                     faults.append(
                         dict(
                             kind=kind,
@@ -310,6 +382,10 @@ def verify():
                     test.fault(kind, "1")
                 job = test.start(restore=checkpoint["external_path"])
                 wait_outputs(test, oracle)
+                save(
+                    report,
+                    dict(status="running", phase=phase, project=project, sink_failures=faults),
+                )
             stage("metrics_original_input_hashes_and_stable_duplicates")
             require(any("detectbridge_integration" in value for value in test.metrics().values()))
             for container in test.stack.containers():
@@ -344,11 +420,22 @@ def verify():
             save(report, result)
             return result
         except BaseException as error:
+            try:
+                save(
+                    test.folder / "failed-outputs.json",
+                    [
+                        dict(kind=kind, wire=wire, document=doc)
+                        for kind, wire, doc in test.outputs()
+                    ],
+                )
+            except Exception:
+                pass
             failure = dict(
                 status="failed",
                 phase=phase,
                 project=project,
                 error_type=type(error).__name__,
+                completed_sink_failures=locals().get("faults", []),
                 locations=[
                     Path(f.filename).name + ":" + str(f.lineno)
                     for f in traceback.extract_tb(error.__traceback__)[-5:]
@@ -357,14 +444,17 @@ def verify():
             if str(error).replace("_", "").isalnum():
                 failure["category"] = str(error)
             try:
-                details = json.dumps(
-                    test.rest("/jobs/" + test.latest_job()["job_id"] + "/exceptions")
+                original_exceptions = test.rest(
+                    "/jobs/" + test.latest_job()["job_id"] + "/exceptions"
                 )
+                save(test.folder / "original-exceptions.json", original_exceptions)
+                details = json.dumps(original_exceptions)
                 failure["exception_sha256"] = hashlib.sha256(details.encode()).hexdigest()
                 failure["known_markers"] = [
                     m
                     for m in (
                         "RecordTooLarge",
+                        "conflicting_redelivery",
                         "incompatible_integration_restore",
                         "OutOfMemoryError",
                         "integration_schema_invalid",

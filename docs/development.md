@@ -139,3 +139,27 @@ legacy default output stay compatible. The option emits an `integration` member
 instead of legacy `evaluation` on event rows. Raw/context, manifests and preservation
 rows remain retained. See [P13a decisions](p13a-design.md) and
 [qualification limits](p13a-ledger.md). No Kafka/OpenSearch P13 command exists yet.
+
+## P13b integrated runtime
+
+`uv run --locked python tools/dev.py integration` runs the implemented Java
+state/source/evaluation/evidence tests, installed artifact/schema/license checks
+and independent Python oracle/gate regressions. Root `java` retains existing
+consumers and includes the new module; root `check` includes its schema/gate/
+oracle/dependency checks. The real fail-closed integration-verification CI job
+also builds and runs actual Kafka/Flink qualification.
+
+Use `uv run --locked python tools/integration.py build` then
+`uv run --locked python tools/integration.py verify` for the isolated P13b runtime
+suite. Manual lifecycle: `tools/integration.py --project detectbridge-p13-dev init`,
+then `start`, `status`, `metrics`, `stop`. Initialization optionally accepts
+`--objects /absolute/path/to/registered-sha256-objects`; evidence is verified and
+copied into the owned ignored project cache, never fetched from URI values.
+Restart requires explicit `start --restore file:///state/checkpoints/JOB/chk-N`.
+No P12 checkpoint adoption or old-project reset is allowed.
+
+[Owning decisions](p13b-design.md) define schemas, limits and identity/restore
+bindings; [qualification](p13b-ledger.md) records actual checks and failures.
+Run heavy Docker qualification projects sequentially. New v1.1 runtime output
+profiles retain unchanged P13a offline defaults. P13c search and full recorded
+source-to-search acceptance remain separate.

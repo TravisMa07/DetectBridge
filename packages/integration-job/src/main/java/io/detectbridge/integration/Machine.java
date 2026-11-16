@@ -287,10 +287,10 @@ public final class Machine {
   /** Qualification evidence only, never a recovery source. No original bodies are copied. */
   public synchronized JsonNode inventory(long checkpoint, byte[] snapshot) {
     ObjectNode result=Json.MAPPER.createObjectNode(); result.put("version","1.0.0");result.put("checkpoint_id",checkpoint);
-    result.put("binding",binding);result.put("snapshot_sha256",Json.sha(snapshot));result.put("received_offset",state.get("received_offset").asLong());
+    result.put("binding",binding);result.put("next_deadline",nextDeadline());result.put("snapshot_sha256",Json.sha(snapshot));result.put("received_offset",state.get("received_offset").asLong());
     ArrayNode groups=result.putArray("groups");
     for(JsonNode group:state.at("/assembler/groups")) {
-      ObjectNode item=groups.addObject();item.set("key",group.get("key"));ArrayNode members=item.putArray("members");
+      ObjectNode item=groups.addObject();item.set("key",group.get("key"));item.set("opened",group.get("opened"));item.put("deadline",Math.addExact(group.get("opened").asLong(),limits.ageMillis()));ArrayNode members=item.putArray("members");
       for(JsonNode member:group.get("members")) members.add(Json.MAPPER.valueToTree(Map.of("record_id",member.at("/raw/record_id").asString(),
           "evidence_sha256",member.at("/raw/evidence/sha256").asString(),"raw_sha256",hash(member.get("raw")),"context_sha256",hash(member.get("context")))));
     }
@@ -299,12 +299,15 @@ public final class Machine {
     for(JsonNode intent:outbox()) {
       ObjectNode item=intents.addObject();item.put("sequence",intent.get("sequence").asLong());item.set("kind",intent.get("kind"));item.set("key",intent.get("key"));
       JsonNode doc=intent.get("document");item.put("document_sha256",Json.sha(Json.bytes(canonical(doc))));
+      if(doc.has("processing_id"))item.set("processing_id",doc.get("processing_id"));
+      if(doc.has("event"))item.set("event_id",doc.at("/event/event/id"));else if(doc.has("event_id"))item.set("event_id",doc.get("event_id"));
       String run=doc.has("event")?doc.at("/event/detectbridge/run_id").asString():doc.at("/detectbridge/run_id").asString();if(run.isEmpty())run=doc.has("manifest_id")?doc.at("/key/run_id").asString():doc.path("run_id").asString();item.put("run_id",run);
       if(doc.has("input"))item.set("input",doc.get("input"));
       ArrayNode refs=item.putArray("members");
       JsonNode originals=doc.has("event")?doc.at("/event/detectbridge/evidence"):doc.path("members");
       for(JsonNode original:originals) refs.add(Json.MAPPER.valueToTree(Map.of("record_id",original.get("record_id").asString(),
           "evidence_sha256",original.has("evidence")?original.at("/evidence/sha256").asString():original.get("evidence_sha256").asString())));
+      if(doc.has("diagnostic"))doc=doc.get("diagnostic");
       if(doc.has("member"))refs.add(Json.MAPPER.valueToTree(Map.of("record_id",doc.at("/member/record_id").asString(),"evidence_sha256",doc.at("/member/evidence_sha256").asString())));
     }
     return result;

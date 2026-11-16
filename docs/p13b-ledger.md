@@ -39,7 +39,6 @@ establishes Kafka recovery, recorded-source or search acceptance.
 P13c search and complete recorded source-to-search acceptance remain separate.
 No throughput, archive, activation, API/UI or release claim is made.
 
-
 ## Retained early attempts
 
 The first verify invocation failed before any runtime initialization because the
@@ -49,3 +48,27 @@ job also correctly invalidated three older aggregate test fixtures that omitted
 its applicability/result fields. Those fixtures now include explicit inapplicable/
 skipped integration entries; the gate was not weakened. Logs remain local under
 `.cache/p13b-*`. No original evidence or existing qualification project was changed.
+
+The first initialized runtime attempt reached actual audit TaskManager recovery
+and failed independent processing-identity verification: the Python oracle used
+the P03 array identity helper without recursively sorting nested attribution keys.
+Production identities already used canonical nested JSON. The oracle now follows
+the frozen P13 canonical preimage and is checked against independent committed
+literal identity vectors. No counts/source expectations or runtime policy were
+weakened. This failed run is retained separately from later qualification.
+
+The next initialized attempt passed audit TaskManager recovery, all baseline source/
+evaluation/replay checks, explicit restore, exact incompatible-group rejection,
+JobManager recovery and broker pause, then failed the sink stage with an unrelated
+pressure-failure marker. Its original exception was retained only as a hash, so
+that exact job failure is not assigned an unobserved cause. Inspection found reused
+synthetic Linux cursor positions between fault cases; a new real-Machine regression
+reproduces conflicting_redelivery for that collision. Fault cases now have disjoint
+positions. Full original exceptions and acknowledged input references are retained
+locally for subsequent failures. No producer-failure assertion was weakened.
+
+Final qualification additionally requires each blocked checkpoint intent's exact
+original member/event/input reference, a completed idle prefix before each fault,
+and an expired audit group's closure by the first restored checkpoint. Inventories
+carry bounded IDs/hashes and admission/deadline metadata, never evidence bodies.
+The following qualification uses a newly frozen artifact with those observations.

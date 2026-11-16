@@ -30,7 +30,7 @@ import org.apache.flink.util.Collector;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
-/** Exclusive P12b qualification topology; at-least-once Kafka output and durable intent release. */
+/** Isolated P13b integrated topology; at-least-once Kafka output and durable intent release. */
 public final class IntegrationJob {
   public static class WireRecord implements Serializable {
     public byte[] value; public long offset; public String topic; public int partition;
@@ -88,7 +88,7 @@ public final class IntegrationJob {
       try {
       IntegrationBroker.verifyIdentities(config.bootstrap,config.cluster,config.ids);
       evidence=LocalEvidence.open(Path.of("/opt/detectbridge/objects"),Path.of("/opt/detectbridge/object-registration.json"),config.registry);
-      checkpointState=context.getOperatorStateStore().getListState(new ListStateDescriptor<>("linux-integration-envelope-v1",byte[].class));
+      checkpointState=context.getOperatorStateStore().getListState(new ListStateDescriptor<>("integration-envelope-v1",byte[].class));
       List<byte[]> snapshots=new ArrayList<>();checkpointState.get().forEach(snapshots::add);
       restored=context.isRestored();check(restored ? snapshots.size()==1 : snapshots.isEmpty(),"incompatible_integration_restore");
       machine=restored ? Machine.restore(Clock.systemUTC(),config.limits(),config.binding,config.source(),evidence::resolve,new io.detectbridge.detection.Evaluator(config.plan),snapshots.get(0))
@@ -169,9 +169,9 @@ public final class IntegrationJob {
         .setProperty("max.partition.fetch.bytes","4194304").setProperty("fetch.max.bytes","8388608").setProperty("max.poll.records","16").build();
     var sink=KafkaSink.<Delivery>builder().setBootstrapServers(config.bootstrap).setKafkaProducerConfig(IntegrationBroker.producerProperties(config.bootstrap))
         .setRecordSerializer(new Encode()).setDeliveryGuarantee(DeliveryGuarantee.AT_LEAST_ONCE).build();
-    env.fromSource(source,WatermarkStrategy.noWatermarks(),"Linux integration input").uid("linux-integration-source-v1")
-        .transform("Checkpointed Linux integration",TypeInformation.of(Delivery.class),new Operator(config)).uid("linux-integration-operator-v1")
-        .sinkTo(sink).name("Acknowledged Linux integration outputs").uid("linux-integration-sink-v1");
+    env.fromSource(source,WatermarkStrategy.noWatermarks(),"Integrated raw input").uid("integration-source-v1")
+        .transform("Checkpointed integrated evaluation",TypeInformation.of(Delivery.class),new Operator(config)).uid("integration-operator-v1")
+        .sinkTo(sink).name("Acknowledged integration outputs").uid("integration-sink-v1");
     env.execute("DetectBridge P13b integrated evaluation");
   }
 }

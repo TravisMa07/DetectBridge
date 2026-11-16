@@ -12,7 +12,9 @@ reuses the real adapters, P12 Assembler prepared API and P13a compact evaluator.
 The P12 checkpoint-prefix model is adapted in a separate state/version boundary;
 P12 deployment/state/schema/resources are not adopted or silently migrated.
 
-Input version 1.0.0: bounded raw/context `record`, `windows_record`, source_boundary
+Input JSON values are capped at 1 MiB; bounded transport admission/quarantine
+can retain up to 2 MiB of original bytes per wire record. Oversized/invalid JSON
+becomes hash/location quarantine, never an event. Input version 1.0.0: bounded raw/context `record`, `windows_record`, source_boundary
 and run_end admissions. Linux contexts use the unchanged P12 validator; Windows
 contexts use the actual Windows adapter validator. All original Kafka input and
 raw/context bytes remain retained. Referenced evidence resolves only registered
@@ -73,7 +75,7 @@ same acknowledged sink. No exactly-once, rescaling or old-checkpoint migration.
 Restore binds exact job artifact, immutable mapped plan, evaluator/selector/
 enrichment/runtime versions, source/mapping profiles, evidence registration,
 limits, broker/topic IDs and group. Validate state before output/admission; changed
-bindings fail. Inventories contain IDs/hashes/member references only and are
+bindings fail. Inventories contain IDs/hashes/member references and bounded admission/deadline timestamps only and are
 observations, never recovery sources; require independently confirmed COMPLETED
 checkpoints before using them as qualification evidence.
 

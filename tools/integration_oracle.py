@@ -3,11 +3,12 @@
 import base64
 import copy
 import hashlib
+from typing import Any
 
 from check_contracts import load_json
 from check_integration import validate
 from integration import INPUT
-from integration_cases import ROOT, digest, encoded, identity
+from integration_cases import ROOT, digest, encoded
 from linux_assembly_verify import Oracle as SourceOracle
 from linux_assembly_verify import require, transport_id
 
@@ -27,6 +28,10 @@ POLICY = dict(
     rule_metadata="plan-without-yaml-and-expression",
     external_inputs=[],
 )
+
+
+def identity(preimage):
+    return "sha256:" + digest(preimage)
 
 
 def semantic_event(event):
@@ -139,6 +144,14 @@ class Oracle:
             require(event == literal)
         context = copy.deepcopy(ctx)
         context.pop("receipt", None)
+        processing = dict(
+            parser=ctx["parser"]["id"] + "/" + ctx["parser"]["version"],
+            mapping=ctx["mapping_profile"]["id"] + "/" + ctx["mapping_profile"]["version"],
+            normalizer="windows-normalizer/1.0.0"
+            if rows[0]["kind"] == "windows_record"
+            else "linux-p12a/1.0.0",
+        )
+        require(event["detectbridge"]["processing"] == processing)
         attrs = dict(
             context_sha256=digest(context),
             pipeline="p13-runtime/1.0.0",
@@ -146,7 +159,7 @@ class Oracle:
             source=ctx["source"],
             source_contract={k: ctx["source_contract"][k] for k in ("id", "version", "sha256")},
             mapping_profile={k: ctx["mapping_profile"][k] for k in ("id", "version", "sha256")},
-            processing=event["detectbridge"]["processing"],
+            processing=processing,
             compiler="detectbridge/2.0.0",
             evaluator="detectbridge-java/2.0.0",
             mapping_version="source-mappings/1.0.0",
@@ -247,7 +260,11 @@ class Oracle:
         )
 
     def check(self, outputs):
-        seen, tags, detections, diagnostics, native = {}, {}, {}, {}, []
+        seen: dict[tuple[str, str], bytes] = {}
+        tags: dict[tuple[str, str], Any] = {}
+        detections: dict[str, Any] = {}
+        diagnostics: dict[str, Any] = {}
+        native = []
         for kind, wire, document in outputs:
             require(
                 wire["headers"]["detectbridge.runtime.binding"] == self.binding
@@ -337,7 +354,8 @@ class Oracle:
                         and document["value_is_null"] == expected["value_is_null"]
                     )
         self.native.check(native, complete=False)
-        expected_detections, expected_diagnostics = {}, {}
+        expected_detections: dict[str, Any] = {}
+        expected_diagnostics: dict[str, Any] = {}
         for logical, tag in tags.items():
             expected_tag, det, diag = self.expected_tag(tag["event"], self.events[logical])
             require(tag == expected_tag)

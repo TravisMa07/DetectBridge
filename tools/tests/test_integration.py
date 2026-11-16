@@ -5,6 +5,7 @@ import copy
 import sys
 import unittest
 from pathlib import Path
+from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from check_gate import CONDITIONAL, gate_passes
@@ -12,7 +13,7 @@ from check_integration import check
 from classify_changes import needs_integration
 from integration import INPUT, TOPICS, Integration
 from integration_cases import digest, encoded
-from integration_oracle import Oracle
+from integration_oracle import Oracle, identity
 from linux_assembly_verify import transport_id
 
 
@@ -38,7 +39,7 @@ class IntegrationTests(unittest.TestCase):
         ):
             self.assertTrue(needs_integration([path]), path)
         self.assertFalse(needs_integration(["docs/p13b-design.md"]))
-        needs = {
+        needs: dict[str, Any] = {
             "classify-changes": dict(
                 result="success", outputs={field: "false" for field in CONDITIONAL.values()}
             ),
@@ -54,6 +55,18 @@ class IntegrationTests(unittest.TestCase):
         self.assertTrue(gate_passes(needs))
         del needs["classify-changes"]["outputs"]["integration"]
         self.assertFalse(gate_passes(needs))
+
+    def test_semantic_identity_uses_canonical_nested_metadata(self):
+        import json
+
+        vectors = json.loads(
+            (
+                Path(__file__).resolve().parents[2]
+                / "contracts/integration/v1/fixtures/identity-vectors.json"
+            ).read_text()
+        )
+        for vector in vectors:
+            self.assertEqual(vector["expected"], identity(vector["preimage"]))
 
     def test_literal_receipt_requires_original_input_location_hash_key_and_header(self):
         binding = "a" * 64
@@ -83,7 +96,7 @@ class IntegrationTests(unittest.TestCase):
             input=location,
             id=transport_id(binding, location, "receipt"),
         )
-        wire = dict(
+        wire: dict[str, Any] = dict(
             key=base64.b64encode(document["id"].encode()).decode(),
             value=base64.b64encode(encoded(document)).decode(),
             headers={

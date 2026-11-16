@@ -166,7 +166,10 @@ No application scaffolding, runtime capability claims or release tag.
 
 - Local status: bounded Security/Sysmon adapter and offline runner merged in #38
   after AMD64 CI; recorded preservation accounting passes, but no recorded eligible
-  coverage is claimed without trusted host bindings. See [design](p11-design.md).
+  coverage for the old public recordings is claimed without trusted host bindings.
+  A [new controlled capture](p11-recording-review.md) passed local eligible offline
+  matching; owner semantic acceptance and final-head PR qualification remain gates.
+  See [design](p11-design.md).
 
 - Depends on: P04, P10.
 - Deliver: source contracts/adapters for selected Security and Sysmon formats,

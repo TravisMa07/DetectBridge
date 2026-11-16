@@ -162,3 +162,54 @@ P03 evidence can carry the original UTF-8 XML as inline text, base64 inline byte
 or a locally registered object reference. Representation decoding precedes strict
 XML UTF-8 validation. Allowed URI schemes compare case insensitively; locator
 spelling is preserved. Content-addressed URNs retain their canonical spelling.
+
+## Controlled recording with reviewed identity
+
+The older public recordings remain an identity-missing preservation corpus.
+The new [controlled capture](p11-recording-design.md) and
+[owner review packet](p11-recording-review.md) add a separate real Windows source
+scope with actual registry/VM/capture provenance. They do not change old contexts.
+The [metadata catalog](../catalog/recordings/windows-process-lab-v1.json) contains
+hashes, independent expectations and technical review, with owner acceptance separate.
+
+Capture is opt-in through Repository hygiene workflow_dispatch's `windows-recipient`
+input: supply a base64 DER public RSA certificate with key-encipherment usage, at
+least 3072 bits, and keep its private key local. The disposable windows-2022 job
+verifies the pinned Microsoft Sysmon package/signature, temporarily enables process
+and command-line auditing, runs the controlled actions and restores its changes.
+It refuses a non-GitHub Windows host or preexisting Sysmon. Only CMS AES-256/RSA
+ciphertext is uploaded; failed attempts also retain encrypted diagnostics when
+encryption succeeds. No plaintext fallback exists. Use a fresh recipient and local
+evidence directory for each acquisition; do not replace the accepted catalog in place.
+
+Download the named `p11-controlled-windows-encrypted` artifact using authenticated
+GitHub access. Retain its API metadata/digest and original transport ZIP, the run
+and successful capture-job JSON, ciphertext and decrypted ZIP together. Verify the
+transport ZIP's SHA-256 against the GitHub artifact digest before decrypting with
+OpenSSL CMS (`cms -decrypt -binary -inform DER`). Validate archive member names,
+uniqueness and total expanded size before extracting. Keep all of this ignored.
+The accepted acquisition layout is `.cache/p11-windows-capture/attempt3/` containing
+`run.json`, `job.json`, `artifact.json`, `transport.zip`, `recording.p7m`,
+`originals.zip`, and extracted `originals/`. Exact hashes bind these retained files;
+do not replace API metadata with a later response or silently reuse another run.
+
+`recording.py --candidate ... --run ...` creates a candidate only. Review original
+host/process/actions, terms and native fields, then freeze a separately reviewed
+catalog before evaluation. Candidate status cannot prepare inputs. Technical source
+review does not approve owner semantics or claim complete host-wide telemetry.
+
+For the retained accepted acquisition:
+
+```sh
+uv run --locked python packages/windows-adapters/recording_plan.py .cache/p11-windows-capture/frozen-plan.json
+uv run --locked python packages/windows-adapters/recording.py .cache/p11-windows-capture/attempt3/originals --catalog catalog/recordings/windows-process-lab-v1.json --prepare .cache/p11-windows-capture/input.ndjson --run-id 9f1b3d5b-9c90-4ba9-8e28-d48916042b35
+JAVA_HOME="$PWD/.cache/jdk" packages/windows-adapters/build/install/windows-adapters/bin/windows-adapters .cache/p11-windows-capture/input.ndjson .cache/p11-windows-capture/output.ndjson .cache/p11-windows-capture/attempt3/originals .cache/p11-windows-capture/frozen-plan.json
+uv run --locked python packages/windows-adapters/recording.py .cache/p11-windows-capture/attempt3/originals --catalog catalog/recordings/windows-process-lab-v1.json --input .cache/p11-windows-capture/input.ndjson --output .cache/p11-windows-capture/output.ndjson --plan .cache/p11-windows-capture/frozen-plan.json --run-id 9f1b3d5b-9c90-4ba9-8e28-d48916042b35
+```
+
+Freeze the compiled plan once and reuse it; verification binds its committed rule
+revision independently of later documentation commits. To qualify isolated replay,
+use a distinct UUID and separate input/output files with the same originals/catalog
+and frozen plan. Raw/event identities must stay stable and result identities must
+stay isolated. Ordinary CI runs the synthetic verifier/adapter regressions without
+access to local decrypted recordings; it does not claim this opt-in recorded run.

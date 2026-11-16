@@ -7,8 +7,8 @@ import os
 import sys
 import tempfile
 import uuid
-import zipfile
 import xml.etree.ElementTree as ET
+import zipfile
 from datetime import datetime
 from pathlib import Path
 

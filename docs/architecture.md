@@ -211,3 +211,10 @@ AMD64 qualification and merged-main run 43873905332 passed.
 [P13 design notes](p13-design.md) propose integration under A02–A07
 and the explicit ADR 0008 projection compatibility review. P11 trusted recorded
 Windows bindings/semantic acceptance remain unresolved; P13 is not implemented.
+
+P11 controlled Windows source qualification adds a separately cataloged local
+capture with actual registry/VM/boot provenance, encrypted acquisition and frozen
+independent expectations under the unchanged A02/A03 adapter boundary. It does
+not repair old recording identities or implement a registry/P13 service. See the
+[owning design](p11-recording-design.md) and [review packet](p11-recording-review.md)
+for technical evidence and the remaining owner semantic gate.

@@ -173,3 +173,55 @@ not a host-binding registry. Rule fixtures and synthetic bindings cannot supply
 recorded provenance. Separate P11 semantic acceptance remains unresolved.
 The [P13 plan](p13-design.md#exact-missing-windows-evidence) records exact evidence
 needed and preserves the existing 361 skipped/6,657 unsupported accounting.
+
+## Controlled Windows evidence completion
+
+The owner requested implementation of the remaining P11 blocker. A new opt-in
+controlled capture and independent verifier are implemented on
+`feat/p11-controlled-windows-recording`; [design](p11-recording-design.md) and
+[owner review packet](p11-recording-review.md) define the bounded scope.
+The original public recordings still have no trusted bindings; their 7,018-row
+preservation accounting is unchanged.
+
+Actual accepted source capture: workflow run 43880077695, job 133343561692,
+head f0ced8fe470dcb23c183979087125a77f66cf5a9. The capture job passed; unrelated
+workflow checks are not substituted for source qualification. Encrypted artifact
+14231737714 has transport SHA-256
+7cf2898219fc6b641c1f89ca879b183390c090e1216359dd94b9dd5c661d2d2d.
+Authenticated download, ciphertext identity and original archive bytes were checked.
+The [new catalog](../catalog/recordings/windows-process-lab-v1.json) pins source
+and terms metadata only; no original XML, binary or private key is committed.
+
+Two real process actions yield four eligible events (Security 4688 v2 and Sysmon
+1 v5), plus one native unsupported Sysmon service-state preservation row. Actual
+registry/VM/boot/local-host/process/account evidence substantiates the new capture's
+bindings. Per-record source expectations were frozen at dd0875a before actual
+adapter/evaluator use; the later observation-policy attribution revision was frozen
+at 0d9135e before the final rerun. Capture-time source expectations are independent
+of the evaluator. Only retained selection-completion observation time is available;
+no exact first-enumeration claim is made. Git checkout CRLF source conversion is
+explicitly versioned and hashed separately from original native XML.
+
+Actual ARM64 Java adapter/evaluator qualification passed both complete isolated
+runs, each with five originals, four eligible, one unsupported, two matched, six
+unmatched and four inapplicable rule outcomes. Six actual same-count output tamper
+probes failed as required. Original event/evidence IDs stayed stable while run/result
+IDs remained isolated. Frozen plan a90ed1b5 / adapter JAR e562f1b6 are expanded in
+the review packet. Final local logs/reports and all earlier outputs remain ignored.
+This is offline qualification; P13 Kafka/Flink/search integration is not implemented.
+
+Earlier attempts are retained separately: run 43879082722 capture job failed with
+a generic fixed category before usable evidence; run 43879579549 failed at XML
+candidate selection, source line 89. Its encrypted retention step incorrectly
+skipped because hashFiles could not select the runner-temp file. The follow-up
+reads XML InnerText (including empty fields) and uploads encrypted failed-attempt
+archives with an always-running step. Run 43880077695 then passed. Exact first-
+attempt cause is not established, and no failed recording is accepted. Earlier
+full dispatch runs were cancelled by the existing same-branch concurrency policy
+when superseded; no qualification check was relaxed.
+
+Local locked root checks initially found a bare-URL Markdown error; it was fixed.
+A Windows-gate attempt reached passing Java/tests then failed import ordering in
+the new verifier; that formatting error was fixed. Final-head checks and owner
+semantic acceptance are recorded separately when observed; passing local evidence
+alone does not complete those gates or authorize a merge.

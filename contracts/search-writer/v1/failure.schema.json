@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:search-writer:1.0.0:failure",
+  "type": "object",
+  "properties": {
+    "contract_version": {
+      "const": "1.0.0"
+    },
+    "failure_id": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "input": {
+      "type": "object",
+      "properties": {
+        "cluster_id": {
+          "type": "string"
+        },
+        "topic_id": {
+          "type": "string"
+        },
+        "topic": {
+          "enum": [
+            "detectbridge.replay.input.v1",
+            "detectbridge.replay.output.v1",
+            "detectbridge.replay.quarantine.v1",
+            "detectbridge.opensearch.writer-failures.v1"
+          ]
+        },
+        "partition": {
+          "const": 0
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "cluster_id",
+        "topic_id",
+        "topic",
+        "partition",
+        "offset"
+      ],
+      "additionalProperties": false
+    },
+    "value_is_null": {
+      "type": "boolean"
+    },
+    "value_size": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "value_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "diagnostic": {
+      "type": "object",
+      "properties": {
+        "category": {
+          "enum": [
+            "invalid_json",
+            "invalid_envelope",
+            "source_reference_mismatch",
+            "diagnostic_identity_mismatch",
+            "schema_invalid",
+            "identity_conflict",
+            "document_rejected"
+          ]
+        },
+        "pointer": {
+          "const": ""
+        }
+      },
+      "required": [
+        "category",
+        "pointer"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "contract_version",
+    "failure_id",
+    "input",
+    "value_is_null",
+    "value_size",
+    "value_sha256",
+    "diagnostic"
+  ],
+  "additionalProperties": false
+}

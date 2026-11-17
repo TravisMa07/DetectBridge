@@ -17,3 +17,6 @@ project(":linux-assembly-job").projectDir = file("packages/linux-assembly-job")
 
 include("integration-job")
 project(":integration-job").projectDir = file("packages/integration-job")
+
+include("integration-writer")
+project(":integration-writer").projectDir = file("packages/integration-writer")

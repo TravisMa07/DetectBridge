@@ -357,6 +357,7 @@ class TransportTests(unittest.TestCase):
                             "linux": "false",
                             "assembly": "false",
                             "integration": "false",
+                            "search": "false",
                         },
                     },
                     "repository-hygiene": {"result": "success"},
@@ -370,6 +371,7 @@ class TransportTests(unittest.TestCase):
                     "linux-verification": {"result": "skipped"},
                     "linux-assembly-verification": {"result": "skipped"},
                     "integration-verification": {"result": "skipped"},
+                    "search-verification": {"result": "skipped"},
                 }
                 self.assertEqual(
                     gate_passes(needs), result == ("success" if applicable == "true" else "skipped")
@@ -403,3 +405,68 @@ class TransportTests(unittest.TestCase):
         ):
             with self.assertRaises(transport.StackError):
                 self.value.start(restore=path)
+
+
+class CheckpointRetentionTests(unittest.TestCase):
+    def test_cancel_then_select_retained_checkpoint_survives_slow_shutdown(self):
+        from tempfile import TemporaryDirectory
+        from types import SimpleNamespace
+
+        class Lifecycle:
+            retained_checkpoint = cast(Any, transport.Transport.retained_checkpoint)
+
+            def __init__(self, folder):
+                self.folder = Path(folder)
+                self.running = True
+                self.current = 1
+                self.files = {1}
+                self.stack = SimpleNamespace(exec=self.metadata)
+
+            def latest_job(self):
+                return {"job_id": "a" * 32}
+
+            def config(self):
+                return {"bundle": {"bundle_sha256": "b" * 64}}
+
+            def wait_checkpoint(self, job):
+                return self.checkpoint()
+
+            def checkpoint(self):
+                return {
+                    "id": self.current,
+                    "status": "COMPLETED",
+                    "external_path": "file:/state/checkpoints/"
+                    + "a" * 32
+                    + "/chk-"
+                    + str(self.current),
+                }
+
+            def stop(self):
+                # A newer completion retires the earlier observation during cancellation.
+                self.current = 4
+                self.files = {4}
+                self.running = False
+
+            def rest(self, path):
+                return (
+                    {"latest": {"completed": self.checkpoint()}}
+                    if path.endswith("/checkpoints")
+                    else {"state": "RUNNING" if self.running else "CANCELED"}
+                )
+
+            def metadata(self, service, command, flag, path):
+                assert int(path.split("chk-")[1].split("/")[0]) in self.files
+
+            def delayed_shutdown(self):
+                if self.running:
+                    self.files.clear()
+
+        with TemporaryDirectory() as folder:
+            lifecycle = Lifecycle(folder)
+            old = lifecycle.wait_checkpoint("a" * 32)
+            checkpoint = lifecycle.retained_checkpoint("a" * 32)
+            lifecycle.delayed_shutdown()
+            self.assertNotIn(old["id"], lifecycle.files)
+            self.assertEqual(4, checkpoint["id"])
+            self.assertIn(checkpoint["id"], lifecycle.files)
+            self.assertFalse(lifecycle.running)

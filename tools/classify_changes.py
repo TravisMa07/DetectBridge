@@ -335,6 +335,26 @@ def needs_integration(paths):
     )
 
 
+def needs_search(paths):
+    return (
+        needs_integration(paths)
+        or needs_writer(paths)
+        or any(
+            p.startswith(
+                (
+                    "packages/integration-writer/",
+                    "contracts/search-writer/",
+                    "tools/search_writer",
+                    "tools/check_search_writer",
+                    "tools/tests/test_search_writer",
+                )
+            )
+            for p in paths
+            if not p.endswith(".md")
+        )
+    )
+
+
 if __name__ == "__main__":
     base = os.environ.get("CHANGE_BASE", "")
     head = os.environ.get("CHANGE_HEAD", "HEAD")
@@ -354,6 +374,7 @@ if __name__ == "__main__":
         output.write(f"transport={str(needs_transport([p for p in paths if p])).lower()}\n")
         output.write(f"writer={str(needs_writer([p for p in paths if p])).lower()}\n")
         output.write(f"integration={str(needs_integration([p for p in paths if p])).lower()}\n")
+        output.write(f"search={str(needs_search([p for p in paths if p])).lower()}\n")
         output.write(f"assembly={str(needs_assembly([p for p in paths if p])).lower()}\n")
         output.write(f"linux={str(needs_linux([p for p in paths if p])).lower()}\n")
         output.write(f"windows={str(needs_windows([p for p in paths if p])).lower()}\n")

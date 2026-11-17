@@ -43,7 +43,8 @@ actual offline Windows/Linux consumers; owner-merged #46 and merged-main checks 
 [P13b](docs/p13b-design.md) adds an isolated Kafka/Flink deployment of those actual
 adapters, audit assembly and evaluation, with bounded checkpointed output intents.
 [Qualification status](docs/p13b-ledger.md) records exact checks, failures and limits.
-Management API, UI, P13c search and complete recorded source-to-search acceptance
+[P13c search](docs/search-writer.md) is implemented on this branch with
+[qualification in progress](docs/p13c-ledger.md). Management API, UI and complete recorded source-to-search acceptance
 remain pending; these slices do not complete [P13](docs/p13-design.md).
 P06 provides local Kafka/Flink infrastructure and optional authenticated OpenSearch.
 Repository hygiene tooling and

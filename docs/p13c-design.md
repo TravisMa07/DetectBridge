@@ -2,8 +2,10 @@
 
 Base: owner-merged P13b #47, `500ffc7`. Exact PR-head 8cc680c passed all applicable
 native AMD64 jobs in 43978412654, including every actual sink/recovery case.
-Merged-main 44004484594 is pending at design preparation; verify it before runtime
-qualification. Earlier P13b native failure remains an unexplained failed attempt,
+Merged-main 44004484594 was pending at design preparation and later failed
+assembly checkpoint-metadata restore. A shared qualification retention race and
+its regression/correction are recorded in the ledger; rerun affected actual suites
+before attributing runtime qualification to this branch. Earlier P13b native failure remains an unexplained failed attempt,
 not waived acceptance. P08/P11/P12 bounded acceptance is not reopened.
 
 ## Compatibility and delivery
@@ -60,13 +62,17 @@ and evidence hashes. Selected ECS fields alone are copied; no arbitrary vendor
 extensions, raw inline originals, rule YAML or expressions enter search. Full
 semantic-event hash still detects conflicting decision content in omitted fields.
 Detection rows retain pinned rule metadata as a nonindexed object plus searchable
-ID/revision/title/tags. Compact diagnostics retain category and immutable rule-set
+ID/revision. Title/tags are not inferred from removed YAML; the existing pinned
+rule contract does not supply those fields. Compact diagnostics retain category and immutable rule-set
 reference as a nonindexed object plus count/hash. Manifest and sanitized evidence
 references retain IDs/hashes/retrieval locations; the immutable input/manifest
 Kafka topic IDs are explicit links. OpenSearch is not original evidence storage.
 
 All mappings use root dynamic=strict; searchable objects have closed properties.
-Opaque bounded metadata uses enabled=false, never dynamic vendor mappings. Dates
+Opaque bounded metadata uses enabled=false, never dynamic vendor mappings.
+Keywords have ignore_above=4096; exact longer values remain in `_source` and its
+semantic hash. Greater-than-nanosecond precision is retained without rounding, with
+outside_nanos_range_or_precision when no date_nanos value can be represented. Dates
 retain exact original strings and basis/quality. Optional @timestamp is date_nanos
 only if its original UTC value fits unsigned signed-long nanos (1970 through the
 representable 2262 endpoint) without rounding. Other dates remain exact metadata
@@ -74,12 +80,12 @@ with outside_nanos_range. No receipt/ingestion/processing clock becomes occurren
 time; source precision and fallback remain visible in exact strings/metadata.
 
 Canonical JSON recursively sorts keys, retains array order/integer values/UTF-8.
-Content hash excludes content_sha256, first_input, input_sha256 and evidence_source;
+Content hash excludes content_sha256, first_input, input_sha256 and evidence`_source`;
 manifest comparison uses only its semantic_sha256, retaining its original retrieval
 link in the first document. Event semantic hashing removes event.ingested,
 detectbridge.time.received/processed and Linux context.receipt exactly as P13a.
 Thus physical copies and receipt clocks cannot create semantic conflicts. Existing
-_source is rehashed, never trusted by its claimed checksum. A changed semantic
+`_source` is rehashed, never trusted by its claimed checksum. A changed semantic
 projection with the same ID is quarantined without overwrite. Failure IDs use
 ["p13-search-writer:1.0.0", cluster, topic ID, decimal partition, decimal offset].
 Independent literal vectors and projection expectations precede Java implementation.

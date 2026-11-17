@@ -422,6 +422,42 @@ class Transport:
             time.sleep(1)
         raise StackError("completed_checkpoint_timeout")
 
+    def retained_checkpoint(self, job_id):
+        """Cancel, then select a durable completed checkpoint before slow stack shutdown."""
+        if self.latest_job()["job_id"] != job_id:
+            raise StackError("checkpoint_job_not_current")
+        self.wait_checkpoint(job_id)
+        self.stop()
+        if self.rest("/jobs/" + job_id)["state"] != "CANCELED":
+            raise StackError("checkpoint_job_not_canceled")
+        checkpoint = (
+            self.rest("/jobs/" + job_id + "/checkpoints").get("latest", {}).get("completed")
+        )
+        if not checkpoint or checkpoint.get("status") != "COMPLETED":
+            raise StackError("retained_checkpoint_missing")
+        import re
+
+        parsed = urlsplit(checkpoint.get("external_path", ""))
+        path = parsed.path.rstrip("/")
+        if (
+            parsed.scheme != "file"
+            or parsed.netloc
+            or parsed.query
+            or parsed.fragment
+            or not re.fullmatch("/state/checkpoints/" + re.escape(job_id) + r"/chk-[0-9]+", path)
+        ):
+            raise StackError("unsafe_retained_checkpoint")
+        self.stack.exec("jobmanager", "test", "-s", path + "/_metadata")
+        replay.atomic_json(
+            self.folder / "checkpoint.json",
+            {
+                "job_id": job_id,
+                "bundle_sha256": self.config()["bundle"]["bundle_sha256"],
+                "checkpoint": checkpoint,
+            },
+        )
+        return checkpoint
+
     def stop(self):
         self.config()
         job = self.latest_job()

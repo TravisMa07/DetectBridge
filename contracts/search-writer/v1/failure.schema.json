@@ -21,10 +21,9 @@
         },
         "topic": {
           "enum": [
-            "detectbridge.replay.input.v1",
-            "detectbridge.replay.output.v1",
-            "detectbridge.replay.quarantine.v1",
-            "detectbridge.opensearch.writer-failures.v1"
+            "detectbridge.tagged-events.v1",
+            "detectbridge.detections.v1",
+            "detectbridge.processing-diagnostics.v1"
           ]
         },
         "partition": {
@@ -61,12 +60,20 @@
         "category": {
           "enum": [
             "invalid_json",
-            "invalid_envelope",
-            "source_reference_mismatch",
-            "diagnostic_identity_mismatch",
             "schema_invalid",
             "identity_conflict",
-            "document_rejected"
+            "document_rejected",
+            "integration_schema_invalid",
+            "unsupported_search_input",
+            "evaluation_binding_mismatch",
+            "event_attribution_mismatch",
+            "processing_identity_mismatch",
+            "match_count_mismatch",
+            "match_identity_mismatch",
+            "detection_identity_mismatch",
+            "diagnostic_identity_mismatch",
+            "search_key_mismatch",
+            "integration_binding_mismatch"
           ]
         },
         "pointer": {

@@ -164,3 +164,13 @@ bindings; [qualification](p13b-ledger.md) records actual checks and failures.
 Run heavy Docker qualification projects sequentially. New v1.1 runtime output
 profiles retain unchanged P13a offline defaults. P13c search and full recorded
 source-to-search acceptance remain separate.
+
+## P13c search writer
+
+`uv run --locked python tools/dev.py search` runs the actual Java projection,
+protocol/TLS, installed artifact and independent Python vector/gate checks.
+Build `tools/integration.py build` and `tools/search_writer.py build`, then run
+`tools/search_writer.py verify` for actual isolated source-to-search qualification.
+The new real search-verification gate is fail-closed; recorded original sources
+remain a separate opt-in milestone gate. See [commands and limits](search-writer.md)
+and [qualification](p13c-ledger.md). Existing P08 commands/configuration stay compatible.

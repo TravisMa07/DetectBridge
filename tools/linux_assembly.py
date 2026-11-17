@@ -615,7 +615,7 @@ def _qualify_default():
             reject_incompatible(test, cp)
             job = test.start(restore=cp["external_path"])
             wait_outputs(test, oracle)
-            cp = test.wait_checkpoint(job["job_id"])
+            cp = test.retained_checkpoint(job["job_id"])
             test.stack.down()
             test.stack.up("core")
             job = test.start(restore=cp["external_path"])

@@ -216,10 +216,11 @@ is recorded in the acceptance map; P13 acceptance is not implied.
   outputs through real offline Windows/Linux consumers; [qualification](p13a-ledger.md)
   remains separate from owner review and merge. P08/P11/P12 bounded prerequisites
   are complete. P13a #46 is owner-merged as e09c271 with exact-head and merged-main
-  qualification passed. [P13b runtime](p13b-design.md) is implemented on this branch
-  with [ARM64 runtime qualification passed](p13b-ledger.md); final-head native
-  AMD64 CI and owner review remain pending. P13c search and full P13
-  recorded source-to-search acceptance remain unimplemented.
+  qualification passed. [P13b runtime](p13b-design.md) is owner-merged in #47 as
+  500ffc7 with ARM64 and final-head native AMD64 qualification passed.
+  [P13c search](p13c-design.md) is implemented on this branch with
+  [qualification in progress](p13c-ledger.md). Full recorded source-to-search
+  acceptance remains separate.
 
 - Depends on: P08, P11, P12.
 - Deliver: tagged events, linked detections and quality/configuration diagnostics.

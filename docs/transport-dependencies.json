@@ -200,6 +200,12 @@
           ]
         },
         {
+          "lockfile": "packages/integration-writer/gradle.lockfile",
+          "configurations": [
+            "compileClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/linux-adapters/gradle.lockfile",
           "configurations": [
             "compileClasspath",
@@ -270,6 +276,12 @@
             "runtimeClasspath",
             "testCompileClasspath",
             "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/integration-writer/gradle.lockfile",
+          "configurations": [
+            "compileClasspath"
           ]
         },
         {
@@ -595,6 +607,12 @@
             "runtimeClasspath",
             "testCompileClasspath",
             "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/integration-writer/gradle.lockfile",
+          "configurations": [
+            "compileClasspath"
           ]
         },
         {
@@ -1461,6 +1479,12 @@
           ]
         },
         {
+          "lockfile": "packages/integration-writer/gradle.lockfile",
+          "configurations": [
+            "compileClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/linux-adapters/gradle.lockfile",
           "configurations": [
             "compileClasspath",
@@ -2048,6 +2072,12 @@
           ]
         },
         {
+          "lockfile": "packages/integration-writer/gradle.lockfile",
+          "configurations": [
+            "compileClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/linux-adapters/gradle.lockfile",
           "configurations": [
             "compileClasspath",
@@ -2146,6 +2176,12 @@
             "runtimeClasspath",
             "testCompileClasspath",
             "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/integration-writer/gradle.lockfile",
+          "configurations": [
+            "compileClasspath"
           ]
         },
         {
@@ -2289,6 +2325,12 @@
           ]
         },
         {
+          "lockfile": "packages/integration-writer/gradle.lockfile",
+          "configurations": [
+            "compileClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/linux-adapters/gradle.lockfile",
           "configurations": [
             "compileClasspath",
@@ -2363,6 +2405,12 @@
             "runtimeClasspath",
             "testCompileClasspath",
             "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/integration-writer/gradle.lockfile",
+          "configurations": [
+            "compileClasspath"
           ]
         },
         {
@@ -2443,6 +2491,12 @@
           ]
         },
         {
+          "lockfile": "packages/integration-writer/gradle.lockfile",
+          "configurations": [
+            "compileClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/linux-adapters/gradle.lockfile",
           "configurations": [
             "compileClasspath",
@@ -2513,6 +2567,12 @@
             "runtimeClasspath",
             "testCompileClasspath",
             "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/integration-writer/gradle.lockfile",
+          "configurations": [
+            "compileClasspath"
           ]
         },
         {

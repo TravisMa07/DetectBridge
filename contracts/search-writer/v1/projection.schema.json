@@ -69,10 +69,84 @@
       "type": "object"
     },
     "source": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "namespace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "instance": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "namespace",
+        "instance"
+      ],
+      "additionalProperties": false
     },
     "versions": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "compiler": {
+          "type": "string"
+        },
+        "evaluator": {
+          "type": "string"
+        },
+        "selector": {
+          "type": "string"
+        },
+        "mapping_version": {
+          "type": "string"
+        },
+        "bundle_sha256": {
+          "type": "string"
+        },
+        "context_sha256": {
+          "type": "string"
+        },
+        "parser": {
+          "type": "string"
+        },
+        "normalizer": {
+          "type": "string"
+        },
+        "mapping": {
+          "type": "string"
+        },
+        "source_contract": {
+          "type": "string"
+        },
+        "source_sha256": {
+          "type": "string"
+        },
+        "mapping_profile": {
+          "type": "string"
+        },
+        "mapping_sha256": {
+          "type": "string"
+        },
+        "enrichment": {
+          "type": "string"
+        },
+        "enrichment_sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "compiler",
+        "evaluator",
+        "selector",
+        "bundle_sha256",
+        "parser",
+        "mapping",
+        "normalizer",
+        "enrichment",
+        "enrichment_sha256"
+      ],
+      "additionalProperties": false
     },
     "attribution": {
       "type": "object"
@@ -84,16 +158,258 @@
       "type": "object"
     },
     "time": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "basis": {
+          "enum": [
+            "source",
+            "first_observed"
+          ]
+        },
+        "quality": {
+          "enum": [
+            "valid",
+            "missing",
+            "unparseable",
+            "timezone_ambiguous"
+          ]
+        },
+        "first_observed": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$"
+        },
+        "source_value": {
+          "type": "string"
+        },
+        "source_utc": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$"
+        }
+      },
+      "required": [
+        "basis",
+        "quality",
+        "first_observed"
+      ],
+      "additionalProperties": false
     },
     "quality": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "integrity": {
+          "enum": [
+            "sufficient",
+            "insufficient",
+            "unknown"
+          ]
+        },
+        "eligibility": {
+          "enum": [
+            "eligible",
+            "skipped",
+            "undetermined"
+          ]
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "enum": [
+                  "legitimately_absent",
+                  "extraction_failed",
+                  "unmapped",
+                  "truncated",
+                  "conflicting",
+                  "assembly_insufficient",
+                  "identity_missing",
+                  "unsupported_source",
+                  "capture_unavailable",
+                  "timestamp_missing",
+                  "timestamp_unparseable",
+                  "timestamp_timezone_ambiguous"
+                ]
+              },
+              "field": {
+                "type": "string",
+                "pattern": "^(?:/(?:[^~/]|~[01])*)*$"
+              }
+            },
+            "required": [
+              "code",
+              "field"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "integrity",
+        "eligibility",
+        "diagnostics"
+      ],
+      "additionalProperties": false
     },
     "counts": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "matched": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "unmatched": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "inapplicable": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "configuration_blocked": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "quality_skipped": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "evaluation_error": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        }
+      },
+      "required": [
+        "matched",
+        "unmatched",
+        "inapplicable",
+        "configuration_blocked",
+        "quality_skipped",
+        "evaluation_error"
+      ],
+      "additionalProperties": false
     },
     "event": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "alert",
+            "asset",
+            "enrichment",
+            "event",
+            "metric",
+            "state",
+            "pipeline_error",
+            "signal"
+          ]
+        },
+        "category": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "api",
+              "authentication",
+              "configuration",
+              "database",
+              "driver",
+              "email",
+              "file",
+              "host",
+              "iam",
+              "intrusion_detection",
+              "library",
+              "malware",
+              "network",
+              "package",
+              "process",
+              "registry",
+              "session",
+              "threat",
+              "vulnerability",
+              "web"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "type": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "access",
+              "admin",
+              "allowed",
+              "change",
+              "connection",
+              "creation",
+              "deletion",
+              "denied",
+              "device",
+              "end",
+              "error",
+              "group",
+              "indicator",
+              "info",
+              "installation",
+              "protocol",
+              "start",
+              "user"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "outcome": {
+          "enum": [
+            "success",
+            "failure",
+            "unknown"
+          ]
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$"
+        },
+        "provider": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dataset": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "category",
+        "type"
+      ],
+      "additionalProperties": false
     },
     "rule": {
       "type": "object"
@@ -105,25 +421,159 @@
       "type": "object"
     },
     "tags": {
-      "type": "array"
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     },
     "matches": {
-      "type": "array"
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "string"
+          },
+          "detection_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "revision",
+          "detection_id"
+        ],
+        "additionalProperties": false
+      }
     },
     "record_ids": {
-      "type": "array"
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     },
     "evidence_hashes": {
-      "type": "array"
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     },
     "evidence": {
-      "type": "array"
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 256,
+      "items": {
+        "type": "object",
+        "properties": {
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "media_type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "encoding": {
+            "enum": [
+              "utf-8",
+              "base64"
+            ]
+          },
+          "reference": {
+            "type": "object",
+            "properties": {
+              "uri": {
+                "type": "string",
+                "format": "uri"
+              },
+              "object_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "byte_range": {
+                "type": "object",
+                "properties": {
+                  "offset": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9223372036854775807
+                  },
+                  "length": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9223372036854775807
+                  }
+                },
+                "required": [
+                  "offset",
+                  "length"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "uri",
+              "object_sha256"
+            ],
+            "additionalProperties": false
+          },
+          "record_id": {
+            "type": "string",
+            "pattern": "^sha256:[a-f0-9]{64}$"
+          },
+          "inline_present": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "sha256",
+          "media_type",
+          "encoding",
+          "record_id",
+          "inline_present"
+        ],
+        "additionalProperties": false,
+        "oneOf": [
+          {
+            "properties": {
+              "inline_present": {
+                "const": true
+              }
+            },
+            "not": {
+              "required": [
+                "reference"
+              ]
+            }
+          },
+          {
+            "properties": {
+              "inline_present": {
+                "const": false
+              }
+            },
+            "required": [
+              "reference"
+            ]
+          }
+        ]
+      }
     },
     "source_findings": {
-      "type": "array"
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     },
     "rule_tags": {
-      "type": "array"
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     },
     "rule_count": {
       "type": "integer",
@@ -269,5 +719,100 @@
     "content_sha256",
     "first_input"
   ],
-  "additionalProperties": false
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "tagged"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "processing_id",
+          "event_id",
+          "run_id",
+          "attribution",
+          "versions",
+          "source",
+          "semantic_event_sha256",
+          "event",
+          "time",
+          "original_timestamp",
+          "quality",
+          "eligibility",
+          "counts",
+          "matches",
+          "tags",
+          "record_ids",
+          "evidence_hashes",
+          "evidence_source",
+          "evidence",
+          "source_findings"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "detection"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "processing_id",
+          "event_id",
+          "run_id",
+          "attribution",
+          "versions",
+          "source",
+          "rule",
+          "rule_id",
+          "rule_revision"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "processing"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "processing_id",
+          "event_id",
+          "run_id",
+          "attribution",
+          "versions",
+          "source",
+          "category",
+          "rule_set",
+          "rule_set_sha256",
+          "rule_count"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "writer_failure"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "diagnostic",
+          "category"
+        ]
+      }
+    }
+  ]
 }

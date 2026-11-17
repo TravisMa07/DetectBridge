@@ -151,3 +151,44 @@ acceptance. Private originals are not present in ordinary CI. Preserve every
 failure assertion and resource budget; no runtime cause or speculative tune is
 established by this observability change. A further published diagnostic commit
 is required to collect this native evidence without exposing source messages.
+
+## Complete accepted authentication source-field assertions
+
+The accepted P12 design freezes preservation of RFC5424 header strings, and the
+accepted catalog freezes every original framed/native byte before P13 evaluation.
+Strengthen the recorded oracle to compare every retained header field, user and
+remote address against those original frames, including display hostname, PRI,
+PROCID, MSGID and NIL structured data. Derive these expectations independently
+from the selected original password frames and catalog action expectations before
+any runtime creation; never use adapter/evaluator output. No new recording value
+or source policy is introduced. Freeze the derived map privately with its input
+catalog hashes; keep the public twelve-rule count/membership freeze unchanged.
+
+Also require the original context extension, declared ECS/source classification,
+trusted ID-only host projection, standalone assembly and eligible/no-diagnostic
+quality for the two selected valid password records. Header display names must
+remain source fields, without manufacturing host identity or a normalized hostname.
+Same-count header/context mutations must fail independently of processing-ID
+checks. Other auth grammars and skipped/error cases remain supplemental synthetic
+coverage; this oracle is bounded to the accepted original captures.
+
+## Native broker-pause checkpoint observation
+
+Run 44188937618 on `fdca907` failed the assertion that the first restored
+completed checkpoint already contained the timer closure. Its original artifact
+14376297867 has ZIP SHA-256
+`6368fef22c9dfff8b3c0099ed6e0d7e60bf2e5472c831550355374ca261630e9`.
+The current-job exception history was empty; this was an oracle assertion, before
+required-sink interventions. This does not establish the cause of the older
+TaskManager exits. No runtime resource or restart-policy change follows from it.
+
+The operator schedules bounded ticks at 500 ms after opening. The accepted design
+retains absolute deadlines across downtime; it does not order the first restored
+checkpoint after that timer. The qualifier now observes completed checkpoints
+until the original group closes, requiring exact unchanged membership/opened/
+deadline metadata while pending and the exact frozen manifest in the durable
+outbox when closed. It still pauses the actual broker for 40 seconds, restores
+from the completed retained checkpoint, and checks timeout output independently.
+The first/last inspected inventory is saved privately for failure diagnosis.
+A regression supplies a completed snapshot before the tick, followed by closure;
+a changed deadline must fail immediately. The bounded timeout remains a failure.

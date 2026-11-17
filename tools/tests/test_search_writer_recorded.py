@@ -7,16 +7,106 @@ import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Any
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from integration import TOPICS, reject_incompatible
 from integration_cases import ROOT, digest
-from search_writer_recorded import RecordedOracle, qualify, remaining_admissions
+from search_writer_recorded import (
+    RecordedOracle,
+    auth_fields,
+    check_auth_source,
+    qualify,
+    remaining_admissions,
+)
 from stack import StackError
 
 
 class RecordedSearchTests(unittest.TestCase):
+    def test_authentication_header_fields_and_context_are_independently_checked(self):
+        from linux_assembly_cases import cases
+
+        row = cases()["auth"]
+        expected = dict(
+            timestamp="2026-01-01T00:00:00Z",
+            user="alice",
+            source_ip="192.0.2.1",
+            source_port=2222,
+            outcome="success",
+        )
+        fields = dict(
+            user="alice",
+            remote_address="192.0.2.1",
+            rfc5424=dict(
+                priority="38",
+                timestamp="2026-01-01T00:00:00Z",
+                hostname="lab",
+                app_name="sshd",
+                procid="7",
+                msgid="-",
+                structured_data="-",
+            ),
+        )
+        self.assertEqual(fields, auth_fields(row, expected))
+        ctx = row["context"]
+        event: dict[str, Any] = {
+            "source_fields": copy.deepcopy(fields),
+            "host": dict(id="host-a"),
+            "ecs": dict(version="9.5.0"),
+            "@timestamp": expected["timestamp"],
+            "event": dict(
+                ctx["source_contract"]["snapshot"]["classification"],
+                id="event",
+                created=row["raw"]["first_observed"],
+                code="sshd",
+                provider="sshd",
+                dataset="openssh-authentication-p12a",
+                outcome="success",
+            ),
+            "detectbridge": dict(
+                quality=dict(integrity="sufficient", eligibility="eligible", diagnostics=[]),
+                assembly=dict(
+                    mode="standalone",
+                    closure="not_required",
+                    quality="source_indicated",
+                    assembler_version="1.0.0",
+                ),
+                extensions={
+                    "linux.context": dict(
+                        version="1.0.0",
+                        context=copy.deepcopy(ctx),
+                        findings=[],
+                        source_sha256=ctx["source_contract"]["sha256"],
+                        mapping_sha256=ctx["mapping_profile"]["sha256"],
+                    )
+                },
+                time=dict(
+                    basis="source",
+                    quality="valid",
+                    first_observed=row["raw"]["first_observed"],
+                    source_value=expected["timestamp"],
+                    source_utc=expected["timestamp"],
+                ),
+            ),
+        }
+        check_auth_source(event, row, expected, fields)
+        for field in ("hostname", "priority", "procid", "msgid", "structured_data"):
+            changed = copy.deepcopy(event)
+            changed["source_fields"]["rfc5424"][field] = "same-count-tamper"
+            with self.subTest(field=field), self.assertRaises(StackError):
+                check_auth_source(changed, row, expected, fields)
+        changed = copy.deepcopy(event)
+        changed["detectbridge"]["extensions"]["linux.context"]["context"]["host_binding"][
+            "host_id"
+        ] = "another-host"
+        with self.assertRaises(StackError):
+            check_auth_source(changed, row, expected, fields)
+        changed = copy.deepcopy(event)
+        changed["host"]["name"] = "inferred-hostname"
+        with self.assertRaises(StackError):
+            check_auth_source(changed, row, expected, fields)
+
     def test_missing_or_changed_originals_fail_before_build_or_initialization(self):
         for error in (FileNotFoundError(), ValueError("original_hash_changed")):
             with (

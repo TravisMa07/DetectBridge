@@ -4,8 +4,10 @@ import base64
 import copy
 import importlib.util
 import json
+import re
 import traceback
 import uuid
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -55,10 +57,105 @@ def originals(windows, audit, auth, destination):
     }
 
 
+def auth_fields(row, expected):
+    """Independent selected-capture RFC5424 fields from originals, never Java output."""
+    match = re.fullmatch(
+        r"<(?P<priority>[0-9]+)>1 (?P<timestamp>\S+) (?P<hostname>\S+) (?P<app_name>\S+) "
+        r"(?P<procid>\S+) (?P<msgid>\S+) (?P<structured_data>-) "
+        r"(?P<decision>Accepted|Failed) password for (?P<user>\S+) from "
+        r"(?P<remote_address>\S+) port (?P<port>[0-9]+) ssh2\n",
+        row["raw"]["evidence"]["inline"],
+    )
+    require(match is not None)
+    assert match is not None
+    values = match.groupdict()
+    require(values["app_name"] == "sshd")
+    require(values["timestamp"] == expected["timestamp"])
+    require(
+        values["user"] == expected["user"] and values["remote_address"] == expected["source_ip"]
+    )
+    require(int(values["port"]) == expected["source_port"])
+    require((values["decision"] == "Accepted") == (expected["outcome"] == "success"))
+    return dict(
+        user=expected["user"],
+        remote_address=expected["source_ip"],
+        rfc5424={
+            key: values[key]
+            for key in (
+                "priority",
+                "timestamp",
+                "hostname",
+                "app_name",
+                "procid",
+                "msgid",
+                "structured_data",
+            )
+        },
+    )
+
+
+def check_auth_source(event, row, expected, fields):
+    ctx = row["context"]
+    require(event["source_fields"] == fields)
+    require(event["host"] == dict(id=ctx["host_binding"]["host_id"]))
+    require(event["ecs"] == dict(version=ctx["source_contract"]["snapshot"]["ecs_version"]))
+    classification = dict(ctx["source_contract"]["snapshot"]["classification"])
+    classification.update(
+        id=event["event"]["id"],
+        created=row["raw"]["first_observed"],
+        code="sshd",
+        provider="sshd",
+        dataset=ctx["source_contract"]["id"],
+        outcome=expected["outcome"],
+    )
+    require(event["event"] == classification)
+    db = event["detectbridge"]
+    require(db["quality"] == dict(integrity="sufficient", eligibility="eligible", diagnostics=[]))
+    require(
+        db["assembly"]
+        == dict(
+            mode="standalone",
+            closure="not_required",
+            quality="source_indicated",
+            assembler_version="1.0.0",
+        )
+    )
+    require(
+        db["extensions"]
+        == {
+            "linux.context": dict(
+                version="1.0.0",
+                context=ctx,
+                findings=[],
+                source_sha256=ctx["source_contract"]["sha256"],
+                mapping_sha256=ctx["mapping_profile"]["sha256"],
+            )
+        }
+    )
+    utc = (
+        datetime.fromisoformat(expected["timestamp"])
+        .astimezone(UTC)
+        .isoformat()
+        .replace("+00:00", "Z")
+    )
+    require(event["@timestamp"] == utc)
+    require(
+        db["time"]
+        == dict(
+            basis="source",
+            quality="valid",
+            first_observed=row["raw"]["first_observed"],
+            source_value=expected["timestamp"],
+            source_utc=utc,
+        )
+    )
+
+
 class RecordedOracle(Oracle):
-    def __init__(self, config, binding, plan, catalogs, windows):
+    def __init__(self, config, binding, plan, catalogs, windows, frozen_auth=None):
         super().__init__(config, binding, plan)
         self.catalogs, self.windows = catalogs, windows
+        self.frozen_auth = frozen_auth or {}
         self.literal = load_json(EXPECTATIONS)
         self.windows_preservation: dict[str, dict[str, Any]] = {}
         self.seen_windows: set[str] = set()
@@ -103,7 +200,12 @@ class RecordedOracle(Oracle):
             if expected["disposition"] == "normalized":
                 event = self.event(row, "auth_negative")
                 self.native.auth(row, expectation=expected)
-                self.describe((row["context"]["run_id"], event), "auth_recorded")
+                self.describe(
+                    (row["context"]["run_id"], event),
+                    "auth_recorded",
+                    auth_fields=self.frozen_auth[row["raw"]["record_id"]],
+                    auth_expected=copy.deepcopy(expected),
+                )
             else:
                 require(expected["disposition"] == "unsupported_source")
                 self.preservation(row, "unsupported_source")
@@ -140,6 +242,10 @@ class RecordedOracle(Oracle):
             )
         elif "group" in expected:
             verify_event(self.catalogs["audit"], expected["group"], expected["rows"], event)
+        elif "auth_fields" in expected:
+            check_auth_source(
+                event, expected["rows"][0], expected["auth_expected"], expected["auth_fields"]
+            )
 
     def check_windows_preservation(self, document):
         diagnostic = document["diagnostic"]
@@ -192,6 +298,21 @@ def qualify(windows, audit, auth):
             ),
         )
         raise
+    frozen_auth = {
+        row["raw"]["record_id"]: auth_fields(row, expected)
+        for row, expected in zip(source["auth"], catalogs["auth"]["expectations"], strict=True)
+        if expected["disposition"] == "normalized"
+    }
+    require(len(frozen_auth) == 2)
+    save(
+        reports / (project + "-source-expectations.json"),
+        dict(
+            version="1.0.0",
+            catalog_sha256={key: digest(value) for key, value in catalogs.items()},
+            auth_fields=frozen_auth,
+            literal=load_json(EXPECTATIONS),
+        ),
+    )
     # A separately pinned actual plan/image; existing synthetic plans stay unchanged.
     prepare(recorded=True)
     build(ROOT / ".cache/integration/recorded-plan.json")
@@ -213,7 +334,12 @@ def qualify(windows, audit, auth):
             writer.start()
             config = pipeline.config()
             oracle = RecordedOracle(
-                config, runtime_binding(config), pipeline.qualification_plan(), catalogs, windows
+                config,
+                runtime_binding(config),
+                pipeline.qualification_plan(),
+                catalogs,
+                windows,
+                frozen_auth,
             )
             view = SourceView(pipeline, runtime_binding(config))
             save(pipeline.folder / "recording-catalogs.json", catalogs)
@@ -383,7 +509,8 @@ def qualify(windows, audit, auth):
                     tag["attribution"]["context_sha256"] = "0" * 64
                 try:
                     oracle.check(altered)
-                except Exception:
+                except Exception as rejected:
+                    require(str(rejected) == "assembly_independent_expectation_failed")
                     mutations.append(field)
                 else:
                     raise RuntimeError("recorded_same_count_tamper_accepted")

@@ -14,11 +14,51 @@ from classify_changes import needs_integration
 from integration import INPUT, TOPICS, Integration
 from integration_cases import digest, encoded
 from integration_oracle import Oracle, identity
-from integration_verify import exception_classes, failure_exceptions
+from integration_verify import deadline_checkpoint, exception_classes, failure_exceptions
 from linux_assembly_verify import transport_id
 
 
 class IntegrationTests(unittest.TestCase):
+    def test_deadline_checkpoint_allows_timer_after_first_snapshot_but_never_resets_deadline(self):
+        import tempfile
+        from types import SimpleNamespace
+        from unittest.mock import patch
+
+        from stack import StackError
+
+        original = dict(members=[dict(record_id="original")], opened=1000, deadline=31000)
+        closed = dict(groups=[], outbox=[dict(kind="manifest", key="frozen-manifest")])
+        for changed, passes in ((original, True), (dict(original, deadline=32000), False)):
+            with tempfile.TemporaryDirectory() as folder, self.subTest(passes=passes):
+                runtime = SimpleNamespace(
+                    folder=Path(folder), wait_checkpoint=lambda job: dict(id=1)
+                )
+                with (
+                    patch(
+                        "integration_verify.checkpoint_inventory",
+                        side_effect=[dict(groups=[changed], outbox=[]), closed],
+                    ),
+                    patch("integration_verify.time.sleep"),
+                ):
+                    if passes:
+                        self.assertEqual(
+                            dict(id=1),
+                            deadline_checkpoint(
+                                runtime,
+                                dict(job_id="job"),
+                                original,
+                                dict(manifest_id="frozen-manifest"),
+                            ),
+                        )
+                    else:
+                        with self.assertRaises(StackError):
+                            deadline_checkpoint(
+                                runtime,
+                                dict(job_id="job"),
+                                original,
+                                dict(manifest_id="frozen-manifest"),
+                            )
+
     def test_failure_log_retains_only_bounded_exception_class_names(self):
         detail = {
             "root-exception": "org.apache.flink.FlinkException: private-body-sentinel\n"

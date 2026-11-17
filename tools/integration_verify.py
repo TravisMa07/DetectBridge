@@ -88,6 +88,40 @@ def wait_outputs(test, oracle, timeout=180):
     raise RuntimeError("integration_accounting_timeout")
 
 
+def deadline_checkpoint(test, job, original, manifest, timeout=120):
+    """Observe a timer transition in a completed checkpoint, without resetting its deadline."""
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        checkpoint = test.wait_checkpoint(job["job_id"])
+        inventory = checkpoint_inventory(test, checkpoint)
+        save(
+            test.folder / "broker-deadline-observation.json",
+            dict(checkpoint=checkpoint, inventory=inventory),
+        )
+        if not (test.folder / "broker-deadline-first.json").exists():
+            save(
+                test.folder / "broker-deadline-first.json",
+                dict(checkpoint=checkpoint, inventory=inventory),
+            )
+        pending = [
+            g
+            for g in inventory["groups"]
+            if g["members"][0]["record_id"] == original["members"][0]["record_id"]
+        ]
+        if pending:
+            require(len(pending) == 1 and pending[0] == original)
+        else:
+            require(
+                any(
+                    i["kind"] == "manifest" and i["key"] == manifest["manifest_id"]
+                    for i in inventory["outbox"]
+                )
+            )
+            return checkpoint
+        time.sleep(0.2)
+    raise RuntimeError("integration_absolute_deadline_not_closed")
+
+
 def idle_checkpoint(test, job, timeout=120):
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
@@ -294,19 +328,7 @@ def verify():
             ):
                 test.stop()
             job = test.start(restore=checkpoint["external_path"])
-            first_restored = checkpoint_inventory(test, test.wait_checkpoint(job["job_id"]))
-            require(
-                not any(
-                    g["members"][0]["record_id"] == paused["raw"]["record_id"]
-                    for g in first_restored["groups"]
-                )
-            )
-            require(
-                any(
-                    i["kind"] == "manifest" and i["key"] == paused_manifest["manifest_id"]
-                    for i in first_restored["outbox"]
-                )
-            )
+            deadline_checkpoint(test, job, paused_state, paused_manifest)
             wait_outputs(test, oracle)
             stage("every_required_sink_rejection_and_healthy_restore")
             faults = []

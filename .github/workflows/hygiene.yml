@@ -83,7 +83,8 @@
         "windows": "${{ steps.paths.outputs.windows }}",
         "linux": "${{ steps.paths.outputs.linux }}",
         "assembly": "${{ steps.paths.outputs.assembly }}",
-        "integration": "${{ steps.paths.outputs.integration }}"
+        "integration": "${{ steps.paths.outputs.integration }}",
+        "search": "${{ steps.paths.outputs.search }}"
       }
     },
     "repository-hygiene": {
@@ -204,7 +205,8 @@
         "windows-verification",
         "linux-verification",
         "linux-assembly-verification",
-        "integration-verification"
+        "integration-verification",
+        "search-verification"
       ]
     },
     "dataset-acquisition": {
@@ -592,6 +594,48 @@
           "with": {
             "name": "p13-integration-failure-diagnostics",
             "path": ".cache/integration-reports/*.json\n.cache/integration-runtime/*/original-exceptions.json\n.cache/integration-runtime/*/failure-container-states.json\n.cache/integration-runtime/*/last-helper-failure.json",
+            "include-hidden-files": true,
+            "if-no-files-found": "warn",
+            "retention-days": 7
+          }
+        }
+      ]
+    },
+    "search-verification": {
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 45,
+      "needs": [
+        "classify-changes"
+      ],
+      "if": "${{ needs.classify-changes.outputs.search == 'true' }}",
+      "steps": [
+        {
+          "uses": "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "with": {
+            "persist-credentials": false
+          }
+        },
+        {
+          "uses": "actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0",
+          "with": {
+            "python-version": "3.12.12"
+          }
+        },
+        {
+          "name": "Install pinned development tools",
+          "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
+        },
+        {
+          "name": "Qualify P13 source-to-search and durable writer recovery",
+          "run": "uv run --locked python tools/dev.py search\nuv run --locked python tools/integration.py build\nuv run --locked python tools/search_writer.py build\nuv run --locked python tools/search_writer.py verify"
+        },
+        {
+          "name": "Retain synthetic search failure diagnostics",
+          "if": "${{ failure() }}",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "p13-search-failure-diagnostics",
+            "path": ".cache/search-writer-reports/*.json",
             "include-hidden-files": true,
             "if-no-files-found": "warn",
             "retention-days": 7

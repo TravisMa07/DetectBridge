@@ -236,3 +236,12 @@ release, immutable memberships/late links and bounded visible backlog; an explic
 1.1.0 runtime output profile preserves P13a offline 1.0.0 contracts. Existing P12
 implementation/deployment is unchanged. [Qualification](p13b-ledger.md) separates
 actual runtime failures/recovery from component checks; search remains P13c.
+
+P13c adds a separate versioned search writer with three exact indices, a dedicated
+role and strict producer/destination/artifact bindings. It preserves P08's existing
+configuration, projections, permissions and two physical indices. Its derived
+view uses original P13 identities, excludes receipt clocks/physical copies from
+content conflict checks and retains original Kafka evidence/manifest links.
+[Compatibility decisions](p13c-design.md) keep A02–A07 and ADR 0008's independent
+consumer/acknowledged-failure boundary; [qualification](p13c-ledger.md) is separate
+from complete recorded source-to-search milestone acceptance.

@@ -1,0 +1,200 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:search-writer:1.0.0:configuration",
+  "type": "object",
+  "properties": {
+    "contract_version": {
+      "const": "1.0.0"
+    },
+    "project": {
+      "type": "string",
+      "pattern": "^detectbridge-p13-[a-z0-9-]+$"
+    },
+    "writer_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "pipeline_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "consumer_group": {
+      "type": "string"
+    },
+    "kafka_cluster_id": {
+      "type": "string"
+    },
+    "source_topics": {
+      "type": "object",
+      "propertyNames": {
+        "enum": [
+          "detectbridge.integration.input.v1",
+          "detectbridge.tagged-events.v1",
+          "detectbridge.detections.v1",
+          "detectbridge.processing-diagnostics.v1",
+          "detectbridge.integration.manifests.v1",
+          "detectbridge.integration.preservation.v1",
+          "detectbridge.integration.quarantine.v1",
+          "detectbridge.integration.receipts.v1",
+          "detectbridge.integration.writer-failures.v1"
+        ]
+      },
+      "minProperties": 9,
+      "maxProperties": 9,
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "bundle": {
+      "type": "object",
+      "properties": {
+        "jar_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "bundle_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "image_id": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "platform": {
+          "enum": [
+            "linux/arm64",
+            "linux/amd64"
+          ]
+        }
+      },
+      "required": [
+        "jar_sha256",
+        "bundle_sha256",
+        "image_id",
+        "platform"
+      ],
+      "additionalProperties": false
+    },
+    "opensearch_cluster_id": {
+      "type": "string"
+    },
+    "indices": {
+      "type": "object",
+      "properties": {
+        "detectbridge-tagged-events-v1": {
+          "type": "object",
+          "properties": {
+            "uuid": {
+              "type": "string"
+            },
+            "fingerprint": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "uuid",
+            "fingerprint"
+          ],
+          "additionalProperties": false
+        },
+        "detectbridge-detections-v1": {
+          "type": "object",
+          "properties": {
+            "uuid": {
+              "type": "string"
+            },
+            "fingerprint": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "uuid",
+            "fingerprint"
+          ],
+          "additionalProperties": false
+        },
+        "detectbridge-processing-diagnostics-v1": {
+          "type": "object",
+          "properties": {
+            "uuid": {
+              "type": "string"
+            },
+            "fingerprint": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "uuid",
+            "fingerprint"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "detectbridge-tagged-events-v1",
+        "detectbridge-detections-v1",
+        "detectbridge-processing-diagnostics-v1"
+      ],
+      "additionalProperties": false
+    },
+    "template_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "password_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "ca_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "mode": {
+      "const": "p13-search/1.0.0"
+    },
+    "integration_binding": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "integration_artifact_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "evaluation_bundle_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  },
+  "required": [
+    "contract_version",
+    "project",
+    "writer_id",
+    "pipeline_id",
+    "consumer_group",
+    "kafka_cluster_id",
+    "source_topics",
+    "bundle",
+    "opensearch_cluster_id",
+    "indices",
+    "template_sha256",
+    "password_sha256",
+    "ca_sha256",
+    "mode",
+    "integration_binding",
+    "integration_artifact_sha256",
+    "evaluation_bundle_sha256"
+  ],
+  "additionalProperties": false
+}

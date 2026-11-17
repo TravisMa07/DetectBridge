@@ -11,8 +11,10 @@ Use the [pinned development environment](development.md), [local infrastructure]
 and [transport guide](transport.md). The selected P07 pipeline must already be
 initialized, and its full-profile OpenSearch must be running before writer init.
 For an existing core project, prepare the full profile using stack commands. If
-stack recreation is needed, capture the latest retained checkpoint, stop the job,
-and restore explicitly after recreation. Writer initialization never stops or
+stack recreation is needed, stop the source job first, inspect its final completed
+retained checkpoint through transport status while JobManager is still available,
+and restore that URI explicitly after recreation. Selecting a checkpoint while
+the source continues can race normal retention. Writer initialization never stops or
 resubmits Flink on the operator's behalf.
 
 ```sh

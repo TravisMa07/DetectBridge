@@ -1,0 +1,147 @@
+{
+  "provenance": "Independently frozen P13c expectations before Java implementation; source counts retained from original P13b literals, not evaluator output.",
+  "content_vector": {
+    "semantic_body": {
+      "mode": "p13-search/1.0.0",
+      "kind": "tagged",
+      "counts": {
+        "matched": 1,
+        "unmatched": 2,
+        "inapplicable": 6,
+        "configuration_blocked": 0,
+        "quality_skipped": 0,
+        "evaluation_error": 0
+      },
+      "manifest": {
+        "semantic_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    "sha256": "a7da04fdaa8f3d243fd2eae7afedbf20324b8fdc84075476cebd965b9fe8430d"
+  },
+  "failure_vector": {
+    "preimage": [
+      "p13-search-writer:1.0.0",
+      "cluster-a",
+      "topic-a",
+      "0",
+      "17"
+    ],
+    "sha256": "sha256:98e4ae5abc8a79b2d8f93fb9f2bafd71bdd4912665c5ead46d74a06ba7e8fd3d"
+  },
+  "counts": {
+    "rationale": "Compiler serializes rules by UUID: P11 a/b/c/d then P12 image/other/command/auth/probe. Original P11/P12 source fixtures; independent literal counts. Audit skipped membership is bits 2,4,5,8 (0x134).",
+    "windows": {
+      "matched": 1,
+      "unmatched": 2,
+      "inapplicable": 6,
+      "configuration_blocked": 0,
+      "quality_skipped": 0,
+      "evaluation_error": 0
+    },
+    "windows_skipped": {
+      "matched": 0,
+      "unmatched": 0,
+      "inapplicable": 6,
+      "configuration_blocked": 0,
+      "quality_skipped": 3,
+      "evaluation_error": 0
+    },
+    "windows_budget": {
+      "matched": 1,
+      "unmatched": 1,
+      "inapplicable": 6,
+      "configuration_blocked": 0,
+      "quality_skipped": 0,
+      "evaluation_error": 1
+    },
+    "audit": {
+      "matched": 1,
+      "unmatched": 3,
+      "inapplicable": 4,
+      "configuration_blocked": 1,
+      "quality_skipped": 0,
+      "evaluation_error": 0
+    },
+    "audit_skipped": {
+      "matched": 0,
+      "unmatched": 0,
+      "inapplicable": 4,
+      "configuration_blocked": 1,
+      "quality_skipped": 4,
+      "evaluation_error": 0
+    },
+    "auth": {
+      "matched": 1,
+      "unmatched": 0,
+      "inapplicable": 8,
+      "configuration_blocked": 0,
+      "quality_skipped": 0,
+      "evaluation_error": 0
+    },
+    "auth_negative": {
+      "matched": 0,
+      "unmatched": 1,
+      "inapplicable": 8,
+      "configuration_blocked": 0,
+      "quality_skipped": 0,
+      "evaluation_error": 0
+    },
+    "audit_blocked_bits": "0000000000000000000000040",
+    "audit_skipped_bits": "0000000000000000000000134",
+    "windows_error_bits": "0000000000000000000000008"
+  },
+  "search_indices": [
+    "detectbridge-tagged-events-v1",
+    "detectbridge-detections-v1",
+    "detectbridge-processing-diagnostics-v1"
+  ],
+  "excluded_fields": [
+    "inline",
+    "extensions",
+    "yaml",
+    "expression",
+    "ingested",
+    "received",
+    "processed"
+  ],
+  "audit_process": {
+    "pid": 42,
+    "executable": "/usr/bin/whoami",
+    "args": [
+      "whoami",
+      "",
+      "whoami"
+    ],
+    "working_directory": "/tmp"
+  },
+  "time_vectors": [
+    {
+      "timestamp": "2026-01-01T00:00:00.123456789Z",
+      "source": "windows",
+      "indexed": true,
+      "literal_overrides": {
+        "/@timestamp": "2026-01-01T00:00:00.123456789Z",
+        "/detectbridge/time/source_value": "2026-01-01T00:00:00.123456789Z",
+        "/detectbridge/time/source_utc": "2026-01-01T00:00:00.123456789Z",
+        "/source_fields/windows_system/attributes/TimeCreated/SystemTime": "2026-01-01T00:00:00.123456789Z"
+      }
+    },
+    {
+      "timestamp": "1800-01-01T00:00:00Z",
+      "source": "auth",
+      "indexed": false,
+      "reason": "outside_nanos_range_or_precision"
+    },
+    {
+      "timestamp": "2026-01-01T00:00:00.123456Z",
+      "source": "auth",
+      "indexed": true
+    },
+    {
+      "timestamp": "2026-01-01T00:00:00.123456789Z",
+      "source": "auth",
+      "indexed": false,
+      "source_disposition": "extraction_failed"
+    }
+  ]
+}

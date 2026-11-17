@@ -206,6 +206,7 @@ def check():
     run(["uv", "run", "--locked", "python", "tools/check_linux.py"])
     run(["uv", "run", "--locked", "python", "tools/check_assembly.py"])
     run(["uv", "run", "--locked", "python", "tools/check_integration.py"])
+    run(["uv", "run", "--locked", "python", "tools/check_search_writer.py"])
     run(["uv", "run", "--locked", "python", "tools/dependency_inventory.py"])
     run(["uv", "run", "--locked", "python", "tools/check_repo.py"])
     run(["uv", "run", "--locked", "ruff", "check", "tools"])
@@ -238,6 +239,8 @@ def java():
             ":linux-assembly-job:shadowJar",
             ":integration-job:test",
             ":integration-job:shadowJar",
+            ":integration-writer:test",
+            ":integration-writer:shadowJar",
             ":linux-adapters:jar",
             ":linux-adapters:installDist",
         ]
@@ -328,6 +331,33 @@ def integration():
             "tools/tests",
             "-p",
             "test_integration*.py",
+        ]
+    )
+
+
+def search():
+    run(
+        [
+            ROOT / "gradlew",
+            "--console=plain",
+            ":integration-writer:test",
+            ":integration-writer:shadowJar",
+        ]
+    )
+    run(["uv", "run", "--locked", "python", "tools/check_search_writer.py", "--artifacts"])
+    run(
+        [
+            "uv",
+            "run",
+            "--locked",
+            "python",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "tools/tests",
+            "-p",
+            "test_search_writer*.py",
         ]
     )
 
@@ -444,6 +474,7 @@ def main():
             "linux",
             "assembly",
             "integration",
+            "search",
             "verify",
         ],
     )

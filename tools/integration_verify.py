@@ -210,7 +210,7 @@ def verify():
             reject_incompatible(test, checkpoint)
             job = test.start(restore=checkpoint["external_path"])
             wait_outputs(test, oracle)
-            checkpoint = test.wait_checkpoint(job["job_id"])
+            checkpoint = test.retained_checkpoint(job["job_id"])
             test.stack.down()
             test.stack.up("core")
             job = test.start(restore=checkpoint["external_path"])

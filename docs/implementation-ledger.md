@@ -241,3 +241,11 @@ and the explicit runtime output profile preserve existing P07–P12 deployments.
 [Qualification](p13b-ledger.md) records actual source, restart, producer rejection,
 checkpoint and replay evidence, failures and exact artifacts. P13c search/full P13
 recorded source-to-search acceptance, owner merge and release remain separate.
+
+## P13c search writer
+
+Owner-merged P13b #47 (500ffc7) is the base. Owning search decisions and independent
+literal vectors preceded implementation. The separate writer mode preserves P08
+and P13b state/contracts; [design](p13c-design.md) and [ledger](p13c-ledger.md) record
+actual projection, permission, delivery/failure and qualification boundaries.
+Recorded source-to-search/full P13 acceptance and owner merge remain separate.

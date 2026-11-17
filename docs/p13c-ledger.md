@@ -88,3 +88,17 @@ finer phase markers without weakening assertions. Its search JAR was
 0d6176318911a6468e18da2d6ed185b43f0d039ec0d327aa56d2bfb9b0b90db8,
 bundle 4f33e91c2e8a73c94c488ca2ef0c56a7ebe96df051ce5e7e3e87b9cd0224de74.
 Its owned stack/volumes were removed; original private inputs/reports remain local.
+
+The instrumented third attempt (detectbridge-p13-search-db639a1d66) located that
+JSONDecodeError at integration.py:327, called by the crash-stage source oracle.
+The writer test deliberately injected malformed output-topic probes; the original
+source reader assumed every row there was producer JSON. Qualification now tracks
+every probe's acknowledged topic/offset/key/exact bytes and binding, excludes only
+those verified controlled admissions from the source oracle, and rejects unknown
+or altered frames. A regression proves the distinction. All expected failure
+references, keys, reasons, original hashes/lengths/null status and indexed first
+copies are independently verified through a bounded read-only failure-topic
+helper. No input is skipped by parse error, no source assertion is weakened, and
+the actual writer's admission/commit algorithm is unchanged. Additional original
+RFC5424 inputs freeze exact nine-digit and 1800 timestamp expectations before
+admission, including actual date_nanos doc-value and out-of-range checks.

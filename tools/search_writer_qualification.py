@@ -57,19 +57,159 @@ def accounted(writer, timeout=180):
     raise StackError("search_accounting_timeout")
 
 
-def inject(writer, topic, key, value):
-    # One two-item producer batch preserves order and includes the actual frozen binding header.
+class SourceView:
+    """Original producer observations; controlled probes require exact acknowledged bytes."""
+
+    def __init__(self, pipeline, binding):
+        self.pipeline = pipeline
+        self.binding = binding
+        self.manual: dict[tuple[str, int], dict[str, Any]] = {}
+        self.verified: set[tuple[str, int]] = set()
+
+    def __getattr__(self, name):
+        return getattr(self.pipeline, name)
+
+    def outputs(self):
+        info = self.pipeline.broker()
+        result = []
+        observed = set()
+        for kind, topic in ROUTES.items():
+            end = info["end_offsets"][topic]
+            if not end:
+                continue
+            response = self.pipeline.private_read(
+                self.pipeline.process_args("read", topic, "0", str(end)), timeout=90
+            )
+            for line in response.stdout.splitlines():
+                wire = json.loads(line)
+                if "value" not in wire:
+                    continue
+                location = (topic, wire["offset"])
+                if location in self.manual:
+                    expected = self.manual[location]
+                    require(
+                        wire["key"] == expected["key"]
+                        and wire["value"] == expected["value"]
+                        and wire["partition"] == 0,
+                        "search_controlled_probe_changed",
+                    )
+                    require(
+                        wire["headers"].get("detectbridge.runtime.binding") == self.binding,
+                        "search_controlled_probe_binding_changed",
+                    )
+                    observed.add(location)
+                else:
+                    result.append((kind, wire, json.loads(base64.b64decode(wire["value"]))))
+        self.verified = observed
+        return result
+
+
+def inject(writer, topic, key, value, view, reason=None):
     row = dict(
         topic=topic,
-        key=base64.b64encode(key).decode() if key else None,
+        key=base64.b64encode(key).decode() if key is not None else None,
         value=base64.b64encode(value).decode() if value is not None else None,
     )
+    with (writer.folder / "controlled-probe-inputs.ndjson").open("ab") as file:
+        file.write(encoded(dict(row=row, reason=reason, copies=2)) + b"\n")
     result = writer.helper("inject-batch", json.dumps([row, row]), timeout=60)
     require(
         result.get("status") == "acknowledged" and len(result["receipts"]) == 2,
         "search_injection_unacknowledged",
     )
+    for ack in result["receipts"]:
+        require(
+            ack["partition"] == 0 and (topic, ack["offset"]) not in view.manual,
+            "search_probe_acknowledgement_invalid",
+        )
+        view.manual[(topic, ack["offset"])] = {**row, "reason": reason}
+        with (writer.folder / "controlled-probe-acks.ndjson").open("ab") as file:
+            file.write(
+                encoded(
+                    dict(topic=topic, **ack, value_sha256=hashlib.sha256(value or b"").hexdigest())
+                )
+                + b"\n"
+            )
     return result["receipts"]
+
+
+def check_failures(writer, view):
+    expected = {
+        location: item for location, item in view.manual.items() if item["reason"] is not None
+    }
+    records = writer.helper("read-failures", timeout=60)["records"]
+    config = writer.config()
+    physical = {wire["offset"]: wire for wire in records}
+    seen: dict[tuple[str, int], dict[str, Any]] = {}
+    for wire in records:
+        raw = base64.b64decode(wire["value"])
+        failure = json.loads(raw)
+        location = (failure["input"]["topic"], failure["input"]["offset"])
+        require(location in expected, "search_unexpected_writer_failure")
+        item = expected[location]
+        original = base64.b64decode(item["value"]) if item["value"] is not None else None
+        from integration_oracle import identity
+
+        identity_value = identity(
+            [
+                "p13-search-writer:1.0.0",
+                config["kafka_cluster_id"],
+                config["source_topics"][location[0]]["id"],
+                "0",
+                str(location[1]),
+            ]
+        )
+        require(
+            failure["failure_id"] == identity_value
+            and base64.b64decode(wire["key"]).decode() == identity_value
+            and failure["diagnostic"]["category"] == item["reason"],
+            "search_failure_identity_or_reason",
+        )
+        require(
+            failure["input"]
+            == dict(
+                cluster_id=config["kafka_cluster_id"],
+                topic_id=config["source_topics"][location[0]]["id"],
+                topic=location[0],
+                partition=0,
+                offset=location[1],
+            )
+            and failure["value_sha256"] == hashlib.sha256(original or b"").hexdigest()
+            and failure["value_size"] == len(original or b"")
+            and failure["value_is_null"] == (original is None),
+            "search_failure_original_reference",
+        )
+        if location in seen:
+            require(seen[location] == failure, "search_failure_duplicate_changed")
+        seen[location] = failure
+        doc = wait_document(writer, DIAGNOSTICS, identity_value)
+        first = physical[doc["first_input"]["offset"]]
+        require(
+            doc["first_input"]
+            == dict(
+                cluster_id=config["kafka_cluster_id"],
+                topic_id=config["source_topics"][FAILURES]["id"],
+                topic=FAILURES,
+                partition=0,
+                offset=first["offset"],
+            )
+            and doc["input_sha256"] == hashlib.sha256(base64.b64decode(first["value"])).hexdigest(),
+            "search_failure_first_copy_mismatch",
+        )
+        require(
+            doc["kind"] == "writer_failure"
+            and doc["diagnostic"] == failure
+            and content_hash(doc) == doc["content_sha256"],
+            "search_failure_view_mismatch",
+        )
+    require(set(seen) == set(expected), "search_missing_writer_failure")
+    view.outputs()
+    require(view.verified == set(view.manual), "search_probe_originals_not_retrieved")
+    return dict(
+        logical_failures=len(seen),
+        physical_failures=len(records),
+        controlled_admissions=len(view.manual),
+    )
 
 
 def wait_document(writer, index, identity, timeout=150):
@@ -238,8 +378,14 @@ def qualify(recorded=False):
             writer.start()
             config = pipeline.config()
             oracle = Oracle(config, runtime_binding(config), pipeline.qualification_plan())
+            view = SourceView(pipeline, runtime_binding(config))
             fixtures = load_json(ROOT / ".cache/integration/cases.json")
             runs = ["00000000-0000-4000-8000-000000000012", "00000000-0000-4000-8000-000000000013"]
+
+            time_vectors = load_json(
+                ROOT / "contracts/search-writer/v1/fixtures/expectations.json"
+            )["time_vectors"]
+            time_records: dict[str, dict[str, Any]] = {}
 
             def admit(run_id):
                 rows = copy.deepcopy(fixtures["complete"])
@@ -255,6 +401,28 @@ def qualify(recorded=False):
                 skipped["context"]["run_id"] = run_id
                 oracle.group([skipped], findings=["syscall_missing"])
                 rows.append(skipped)
+                for number, spec in enumerate(time_vectors):
+                    row = record(
+                        fixtures["auth"]["raw"]["evidence"]["inline"].replace(
+                            "2026-01-01T00:00:00Z", spec["timestamp"]
+                        ),
+                        6000 + number,
+                        context(True),
+                    )
+                    row["context"]["run_id"] = run_id
+                    event_id = oracle.event(row, "auth")
+                    oracle.native.auth(
+                        row,
+                        expectation=dict(
+                            outcome="success",
+                            user="alice",
+                            source_ip="192.0.2.1",
+                            source_port=2222,
+                            timestamp=spec["timestamp"],
+                        ),
+                    )
+                    time_records[event_id] = spec
+                    rows.append(row)
                 unsupported = record(
                     fixtures["auth"]["raw"]["evidence"]["inline"].replace("password", "publickey"),
                     9000,
@@ -283,13 +451,13 @@ def qualify(recorded=False):
 
             stage("actual_source_to_search_first_run")
             admit(runs[0])
-            output = wait_outputs(pipeline, oracle)
+            output = wait_outputs(view, oracle)
             accounted(writer)
             first = check_views(writer, output)
             stage("search_outage_second_isolated_replay")
             writer.stack.compose("stop", "opensearch", profile="full")
             admit(runs[1])
-            output = wait_outputs(pipeline, oracle)
+            output = wait_outputs(view, oracle)
             wait_state(writer, "BACKPRESSURED")
             require(
                 any(v["lag"] > 0 for v in offsets(writer).values()),
@@ -311,15 +479,48 @@ def qualify(recorded=False):
                 all(len({t["processing_id"] for t in group}) == 2 for group in by_event.values()),
                 "search_processing_replay_collision",
             )
+            stage("exact_nanosecond_docvalues_and_outside_range")
+            code, _ = writer.stack.request("POST", "/" + REPLAY + "/_refresh")
+            require(code == 200, "search_refresh_failed")
+            for (index, processing), doc in documents.items():
+                if index != REPLAY or doc["event_id"] not in time_records:
+                    continue
+                spec = time_records[doc["event_id"]]
+                require(
+                    doc["original_timestamp"] == spec["timestamp"], "search_time_original_changed"
+                )
+                if spec["indexed"]:
+                    code, response = writer.stack.request(
+                        "POST",
+                        "/" + REPLAY + "/_search",
+                        {
+                            "query": {"term": {"processing_id": processing}},
+                            "_source": False,
+                            "docvalue_fields": [
+                                {"field": "@timestamp", "format": "strict_date_optional_time_nanos"}
+                            ],
+                        },
+                    )
+                    require(
+                        code == 200
+                        and response["hits"]["hits"][0]["fields"]["@timestamp"]
+                        == [spec["timestamp"]],
+                        "search_nanosecond_docvalue_changed",
+                    )
+                else:
+                    require(
+                        "@timestamp" not in doc and doc["time_projection_reason"] == spec["reason"],
+                        "search_outside_range_changed",
+                    )
             stage("duplicates_semantic_conflict_and_failure_acknowledgement")
             selected = next((k, w, d) for k, w, d in output if k == "detection")
             kind, wire, original = selected
             identity = original["detection_id"]
-            inject(writer, ROUTES[kind], identity.encode(), encoded(original))
+            inject(writer, ROUTES[kind], identity.encode(), encoded(original), view)
             accounted(writer)
             bad = copy.deepcopy(original)
             bad["rule"]["provenance"]["authors"] = ["tampered author"]
-            inject(writer, ROUTES[kind], identity.encode(), encoded(bad))
+            inject(writer, ROUTES[kind], identity.encode(), encoded(bad), view, "identity_conflict")
             accounted(writer)
             require(
                 get_document(writer.stack, DETECTIONS, identity)["rule"] == original["rule"],
@@ -329,7 +530,12 @@ def qualify(recorded=False):
             # A valid managed topic policy is restored before any subsequent commit.
             writer.helper("failure-policy", json.dumps({"value": "block"}), timeout=90)
             ack = inject(
-                writer, ROUTES["tagged"], b"private-key-sentinel", b"private-body-sentinel"
+                writer,
+                ROUTES["tagged"],
+                b"private-key-sentinel",
+                b"private-body-sentinel",
+                view,
+                "invalid_json",
             )
             wait_state(writer, "BACKPRESSURED")
             require(
@@ -342,7 +548,14 @@ def qualify(recorded=False):
             writer.stack.request(
                 "PUT", "/" + DIAGNOSTICS + "/_settings", {"index.blocks.write": True}
             )
-            inject(writer, ROUTES["tagged"], b"private-key-sentinel", b"private-body-sentinel")
+            inject(
+                writer,
+                ROUTES["tagged"],
+                b"private-key-sentinel",
+                b"private-body-sentinel",
+                view,
+                "invalid_json",
+            )
             wait_state(writer, "BACKPRESSURED")
             require(offsets(writer)[FAILURES]["lag"] > 0, "search_failure_index_not_blocked")
             failure_end = offsets(writer)[FAILURES]["end"]
@@ -376,7 +589,7 @@ def qualify(recorded=False):
             )
             crash_ack = pipeline.inject_rows([encoded(crash_row)])
             oracle.register([crash_row], crash_ack)
-            output = wait_outputs(pipeline, oracle)
+            output = wait_outputs(view, oracle)
             crash_kind, crash_wire, crash_tag = next(
                 (k, w, d)
                 for k, w, d in output
@@ -420,7 +633,14 @@ def qualify(recorded=False):
                 {"doc": {"rule_revision": "0" * 64}},
             )
             require(code == 200, "search_tamper_setup_failed")
-            inject(writer, ROUTES[kind], identity.encode(), encoded(original))
+            inject(
+                writer,
+                ROUTES[kind],
+                identity.encode(),
+                encoded(original),
+                view,
+                "identity_conflict",
+            )
             accounted(writer)
             require(
                 get_document(writer.stack, DETECTIONS, identity)["rule_revision"] == "0" * 64,
@@ -486,6 +706,7 @@ def qualify(recorded=False):
                     "private-body-sentinel" not in logs.stdout + logs.stderr,
                     "search_log_payload_leak",
                 )
+            failures = check_failures(writer, view)
             stage("credential_and_mapping_drift_rejected")
             writer.stop()
             password = (writer.folder / "writer-password").read_bytes()
@@ -526,6 +747,7 @@ def qualify(recorded=False):
                 bundle=writer.config()["bundle"],
                 integration_bundle=config["bundle"],
                 source_topic_offsets=offsets(writer),
+                failure_accounting=failures,
                 two_isolated_runs=True,
                 all_six_outcomes=True,
             )

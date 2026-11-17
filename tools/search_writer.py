@@ -450,7 +450,13 @@ class SearchWriter:
         )
 
     def helper(self, command, data=None, timeout=35):
-        if command not in ("probe", "membership", "inject-batch", "failure-policy"):
+        if command not in (
+            "probe",
+            "membership",
+            "inject-batch",
+            "failure-policy",
+            "read-failures",
+        ):
             raise StackError("invalid_writer_helper")
         config = self.config()
         args = [

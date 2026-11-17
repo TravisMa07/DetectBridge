@@ -452,6 +452,31 @@ public final class Main {
             producer.close(Duration.ofSeconds(5));
           }
         }
+        case "read-failures" -> {
+          var props=Broker.properties("kafka:9092");
+          props.put("key.deserializer","org.apache.kafka.common.serialization.ByteArrayDeserializer");
+          props.put("value.deserializer","org.apache.kafka.common.serialization.ByteArrayDeserializer");
+          props.put("enable.auto.commit","false"); props.put("auto.offset.reset","none"); props.put("max.poll.records","100");
+          try(var consumer=new KafkaConsumer<byte[],byte[]>(props)) {
+            var part=new TopicPartition(Projection.FAILURES,0); consumer.assign(List.of(part)); consumer.seek(part,0);
+            long end=consumer.endOffsets(List.of(part),Duration.ofSeconds(10)).get(part);
+            if(end>100)throw new IllegalArgumentException("failure_read_limit");
+            List<Object> records=new ArrayList<>(); int bytes=0;
+            long deadline=System.nanoTime()+Duration.ofSeconds(20).toNanos();
+            while(consumer.position(part)<end) {
+              if(System.nanoTime()>deadline) throw new IllegalStateException("failure_read_timeout");
+              for(var record:consumer.poll(Duration.ofMillis(200))) {
+                if(record.offset()>=end)break;
+                if(record.key()==null||record.value()==null)throw new IllegalStateException("failure_read_shape");
+                bytes+=record.key().length+record.value().length;
+                if(bytes>2*Json.MAX_VALUE)throw new IllegalArgumentException("failure_read_limit");
+                records.add(Map.of("offset",record.offset(),"key",Base64.getEncoder().encodeToString(record.key()),
+                    "value",Base64.getEncoder().encodeToString(record.value())));
+              }
+            }
+            System.out.println(Json.MAPPER.writeValueAsString(Map.of("records",records)));
+          }
+        }
         case "failure-policy" -> {
           var input=Json.read(System.in.readNBytes(1025));
           String value=failurePolicy(input.path("value").asString());

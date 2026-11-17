@@ -1,5 +1,6 @@
 """Independent vectors, mode isolation and fail-closed real search-job applicability."""
 
+import base64
 import copy
 import json
 import sys
@@ -13,12 +14,54 @@ from check_search_writer import compiled_schema, require
 from check_writer import require as legacy_require
 from classify_changes import needs_search
 from search_writer import SearchWriter
-from search_writer_qualification import content_hash
+from search_writer_qualification import SourceView, content_hash
 
 ROOT = Path(__file__).resolve().parents[2]
 
 
 class SearchWriterTests(unittest.TestCase):
+    def test_probe_separation_requires_exact_acknowledged_bytes_not_blanket_skips(self):
+        from types import SimpleNamespace
+
+        from integration import ROUTES
+
+        topic = ROUTES["tagged"]
+
+        def wire(offset, value):
+            return dict(
+                offset=offset,
+                partition=0,
+                key=base64.b64encode(b"key").decode(),
+                value=base64.b64encode(value).decode(),
+                headers={"detectbridge.runtime.binding": "binding"},
+            )
+
+        frames = [wire(0, b'{"original_producer":true}'), wire(1, b"controlled-invalid-json")]
+
+        class Pipeline:
+            def broker(self):
+                return {"end_offsets": {t: 2 if t == topic else 0 for t in ROUTES.values()}}
+
+            def process_args(self, *args):
+                return args
+
+            def private_read(self, args, timeout):
+                return SimpleNamespace(stdout="\n".join(json.dumps(w) for w in frames))
+
+        view = SourceView(Pipeline(), "binding")
+        with self.assertRaises(json.JSONDecodeError):
+            view.outputs()
+        view.manual[(topic, 1)] = {
+            "key": frames[1]["key"],
+            "value": frames[1]["value"],
+            "reason": "invalid_json",
+        }
+        self.assertEqual({"original_producer": True}, view.outputs()[0][2])
+        self.assertEqual({(topic, 1)}, view.verified)
+        frames[1]["value"] = base64.b64encode(b"changed").decode()
+        with self.assertRaisesRegex(Exception, "search_controlled_probe_changed"):
+            view.outputs()
+
     def test_modes_and_projects_cannot_be_adopted(self):
         old = json.loads((ROOT / "contracts/writer/v1/examples/configuration.json").read_text())
         legacy_require("configuration", old)

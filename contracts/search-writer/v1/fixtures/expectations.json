@@ -113,5 +113,16 @@
       "whoami"
     ],
     "working_directory": "/tmp"
-  }
+  },
+  "time_vectors": [
+    {
+      "timestamp": "2026-01-01T00:00:00.123456789Z",
+      "indexed": true
+    },
+    {
+      "timestamp": "1800-01-01T00:00:00Z",
+      "indexed": false,
+      "reason": "outside_nanos_range_or_precision"
+    }
+  ]
 }

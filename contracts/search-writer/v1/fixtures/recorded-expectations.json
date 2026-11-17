@@ -1,0 +1,65 @@
+{
+  "version": "1.0.0",
+  "counts": {
+    "windows_cmd": {
+      "matched": 1,
+      "unmatched": 4,
+      "inapplicable": 7,
+      "configuration_blocked": 0,
+      "quality_skipped": 0,
+      "evaluation_error": 0
+    },
+    "windows_hostname": {
+      "matched": 0,
+      "unmatched": 5,
+      "inapplicable": 7,
+      "configuration_blocked": 0,
+      "quality_skipped": 0,
+      "evaluation_error": 0
+    },
+    "audit_recorded": {
+      "matched": 1,
+      "unmatched": 4,
+      "inapplicable": 6,
+      "configuration_blocked": 1,
+      "quality_skipped": 0,
+      "evaluation_error": 0
+    },
+    "audit_recorded_skipped": {
+      "matched": 0,
+      "unmatched": 0,
+      "inapplicable": 6,
+      "configuration_blocked": 1,
+      "quality_skipped": 5,
+      "evaluation_error": 0
+    },
+    "auth_recorded": {
+      "matched": 0,
+      "unmatched": 1,
+      "inapplicable": 11,
+      "configuration_blocked": 0,
+      "quality_skipped": 0,
+      "evaluation_error": 0
+    }
+  },
+  "matches": {
+    "windows_cmd": [
+      "71110000-0000-4000-8000-000000000001"
+    ],
+    "windows_hostname": [],
+    "audit_recorded": [
+      "72000000-0000-4000-8000-000000000005"
+    ],
+    "audit_recorded_skipped": [],
+    "auth_recorded": []
+  },
+  "blocked_bits": "0000000000000000000000200",
+  "skipped_bits": "00000000000000000000009c4",
+  "per_run": {
+    "original_records": 46,
+    "events": 16,
+    "manifests": 10,
+    "preservation": 13,
+    "detections": 3
+  }
+}

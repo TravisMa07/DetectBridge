@@ -8,6 +8,11 @@ docs/roadmap.md before implementation.
 - Work on a short-lived branch. Do not merge PRs or publish releases without the
   owner's explicit authorization. The initial seed commit is the only bootstrap
   exception to the PR-only workflow; publication still requires owner review.
+- Apply conservative commit discipline to all future DetectBridge development,
+  across every milestone, branch and PR: normally 1–3 cohesive commits per bounded
+  PR, each with a clear purpose. Batch related fixes and documentation before committing;
+  preserve any required pre-implementation design/expectation freeze. See
+  docs/sdlc.md for exceptions and published-history rules.
 - Do not turn roadmap entries into implemented-capability claims. No services
   exist at bootstrap. Do not create passing placeholder tests or CI jobs.
 - Keep original evidence, license provenance, and versioned processing metadata.

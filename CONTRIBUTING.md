@@ -29,6 +29,12 @@ is implemented for review; see [its guide](docs/windows-adapters.md) and run
 The owner authorizes every merge. A solo workflow does not require a second
 GitHub account's approval. Never interpret passing CI as permission to merge.
 
+For all future project development, across every milestone and PR, plan for
+1–3 cohesive commits per bounded PR, usually one for documentation.
+Batch related fixes and documentation; preserve required design/expectation
+freezes before implementation. Follow the [commit discipline](docs/sdlc.md#commit-discipline)
+for larger changes and corrections after publication.
+
 ## Development environment
 
 Use the [reproducible development guide](docs/development.md) for pinned tooling,

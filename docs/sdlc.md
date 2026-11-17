@@ -33,6 +33,31 @@ Done means acceptance evidence passes, docs are current, review is resolved,
 merge is authorized, and checks on the merged commit succeed. Bootstrap is the
 single initial-history exception; its exact content is reviewed before publication.
 
+## Commit discipline
+
+This is the standing policy for all future DetectBridge development across every
+milestone, branch and PR, including features, fixes, refactors, tests, tooling,
+dependencies and documentation. It is not limited to P13d or any single PR.
+
+Prefer 1–3 cohesive commits for a bounded PR, using a clear imperative subject
+and a body when the reason or validation needs explanation. This is a planning
+target, not a reason to mix unrelated changes or omit required evidence. A small
+documentation PR normally needs one commit. Larger work may need more; explain
+the review or evidence boundary that warrants each additional commit.
+
+Batch related implementation, regression fixes and documentation after local
+checks instead of committing every edit, failed attempt or progress update.
+When independent expectations/design must precede implementation, retain that
+freeze as a distinct commit, followed by the implementation/tests and, if needed,
+one consolidated qualification record. Keep intermediate attempts in local logs
+and summarize material failures in the final ledger.
+
+Organize unpublished local work before the first push. Preserve published commit
+IDs, timestamps and evidence references; do not rewrite a shared branch merely
+to meet the target. Subsequent necessary review/CI corrections may be additional
+cohesive commits. Regular merge commits and explicit owner authorization remain
+required; this policy does not authorize squash merges or force pushes.
+
 ## CI and local verification
 
 P01 introduces real repository hygiene checks and the stable required aggregate

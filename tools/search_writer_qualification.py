@@ -5,6 +5,7 @@ import copy
 import hashlib
 import json
 import time
+import traceback
 import uuid
 from typing import Any
 
@@ -384,7 +385,9 @@ def qualify(recorded=False):
                 in [e["record_id"] for e in d["event"]["detectbridge"]["evidence"]]
             )
             # Source delivery/recovery is already checked above/P13b. This phase isolates writer commits.
+            stage("cancel_source_before_writer_crash")
             pipeline.stop()
+            stage("writer_indexing_before_uncommitted_crash")
             writer.stack.compose("up", "-d", "writer", profile="full")
             wait_state(writer, "BACKPRESSURED")
             pipeline.pause_broker(True)
@@ -405,6 +408,7 @@ def qualify(recorded=False):
                 offsets(writer)[ROUTES["tagged"]]["committed"] <= crash_wire["offset"],
                 "search_unresolved_window_committed",
             )
+            stage("writer_restore_after_uncommitted_crash")
             writer.start()
             accounted(writer)
             documents = check_views(writer, output)
@@ -535,6 +539,10 @@ def qualify(recorded=False):
                     project=project,
                     phase=phase,
                     error_type=type(exc).__name__,
+                    locations=[
+                        f.filename.rsplit("/", 1)[-1] + ":" + str(f.lineno)
+                        for f in traceback.extract_tb(exc.__traceback__)[-6:]
+                    ],
                     category=str(exc) if isinstance(exc, StackError) else "qualification_failed",
                 ),
             )

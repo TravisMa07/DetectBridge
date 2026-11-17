@@ -76,5 +76,15 @@ binding or failure-ack assertion is relaxed. The failed search artifact was
 (bundle 02d4b5c2d5e768177b1b7abef398fa7c242a774564442d8a369fa8b26615ac4f).
 It also preceded the exact project/ECS notice packaging update; it is not final
 qualification. Only its owned stack/volumes were removed; its private inputs and
-independent expectations/report remain local. P13b deployment JAR e183461... was
+independent expectations/report remain local. P13b deployment JAR
+e1834614797a639dc5edc1d7d18b6a6b01e71581d7e6098700fe026c56fec50a was
 unchanged by the distinct classes-JAR build fix.
+
+The next project detectbridge-p13-search-5bea3bc405 passed the corrected blocked
+failure-publication and failure-topic indexing/nonrecursion phases, then failed
+with JSONDecodeError during the source-window crash phase. That report lacked
+the decoding call location. The follow-up adds value-free stack locations and
+finer phase markers without weakening assertions. Its search JAR was
+0d6176318911a6468e18da2d6ed185b43f0d039ec0d327aa56d2bfb9b0b90db8,
+bundle 4f33e91c2e8a73c94c488ca2ef0c56a7ebe96df051ce5e7e3e87b9cd0224de74.
+Its owned stack/volumes were removed; original private inputs/reports remain local.

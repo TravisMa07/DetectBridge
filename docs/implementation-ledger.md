@@ -1,5 +1,13 @@
 # P10–P13 implementation ledger
 
+Current P13d audit (2026-11-17): P13a–c are owner-merged; #49 adds recorded
+qualification and the [acceptance map](p13-acceptance.md). Earlier progress entries
+below are historical. The owner explicitly accepted bounded P09/P10 semantics and
+completeness limits on 2026-11-17 after reviewing the [exact expectation
+packet](p13-prerequisite-review.md); issues #9/#10 are closed. This supplies the
+formerly missing review separately from earlier authorization to proceed. P11/P12 bounded
+acceptance and issues #11/#12 are complete. P13 remains open and P14 blocked.
+
 The owner instructed implementation after reviewing the
 [consolidated plan](p10-p12-plan.md), and selected a reviewed OpenSSH recording for
 P12. Merge/release authorization remains separate for every PR/release. Planning
@@ -8,14 +16,14 @@ and integration history is recorded below.
 
 | Unit | Owner | Base / branch / worktree | Dependencies | Status and blockers |
 | --- | --- | --- | --- | --- |
-| P10a | Main orchestrator | `4d7d685`; `feat/p10-mapping-contracts`; `/Users/travisma/GitHub_Projects/DetectBridge-p10a` | P04/P09 merged | Merged in [PR #36](https://github.com/TravisMa07/DetectBridge/pull/36) as `b45fba4`; semantic acceptance remains separately pending |
+| P10a | Main orchestrator | `4d7d685`; `feat/p10-mapping-contracts`; `/Users/travisma/GitHub_Projects/DetectBridge-p10a` | P04/P09 merged | Merged in [PR #36](https://github.com/TravisMa07/DetectBridge/pull/36) as `b45fba4`; bounded owner semantic acceptance completed 2026-11-17 |
 | P10b | Main orchestrator | `b45fba4`; `feat/p10-source-selection`; `/Users/travisma/GitHub_Projects/DetectBridge-p10b` | P10a merged; merged-main checks recorded separately | Merged in [PR #37](https://github.com/TravisMa07/DetectBridge/pull/37) as `df31448`; merged-main checks passed; owner authorized P11/P12 |
 | P11 | Windows child; orchestrator integration | `df31448`; `feat/p11-windows-adapters`; `/Users/travisma/.t3/worktrees/DetectBridge/t3-689cf405-5fa25cc439f21f05` | P10 merged; owner authorized dependent work | Merged in #38 as `46fb080`; bounded recorded completion and owner acceptance completed by #45 |
 | P11 completion | Main orchestrator | `c024497` + `641923a`; `feat/p11-controlled-windows-recording` | P11 #38 merged; owner requested blocker implementation | Owner accepted bounded semantics and merged #45 as `4ac31fa`; exact-head and merged-main CI passed; two recorded ARM64 offline runs retained |
 | P12a | Linux child | `df31448`; isolated P12a worktree; merged branch | P10 merged; owner authorized dependent work | Merged in #39 as `9ea1c68`; reviewed local OpenSSH9 slice passed; later audit provenance and owner review completed by P12c #43 |
 | P12b | Main orchestrator | `9ea1c68`; `feat/p12b-linux-qualification` | P12a merged | Merged in #42 as `e2d06c3`; final ARM64/AMD64 and merged-main qualification passed |
 | P12c | Main orchestrator | `e2d06c3`; `feat/p12c-recorded-source-evidence` | P12b merged + reviewed local auth originals | Merged #43 as `c024497`; ARM64 recorded/recovery and final-head AMD64 attempt 2 passed; owner semantic/completeness review recorded in #43; merged-main CI passed |
-| P13 | Main orchestrator | `e09c271`; `feat/p13-integrated-runtime` | P08/P11/P12 bounded prerequisites complete; P13a #46 merged | [Design/acceptance plan](p13-design.md); P13b implementation/qualification in #47; P13c search/full milestone and owner merge remain separate |
+| P13 | Main orchestrator | `e09c271`; `feat/p13-integrated-runtime` | P08/P11/P12 bounded prerequisites complete; P13a #46 merged | P13a–c owner-merged in #46/#47/#48; P13d #49 recorded qualification and [acceptance map](p13-acceptance.md); full milestone, review and merged-check gates remain |
 
 Shared ownership: orchestrator owns contracts/readers, Gradle registration,
 root locks/inventories, CI/gates, dev commands and status docs. P10 owns generic

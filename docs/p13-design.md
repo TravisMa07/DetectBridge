@@ -4,9 +4,12 @@ Status: P13a compact/offline outputs are owner-merged in #46 as e09c271, with
 exact-head and merged-main 43954609201 qualification passed. [P13b](p13b-design.md)
 is owner-merged in #47 as 500ffc7 with exact-head native qualification passed;
 [its ledger](p13b-ledger.md) records actual checks and remaining review gates.
-[P13c search](p13c-design.md) implements the separate three-index writer on this
-branch with [qualification in progress](p13c-ledger.md). Full recorded source-to-search
-acceptance remains separate. Historical P13a evidence remains in the [P13a ledger](p13a-ledger.md).
+[P13c search](p13c-design.md) is owner-merged in #48 as 0f6d758. Exact-head
+qualification passed; merged-main integration failed. [P13d](p13d-design.md) owns
+original-recording qualification and the [remaining acceptance map](p13-acceptance.md).
+ARM64 original-recording source-to-search and implementation-head native AMD64
+qualification passed; final-head checks and owner/merged-commit gates remain. P13 is not Done and P14
+is not ready. Historical P13a evidence remains in the [P13a ledger](p13a-ledger.md).
 P08/P11/P12 prerequisites are complete within their owner-accepted bounded scope.
 This plan preserves A02–A07 and ADR 0008. Concrete P13a contracts, numerical bounds
 and identity preimages are in [owning notes](p13a-design.md).

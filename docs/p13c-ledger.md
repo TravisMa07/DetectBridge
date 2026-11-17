@@ -1,5 +1,9 @@
 # P13c search qualification ledger
 
+Current audit (2026-11-17): P13c #48 is owner-merged as 0f6d758. Exact-head 8588c8d passed run 44023058246 attempt 2. Merged-main 44145796752 failed integration and required-checks; search, assembly, detection and all other applicable jobs passed.
+[Complete P13 acceptance](p13-acceptance.md) remains separate; earlier pending
+statements below retain their historical checkpoint.
+
 Base: owner-merged P13b #47 as `500ffc79deb8843488cbdaa85e4d5ebf64e82b70`.
 Exact P13b PR head 8cc680c passed all applicable jobs in 43978412654; its earlier
 native processing-sink failure remains an unexplained failed attempt, with later

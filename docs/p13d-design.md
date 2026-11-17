@@ -1,5 +1,10 @@
 # P13d recorded acceptance and recovery qualification
 
+Current implementation/evidence is in the [P13d ledger](p13d-ledger.md) and
+[acceptance map](p13-acceptance.md). The original freeze below retains its
+pre-implementation checkpoint; subsequent bounded corrections are recorded as
+addenda. P13/P14 readiness still requires every actual acceptance gate.
+
 Status: pre-implementation design and independent-expectation freeze. Base
 `0f6d758b8228a3ccce35f1af83174addc4835126`. Preserve A02–A07, all existing
 contracts, source policies, checkpoint bindings and writer ordering. P14 remains
@@ -217,7 +222,7 @@ Do not patch that Flink-wide safety policy, waive RecordTooLarge, or merely rest
 a worker to hide this failure.
 
 Use a narrowly scoped P13-only subclass of the unchanged pinned Kafka sink/writer.
-It retains the stock at-least-once writer, serializer, state serializers, producer
+It retains the stock at-least-once writer, serializer, state serializers, explicit at-least-once producer
 properties, acknowledgements and flush/checkpoint behavior. A package-access bridge
 has a unique DetectBridge class name; it does not replace an upstream class or use
 production reflection. Record the first exception propagated by write, flush or

@@ -7,8 +7,8 @@ replay.
 
 ## Current status
 
-**Local replay, source adapters and bounded checkpointed evaluation are implemented;
-full source-to-search integration remains pending.**
+**Integrated source adapters, checkpointed evaluation and derived search are implemented;
+complete P13 acceptance remains pending.**
 The transport validates replay envelopes and forwards unchanged bytes or quarantine
 references. P08 adds a local OpenSearch metadata writer; qualification status is
 recorded in the writer guide. P09 adds a bounded synthetic normalized-fixture
@@ -43,9 +43,14 @@ actual offline Windows/Linux consumers; owner-merged #46 and merged-main checks 
 [P13b](docs/p13b-design.md) adds an isolated Kafka/Flink deployment of those actual
 adapters, audit assembly and evaluation, with bounded checkpointed output intents.
 [Qualification status](docs/p13b-ledger.md) records exact checks, failures and limits.
-[P13c search](docs/search-writer.md) is implemented on this branch with
-[qualification in progress](docs/p13c-ledger.md). Management API, UI and complete recorded source-to-search acceptance
-remain pending; these slices do not complete [P13](docs/p13-design.md).
+[P13c search](docs/search-writer.md) is owner-merged in #48 as `0f6d758`;
+final-head native qualification passed, but merged-main integration failed.
+[P13d](docs/p13d-design.md) adds opt-in original-recording source-to-search
+qualification and [complete milestone acceptance tracking](docs/p13-acceptance.md).
+ARM64 original-recording qualification and implementation-head native AMD64 checks
+passed. Final PR-head checks, owner acceptance, authorized merge and merged-commit
+checks keep [P13](docs/p13-design.md) open and
+P14 blocked. Management API and UI remain pending.
 P06 provides local Kafka/Flink infrastructure and optional authenticated OpenSearch.
 Repository hygiene tooling and
 contributor templates were introduced in P01; P02 adds reproducible build tools,

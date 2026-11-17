@@ -2,8 +2,10 @@
 
 Status: owner accepted the bounded P11 source/identity/mapping and observation
 policy on 2026-11-16: “Accept bounded P11 semantics; merge remains separate.”
-Technical evidence passed locally; final-head PR qualification remains separate.
-Merge authorization remains separate. This packet covers the new bounded capture,
+Subsequent completion: owner-merged #45 is `4ac31fa`; exact-head 43884159909
+and merged-main 43900545102 passed applicable checks. Issue #11 is closed after
+the P13d audit. Earlier final-head/authorization caveats below are historical.
+This packet covers the new bounded capture,
 not host identity in the older public recordings and not P13 streaming integration.
 
 ## Concrete source and expected behavior

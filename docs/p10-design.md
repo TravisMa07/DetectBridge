@@ -1,5 +1,10 @@
 # P10 compatibility and source mapping design
 
+Current acceptance audit (2026-11-17): the owner accepted bounded P09/P10 semantics
+and completeness limits after reviewing the [exact expectation packet](p13-prerequisite-review.md).
+Issues #9/#10 are closed. Earlier pending-review statements below retain their
+historical checkpoint; this does not accept P13 or authorize a merge.
+
 Status: P10a merged in PR #36 at b45fba4. P10b source selection and isolated runtime
 are implemented for review; see [P10b design](p10b-design.md). Independent owner review of P09/P10 semantic
 expectations remains pending. See the [accepted implementation plan](p10-p12-plan.md)

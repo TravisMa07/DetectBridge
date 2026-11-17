@@ -48,6 +48,30 @@ def failure_exceptions(test, phase):
     return test.rest("/jobs/" + test.latest_job()["job_id"] + "/exceptions")
 
 
+def observe_workers(test, phase):
+    """Bounded VM metadata before synthetic fault cases; never used as a recovery source."""
+    path = test.folder / (phase + "-workers.json")
+    try:
+        registered = test.rest("/taskmanagers")
+        samples = [
+            dict(
+                id=worker["id"],
+                metrics=test.rest(
+                    "/taskmanagers/"
+                    + worker["id"]
+                    + "/metrics?get=Status.JVM.Memory.Metaspace.Used,Status.JVM.Memory.Metaspace.Max,Status.JVM.Threads.Count,Status.JVM.Memory.Heap.Used,Status.JVM.Memory.Heap.Max"
+                ),
+                threads=test.rest("/taskmanagers/" + worker["id"] + "/thread-dump"),
+            )
+            for worker in registered["taskmanagers"]
+        ]
+        if len(encoded(samples)) > 4194304:
+            raise ValueError("worker_observation_limit")
+        save(path, dict(status="observed", registered=registered, samples=samples))
+    except Exception as error:
+        save(path, dict(status="unavailable", error_type=type(error).__name__))
+
+
 def wait_outputs(test, oracle, timeout=180):
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
@@ -88,6 +112,8 @@ def verify():
         phase = name
         save(report, dict(status="running", phase=phase, project=project))
         print(json.dumps(dict(phase=phase, project=project)), flush=True)
+        if name.startswith("required_sink_"):
+            observe_workers(test, name)
 
     with project_lock(project):
         try:

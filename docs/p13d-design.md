@@ -120,3 +120,34 @@ The published CI correction/diagnostic collection requires an additional cohesiv
 commit before native reproduction, followed by a consolidated final evidence
 commit. Preserve published freeze/implementation/fix IDs under the SDLC exception;
 do not rewrite history to force the original 1–3 planning target.
+
+## Message-free native throw-site diagnostics
+
+Native 1bf1183 run 44181348320 reproduced the TaskManager exit during healthy
+processing-sink restore, after the exact required rejection had passed. Original
+artifact 14373263043 has ZIP SHA-256
+`d9cc5d46552c9daa5c26c0792e13a1c7937919d0cfa4962254060539abc940d0`.
+It confirms taskmanager exited 1 without container OOM, but the console layout
+intentionally omits all messages/throwables. Retaining those existing logs cannot
+recover an exception origin that was never emitted. The cause remains unassigned.
+
+Use a separate P13 integration logger retaining only JSON-escaped throwing stack
+frame class, method and line. No message, exception body, event field or raw stack
+text enters routine logs. P07/P12 and writer logging profiles remain unchanged.
+An original synthetic Java probe compiles with the pinned JDK and runs against
+the exact pinned Flink image's Log4j backend during integration image build. It
+requires six valid metadata rows and rejects ordinary, nested and custom-toString
+message leakage. A fixed root-OutOfMemoryError marker distinguishes direct and
+wrapped VM errors without publishing the rendered exception text; a class-like
+string inside an unrelated exception message must not set that marker. No new Maven dependency or classpath plugin is introduced.
+[Log4j's exception property reference](https://logging.apache.org/log4j/2.x/manual/pattern-layout.html)
+defines the selected stack-frame properties; actual-image verification is the gate.
+
+Capture bounded VM heap/metaspace/thread metrics and actual thread dumps before
+each synthetic sink case, plus existing terminal logs/state, to distinguish a
+blocked cancellation from allocation/registration failures using original evidence.
+These are diagnostic observations, never recovery sources, runtime or performance
+acceptance. Private originals are not present in ordinary CI. Preserve every
+failure assertion and resource budget; no runtime cause or speculative tune is
+established by this observability change. A further published diagnostic commit
+is required to collect this native evidence without exposing source messages.

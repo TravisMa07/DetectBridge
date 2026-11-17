@@ -82,6 +82,7 @@ class IntegrationTests(unittest.TestCase):
             "packages/detection-evaluator/src/main/java/Evaluator.java",
             "contracts/integration/v1.1/tagged-event.schema.json",
             "deploy/local/integration.Dockerfile",
+            "deploy/local/integration-log4j.properties",
             "tools/integration_oracle.py",
         ):
             self.assertTrue(needs_integration([path]), path)

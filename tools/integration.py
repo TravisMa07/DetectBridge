@@ -52,11 +52,14 @@ def build(plan_path=None):
     prepare()
     plan = Path(plan_path) if plan_path is not None else ROOT / ".cache/integration/plan.json"
     jar = ROOT / "packages/integration-job/build/libs/integration-job.jar"
-    dockerfile, logger = DEPLOY / "integration.Dockerfile", DEPLOY / "transport-log4j.properties"
+    dockerfile, logger = DEPLOY / "integration.Dockerfile", DEPLOY / "integration-log4j.properties"
     from stack import Stack
 
     if dockerfile.read_text().splitlines()[0] != "FROM " + Stack().image("flink"):
         raise StackError("integration_base_image_mismatch")
+    from integration_logging import check_logging
+
+    check_logging(Stack().image("flink"))
     fingerprint = hashlib.sha256(
         jar.read_bytes() + dockerfile.read_bytes() + logger.read_bytes() + plan.read_bytes()
     ).hexdigest()

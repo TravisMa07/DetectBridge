@@ -130,3 +130,91 @@ weakened. Original partial attempts/inputs remain local, and owned resources onl
 were removed. Its exact search JAR is
 6f60d3589d502bee41dc926c768c130b91e6437f28d115daef8775486593a575
 (bundle d78eda0c3c632a108bd89819663c8cc1c6928a1e9c76c13e2eaa274273e05fd4).
+
+## Completed ARM64 source-to-search qualification
+
+Implementation 90afcfe, project detectbridge-p13-search-810141a364: the full actual
+Kafka/Flink adapter-to-TLS-OpenSearch suite passed. 35 source admissions produced
+21 logical events and 48 source-derived search documents. Ten separately recorded
+controlled output-topic admissions produced eight independently verified logical/
+physical writer-failure references; the healthy duplicate admissions produced none.
+The direct HTTP partial-bulk proof adds one separately identified test document,
+not a source-normalization claim. Every consumed writer topic ended at zero lag.
+
+Both Windows profiles, audit/authentication, all six literal outcomes, known-bad
+audit quality/configuration precedence, unsupported and extraction-failed source
+preservation, exact evidence/member/manifest/attribution links and two isolated
+replays passed. Actual Windows nine-digit doc values and authentication six-digit
+doc values retained precision; 1800 dates retained an explicit nonindexed reason,
+and twelve-digit source strings stayed exact. OpenSearch outage buffering/recovery, duplicate
+and semantic/stored-content conflicts, blocked failure publication, failure-topic
+indexing backpressure/nonrecursion, actual indexing-before-uncommitted-crash and
+restart, mixed 201/400 bulk protocol, all six valid denied operations, restart,
+original input/failure first-copy retrieval hashes, metrics/log checks, credential
+fingerprint and mapping-drift rejection passed. No source outcome assertion or
+managed policy was waived. Only the owned stack/volumes were removed; private
+inputs, expected dispositions, source observations, probe acknowledgements,
+permission evidence and report remain local under ignored caches.
+
+Exact artifacts:
+
+- Writer bundle: `d78eda0c3c632a108bd89819663c8cc1c6928a1e9c76c13e2eaa274273e05fd4`.
+- Writer JAR: `6f60d3589d502bee41dc926c768c130b91e6437f28d115daef8775486593a575`.
+- Writer image: `sha256:c82d75b5319a8790285e85b4fed34f98f53b7faf2bf29d25d1b8342d2f4cac5e`.
+- Integration bundle: `9847a1aff5b41cff2ffd684855e3079ccdb7eb7c57ba2c905eafa4ecb7e8fd39`.
+- Integration JAR: `e1834614797a639dc5edc1d7d18b6a6b01e71581d7e6098700fe026c56fec50a`.
+- Integration image: `sha256:7a994ab7b7371b11aaa815640e51187fd3c339be622a739d8b5e22e52bbbcef0`.
+
+Actual assembly/integration retention-fix and P08 compatibility regressions have
+completed qualification. Final native AMD64 CI, owner review and complete original
+recorded source-to-search milestone acceptance remain separate gates.
+
+## Completed ARM64 assembly retention regression
+
+The full actual assembly suite passed on the branch's cancellation-before-selection
+helper, including the JobManager restore path that failed merged-main 44004484594.
+Project detectbridge-p12-test-59b1a4779167 accounted for 52 inputs, ten logical
+groups and 83 logical outputs; 92 physical outputs included nine stable duplicates.
+TaskManager, explicit/incompatible restore, JobManager, 40-second broker pause
+with original deadline, all five blocked required sinks and original-source intent
+retention passed. Blocked checkpoints were event 50, manifest 55, diagnostic 60,
+quarantine 65 and receipt 70. The limits and serialized-pending byte-pressure
+profiles also qualified, including visible closed-budget rejection and retained
+source offset. No source/checkpoint runtime policy or assertion was weakened.
+
+- Assembly bundle: `9cba7aed38a1dfd2a3ad57e46cb785cb7863807a13809afa41bfb0c95dad2f15`.
+- Assembly JAR: `d341724639876de0e09a5006bf2e265172a75cd16b7d03b495dc1f4086d19a99`.
+- Assembly image: `sha256:b46d3af0edbd8ad5dd0eb107c60988bcad5e9dc2b9f524c2b9bbfc90c55a3eee`.
+
+## Completed ARM64 P13b integration recovery regression
+
+The full actual P13b integration suite passed on the branch's cancellation-before-selection
+helper and exact search runtime components. Project `detectbridge-p13-test-39d19241dc56`
+accounted for 44 inputs, 20 logical events, 103 logical outputs and 145 physical outputs.
+TaskManager restart during partial checkpointing, actual Windows authentication and
+all six literal outcomes, JobManager restart with explicit restore and incompatible binding
+rejection, 40-second broker pause with retained absolute deadline, all seven blocked
+required sinks (`tagged` checkpoint 40, `detection` checkpoint 48, `processing` checkpoint 55,
+`manifest` checkpoint 62, `preservation` checkpoint 70, `quarantine` checkpoint 78,
+`receipt` checkpoint 86), healthy restore, metrics, original Kafka input hashes and
+stable duplicates qualified. No source/checkpoint runtime policy or assertion was weakened.
+
+- Integration bundle: `9847a1aff5b41cff2ffd684855e3079ccdb7eb7c57ba2c905eafa4ecb7e8fd39`.
+- Integration JAR: `e1834614797a639dc5edc1d7d18b6a6b01e71581d7e6098700fe026c56fec50a`.
+- Integration image: `sha256:682776a4065b16501c5963fb34cfee24e029a08191c5e353973ab0081cc99116`.
+
+## Completed ARM64 P08 writer compatibility regression
+
+The existing reviewed P08 writer verification suite qualified unchanged under project
+`detectbridge-test-66328b1dcfb843a3b8703a86f7d7c8a5`. Initialization idempotency,
+first run, timestamp projection, OpenSearch outage buffering and recovery, Kafka outage,
+duplicate detection and quarantine, partial bulk failure handling, uncommitted-window crash
+recovery and rebalance, authorization enforcement, graceful stop with unresolved input,
+and full-stack recreation with retained checkpoint restore passed. Accounting confirmed
+257 logical documents, four diagnostics, four retrievable references, 252 replay envelopes,
+and zero lag across all three managed output topics (`detectbridge.replay.output.v1`,
+`detectbridge.replay.quarantine.v1`, `detectbridge.opensearch.writer-failures.v1`).
+
+- Writer bundle: `8f07bc54372380d8fee72b38b423e4a308235a17413d2c48752ada93ee5af3ed`.
+- Writer JAR: `68048856dfb680d78c3609a0385536e36b35145cf45b10e31d8205b0cd569d48`.
+- Writer image: `sha256:9cf4cc61c3dc9531d813889122508c2565dacab2191cca12ff57b8cb39130eb1`.

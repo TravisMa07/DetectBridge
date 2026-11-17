@@ -13,8 +13,12 @@ P13b project with `tools/integration.py`; prepare its full-profile TLS OpenSearc
 before search init. Build with `uv run --locked python tools/search_writer.py build`.
 Then use `uv run --locked python tools/search_writer.py --project detectbridge-p13-dev`
 followed by `init`, `start`, `status`, `metrics` or `stop`. Initialization never
-resubmits or stops the source Flink job. Retain its checkpoint before any intentional
-stack recreation and restore through the existing P13b command.
+resubmits or stops the source Flink job. Before stack recreation, cancel the
+source job, then inspect `status` → `checkpoints.latest.completed` while its
+JobManager is still available. Retain that completed checkpoint URI and restore
+through the existing P13b command. The qualification helper cancels before
+selecting/verifying the retained checkpoint; selecting one while a job continues
+can race normal retention.
 
 `uv run --locked python tools/dev.py search` runs actual adapter-to-projection,
 protocol, TLS, schema/artifact, mode compatibility and gate checks.

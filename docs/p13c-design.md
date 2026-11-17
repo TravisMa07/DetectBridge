@@ -74,7 +74,7 @@ Keywords have ignore_above=4096; exact longer values remain in `_source` and its
 semantic hash. Greater-than-nanosecond precision is retained without rounding, with
 outside_nanos_range_or_precision when no date_nanos value can be represented. Dates
 retain exact original strings and basis/quality. Optional @timestamp is date_nanos
-only if its original UTC value fits unsigned signed-long nanos (1970 through the
+only if its original UTC value fits nonnegative signed-long nanos (1970 through the
 representable 2262 endpoint) without rounding. Other dates remain exact metadata
 with outside_nanos_range. No receipt/ingestion/processing clock becomes occurrence
 time; source precision and fallback remain visible in exact strings/metadata.

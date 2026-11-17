@@ -89,6 +89,7 @@ class SearchWriterTests(unittest.TestCase):
             oracle.expected = {}
             pipeline.inject_rows.side_effect = Published
             with (
+                patch("search_writer_qualification.ROOT", Path(folder)),
                 patch("search_writer_qualification.Integration", return_value=pipeline),
                 patch("search_writer_qualification.SearchWriter", return_value=writer),
                 patch("search_writer_qualification.Oracle", return_value=oracle),

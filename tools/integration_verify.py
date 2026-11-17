@@ -40,6 +40,14 @@ def exception_classes(detail):
     )[:64]
 
 
+def failure_exceptions(test, phase):
+    """Select the actual failed operation, without reusing a prior successful probe."""
+    probe = test.folder / "incompatible-probe-exceptions.json"
+    if phase == "explicit_incompatible_binding_restore" and probe.exists():
+        return load_json(probe)
+    return test.rest("/jobs/" + test.latest_job()["job_id"] + "/exceptions")
+
+
 def wait_outputs(test, oracle, timeout=180):
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
@@ -205,8 +213,9 @@ def verify():
                 ]
             )
             wait_outputs(test, oracle)
-            stage("explicit_restore_incompatible_binding_jobmanager_restart")
+            stage("explicit_incompatible_binding_restore")
             checkpoint = reject_incompatible(test)
+            stage("healthy_restore_jobmanager_restart")
             job = test.start(restore=checkpoint["external_path"])
             wait_outputs(test, oracle)
             checkpoint = test.retained_checkpoint(job["job_id"])
@@ -465,13 +474,7 @@ def verify():
             if str(error).replace("_", "").isalnum():
                 failure["category"] = str(error)
             try:
-                probe = test.folder / "incompatible-probe-exceptions.json"
-                original_exceptions = (
-                    load_json(probe)
-                    if phase == "explicit_restore_incompatible_binding_jobmanager_restart"
-                    and probe.exists()
-                    else test.rest("/jobs/" + test.latest_job()["job_id"] + "/exceptions")
-                )
+                original_exceptions = failure_exceptions(test, phase)
                 save(test.folder / "original-exceptions.json", original_exceptions)
                 details = json.dumps(original_exceptions)
                 failure["exception_sha256"] = hashlib.sha256(details.encode()).hexdigest()
@@ -500,6 +503,9 @@ def verify():
                     states.append(
                         {
                             "id": container["Id"],
+                            "service": container["Config"]["Labels"].get(
+                                "com.docker.compose.service"
+                            ),
                             **{
                                 key: state[key]
                                 for key in ("Status", "OOMKilled", "ExitCode", "Error")
@@ -507,6 +513,21 @@ def verify():
                         }
                     )
                 save(test.folder / "failure-container-states.json", states)
+                logs = []
+                for container in test.stack.containers():
+                    observed = run(
+                        ["docker", "logs", "--tail", "2000", container["Id"]], check=False
+                    )
+                    logs.append(
+                        dict(
+                            id=container["Id"],
+                            service=container["Config"]["Labels"].get("com.docker.compose.service"),
+                            stdout=observed.stdout[-2097152:],
+                            stderr=observed.stderr[-2097152:],
+                        )
+                    )
+                save(test.folder / "failure-container-logs.json", logs)
+                save(test.folder / "failure-taskmanagers.json", test.rest("/taskmanagers"))
             except Exception:
                 pass
             save(report, failure)

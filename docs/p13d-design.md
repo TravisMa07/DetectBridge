@@ -89,3 +89,34 @@ standing commit-policy edits into this documentation change. Use a freeze commit
 one cohesive implementation/regression commit and one consolidated evidence commit
 where possible; later published corrections preserve history. Owner semantic/
 completeness acceptance and merge permission remain separate final gates.
+
+## Qualification coordination and diagnostic refinement
+
+Runtime inspection of the first recorded attempt established that `run_end` closes
+the entire run, including Windows/authentication. All original sources must be
+admitted before that control. Literal source/count expectations are unchanged;
+a regression requires the global ordering. The controlled late-cursor and original
+duplicate admissions remain separate from the 46-record original population.
+
+The source tagged-route fault changes a Kafka topic policy frozen by the
+independent writer. Stop the writer during that deliberate operator intervention,
+restore the original topic policy, then require its ordinary strict healthy start
+before search catch-up. This does not relax any producer rejection, source intent,
+search field, failure acknowledgement or writer commit assertion. Retain original
+writer health/offsets/logs privately before cleanup on any later failure.
+
+Native correction run 44177420786 passed search but failed processing-sink
+qualification. Original artifact 14371921401 has ZIP SHA-256
+`10464b27abdb3509d21e8b8c81ff627d489c2af85b24d79283340c6e0aa9179b`.
+Its TaskExecutor shutdown/NoResourceAvailableException and exited-1/non-OOM
+container state do not establish the process exit cause. Add bounded original
+container logs, service labels and TaskManager/slot observations to the synthetic
+failure artifact; retain the exact producer-failure requirement. Separate probe
+and subsequent healthy-restore diagnostic targets so an earlier expected probe
+exception cannot be mistaken for a later failure. No speculative runtime, retry,
+heap, resource-budget or failure-marker change is justified by those observations.
+
+The published CI correction/diagnostic collection requires an additional cohesive
+commit before native reproduction, followed by a consolidated final evidence
+commit. Preserve published freeze/implementation/fix IDs under the SDLC exception;
+do not rewrite history to force the original 1–3 planning target.

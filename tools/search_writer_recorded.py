@@ -171,6 +171,11 @@ def retain(test, oracle, rows):
     )
 
 
+def remaining_admissions(rows, remainder):
+    """run_end closes the entire replay, so every source must precede it."""
+    return [*remainder, *rows["windows"], *rows["auth"], controls(rows["audit"], "run_end")]
+
+
 def qualify(windows, audit, auth):
     project = "detectbridge-p13-recorded-" + uuid.uuid4().hex[:10]
     reports = ROOT / ".cache/search-writer-reports"
@@ -267,6 +272,11 @@ def qualify(windows, audit, auth):
                 else:
                     stage("recorded_tagged_sink_rejection_and_restore")
                     idle_checkpoint(pipeline, job)
+                    save(writer.folder / "before-source-fault-writer-state.json", writer.status())
+                    # This source-producer fault deliberately changes a topic policy
+                    # frozen by the independent writer. Stop it during that operator
+                    # intervention, then require its normal strict healthy restart.
+                    writer.stop()
                     pipeline.fault("tagged", "2")
                     try:
                         send([*execution, controls(rows["audit"], "source_boundary")], fault=True)
@@ -297,6 +307,7 @@ def qualify(windows, audit, auth):
                     finally:
                         pipeline.fault("tagged", "1")
                     job = pipeline.start(restore=cp["external_path"])
+                    writer.start()
                     wait_outputs(view, oracle)
                     checkpoints.append(dict(kind="tagged", checkpoint=cp["id"]))
                 stage("recorded_remaining_sources_and_membership")
@@ -318,14 +329,7 @@ def qualify(windows, audit, auth):
                 oracle.audit_remainder(rows["audit"])
                 oracle.windows_rows(rows["windows"])
                 oracle.auth_rows(rows["auth"])
-                send(
-                    [
-                        *remainder,
-                        controls(rows["audit"], "run_end"),
-                        *rows["windows"],
-                        *rows["auth"],
-                    ]
-                )
+                send(remaining_admissions(rows, remainder))
                 output = wait_outputs(view, oracle)
                 accounted(writer)
                 documents = check_views(writer, output)
@@ -423,6 +427,17 @@ def qualify(windows, audit, auth):
             save(report, result)
             return result
         except BaseException as error:
+            try:
+                save(writer.folder / "recorded-failure-writer-state.json", writer.status())
+                for container in writer.stack.containers():
+                    if container["Config"]["Labels"].get("com.docker.compose.service") == "writer":
+                        logs = run(["docker", "logs", container["Id"]], check=False)
+                        save(
+                            writer.folder / "recorded-failure-writer-logs.json",
+                            dict(stdout=logs.stdout, stderr=logs.stderr),
+                        )
+            except Exception:
+                pass
             try:
                 save(
                     pipeline.folder / "recorded-failure-exceptions.json",

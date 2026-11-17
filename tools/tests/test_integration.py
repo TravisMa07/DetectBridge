@@ -14,7 +14,7 @@ from classify_changes import needs_integration
 from integration import INPUT, TOPICS, Integration
 from integration_cases import digest, encoded
 from integration_oracle import Oracle, identity
-from integration_verify import exception_classes
+from integration_verify import exception_classes, failure_exceptions
 from linux_assembly_verify import transport_id
 
 
@@ -37,6 +37,33 @@ class IntegrationTests(unittest.TestCase):
             ),
             64,
         )
+
+    def test_healthy_restore_failure_does_not_reuse_prior_probe_exceptions(self):
+        import json
+        import tempfile
+        from types import SimpleNamespace
+
+        with tempfile.TemporaryDirectory() as folder:
+            probe = dict(exception="incompatible_integration_restore")
+            (Path(folder) / "incompatible-probe-exceptions.json").write_text(json.dumps(probe))
+            targets = []
+
+            def rest(path):
+                targets.append(path)
+                return dict(exception="healthy_restore_failure")
+
+            runtime = SimpleNamespace(
+                folder=Path(folder), latest_job=lambda: dict(job_id="healthy"), rest=rest
+            )
+            self.assertEqual(
+                probe, failure_exceptions(runtime, "explicit_incompatible_binding_restore")
+            )
+            self.assertEqual([], targets)
+            self.assertEqual(
+                dict(exception="healthy_restore_failure"),
+                failure_exceptions(runtime, "healthy_restore_jobmanager_restart"),
+            )
+            self.assertEqual(["/jobs/healthy/exceptions"], targets)
 
     def test_real_contracts_and_project_isolation(self):
         check()

@@ -12,7 +12,7 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from integration import TOPICS, reject_incompatible
 from integration_cases import ROOT, digest
-from search_writer_recorded import RecordedOracle, qualify
+from search_writer_recorded import RecordedOracle, qualify, remaining_admissions
 from stack import StackError
 
 
@@ -20,6 +20,8 @@ class RecordedSearchTests(unittest.TestCase):
     def test_missing_or_changed_originals_fail_before_build_or_initialization(self):
         for error in (FileNotFoundError(), ValueError("original_hash_changed")):
             with (
+                tempfile.TemporaryDirectory() as folder,
+                patch("search_writer_recorded.ROOT", Path(folder)),
                 patch("search_writer_recorded.originals", side_effect=error),
                 patch("search_writer_recorded.build") as build,
                 patch("search_writer_recorded.Integration") as runtime,
@@ -28,6 +30,21 @@ class RecordedSearchTests(unittest.TestCase):
                     qualify(Path("missing"), Path("missing"), Path("missing"))
                 build.assert_not_called()
                 runtime.assert_not_called()
+
+    def test_global_run_end_follows_every_source_not_only_audit(self):
+        from linux_assembly_cases import cases
+
+        fixtures = cases()
+        rows = dict(
+            audit=fixtures["complete"],
+            windows=[dict(kind="windows_record")],
+            auth=[fixtures["auth"]],
+        )
+        admitted = remaining_admissions(rows, fixtures["complete"])
+        self.assertEqual("run_end", admitted[-1]["kind"])
+        self.assertEqual(["windows_record", "record"], [r["kind"] for r in admitted[-3:-1]])
+        self.assertEqual(len(fixtures["complete"]) + 3, len(admitted))
+        self.assertEqual(rows["audit"][0]["context"]["run_id"], admitted[-1]["run_id"])
 
     def test_windows_preservation_requires_exact_original_source_and_disposition(self):
         oracle = RecordedOracle({}, "binding", {}, {}, Path("unused"))

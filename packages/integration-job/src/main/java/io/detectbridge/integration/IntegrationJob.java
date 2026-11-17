@@ -14,11 +14,10 @@ import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.state.ListState;
 import org.apache.flink.api.common.state.ListStateDescriptor;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
-import org.apache.flink.connector.base.DeliveryGuarantee;
 import org.apache.flink.connector.kafka.source.KafkaSource;
 import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
 import org.apache.flink.connector.kafka.source.reader.deserializer.KafkaRecordDeserializationSchema;
-import org.apache.flink.connector.kafka.sink.KafkaSink;
+import org.apache.flink.connector.kafka.sink.DetectBridgeKafkaSink;
 import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
 import org.apache.flink.runtime.state.StateInitializationContext;
 import org.apache.flink.runtime.state.StateSnapshotContext;
@@ -167,8 +166,7 @@ public final class IntegrationJob {
         .setStartingOffsets(OffsetsInitializer.earliest()).setDeserializer(new Decode()).setProperty("enable.auto.commit","false")
         .setProperty("auto.offset.reset","none").setProperty("partition.discovery.interval.ms","-1")
         .setProperty("max.partition.fetch.bytes","4194304").setProperty("fetch.max.bytes","8388608").setProperty("max.poll.records","16").build();
-    var sink=KafkaSink.<Delivery>builder().setBootstrapServers(config.bootstrap).setKafkaProducerConfig(IntegrationBroker.producerProperties(config.bootstrap))
-        .setRecordSerializer(new Encode()).setDeliveryGuarantee(DeliveryGuarantee.AT_LEAST_ONCE).build();
+    var sink=new DetectBridgeKafkaSink<Delivery>(IntegrationBroker.producerProperties(config.bootstrap),new Encode());
     env.fromSource(source,WatermarkStrategy.noWatermarks(),"Integrated raw input").uid("integration-source-v1")
         .transform("Checkpointed integrated evaluation",TypeInformation.of(Delivery.class),new Operator(config)).uid("integration-operator-v1")
         .sinkTo(sink).name("Acknowledged integration outputs").uid("integration-sink-v1");

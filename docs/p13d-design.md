@@ -192,3 +192,53 @@ from the completed retained checkpoint, and checks timeout output independently.
 The first/last inspected inventory is saved privately for failure diagnosis.
 A regression supplies a completed snapshot before the tick, followed by closure;
 a changed deadline must fail immediately. The bounded timeout remains a failure.
+
+## Pinned Kafka writer cleanup after an already propagated send failure
+
+Native 779c70a artifact 14377883509 (ZIP SHA-256
+`64cd431f52728342989b6304d0a31b959ddcc0cf95b7ce1f4cfba8e685148597`)
+and ARM64 project daac90fd3c87 reproduce TaskManager exit 1 during processing-sink
+rejection. Native message-free fatal origins are KafkaWriter.checkAsyncException,
+line 297, on Task, TaskExecutor and TaskManagerRunner; root-OOM is absent. Before
+this case, heap used/max was 159320064/436207616, metaspace
+117121712/268435456 and Java threads 52. These are observations, not capacity
+qualification. No resource increase follows.
+
+The exact pinned connector 5.0.0-2.2 bytecode clears its pending send error when
+throwing it, but subsequent callbacks can re-arm it. Its close first closes and
+checks the producer, clears currentProducer, then rethrows a pending send error.
+Flink 2.2.1 treats a failing cleanup as fatal. This is consistent with the observed
+fatal origin and [FLINK-41269](https://issues.apache.org/jira/browse/FLINK-41269),
+not retrospective proof of the unretained historical exceptions. The upstream
+[Flink proposal](https://github.com/apache/flink/pull/29676) remains unmerged and
+maintainers intentionally retain fatal handling for unsafe resource cleanup.
+No released newer connector is present in Maven metadata as inspected 2026-11-17.
+Do not patch that Flink-wide safety policy, waive RecordTooLarge, or merely restart
+a worker to hide this failure.
+
+Use a narrowly scoped P13-only subclass of the unchanged pinned Kafka sink/writer.
+It retains the stock at-least-once writer, serializer, state serializers, producer
+properties, acknowledgements and flush/checkpoint behavior. A package-access bridge
+has a unique DetectBridge class name; it does not replace an upstream class or use
+production reflection. Record the first exception propagated by write, flush or
+an executed mailbox action. On close, a duplicate pending-send IOException may
+be attached as suppressed to that already-propagated original exception only if
+the stock writer has fully closed and checked the producer and set its protected
+producer field to null. Increment a bounded counter for this cleanup condition.
+A first/unobserved close error, a producer cleanup failure before that proven
+closed boundary, and any Error still propagate. Normal writes, flush and first
+mailbox errors always propagate unchanged. The original task therefore still
+fails, required output remains unacknowledged, and completed-checkpoint intent
+recovery is unchanged; only the redundant error after successful cleanup avoids
+TaskManager-fatal escalation.
+
+Before runtime qualification, regress the actual pinned writer's callback/flush/
+write/mailbox/close sequence deterministically: propagate first RecordTooLarge;
+re-arm a second failure and require closed resources plus suppressed secondary
+error/counter; reject close-only and actual cleanup errors; never suppress a JVM
+Error; preserve normal close and mailbox forwarding. Use no new Maven dependency.
+New job bytes intentionally change the existing artifact-bound checkpoint binding;
+qualify fresh isolated projects rather than migrate an old checkpoint. Require
+all seven exact required-sink failures/restores on ARM64 and native AMD64, plus
+actual recorded source-to-search and writer regressions on the new artifact.
+Remove/review this compatibility bridge when the pinned connector changes.

@@ -206,8 +206,7 @@ def verify():
             )
             wait_outputs(test, oracle)
             stage("explicit_restore_incompatible_binding_jobmanager_restart")
-            checkpoint = test.wait_checkpoint(job["job_id"])
-            reject_incompatible(test, checkpoint)
+            checkpoint = reject_incompatible(test)
             job = test.start(restore=checkpoint["external_path"])
             wait_outputs(test, oracle)
             checkpoint = test.retained_checkpoint(job["job_id"])
@@ -466,8 +465,12 @@ def verify():
             if str(error).replace("_", "").isalnum():
                 failure["category"] = str(error)
             try:
-                original_exceptions = test.rest(
-                    "/jobs/" + test.latest_job()["job_id"] + "/exceptions"
+                probe = test.folder / "incompatible-probe-exceptions.json"
+                original_exceptions = (
+                    load_json(probe)
+                    if phase == "explicit_restore_incompatible_binding_jobmanager_restart"
+                    and probe.exists()
+                    else test.rest("/jobs/" + test.latest_job()["job_id"] + "/exceptions")
                 )
                 save(test.folder / "original-exceptions.json", original_exceptions)
                 details = json.dumps(original_exceptions)

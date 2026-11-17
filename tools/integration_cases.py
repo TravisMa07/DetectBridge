@@ -65,12 +65,14 @@ def windows(family="security", *, run=RUN, binding=True, budget=False, unsupport
     return dict(version="1.0.0", kind="windows_record", raw=raw, context=ctx)
 
 
-def prepare():
+def prepare(recorded=False):
     CACHE.mkdir(parents=True, exist_ok=True)
     revision = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
     paths = sorted((ROOT / "packages/windows-adapters/fixtures/rules").glob("*.yml")) + sorted(
         (ROOT / "packages/linux-adapters/fixtures/rules").glob("*.yml")
     )
+    if recorded:
+        paths += sorted((ROOT / "packages/windows-adapters/recording/rules").glob("*.yml"))
     import yaml
 
     provenance = []
@@ -109,7 +111,7 @@ def prepare():
             sources.append(json.loads((folder / (family + ".source.json")).read_bytes()))
             mappings.append(json.loads((folder / (family + ".mapping.json")).read_bytes()))
     plan = compile_rules(paths, sources, mappings=mappings, provenance=provenance)
-    (CACHE / "plan.json").write_bytes(encoded(plan) + b"\n")
+    (CACHE / ("recorded-plan.json" if recorded else "plan.json")).write_bytes(encoded(plan) + b"\n")
     data = linux_cases()
     data.update(
         windows=windows(),

@@ -75,3 +75,40 @@ advance only after indexed/verified duplicates or acknowledged failure publicati
 Outages retain bounded backlog; TLS, identity, mapping and credential drift stop
 or block visibly. Repair original bindings before restart; changing an artifact,
 index, template or producer binding is not an implicit migration procedure.
+
+## P13d opt-in original recordings
+
+After building the search writer, use:
+
+```sh
+uv run --locked python tools/search_writer.py build
+uv run --locked python tools/search_writer.py verify --recorded \
+  --windows .cache/p11-windows-capture/attempt3/originals \
+  --audit .cache/p12-audit-reviewed-v1 \
+  --auth .cache/p12-auth-reviewed-v1
+```
+
+Only the three accepted controlled catalogs are admitted. Every original artifact,
+source/host/generation binding and acquisition/action/terms relation is checked
+before runtime creation. Missing or changed originals fail with a retained
+`original_validation` report; the command never downloads or manufactures them.
+Directory arguments permit existing private caches. No source payload, generated
+artifact, password or private key belongs in Git or ordinary CI artifacts.
+
+The command builds a separately pinned twelve-rule integration image from committed
+rule bytes and the unchanged source/mapping profiles. Its report records that exact
+image/JAR/plan and the writer artifact. Build the default integration artifact again
+with `tools/integration.py build` before running ordinary synthetic qualification.
+Run heavy Docker suites serially. This option uses the actual Kafka/Flink adapters,
+audit assembler, compact evaluator and TLS OpenSearch writer. It retains original
+admissions/acks/source observations and independent expectations under ignored
+project caches; reports are under `.cache/search-writer-reports/`.
+
+The [frozen design](p13d-design.md) distinguishes the recorded source outcomes from
+supplemental synthetic edge cases and controlled cursor/duplicate admissions.
+Checkpointed original audit members, TaskManager/deadline recovery, a required
+sink rejection and explicit restore, original membership/late links, two isolated
+replays, search fields and original Kafka retrieval hashes must all pass. Ordinary
+`verify` retains the separate full synthetic six-outcome/writer fault suite.
+A completed command is technical evidence only; owner semantic acceptance,
+authorized integration and successful merged-commit checks remain separate gates.

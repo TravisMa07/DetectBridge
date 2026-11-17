@@ -125,8 +125,8 @@ class Oracle:
                 value_is_null=value is None,
             )
 
-    def expected_tag(self, event, expected):
-        rows, scenario, manifest = expected["rows"], expected["scenario"], expected["manifest"]
+    def check_source(self, event, expected):
+        rows, scenario = expected["rows"], expected["scenario"]
         ctx = rows[0]["context"]
         if rows[0]["kind"] == "windows_record":
             family = (
@@ -161,6 +161,11 @@ class Oracle:
                 require(fields[-1] in target)
                 target[fields[-1]] = copy.deepcopy(value)
             require(event == literal)
+
+    def expected_tag(self, event, expected):
+        rows, scenario, manifest = expected["rows"], expected["scenario"], expected["manifest"]
+        ctx = rows[0]["context"]
+        self.check_source(event, expected)
         context = copy.deepcopy(ctx)
         context.pop("receipt", None)
         processing = dict(
@@ -199,7 +204,8 @@ class Oracle:
                 None if reference is None else dict(semantic_sha256=reference["semantic_sha256"]),
             ]
         )
-        counts = self.expected[scenario]
+        counts = expected.get("counts", self.expected.get(scenario))
+        require(counts is not None)
         match_ids = []
         if counts["matched"]:
             match_ids = [
@@ -209,6 +215,7 @@ class Oracle:
                 if scenario == "auth"
                 else "72000000-0000-4000-8000-000000000001"
             ]
+        match_ids = expected.get("match_ids", match_ids)
         matches, detections, diagnostics = [], [], []
         base = dict(
             version="1.1.0",
@@ -237,12 +244,12 @@ class Oracle:
             if not counts[category]:
                 continue
             bits = (
-                self.expected["audit_blocked_bits"]
+                expected.get("blocked_bits", self.expected["audit_blocked_bits"])
                 if category == "configuration_blocked"
                 else self.expected["windows_error_bits"]
                 if category == "evaluation_error"
-                else self.expected["audit_skipped_bits"]
-                if scenario == "audit_skipped"
+                else expected.get("skipped_bits", self.expected["audit_skipped_bits"])
+                if scenario in ("audit_skipped", "audit_recorded_skipped")
                 else "000000000000000000000000b"
             )
             rule_set = dict(
@@ -336,6 +343,9 @@ class Oracle:
                         ]
                     )
                 )
+                if document["adapter"] == "windows":
+                    self.check_windows_preservation(document)
+                    continue
                 require(document["adapter"] == "linux")
                 native.append(
                     self.native_wire(
@@ -395,6 +405,9 @@ class Oracle:
             and receipt_count == len(self.inputs)
             and self.native.check(native, complete=True)
         )
+
+    def check_windows_preservation(self, document):
+        require(False)
 
     @staticmethod
     def native_wire(kind, wire, doc, key):

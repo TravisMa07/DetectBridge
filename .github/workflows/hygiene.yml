@@ -593,7 +593,7 @@
           "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
           "with": {
             "name": "p13-integration-failure-diagnostics",
-            "path": ".cache/integration-reports/*.json\n.cache/integration-runtime/*/original-exceptions.json\n.cache/integration-runtime/*/failure-container-states.json\n.cache/integration-runtime/*/last-helper-failure.json",
+            "path": ".cache/integration-reports/*.json\n.cache/integration-runtime/*/original-exceptions.json\n.cache/integration-runtime/*/failure-container-states.json\n.cache/integration-runtime/*/last-helper-failure.json\n.cache/integration-runtime/*/incompatible-probe*.json",
             "include-hidden-files": true,
             "if-no-files-found": "warn",
             "retention-days": 7

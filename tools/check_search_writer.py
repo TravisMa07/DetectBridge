@@ -96,6 +96,12 @@ def artifacts():
         names = jar.namelist()
         if len(names) != len(set(names)) or "io/detectbridge/search/Main.class" not in names:
             raise ValueError("invalid_writer_jar")
+        for entry, source in (
+            ("META-INF/DetectBridge-LICENSE", "LICENSE"),
+            ("META-INF/ECS-NOTICE", "contracts/v1/NOTICE"),
+        ):
+            if jar.read(entry) != (ROOT / source).read_bytes():
+                raise ValueError("search_license_provenance_missing")
         if not any(n.startswith("META-INF/LICENSE") for n in names):
             raise ValueError("missing_writer_notices")
         if any(

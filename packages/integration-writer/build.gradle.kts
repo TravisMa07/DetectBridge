@@ -32,3 +32,8 @@ tasks.shadowJar {
 tasks.test { useJUnitPlatform(); dependsOn(":integration-job:prepareIntegrationCases"); systemProperty("repository.root", rootProject.projectDir) }
 sourceSets.main { resources { srcDir(rootProject.file("contracts")); include("search-writer/v1/*.schema.json") } }
 sourceSets.test { resources.srcDir(rootProject.file("contracts")) }
+
+tasks.shadowJar {
+    from(rootProject.file("LICENSE")) { into("META-INF"); rename { "DetectBridge-LICENSE" } }
+    from(rootProject.file("contracts/v1/NOTICE")) { into("META-INF"); rename { "ECS-NOTICE" } }
+}

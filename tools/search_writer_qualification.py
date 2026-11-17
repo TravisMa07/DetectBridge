@@ -14,7 +14,7 @@ from integration import INPUT, ROUTES, Integration, runtime_binding
 from integration_cases import encoded
 from integration_oracle import Oracle
 from integration_verify import wait_outputs
-from linux_assembly_cases import context, record
+from linux_assembly_cases import audit, context, record
 from search_writer import DIAGNOSTICS, FAILURES, REPLAY, SearchWriter
 from stack import ROOT, StackError, project_lock, run, save
 from writer_qualification import get_document, wait_state
@@ -357,11 +357,11 @@ def check_views(writer, original_outputs):
     return found
 
 
-def qualify(recorded=False, windows=None, audit=None, auth=None):
+def qualify(recorded=False, windows_directory=None, audit_directory=None, auth_directory=None):
     if recorded:
         from search_writer_recorded import qualify as qualify_recorded
 
-        return qualify_recorded(windows, audit, auth)
+        return qualify_recorded(windows_directory, audit_directory, auth_directory)
     project = "detectbridge-p13-search-" + uuid.uuid4().hex[:10]
     pipeline, writer = Integration(project), SearchWriter(project)
     reports = ROOT / ".cache/search-writer-reports"

@@ -115,3 +115,18 @@ default gold expectations stay unchanged. No source parser/profile is broadened
 and no malformed source is converted into a normalized event. Private source
 observations are now retained locally on oracle failure; CI publishes only the
 value-free failure report.
+
+The fifth attempt detectbridge-p13-search-256811d591 passed actual source/replay,
+exact nanosecond doc values/outside-range handling, blocked failure publication,
+failure-topic indexing, crash-after-indexing/before-commit recovery, stored-content
+tamper detection and real partial bulk protocol. It failed the permissions phase.
+An isolated real-role probe (detectbridge-p13-acl-e40c4b52bc) established that index
+delete, document delete, unrelated-index creation, existing-P08-index access and
+security administration all returned 403. The invalid empty template request
+returned 400 before authorization; the structurally valid template request returned
+403. The final suite uses that valid request and an existing P08 denial target,
+with per-probe status evidence. No role grant is broadened or denial assertion
+weakened. Original partial attempts/inputs remain local, and owned resources only
+were removed. Its exact search JAR is
+6f60d3589d502bee41dc926c768c130b91e6437f28d115daef8775486593a575
+(bundle d78eda0c3c632a108bd89819663c8cc1c6928a1e9c76c13e2eaa274273e05fd4).

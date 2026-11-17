@@ -702,18 +702,33 @@ def qualify(recorded=False):
                 "search_partial_bulk_not_proven",
             )
             stage("permissions_and_restart")
+            code, _ = writer.stack.request("PUT", "/detectbridge-replay-v1", {})
+            require(code == 200, "search_denial_target_setup_failed")
+            permission_evidence = []
             body: dict[str, Any] | None
-            for method, path, body in [
-                ("DELETE", "/" + REPLAY, None),
-                ("DELETE", "/" + REPLAY + "/_doc/" + good_id, None),
-                ("PUT", "/unrelated-index", {}),
-                ("GET", "/detectbridge-replay-v1", None),
-                ("GET", "/_plugins/_security/api/internalusers", None),
-                ("PUT", "/_index_template/forbidden", {}),
-            ]:
+            for number, (method, path, body) in enumerate(
+                [
+                    ("DELETE", "/" + REPLAY, None),
+                    ("DELETE", "/" + REPLAY + "/_doc/" + good_id, None),
+                    ("PUT", "/unrelated-index", {}),
+                    ("GET", "/detectbridge-replay-v1", None),
+                    ("GET", "/_plugins/_security/api/internalusers", None),
+                    (
+                        "PUT",
+                        "/_index_template/forbidden",
+                        {
+                            "index_patterns": ["qualification-forbidden"],
+                            "template": {"mappings": {"dynamic": "strict"}},
+                        },
+                    ),
+                ]
+            ):
+                status = writer.request(method, path, body)["status"]
+                permission_evidence.append(dict(method=method, path=path, status=status))
+                save(writer.folder / "permission-evidence.json", permission_evidence)
                 require(
-                    writer.request(method, path, body)["status"] == 403,
-                    "search_permissions_broadened",
+                    status == 403,
+                    "search_permission_case_" + str(number) + "_status_" + str(status),
                 )
             writer.stop()
             writer.start()

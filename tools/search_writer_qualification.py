@@ -84,6 +84,9 @@ def wait_document(writer, index, identity, timeout=150):
 def check_views(writer, original_outputs):
     config = writer.config()
     found = {}
+    physical = {
+        (kind, wire["offset"]): (wire, document) for kind, wire, document in original_outputs
+    }
     for kind, wire, document in original_outputs:
         if kind not in ("tagged", "detection", "processing"):
             continue
@@ -112,12 +115,19 @@ def check_views(writer, original_outputs):
             and doc["first_input"]["topic_id"] == config["source_topics"][ROUTES[kind]]["id"],
             "search_location_mismatch",
         )
-        # First copy may differ after a duplicate; retrieve precisely that retained Kafka value.
-        if doc["first_input"]["offset"] == wire["offset"]:
-            require(
-                doc["input_sha256"] == hashlib.sha256(base64.b64decode(wire["value"])).hexdigest(),
-                "search_original_value_hash_mismatch",
-            )
+        # Verify precisely the first retained physical copy, including its immutable topic.
+        require(
+            doc["first_input"]["cluster_id"] == config["kafka_cluster_id"]
+            and doc["first_input"]["partition"] == 0,
+            "search_first_input_scope_mismatch",
+        )
+        first_wire, first_document = physical[(kind, doc["first_input"]["offset"])]
+        require(
+            first_document == document
+            and doc["input_sha256"]
+            == hashlib.sha256(base64.b64decode(first_wire["value"])).hexdigest(),
+            "search_original_value_hash_mismatch",
+        )
         if kind == "tagged":
             event = document["event"]
             require(
@@ -158,6 +168,15 @@ def check_views(writer, original_outputs):
                 "search_evidence_hash_mismatch",
             )
             require(
+                doc["evidence_source"]
+                == dict(
+                    cluster_id=config["kafka_cluster_id"],
+                    topic=INPUT,
+                    topic_id=config["source_topics"][INPUT]["id"],
+                ),
+                "search_evidence_source_mismatch",
+            )
+            require(
                 all("inline" not in e for e in doc["evidence"]) and "extensions" not in doc,
                 "search_original_leak",
             )
@@ -174,6 +193,16 @@ def check_views(writer, original_outputs):
                 "search_rule_set_mismatch",
             )
         if document.get("manifest"):
+            manifest_topic = ROUTES["manifest"]
+            require(
+                doc["manifest"]["location"]
+                == dict(
+                    cluster_id=config["kafka_cluster_id"],
+                    topic=manifest_topic,
+                    topic_id=config["source_topics"][manifest_topic]["id"],
+                ),
+                "search_manifest_location_mismatch",
+            )
             require(
                 all(doc["manifest"][k] == v for k, v in document["manifest"].items()),
                 "search_manifest_mismatch",
@@ -297,7 +326,7 @@ def qualify(recorded=False):
             )
             stage("blocked_failure_publication")
             # A valid managed topic policy is restored before any subsequent commit.
-            writer.helper("failure-policy", json.dumps({"value": "1"}), timeout=90)
+            writer.helper("failure-policy", json.dumps({"value": "block"}), timeout=90)
             ack = inject(
                 writer, ROUTES["tagged"], b"private-key-sentinel", b"private-body-sentinel"
             )
@@ -306,7 +335,7 @@ def qualify(recorded=False):
                 offsets(writer)[ROUTES["tagged"]]["committed"] <= ack[0]["offset"],
                 "search_failure_unacknowledged_commit",
             )
-            writer.helper("failure-policy", json.dumps({"value": "1048576"}), timeout=90)
+            writer.helper("failure-policy", json.dumps({"value": "healthy"}), timeout=90)
             accounted(writer)
             stage("failure_topic_indexing_blocks_without_recursion")
             writer.stack.request(

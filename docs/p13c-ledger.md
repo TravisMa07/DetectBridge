@@ -61,3 +61,20 @@ and production code remain unchanged. This is verified by the full root graph,
 rather than relaxing Gradle's dependency validation. Initial aggregate fixtures
 also lacked the new explicit search applicability field; fixtures were corrected
 and the fail-closed gate remains strict.
+
+## First initialized source-to-search attempt
+
+Project detectbridge-p13-search-ae98f42e09 passed initial source-to-search, replay
+through actual OpenSearch outage/recovery, duplicates and semantic conflict. It
+failed in the blocked-failure-publication phase with search_accounting_timeout.
+The writer had correctly stopped with source_identity_or_policy_changed: the
+fault helper restored 1 MiB rather than the actual managed failure-topic 2 MiB
+policy. The helper now accepts only block/healthy and restores Broker's exact
+managed policy; an independent literal regression requires 2097152. No runtime
+binding or failure-ack assertion is relaxed. The failed search artifact was
+56923477ec5e40508f3640e81e12bb4ae9be1a0f965cbc92ace27ea31a9edd07
+(bundle 02d4b5c2d5e768177b1b7abef398fa7c242a774564442d8a369fa8b26615ac4f).
+It also preceded the exact project/ECS notice packaging update; it is not final
+qualification. Only its owned stack/volumes were removed; its private inputs and
+independent expectations/report remain local. P13b deployment JAR e183461... was
+unchanged by the distinct classes-JAR build fix.

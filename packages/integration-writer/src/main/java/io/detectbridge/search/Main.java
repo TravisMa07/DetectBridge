@@ -383,6 +383,14 @@ public final class Main {
     }
   }
 
+  static String failurePolicy(String requested) {
+    return switch(requested) {
+      case "block" -> "1";
+      case "healthy" -> Broker.TOPIC_CONFIG.get("max.message.bytes");
+      default -> throw new IllegalArgumentException("fault_scope");
+    };
+  }
+
   static JsonNode injection(byte[] bytes) {
     if(bytes.length>6*1024*1024) throw new IllegalArgumentException("injection_limit");
     var factory=tools.jackson.core.json.JsonFactory.builder()
@@ -446,8 +454,7 @@ public final class Main {
         }
         case "failure-policy" -> {
           var input=Json.read(System.in.readNBytes(1025));
-          String value=input.path("value").asString();
-          if(!Set.of("1","1048576").contains(value)) throw new IllegalArgumentException("fault_scope");
+          String value=failurePolicy(input.path("value").asString());
           try(var admin=org.apache.kafka.clients.admin.Admin.create(Broker.properties("kafka:9092"))) {
             var resource=new org.apache.kafka.common.config.ConfigResource(org.apache.kafka.common.config.ConfigResource.Type.TOPIC,Projection.FAILURES);
             admin.incrementalAlterConfigs(Map.of(resource,List.of(new org.apache.kafka.clients.admin.AlterConfigOp(

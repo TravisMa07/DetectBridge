@@ -74,6 +74,11 @@ class SearchTest {
     assertEquals(vectors.at("/content_vector/sha256").asString(),Projection.contentHash(body));
     assertEquals(vectors.at("/failure_vector/sha256").asString(),Projection.failureId(Json.MAPPER.valueToTree(Map.of("cluster_id","cluster-a","topic_id","topic-a","partition",0,"offset",17))));
   }
+  @Test void failureRepairRestoresExactManagedTopicPolicy() {
+    assertEquals("1",Main.failurePolicy("block"));
+    assertEquals("2097152",Main.failurePolicy("healthy"));
+    assertThrows(IllegalArgumentException.class,()->Main.failurePolicy("1048576"));
+  }
   @Test void exactTimesAndUnsupportedVersionsAreExplicit() throws Exception {
     var i=outputs("windows").stream().filter(o->o.kind().equals("tagged")).findFirst().orElseThrow();
     for(String timestamp:List.of("2026-01-01T00:00:00.123456789Z","1800-01-01T00:00:00Z")) {

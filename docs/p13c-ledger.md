@@ -53,3 +53,11 @@ Only assembly/integration qualification call sites change; runtime checkpoint/st
 semantics and assertions remain intact. The original CI trace establishes missing
 metadata but does not independently establish every timing detail of this race.
 Affected actual recovery suites must pass on the branch containing this correction.
+
+The first root Java run detected an implicit Gradle output dependency: the default
+integration-job classes JAR and its deployment shadow JAR shared a filename.
+The consumable classes artifact now has a distinct name; the deployment filename
+and production code remain unchanged. This is verified by the full root graph,
+rather than relaxing Gradle's dependency validation. Initial aggregate fixtures
+also lacked the new explicit search applicability field; fixtures were corrected
+and the fail-closed gate remains strict.

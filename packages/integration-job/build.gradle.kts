@@ -45,3 +45,6 @@ val prepareIntegrationCases = tasks.register<Exec>("prepareIntegrationCases") {
     outputs.files(rootProject.file(".cache/integration/plan.json"), rootProject.file(".cache/integration/cases.json"))
 }
 tasks.test { dependsOn(prepareIntegrationCases); inputs.dir(rootProject.file(".cache/integration")); inputs.dir(rootProject.file("contracts/integration-runtime/v1/fixtures")) }
+
+// Keep the consumable classes JAR distinct from the deployment shadow artifact.
+tasks.jar { archiveFileName.set("integration-job-classes.jar") }

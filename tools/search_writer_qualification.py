@@ -225,6 +225,14 @@ def qualify(recorded=False):
                 skipped["context"]["run_id"] = run_id
                 oracle.group([skipped], findings=["syscall_missing"])
                 rows.append(skipped)
+                unsupported = record(
+                    fixtures["auth"]["raw"]["evidence"]["inline"].replace("password", "publickey"),
+                    9000,
+                    context(True),
+                )
+                unsupported["context"]["run_id"] = run_id
+                oracle.preservation(unsupported, "unsupported_source")
+                rows.append(unsupported)
                 # Freeze originals and independent source expectations before Kafka admission.
                 with (writer.folder / "independent-inputs.ndjson").open("ab") as file:
                     for row in rows:

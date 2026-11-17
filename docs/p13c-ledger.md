@@ -102,3 +102,16 @@ helper. No input is skipped by parse error, no source assertion is weakened, and
 the actual writer's admission/commit algorithm is unchanged. Additional original
 RFC5424 inputs freeze exact nine-digit and 1800 timestamp expectations before
 admission, including actual date_nanos doc-value and out-of-range checks.
+
+The fourth attempt detectbridge-p13-search-6851253f4c failed the independent
+preservation expectation at linux_assembly_verify.py:214. The new nine-digit
+RFC5424 input exceeded the accepted OpenSSH adapter's six-digit fractional bound,
+so its extraction-failure preservation was correct. The negative case is retained
+with that independent disposition; the six-digit indexed and 1800 retained cases
+use actual authentication input. The exact nine-digit indexed case now uses the
+supported Windows XML profile and four explicit literal timestamp overrides to
+the original gold event, frozen in the expectation fixture. The source oracle's
+default gold expectations stay unchanged. No source parser/profile is broadened
+and no malformed source is converted into a normalized event. Private source
+observations are now retained locally on oracle failure; CI publishes only the
+value-free failure report.

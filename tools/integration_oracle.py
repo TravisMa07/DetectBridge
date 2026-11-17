@@ -152,6 +152,14 @@ class Oracle:
             if scenario == "windows_budget":
                 literal["process"]["command_line"] = "x" * 65536
                 literal["source_fields"]["CommandLine"] = "x" * 65536
+            # Optional independently frozen literal overrides for controlled source variants.
+            for pointer, value in expected.get("literal_overrides", {}).items():
+                fields = pointer.removeprefix("/").split("/")
+                target = literal
+                for field in fields[:-1]:
+                    target = target[field]
+                require(fields[-1] in target)
+                target[fields[-1]] = copy.deepcopy(value)
             require(event == literal)
         context = copy.deepcopy(ctx)
         context.pop("receipt", None)

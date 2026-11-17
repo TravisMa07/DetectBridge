@@ -101,6 +101,11 @@ class SourceView:
                 else:
                     result.append((kind, wire, json.loads(base64.b64decode(wire["value"]))))
         self.verified = observed
+        if hasattr(self.pipeline, "folder"):
+            save(
+                self.pipeline.folder / "source-observations.json",
+                [dict(kind=k, wire=w, document=d) for k, w, d in result],
+            )
         return result
 
 
@@ -402,25 +407,54 @@ def qualify(recorded=False):
                 oracle.group([skipped], findings=["syscall_missing"])
                 rows.append(skipped)
                 for number, spec in enumerate(time_vectors):
-                    row = record(
-                        fixtures["auth"]["raw"]["evidence"]["inline"].replace(
-                            "2026-01-01T00:00:00Z", spec["timestamp"]
-                        ),
-                        6000 + number,
-                        context(True),
-                    )
-                    row["context"]["run_id"] = run_id
-                    event_id = oracle.event(row, "auth")
-                    oracle.native.auth(
-                        row,
-                        expectation=dict(
-                            outcome="success",
-                            user="alice",
-                            source_ip="192.0.2.1",
-                            source_port=2222,
-                            timestamp=spec["timestamp"],
-                        ),
-                    )
+                    if spec["source"] == "windows":
+                        row = copy.deepcopy(fixtures["windows"])
+                        raw = row["raw"]
+                        raw["cursor"]["value"] += "-time-proof-" + str(number)
+                        raw["evidence"]["inline"] = raw["evidence"]["inline"].replace(
+                            "2026-11-12T12:00:00.123456789123Z", spec["timestamp"]
+                        )
+                        raw["evidence"]["sha256"] = hashlib.sha256(
+                            raw["evidence"]["inline"].encode()
+                        ).hexdigest()
+                        from linux_assembly_cases import identity as source_identity
+
+                        raw["record_id"] = source_identity(
+                            [
+                                raw["source"]["namespace"],
+                                raw["source"]["instance"],
+                                ["native", raw["cursor"]["value"]],
+                            ]
+                        )
+                        row["context"]["run_id"] = run_id
+                        event_id = oracle.event(row, "windows")
+                        oracle.events[(run_id, event_id)]["literal_overrides"] = spec[
+                            "literal_overrides"
+                        ]
+                    else:
+                        row = record(
+                            fixtures["auth"]["raw"]["evidence"]["inline"].replace(
+                                "2026-01-01T00:00:00Z", spec["timestamp"]
+                            ),
+                            6000 + number,
+                            context(True),
+                        )
+                        row["context"]["run_id"] = run_id
+                        if spec.get("source_disposition"):
+                            oracle.preservation(row, spec["source_disposition"])
+                            rows.append(row)
+                            continue
+                        event_id = oracle.event(row, "auth")
+                        oracle.native.auth(
+                            row,
+                            expectation=dict(
+                                outcome="success",
+                                user="alice",
+                                source_ip="192.0.2.1",
+                                source_port=2222,
+                                timestamp=spec["timestamp"],
+                            ),
+                        )
                     time_records[event_id] = spec
                     rows.append(row)
                 unsupported = record(

@@ -27,14 +27,39 @@ class SearchTest {
     return Json.MAPPER.valueToTree(Map.of("pipeline_id","00000000-0000-4000-8000-000000000001","kafka_cluster_id","cluster-a",
         "source_topics",topics,"evaluation_bundle_sha256",evaluator().bundle(),"integration_binding","a".repeat(64)));
   }
-  static List<Machine.Intent> outputs(String scenario) throws Exception {
-    var rows=read(".cache/integration/cases.json");var source=Json.MAPPER.valueToTree(Map.of("cluster_id","cluster-a","topic_id",Projection.INPUT+"-id","topic",Projection.INPUT));
+  static List<Machine.Intent> outputs(List<JsonNode> inputs) throws Exception {
+    var source=Json.MAPPER.valueToTree(Map.of("cluster_id","cluster-a","topic_id",Projection.INPUT+"-id","topic",Projection.INPUT));
     var machine=new Machine(Clock.fixed(Instant.ofEpochMilli(1000),ZoneOffset.UTC),Assembler.Limits.defaults(),"a".repeat(64),source,Machine::inline,evaluator());
-    List<JsonNode> inputs=new ArrayList<>();
-    if(scenario.equals("audit")) rows.get("complete").forEach(inputs::add);
-    else inputs.add(scenario.equals("audit_skipped")?rows.at("/complete/5"):rows.get(scenario));
     long offset=0;for(var row:inputs) { machine.enqueue(Machine.wire(Json.bytes(row),"cluster-a",Projection.INPUT+"-id",Projection.INPUT,offset++));while(machine.pump()){} }
     List<Machine.Intent> result=new ArrayList<>(); machine.snapshot(1);machine.complete(1,result::add); return result;
+  }
+  static List<Machine.Intent> outputs(String scenario) throws Exception {
+    var rows=read(".cache/integration/cases.json"); List<JsonNode> inputs=new ArrayList<>();
+    if(scenario.equals("audit")) rows.get("complete").forEach(inputs::add);
+    else inputs.add(scenario.equals("audit_skipped")?rows.at("/complete/5"):rows.get(scenario));
+    return outputs(inputs);
+  }
+  @Test void actualWindowsNanosAndInvalidAuthenticationPrecisionAreDistinct() throws Exception {
+    var vectors=read("contracts/search-writer/v1/fixtures/expectations.json").get("time_vectors");
+    for(var vector:vectors) {
+      boolean windows=vector.get("source").asString().equals("windows");
+      var row=(ObjectNode)read(".cache/integration/cases.json").get(windows?"windows":"auth").deepCopy();
+      var raw=(ObjectNode)row.get("raw");var evidence=(ObjectNode)raw.get("evidence");
+      String old=windows?"2026-11-12T12:00:00.123456789123Z":"2026-01-01T00:00:00Z";
+      String body=evidence.get("inline").asString().replace(old,vector.get("timestamp").asString());
+      evidence.put("inline",body);evidence.put("sha256",Json.sha(body.getBytes(StandardCharsets.UTF_8)));
+      var intents=outputs(List.of(row));
+      if(vector.has("source_disposition")) {
+        assertTrue(intents.stream().noneMatch(i->Set.of("tagged","detection","processing").contains(i.kind())));
+        assertTrue(intents.stream().anyMatch(i->i.kind().equals("preservation")&&i.document().at("/diagnostic/code").equals(vector.get("source_disposition"))));
+      } else {
+        var tag=intents.stream().filter(i->i.kind().equals("tagged")).findFirst().orElseThrow();
+        assertEquals(vector.get("timestamp"),tag.document().at("/event/@timestamp"));
+        var projected=project(tag,0).body();
+        assertEquals(vector.get("timestamp").asString(),projected.get("original_timestamp"));
+        assertEquals(vector.get("indexed").asBoolean(),projected.containsKey("@timestamp"));
+      }
+    }
   }
   static String topic(Machine.Intent i) {return switch(i.kind()) {case "tagged"->Projection.OUTPUT;case "detection"->Projection.DETECTIONS;default->Projection.PROCESSING;};}
   static Projection.Document project(Machine.Intent i,long offset) throws Exception {return new Projection(config()).project(topic(i),i.key().getBytes(StandardCharsets.UTF_8),Json.bytes(i.document()),new Projection.Location("cluster-a",topic(i)+"-id",topic(i),0,offset));}

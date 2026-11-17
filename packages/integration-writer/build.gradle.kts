@@ -37,3 +37,8 @@ tasks.shadowJar {
     from(rootProject.file("LICENSE")) { into("META-INF"); rename { "DetectBridge-LICENSE" } }
     from(rootProject.file("contracts/v1/NOTICE")) { into("META-INF"); rename { "ECS-NOTICE" } }
 }
+
+tasks.test {
+    inputs.dir(rootProject.file(".cache/integration"))
+    inputs.dir(rootProject.file("contracts/search-writer/v1/fixtures"))
+}

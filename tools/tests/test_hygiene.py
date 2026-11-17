@@ -126,6 +126,7 @@ class HygieneTests(unittest.TestCase):
                             "windows": "false",
                             "linux": "false",
                             "assembly": "false",
+                            "integration": "false",
                         },
                     },
                     "repository-hygiene": {"result": "success"},
@@ -138,6 +139,7 @@ class HygieneTests(unittest.TestCase):
                     "windows-verification": {"result": "skipped"},
                     "linux-verification": {"result": "skipped"},
                     "linux-assembly-verification": {"result": "skipped"},
+                    "integration-verification": {"result": "skipped"},
                 }
                 self.assertEqual(
                     gate_passes(needs), status == ("success" if applicable == "true" else "skipped")

@@ -314,6 +314,27 @@ def needs_assembly(paths):
     )
 
 
+def needs_integration(paths):
+    return (
+        needs_assembly(paths)
+        or needs_windows(paths)
+        or any(
+            p.startswith(
+                (
+                    "packages/integration-job/",
+                    "contracts/integration-runtime/",
+                    "contracts/integration/",
+                    "tools/integration",
+                    "tools/check_integration",
+                    "tools/tests/test_integration",
+                )
+            )
+            for p in paths
+            if not p.endswith(".md")
+        )
+    )
+
+
 if __name__ == "__main__":
     base = os.environ.get("CHANGE_BASE", "")
     head = os.environ.get("CHANGE_HEAD", "HEAD")
@@ -332,6 +353,7 @@ if __name__ == "__main__":
         output.write(f"stack={str(needs_stack([p for p in paths if p])).lower()}\n")
         output.write(f"transport={str(needs_transport([p for p in paths if p])).lower()}\n")
         output.write(f"writer={str(needs_writer([p for p in paths if p])).lower()}\n")
+        output.write(f"integration={str(needs_integration([p for p in paths if p])).lower()}\n")
         output.write(f"assembly={str(needs_assembly([p for p in paths if p])).lower()}\n")
         output.write(f"linux={str(needs_linux([p for p in paths if p])).lower()}\n")
         output.write(f"windows={str(needs_windows([p for p in paths if p])).lower()}\n")

@@ -205,6 +205,7 @@ def check():
     run(["uv", "run", "--locked", "python", "tools/check_windows.py"])
     run(["uv", "run", "--locked", "python", "tools/check_linux.py"])
     run(["uv", "run", "--locked", "python", "tools/check_assembly.py"])
+    run(["uv", "run", "--locked", "python", "tools/check_integration.py"])
     run(["uv", "run", "--locked", "python", "tools/dependency_inventory.py"])
     run(["uv", "run", "--locked", "python", "tools/check_repo.py"])
     run(["uv", "run", "--locked", "ruff", "check", "tools"])
@@ -235,6 +236,8 @@ def java():
             ":linux-adapters:test",
             ":linux-assembly-job:test",
             ":linux-assembly-job:shadowJar",
+            ":integration-job:test",
+            ":integration-job:shadowJar",
             ":linux-adapters:jar",
             ":linux-adapters:installDist",
         ]
@@ -303,6 +306,28 @@ def assembly():
             "tools/tests",
             "-p",
             "test_*assembly*.py",
+        ]
+    )
+
+
+def integration():
+    run(
+        [ROOT / "gradlew", "--console=plain", ":integration-job:test", ":integration-job:shadowJar"]
+    )
+    run(["uv", "run", "--locked", "python", "tools/check_integration.py", "--artifacts"])
+    run(
+        [
+            "uv",
+            "run",
+            "--locked",
+            "python",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "tools/tests",
+            "-p",
+            "test_integration*.py",
         ]
     )
 
@@ -418,6 +443,7 @@ def main():
             "windows",
             "linux",
             "assembly",
+            "integration",
             "verify",
         ],
     )

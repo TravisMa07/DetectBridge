@@ -1,0 +1,62 @@
+{
+  "rationale": "Compiler serializes rules by UUID: P11 a/b/c/d then P12 image/other/command/auth/probe. Original P11/P12 source fixtures; independent literal counts. Audit skipped membership is bits 2,4,5,8 (0x134).",
+  "windows": {
+    "matched": 1,
+    "unmatched": 2,
+    "inapplicable": 6,
+    "configuration_blocked": 0,
+    "quality_skipped": 0,
+    "evaluation_error": 0
+  },
+  "windows_skipped": {
+    "matched": 0,
+    "unmatched": 0,
+    "inapplicable": 6,
+    "configuration_blocked": 0,
+    "quality_skipped": 3,
+    "evaluation_error": 0
+  },
+  "windows_budget": {
+    "matched": 1,
+    "unmatched": 1,
+    "inapplicable": 6,
+    "configuration_blocked": 0,
+    "quality_skipped": 0,
+    "evaluation_error": 1
+  },
+  "audit": {
+    "matched": 1,
+    "unmatched": 3,
+    "inapplicable": 4,
+    "configuration_blocked": 1,
+    "quality_skipped": 0,
+    "evaluation_error": 0
+  },
+  "audit_skipped": {
+    "matched": 0,
+    "unmatched": 0,
+    "inapplicable": 4,
+    "configuration_blocked": 1,
+    "quality_skipped": 4,
+    "evaluation_error": 0
+  },
+  "auth": {
+    "matched": 1,
+    "unmatched": 0,
+    "inapplicable": 8,
+    "configuration_blocked": 0,
+    "quality_skipped": 0,
+    "evaluation_error": 0
+  },
+  "auth_negative": {
+    "matched": 0,
+    "unmatched": 1,
+    "inapplicable": 8,
+    "configuration_blocked": 0,
+    "quality_skipped": 0,
+    "evaluation_error": 0
+  },
+  "audit_blocked_bits": "0000000000000000000000040",
+  "audit_skipped_bits": "0000000000000000000000134",
+  "windows_error_bits": "0000000000000000000000008"
+}

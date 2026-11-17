@@ -1,0 +1,351 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:integration-runtime:1.0.0:runtime",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "1.0.0"
+    },
+    "project": {
+      "type": "string",
+      "pattern": "^detectbridge-p13-[a-z0-9-]+$"
+    },
+    "pipeline_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "bundle": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "bundle_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "jar_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "publisher_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "image": {
+          "type": "string",
+          "minLength": 1
+        },
+        "image_id": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "platform": {
+          "enum": [
+            "linux/arm64",
+            "linux/amd64"
+          ]
+        }
+      },
+      "required": [
+        "bundle_sha256",
+        "jar_sha256",
+        "publisher_sha256",
+        "image",
+        "image_id",
+        "platform"
+      ]
+    },
+    "broker": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cluster_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "topics": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "detectbridge.integration.input.v1": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "partitions": {
+                  "const": 1
+                },
+                "replicas": {
+                  "const": 1
+                },
+                "config": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "partitions",
+                "replicas",
+                "config"
+              ]
+            },
+            "detectbridge.tagged-events.v1": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "partitions": {
+                  "const": 1
+                },
+                "replicas": {
+                  "const": 1
+                },
+                "config": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "partitions",
+                "replicas",
+                "config"
+              ]
+            },
+            "detectbridge.detections.v1": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "partitions": {
+                  "const": 1
+                },
+                "replicas": {
+                  "const": 1
+                },
+                "config": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "partitions",
+                "replicas",
+                "config"
+              ]
+            },
+            "detectbridge.processing-diagnostics.v1": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "partitions": {
+                  "const": 1
+                },
+                "replicas": {
+                  "const": 1
+                },
+                "config": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "partitions",
+                "replicas",
+                "config"
+              ]
+            },
+            "detectbridge.integration.manifests.v1": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "partitions": {
+                  "const": 1
+                },
+                "replicas": {
+                  "const": 1
+                },
+                "config": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "partitions",
+                "replicas",
+                "config"
+              ]
+            },
+            "detectbridge.integration.preservation.v1": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "partitions": {
+                  "const": 1
+                },
+                "replicas": {
+                  "const": 1
+                },
+                "config": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "partitions",
+                "replicas",
+                "config"
+              ]
+            },
+            "detectbridge.integration.quarantine.v1": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "partitions": {
+                  "const": 1
+                },
+                "replicas": {
+                  "const": 1
+                },
+                "config": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "partitions",
+                "replicas",
+                "config"
+              ]
+            },
+            "detectbridge.integration.receipts.v1": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "partitions": {
+                  "const": 1
+                },
+                "replicas": {
+                  "const": 1
+                },
+                "config": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "partitions",
+                "replicas",
+                "config"
+              ]
+            }
+          },
+          "required": [
+            "detectbridge.integration.input.v1",
+            "detectbridge.tagged-events.v1",
+            "detectbridge.detections.v1",
+            "detectbridge.processing-diagnostics.v1",
+            "detectbridge.integration.manifests.v1",
+            "detectbridge.integration.preservation.v1",
+            "detectbridge.integration.quarantine.v1",
+            "detectbridge.integration.receipts.v1"
+          ]
+        }
+      },
+      "required": [
+        "cluster_id",
+        "topics"
+      ]
+    },
+    "consumer_group": {
+      "type": "string",
+      "minLength": 1
+    },
+    "normalized_contract": {
+      "const": "1.0.0"
+    },
+    "runtime": {
+      "const": "integration/1.0.0"
+    },
+    "limits_profile": {
+      "enum": [
+        "default",
+        "limits",
+        "bytes"
+      ]
+    },
+    "evidence_registry_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "evaluation_bundle_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  },
+  "required": [
+    "contract_version",
+    "project",
+    "pipeline_id",
+    "bundle",
+    "broker",
+    "consumer_group",
+    "normalized_contract",
+    "runtime",
+    "limits_profile",
+    "evidence_registry_sha256",
+    "evaluation_bundle_sha256"
+  ]
+}

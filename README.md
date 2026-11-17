@@ -7,8 +7,8 @@ replay.
 
 ## Current status
 
-**Local replay, checkpointed transport, and a synthetic detection slice implemented;
-production detection remains pending.**
+**Local replay, source adapters and bounded checkpointed evaluation are implemented;
+full source-to-search integration remains pending.**
 The transport validates replay envelopes and forwards unchanged bytes or quarantine
 references. P08 adds a local OpenSearch metadata writer; qualification status is
 recorded in the writer guide. P09 adds a bounded synthetic normalized-fixture
@@ -38,11 +38,13 @@ qualification, atomic audit replay and opt-in real audit/authentication checkpoi
 recovery and isolated replay. The [P12 acceptance map](docs/p12-acceptance.md)
 records completed bounded implementation, qualification, owner review and
 authorized integration separately from P13 requirements.
-Production detection, management API, UI and detection-to-OpenSearch integration
-remain pending. [P13a](docs/p13a-design.md) adds compact evaluation and attributed
-tagged/detection/diagnostic outputs through actual offline Windows/Linux consumers.
-[P13 acceptance](docs/p13-design.md) still requires production wiring and search;
-P13a does not complete the milestone. [Qualification status](docs/p13a-ledger.md).
+[P13a](docs/p13a-design.md) adds compact evaluation and attributed outputs through
+actual offline Windows/Linux consumers; owner-merged #46 and merged-main checks passed.
+[P13b](docs/p13b-design.md) adds an isolated Kafka/Flink deployment of those actual
+adapters, audit assembly and evaluation, with bounded checkpointed output intents.
+[Qualification status](docs/p13b-ledger.md) records exact checks, failures and limits.
+Management API, UI, P13c search and complete recorded source-to-search acceptance
+remain pending; these slices do not complete [P13](docs/p13-design.md).
 P06 provides local Kafka/Flink infrastructure and optional authenticated OpenSearch.
 Repository hygiene tooling and
 contributor templates were introduced in P01; P02 adds reproducible build tools,

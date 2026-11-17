@@ -211,7 +211,7 @@ AMD64 qualification and merged-main run 43873905332 passed.
 [P13 design notes](p13-design.md) propose integration under A02–A07
 and the explicit ADR 0008 projection compatibility review. Older public Windows
 bindings remain unresolved; the new controlled-source owner acceptance is recorded
-below. Production P13 integration remains unimplemented.
+below. The subsequent P13a/P13b implementation boundaries are recorded below.
 
 P11 controlled Windows source qualification adds a separately cataloged local
 capture with actual registry/VM/boot provenance, encrypted acquisition and frozen
@@ -227,3 +227,12 @@ identities and deterministic pinned enrichment. Actual Windows/Linux offline
 runners consume it explicitly; legacy result contracts/deployments remain compatible.
 See [owning decisions](p13a-design.md) and [qualification](p13a-ledger.md).
 This does not implement P13b production recovery/wiring or P13c search projections.
+
+P13b adds an isolated Kafka/Flink deployment of the actual adapters, prepared audit
+assembler and compact evaluation before atomic intent commit. Its versioned
+state/topics/group and artifact/plan/destination/evidence bindings reject old
+checkpoint adoption. [Design](p13b-design.md) retains A02–A07 checkpoint-prefix
+release, immutable memberships/late links and bounded visible backlog; an explicit
+1.1.0 runtime output profile preserves P13a offline 1.0.0 contracts. Existing P12
+implementation/deployment is unchanged. [Qualification](p13b-ledger.md) separates
+actual runtime failures/recovery from component checks; search remains P13c.

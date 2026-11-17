@@ -12,7 +12,7 @@ dependencies {
 }
 application { mainClass.set("io.detectbridge.detection.Evaluate") }
 tasks.test { useJUnitPlatform(); systemProperty("repository.root", rootProject.projectDir) }
-sourceSets.main { resources { srcDir(rootProject.file("contracts")); include("detection/v1/*.schema.json", "detection/v2/*.schema.json", "integration/v1/*.schema.json") } }
+sourceSets.main { resources { srcDir(rootProject.file("contracts")); include("detection/v1/*.schema.json", "detection/v2/*.schema.json", "integration/v1/*.schema.json", "integration/v1.1/*.schema.json") } }
 tasks.shadowJar {
     archiveFileName.set("evaluator.jar")
     duplicatesStrategy = DuplicatesStrategy.INCLUDE

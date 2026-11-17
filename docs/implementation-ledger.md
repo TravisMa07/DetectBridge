@@ -1,4 +1,4 @@
-# P10–P12 implementation ledger
+# P10–P13 implementation ledger
 
 The owner instructed implementation after reviewing the
 [consolidated plan](p10-p12-plan.md), and selected a reviewed OpenSSH recording for
@@ -10,12 +10,12 @@ and integration history is recorded below.
 | --- | --- | --- | --- | --- |
 | P10a | Main orchestrator | `4d7d685`; `feat/p10-mapping-contracts`; `/Users/travisma/GitHub_Projects/DetectBridge-p10a` | P04/P09 merged | Merged in [PR #36](https://github.com/TravisMa07/DetectBridge/pull/36) as `b45fba4`; semantic acceptance remains separately pending |
 | P10b | Main orchestrator | `b45fba4`; `feat/p10-source-selection`; `/Users/travisma/GitHub_Projects/DetectBridge-p10b` | P10a merged; merged-main checks recorded separately | Merged in [PR #37](https://github.com/TravisMa07/DetectBridge/pull/37) as `df31448`; merged-main checks passed; owner authorized P11/P12 |
-| P11 | Windows child; orchestrator integration | `df31448`; `feat/p11-windows-adapters`; `/Users/travisma/.t3/worktrees/DetectBridge/t3-689cf405-5fa25cc439f21f05` | P10 merged; owner authorized dependent work | Merged in #38 as `46fb080`; recorded trusted host bindings and owner acceptance remain blocked |
-| P11 completion | Main orchestrator | `c024497` + `641923a`; `feat/p11-controlled-windows-recording` | P11 #38 merged; owner requested blocker implementation | New real controlled Windows identity/capture evidence and two ARM64 offline runs passed; owner accepted bounded semantics; final-head CI and separately authorized integration pending |
+| P11 | Windows child; orchestrator integration | `df31448`; `feat/p11-windows-adapters`; `/Users/travisma/.t3/worktrees/DetectBridge/t3-689cf405-5fa25cc439f21f05` | P10 merged; owner authorized dependent work | Merged in #38 as `46fb080`; bounded recorded completion and owner acceptance completed by #45 |
+| P11 completion | Main orchestrator | `c024497` + `641923a`; `feat/p11-controlled-windows-recording` | P11 #38 merged; owner requested blocker implementation | Owner accepted bounded semantics and merged #45 as `4ac31fa`; exact-head and merged-main CI passed; two recorded ARM64 offline runs retained |
 | P12a | Linux child | `df31448`; isolated P12a worktree; merged branch | P10 merged; owner authorized dependent work | Merged in #39 as `9ea1c68`; reviewed local OpenSSH9 slice passed; later audit provenance and owner review completed by P12c #43 |
 | P12b | Main orchestrator | `9ea1c68`; `feat/p12b-linux-qualification` | P12a merged | Merged in #42 as `e2d06c3`; final ARM64/AMD64 and merged-main qualification passed |
 | P12c | Main orchestrator | `e2d06c3`; `feat/p12c-recorded-source-evidence` | P12b merged + reviewed local auth originals | Merged #43 as `c024497`; ARM64 recorded/recovery and final-head AMD64 attempt 2 passed; owner semantic/completeness review recorded in #43; merged-main CI passed |
-| P13 | Main orchestrator | `c024497`; `docs/p13-prerequisites-design` | P08 + complete P11/P12 | [Design/acceptance plan](p13-design.md); runtime blocked on P11 completion qualification and separately authorized integration; P12 merged-main CI passed |
+| P13 | Main orchestrator | `e09c271`; `feat/p13-integrated-runtime` | P08/P11/P12 bounded prerequisites complete; P13a #46 merged | [Design/acceptance plan](p13-design.md); P13b implementation/qualification in #47; P13c search/full milestone and owner merge remain separate |
 
 Shared ownership: orchestrator owns contracts/readers, Gradle registration,
 root locks/inventories, CI/gates, dev commands and status docs. P10 owns generic
@@ -229,3 +229,15 @@ offline producers/verification consumers. Legacy result APIs remain compatible.
 [P13a ledger](p13a-ledger.md) records actual checks and limits. Production P13b
 wiring, P13c search, complete source-to-search/recovery qualification, owner review,
 merge and release remain separate. No checkpoint or P08 index is adopted/changed.
+
+## P13b integrated runtime
+
+P13a #46 is owner-merged as e09c271; exact PR-head and merged-main 43954609201
+passed every applicable job. The [P13b design](p13b-design.md) and literal counts
+were committed before implementation. The isolated Kafka/Flink job uses actual
+Windows/Linux adapters, P12 prepared transitions and compact attributed evaluation
+before committing bounded output intents. New topics/groups/checkpoint bindings
+and the explicit runtime output profile preserve existing P07–P12 deployments.
+[Qualification](p13b-ledger.md) records actual source, restart, producer rejection,
+checkpoint and replay evidence, failures and exact artifacts. P13c search/full P13
+recorded source-to-search acceptance, owner merge and release remain separate.

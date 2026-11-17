@@ -4,6 +4,7 @@ import json
 import os
 
 CONDITIONAL = {
+    "integration-verification": "integration",
     "detection-verification": "detection",
     "windows-verification": "windows",
     "linux-verification": "linux",

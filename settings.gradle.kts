@@ -1,3 +1,15 @@
+// Keep the verified marker on the Portal; resolve its libraries directly from Central.
+pluginManagement {
+    repositories {
+        mavenCentral {
+            content { excludeModule("com.gradleup.shadow", "com.gradleup.shadow.gradle.plugin") }
+        }
+        gradlePluginPortal {
+            content { includeModule("com.gradleup.shadow", "com.gradleup.shadow.gradle.plugin") }
+        }
+    }
+}
+
 rootProject.name = "detectbridge"
 include("transport-contracts", "transport-publisher", "transport-job")
 project(":transport-contracts").projectDir = file("packages/transport-contracts")

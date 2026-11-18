@@ -20,6 +20,10 @@ Bootstrap downloads checksum-verified Node and Temurin JDK archives into `.cache
 installs project-local npm, syncs locked Python/npm dependencies and hygiene tools,
 and populates Gradle caches. It does not replace system tools. Older bootstrap
 Python delegates through uv to pinned Python 3.12.12. Downloads require network access.
+Gradle setup retries explicit dependency HTTP 429/502/503/504 failures at most
+three times, retaining every attempt under `.cache/bootstrap/gradle-help-*`.
+Missing coordinates, integrity/compiler errors and runtime checks still fail.
+See [bootstrap recovery and evidence](ci-bootstrap-recovery.md).
 
 `doctor` reports effective versions and pin drift; `check` runs repository hygiene,
 Ruff lint/format checks, mypy, offline contracts/catalog checks and Python regressions.

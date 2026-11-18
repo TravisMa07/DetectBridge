@@ -6,11 +6,13 @@ import io
 import json
 import os
 import platform
+import re
 import shutil
 import subprocess
 import sys
 import tarfile
 import tempfile
+import time
 import urllib.request
 from pathlib import Path
 
@@ -190,9 +192,61 @@ def bootstrap():
     run(npm("ci", "--ignore-scripts"))
     run(["uv", "run", "--locked", "python", "tools/install_hygiene.py"])
     doctor()
-    run([ROOT / "gradlew", "--console=plain", "help"])
+    bootstrap_gradle()
     # Populate built-in Java plugin caches; verification subsequently runs offline.
     smoke()
+
+
+def transient_dependency_failure(output):
+    if any(
+        marker in output
+        for marker in (
+            "Dependency verification failed",
+            "Script compilation error",
+            "Compilation failed",
+            "Could not find ",
+        )
+    ):
+        return False
+    return "Could not resolve" in output and bool(
+        re.search(
+            r"Could not (?:GET|HEAD) 'https://(?:repo\.maven\.apache\.org/maven2|"
+            r"plugins\.gradle\.org/m2)/[^'\s]+'\.?\s*\n"
+            r"[^\r\n]*Received status code (?:429|502|503|504)\b",
+            output,
+        )
+    )
+
+
+def bootstrap_gradle():
+    """Retry only explicit transient dependency HTTP errors during Gradle setup."""
+    parent = ROOT / ".cache/bootstrap"
+    parent.mkdir(parents=True, exist_ok=True)
+    logs = Path(tempfile.mkdtemp(prefix="gradle-help-", dir=parent))
+    args = [str(ROOT / "gradlew"), "--console=plain", "help"]
+    stagger = (
+        int(hashlib.sha256(os.environ.get("GITHUB_JOB", "local").encode()).hexdigest(), 16) % 7
+    )
+    for attempt in range(1, 4):
+        result = run(args, capture=True, check=False)
+        output = result.stdout + result.stderr
+        (logs / f"attempt-{attempt}.log").write_text(
+            "STDOUT\n" + result.stdout + "\nSTDERR\n" + result.stderr
+        )
+        print(result.stdout, end="", flush=True)
+        print(result.stderr, end="", file=sys.stderr, flush=True)
+        if result.returncode == 0:
+            return
+        if attempt == 3 or not transient_dependency_failure(output):
+            raise subprocess.CalledProcessError(
+                result.returncode, args, output=result.stdout, stderr=result.stderr
+            )
+        delay = (5 if attempt == 1 else 15) + stagger
+        print(
+            f"Gradle bootstrap dependency retry: attempt={attempt + 1} delay_seconds={delay}",
+            flush=True,
+        )
+        time.sleep(delay)
 
 
 def historical():

@@ -1,0 +1,10 @@
+{
+  "origin": "Original synthetic DetectBridge vector, Apache-2.0; system shasum before implementation.",
+  "preimage": [
+    "detectbridge.historical.unit/1",
+    "00000000-0000-4000-8000-000000000001",
+    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "unit-1"
+  ],
+  "id": "sha256:510d842d9881379f27f63a9b0f6b1832a5614cc9a2aa3cedcea654d32eae5e66"
+}

@@ -1,0 +1,310 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:historical-replay:1.0.0:selection",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": "1.0.0"
+    },
+    "mode": {
+      "const": "historical"
+    },
+    "profile": {
+      "const": "p13-runtime-51a984de/1.0.0"
+    },
+    "archive_binding_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "request": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": "1.0.0"
+        },
+        "mode": {
+          "const": "historical"
+        },
+        "original_run_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "producer_sha256": {
+          "const": "51a984dedc04af7b368fea63a9cec88d2127c6ddf5aa019352f491a3481bad6d"
+        },
+        "plan_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "units": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-zA-Z0-9_-]{1,64}$"
+              },
+              "kind": {
+                "enum": [
+                  "windows",
+                  "authentication",
+                  "audit",
+                  "audit_preservation"
+                ]
+              },
+              "inputs": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "topic": {
+                      "enum": [
+                        "detectbridge.integration.input.v1",
+                        "detectbridge.tagged-events.v1",
+                        "detectbridge.detections.v1",
+                        "detectbridge.processing-diagnostics.v1",
+                        "detectbridge.integration.manifests.v1",
+                        "detectbridge.integration.preservation.v1"
+                      ]
+                    },
+                    "offset": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9223372036854775807
+                    },
+                    "value_sha256": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{64}$"
+                    }
+                  },
+                  "required": [
+                    "topic",
+                    "offset",
+                    "value_sha256"
+                  ],
+                  "additionalProperties": false
+                },
+                "maxItems": 256,
+                "minItems": 1
+              },
+              "outputs": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "topic": {
+                      "enum": [
+                        "detectbridge.integration.input.v1",
+                        "detectbridge.tagged-events.v1",
+                        "detectbridge.detections.v1",
+                        "detectbridge.processing-diagnostics.v1",
+                        "detectbridge.integration.manifests.v1",
+                        "detectbridge.integration.preservation.v1"
+                      ]
+                    },
+                    "offset": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9223372036854775807
+                    },
+                    "value_sha256": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{64}$"
+                    }
+                  },
+                  "required": [
+                    "topic",
+                    "offset",
+                    "value_sha256"
+                  ],
+                  "additionalProperties": false
+                },
+                "maxItems": 106,
+                "minItems": 1
+              },
+              "anchor": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "topic": {
+                        "enum": [
+                          "detectbridge.integration.input.v1",
+                          "detectbridge.tagged-events.v1",
+                          "detectbridge.detections.v1",
+                          "detectbridge.processing-diagnostics.v1",
+                          "detectbridge.integration.manifests.v1",
+                          "detectbridge.integration.preservation.v1"
+                        ]
+                      },
+                      "offset": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9223372036854775807
+                      },
+                      "value_sha256": {
+                        "type": "string",
+                        "pattern": "^[0-9a-f]{64}$"
+                      }
+                    },
+                    "required": [
+                      "topic",
+                      "offset",
+                      "value_sha256"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "control": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "topic": {
+                        "enum": [
+                          "detectbridge.integration.input.v1",
+                          "detectbridge.tagged-events.v1",
+                          "detectbridge.detections.v1",
+                          "detectbridge.processing-diagnostics.v1",
+                          "detectbridge.integration.manifests.v1",
+                          "detectbridge.integration.preservation.v1"
+                        ]
+                      },
+                      "offset": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9223372036854775807
+                      },
+                      "value_sha256": {
+                        "type": "string",
+                        "pattern": "^[0-9a-f]{64}$"
+                      }
+                    },
+                    "required": [
+                      "topic",
+                      "offset",
+                      "value_sha256"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "kind",
+              "inputs",
+              "outputs",
+              "anchor",
+              "control"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 128,
+          "minItems": 1
+        }
+      },
+      "required": [
+        "version",
+        "mode",
+        "original_run_id",
+        "producer_sha256",
+        "plan_sha256",
+        "units"
+      ],
+      "additionalProperties": false
+    },
+    "executor_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "reader_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "image": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[a-zA-Z0-9._/:-]+@sha256:[0-9a-f]{64}$"
+    },
+    "references": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "reference": {
+            "type": "object",
+            "properties": {
+              "topic": {
+                "enum": [
+                  "detectbridge.integration.input.v1",
+                  "detectbridge.tagged-events.v1",
+                  "detectbridge.detections.v1",
+                  "detectbridge.processing-diagnostics.v1",
+                  "detectbridge.integration.manifests.v1",
+                  "detectbridge.integration.preservation.v1"
+                ]
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9223372036854775807
+              },
+              "value_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            },
+            "required": [
+              "topic",
+              "offset",
+              "value_sha256"
+            ],
+            "additionalProperties": false
+          },
+          "wire_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "required": [
+          "reference",
+          "wire_sha256"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 1000,
+      "minItems": 1
+    },
+    "objects": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      },
+      "maxItems": 128
+    }
+  },
+  "required": [
+    "version",
+    "mode",
+    "profile",
+    "archive_binding_sha256",
+    "request",
+    "executor_sha256",
+    "reader_sha256",
+    "image",
+    "references",
+    "objects"
+  ],
+  "additionalProperties": false
+}

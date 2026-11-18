@@ -247,12 +247,15 @@ is recorded in the acceptance map; P13 acceptance is not implied.
 
 ### P14 — Archive and historical/current replay
 
-- Readiness: P05 and [P13 acceptance](p13-acceptance.md) complete; P14a work is
-  in progress on its owning branch.
+- Readiness: P05 and [P13 acceptance](p13-acceptance.md) complete; the owner merged
+  P14a #50 as cd6f46e. Merged-main qualification remains open after a toolchain
+  dependency-download HTTP 429; no PR-head pass transfers to the merge.
   The [owning proposal](p14-design.md), [independent matrix](p14-expectations.md)
   and [ledger](p14-ledger.md) scope P14a–c. P14a schema/vector freeze e9b6143
   precedes local archive implementation on `feat/p14a-durable-archive`; qualification
-  and owner/merge gates remain separate. P14b/c replay and P05 import are pending;
+  and owner/merge gates remain separate. [P14b design/expectations](p14b-design.md)
+  prepare historical replay; implementation waits for qualified P14a main.
+  P14b/c replay and P05 import are pending;
   no complete P14 acceptance is claimed.
 - Depends on: P05, P13.
 - Deliver: durable archive segments/manifests, pinned artifacts, historical

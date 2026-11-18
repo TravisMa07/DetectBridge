@@ -124,6 +124,12 @@ progress.json                        advisory, rebuilt from committed segments
 .partial-<random>/                    unpublished owned transactions
 ```
 
+P14b's [owning freeze](p14b-design.md) refines the provisional `pins/` placement
+to a separate explicit replay catalog. Existing P14a roots reject unknown entries;
+adding pins inside them would prevent their exact pinned writer from resuming.
+P14c deletion must require and coordinate that catalog rather than infer no holds
+from an absent in-root pin directory. No deletion exists yet.
+
 Each object stream contains ordered contiguous base64 chunks (up to 1 MiB decoded
 per chunk) with zero-based byte offsets. Decoding concatenates exactly to the
 original object. Each segment stream contains bounded UTF-8 JSON rows, one LF per

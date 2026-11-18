@@ -55,8 +55,11 @@ issue #13 is closed. Private recorded AMD64 qualification remains unavailable
 within those accepted limits. P14 prerequisites are met; its local
 [design](docs/p14-design.md) and [expectations](docs/p14-expectations.md)
 precede implementation. [P14a local archive](docs/archive.md) implements exact-byte
-storage and independent Kafka offset recovery on its feature branch; qualification
-and acceptance are tracked [separately](docs/p14-ledger.md). Historical/current-policy
+storage and independent Kafka offset recovery, owner-merged in #50 as `cd6f46e`;
+actual merged-main qualification is still open after a dependency-download HTTP 429.
+The [P14b design draft](docs/p14b-design.md) prepares pinned historical replay; its
+implementation waits for that prerequisite. Qualification and acceptance are
+tracked [separately](docs/p14-ledger.md). Historical/current-policy
 archive replay, management API and UI remain pending.
 P06 provides local Kafka/Flink infrastructure and optional authenticated OpenSearch.
 Repository hygiene tooling and

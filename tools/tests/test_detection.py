@@ -158,6 +158,12 @@ class DetectionGateTests(unittest.TestCase):
         ):
             self.assertTrue(needs_detection([path]), path)
         self.assertFalse(needs_detection(["docs/detection.md"]))
+        workflow = json.loads((ROOT / ".github/workflows/hygiene.yml").read_text())
+        artifact = workflow["jobs"]["detection-verification"]["steps"][-1]
+        self.assertEqual("${{ failure() }}", artifact["if"])
+        self.assertIn("checkpoint.json", artifact["with"]["path"])
+        self.assertNotIn("inputs", artifact["with"]["path"])
+
         for applicable in ("true", "false"):
             needs: dict[str, Any] = {
                 "classify-changes": {
@@ -175,6 +181,131 @@ class DetectionGateTests(unittest.TestCase):
                 self.assertEqual(
                     gate_passes(needs), result == ("success" if applicable == "true" else "skipped")
                 )
+
+
+class DetectionQualificationRetentionTests(unittest.TestCase):
+    def test_both_modes_restore_checkpoint_selected_after_cancellation(self):
+        from types import SimpleNamespace
+        from unittest.mock import patch
+
+        import detection
+        from transport import Transport
+
+        class Lifecycle:
+            retained_checkpoint = Transport.retained_checkpoint
+
+            def __init__(self, project, mapped):
+                self.project, self.mapped = project, mapped
+                self.input = "synthetic-input"
+                self.folder = Path(directory)
+                self.running, self.current, self.offset = False, 0, 0
+                self.files = set()
+                self.job = dict(job_id="0" * 32)
+                self.retained = []
+                self.stack = SimpleNamespace(
+                    folder=self.folder,
+                    compose=lambda *a, **kw: None,
+                    down=self.down,
+                    up=lambda *a: None,
+                    exec=self.metadata,
+                    containers=lambda: [],
+                )
+
+            def init(self):
+                pass
+
+            def config(self):
+                return dict(bundle=dict(bundle_sha256="b" * 64), consumer_group="test")
+
+            def latest_job(self):
+                return self.job
+
+            def checkpoint(self):
+                return dict(
+                    id=self.current,
+                    status="COMPLETED",
+                    external_path=f"file:/state/checkpoints/{self.job['job_id']}/chk-{self.current}",
+                )
+
+            def wait_checkpoint(self, job):
+                self.current += 1
+                self.files = {self.current}
+                return self.checkpoint()
+
+            def wait_quarantine_retry_limit(self, job):
+                self.running = False
+                return self.wait_checkpoint(job)
+
+            def stop(self):
+                self.current += 10
+                self.files = {self.current}
+                self.running = False
+                self.retained.append(self.current)
+
+            def rest(self, path):
+                return (
+                    dict(latest=dict(completed=self.checkpoint()))
+                    if path.endswith("/checkpoints")
+                    else dict(state="RUNNING" if self.running else "CANCELED")
+                )
+
+            def metadata(self, service, command, flag, path):
+                if int(path.split("chk-")[1].split("/")[0]) not in self.files:
+                    raise detection.StackError("checkpoint_metadata_missing")
+
+            def start(self, restore=None):
+                if restore:
+                    self.metadata("jobmanager", "test", "-s", restore + "/_metadata")
+                self.job = dict(job_id=f"{self.current + 1:032x}")
+                self.running = True
+                return self.job
+
+            def down(self):
+                # A running job can retire the selected file during slow shutdown.
+                if self.running:
+                    self.files.clear()
+                self.running = False
+
+            def accounted(self, *args):
+                return [dict(run_id=str(i)) for i in range(7 if self.mapped else 2)]
+
+            def inject_event(self, *args):
+                self.offset += 1
+                return dict(offset=self.offset)
+
+            def wait_input_checkpoint(self, *args):
+                pass
+
+            def process_args(self, *args):
+                return args
+
+            def helper_run(self, *args, **kwargs):
+                return SimpleNamespace(stdout=json.dumps(dict(offset=100)))
+
+            def private_read(self, *args, **kwargs):
+                return SimpleNamespace(stdout=json.dumps(dict(offset=0)))
+
+            def metrics(self):
+                return dict(value="detectbridge_detection")
+
+        with tempfile.TemporaryDirectory() as directory:
+            instances = []
+
+            def factory(project, mapped):
+                instance = Lifecycle(project, mapped)
+                instances.append(instance)
+                return instance
+
+            for mapped in (False, True):
+                with (
+                    patch.object(detection, "Detection", side_effect=factory),
+                    patch.object(detection, "run"),
+                    patch.object(detection, "save"),
+                    patch.object(detection, "qualify_incompatible_restore"),
+                ):
+                    result = detection.qualify(mapped=mapped)
+                    self.assertEqual("qualified", result["status"])
+                    self.assertTrue(instances[-1].retained)
 
 
 if __name__ == "__main__":

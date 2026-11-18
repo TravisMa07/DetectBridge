@@ -109,6 +109,7 @@ class StackTests(unittest.TestCase):
                             "assembly": "false",
                             "integration": "false",
                             "search": "false",
+                            "archive": "false",
                         },
                     },
                     "repository-hygiene": {"result": "success"},
@@ -124,6 +125,7 @@ class StackTests(unittest.TestCase):
                     "linux-assembly-verification": {"result": "skipped"},
                     "integration-verification": {"result": "skipped"},
                     "search-verification": {"result": "skipped"},
+                    "archive-verification": {"result": "skipped"},
                     "local-stack-verification": {
                         "result": "success" if selected == "true" else "skipped"
                     },

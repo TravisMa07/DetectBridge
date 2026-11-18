@@ -252,7 +252,10 @@ existing P13 deployment and writer, with a separately pinned qualification plan.
 It reuses accepted source/host/boot and independent source assertions, and corrects
 qualification checkpoint selection/probe attribution without changing persisted
 runtime semantics. See [design](p13d-design.md) and [acceptance map](p13-acceptance.md).
-P14 archive implementation remains pending; P13 completion requires every gate.
+P14 archive implementation remains pending. P13 completed its bounded owner
+acceptance, owner merge #49 and actual merged-main qualification on 07e5382;
+[P14 design](p14-design.md) proposes routine archive/replay choices under A02–A07.
+No new archive contract or architectural change is accepted by that proposal.
 
 The pinned Kafka writer compatibility guard is scoped to P13's existing
 at-least-once sink. It preserves first-error propagation and stock resource
@@ -261,3 +264,10 @@ to an already propagated failure. JVM/resource-cleanup failures remain fatal.
 The [owning decision](p13d-design.md) records the private-API pin, deterministic
 regressions and mandatory fresh-artifact recovery qualification. No upstream class
 is replaced and no persisted contract or writer commit policy changes.
+
+P14a refines A02/A06/A07 with a separate local archive consumer, compressed NDJSON
+object/segment backend and immutable binding/offset recovery under a distinct
+root/group. [Owning freeze](p14a-design.md) e9b6143 precedes implementation;
+[qualification and limits](p14-ledger.md) remain separate. Original P03/P05/P12/P13
+contracts, producers and derived-search roles stay compatible. This is not P14b/c
+historical/current execution, P05 archive import, automatic retention or HA.

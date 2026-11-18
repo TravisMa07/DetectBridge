@@ -26,7 +26,8 @@ P03 contracts, at-least-once delivery and the accepted architecture stay unchang
 
 P12 issue #12 is closed after the P13d audit, with bounded acceptance and exact
 CI evidence recorded in its body. P11 issue #11 is likewise closed after accepted
-controlled-source completion #45. Full [P13 acceptance](p13-acceptance.md) remains open.
+controlled-source completion #45. Bounded [P13 acceptance](p13-acceptance.md) subsequently completed with owner
+merge #49 and actual merged-main 44206958555 on 07e5382.
 
 Accepted P11 controlled recordings now supply trusted Windows bindings. Older
 public Windows recordings retain unavailable bindings and are not repaired by P12.

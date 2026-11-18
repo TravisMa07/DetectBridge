@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:archive:1.0.0:object",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": "1.0.0"
+    },
+    "codec": {
+      "const": "gzip-ndjson/1.0.0"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "length": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9223372036854775807
+    },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "compressed_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "compressed_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "uncompressed_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "uncompressed_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "rows": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        }
+      },
+      "required": [
+        "compressed_sha256",
+        "compressed_bytes",
+        "uncompressed_sha256",
+        "uncompressed_bytes",
+        "rows"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "version",
+    "codec",
+    "sha256",
+    "length",
+    "payload"
+  ],
+  "additionalProperties": false
+}

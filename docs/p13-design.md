@@ -1,15 +1,12 @@
 # P13 bounded design and acceptance plan
 
-Status: P13a compact/offline outputs are owner-merged in #46 as e09c271, with
-exact-head and merged-main 43954609201 qualification passed. [P13b](p13b-design.md)
-is owner-merged in #47 as 500ffc7 with exact-head native qualification passed;
-[its ledger](p13b-ledger.md) records actual checks and remaining review gates.
-[P13c search](p13c-design.md) is owner-merged in #48 as 0f6d758. Exact-head
-qualification passed; merged-main integration failed. [P13d](p13d-design.md) owns
-original-recording qualification and the [remaining acceptance map](p13-acceptance.md).
-ARM64 original-recording source-to-search and implementation-head native AMD64
-qualification passed; final-head checks and owner/merged-commit gates remain. P13 is not Done and P14
-is not ready. Historical P13a evidence remains in the [P13a ledger](p13a-ledger.md).
+Status (2026-11-18 UTC): P13 is Done within owner-accepted bounded scope.
+P13a–c and P13d #49 are owner-merged; final head 8581887 and actual merge 07e5382
+passed every applicable check in 44202078968 and 44206958555 respectively.
+The [acceptance map](p13-acceptance.md) records explicit owner acceptance, exact
+artifacts, historical failures and limits, including unavailable private recorded
+AMD64 qualification. Issue #13 is closed; P14 is Ready for design/freeze.
+The earlier planning/review checkpoints below remain historical.
 P08/P11/P12 prerequisites are complete within their owner-accepted bounded scope.
 This plan preserves A02–A07 and ADR 0008. Concrete P13a contracts, numerical bounds
 and identity preimages are in [owning notes](p13a-design.md).

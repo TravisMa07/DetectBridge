@@ -84,7 +84,8 @@
         "linux": "${{ steps.paths.outputs.linux }}",
         "assembly": "${{ steps.paths.outputs.assembly }}",
         "integration": "${{ steps.paths.outputs.integration }}",
-        "search": "${{ steps.paths.outputs.search }}"
+        "search": "${{ steps.paths.outputs.search }}",
+        "archive": "${{ steps.paths.outputs.archive }}"
       }
     },
     "repository-hygiene": {
@@ -206,7 +207,8 @@
         "linux-verification",
         "linux-assembly-verification",
         "integration-verification",
-        "search-verification"
+        "search-verification",
+        "archive-verification"
       ]
     },
     "dataset-acquisition": {
@@ -377,6 +379,18 @@
         {
           "name": "Qualify independent detection semantics and recovery",
           "run": "uv run --locked python tools/detection.py build\nuv run --locked python tools/check_detection.py --java\nuv run --locked python tools/detection.py verify\nuv run --locked python tools/detection.py --mapped build\nuv run --locked python tools/detection.py --mapped verify"
+        },
+        {
+          "name": "Retain synthetic detection recovery diagnostics",
+          "if": "${{ failure() }}",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "detection-recovery-failure-diagnostics",
+            "path": ".cache/detection-reports/*.json\n.cache/detection-v2-reports/*.json\n.cache/detection-runtime/*/checkpoint.json\n.cache/detection-v2-runtime/*/checkpoint.json\n.cache/detection-runtime/*/jobs.json\n.cache/detection-v2-runtime/*/jobs.json",
+            "include-hidden-files": true,
+            "if-no-files-found": "warn",
+            "retention-days": 7
+          }
         }
       ]
     },
@@ -636,6 +650,48 @@
           "with": {
             "name": "p13-search-failure-diagnostics",
             "path": ".cache/search-writer-reports/*.json",
+            "include-hidden-files": true,
+            "if-no-files-found": "warn",
+            "retention-days": 7
+          }
+        }
+      ]
+    },
+    "archive-verification": {
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 25,
+      "needs": [
+        "classify-changes"
+      ],
+      "if": "${{ needs.classify-changes.outputs.archive == 'true' }}",
+      "steps": [
+        {
+          "uses": "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "with": {
+            "persist-credentials": false
+          }
+        },
+        {
+          "uses": "actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0",
+          "with": {
+            "python-version": "3.12.12"
+          }
+        },
+        {
+          "name": "Install pinned development tools",
+          "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
+        },
+        {
+          "name": "Qualify durable archive, exact originals and Kafka offset recovery",
+          "run": "uv run --locked python tools/dev.py archive\nuv run --locked python tools/archive.py build\nuv run --locked python tools/archive.py verify"
+        },
+        {
+          "name": "Retain synthetic archive failure diagnostics",
+          "if": "${{ failure() }}",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "p14-archive-failure-diagnostics",
+            "path": ".cache/archive-reports/*.json\n.cache/archive/detectbridge-p14-test-*/helper-failure-*.json\n.cache/archive/detectbridge-p14-test-*/tooling.json\n.cache/archive/detectbridge-p14-test-*/archive/archive.json",
             "include-hidden-files": true,
             "if-no-files-found": "warn",
             "retention-days": 7

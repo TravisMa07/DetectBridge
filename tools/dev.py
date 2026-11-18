@@ -165,6 +165,7 @@ def doctor():
     expect_version("TypeScript", output.split()[1], PINS["typescript"])
     print(output.strip())
     consistency()
+    run(["uv", "run", "--locked", "python", "tools/check_archive.py"])
     run(["uv", "run", "--locked", "python", "tools/check_detection.py"])
 
 
@@ -193,8 +194,38 @@ def bootstrap():
     smoke()
 
 
+def archive():
+    run(
+        [
+            ROOT / "gradlew",
+            "--console=plain",
+            ":archive-writer:test",
+            ":archive-writer:shadowJar",
+            ":archive-writer:qualificationJar",
+        ]
+    )
+    run(["uv", "run", "--locked", "python", "tools/check_archive.py", "--artifacts"])
+    run(
+        [
+            "uv",
+            "run",
+            "--locked",
+            "python",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "tools/tests",
+            "-p",
+            "test_archive*.py",
+            "-v",
+        ]
+    )
+
+
 def check():
     consistency()
+    run(["uv", "run", "--locked", "python", "tools/check_archive.py"])
     run(["uv", "run", "--locked", "python", "tools/check_detection.py"])
     run(["uv", "run", "--locked", "python", "tools/check_datasets.py"])
     run(["uv", "run", "--locked", "python", "tools/check_contracts.py"])
@@ -224,6 +255,8 @@ def java():
         [
             ROOT / "gradlew",
             "--console=plain",
+            ":archive-writer:test",
+            ":archive-writer:shadowJar",
             ":transport-contracts:test",
             ":detection-evaluator:test",
             ":detection-evaluator:shadowJar",
@@ -475,6 +508,7 @@ def main():
             "assembly",
             "integration",
             "search",
+            "archive",
             "verify",
         ],
     )

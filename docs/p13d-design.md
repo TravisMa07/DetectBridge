@@ -1,5 +1,11 @@
 # P13d recorded acceptance and recovery qualification
 
+Current completion: P13 bounded owner acceptance, owner merge #49 as 07e5382
+and actual merged-main success 44206958555 are complete on 2026-11-18 UTC.
+See the [acceptance map](p13-acceptance.md). Pending/open/blocked language below
+records the original freeze and subsequent pre-merge checkpoints. P14 is Ready
+for its own design and freeze; no P14 implementation is implied.
+
 Current implementation/evidence is in the [P13d ledger](p13d-ledger.md) and
 [acceptance map](p13-acceptance.md). The original freeze below retains its
 pre-implementation checkpoint; subsequent bounded corrections are recorded as

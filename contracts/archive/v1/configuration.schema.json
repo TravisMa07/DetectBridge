@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:archive:1.0.0:configuration",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": "1.0.0"
+    },
+    "archive_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "cluster": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "bootstrap": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "group": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "implementation_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "limits": {
+      "type": "object",
+      "properties": {
+        "archive_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483648
+        },
+        "reserve_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 134217728
+        },
+        "object_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 33554432
+        },
+        "segment_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16777216
+        },
+        "segment_rows": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      },
+      "required": [
+        "archive_bytes",
+        "reserve_bytes",
+        "object_bytes",
+        "segment_bytes",
+        "segment_rows"
+      ],
+      "additionalProperties": false
+    },
+    "topics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "partition": {
+            "const": 0
+          },
+          "start": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9223372036854775807
+          }
+        },
+        "required": [
+          "name",
+          "id",
+          "partition",
+          "start"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 9
+    },
+    "objects": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-f0-9]{64}$"
+      },
+      "maxItems": 128
+    },
+    "provenance": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-f0-9]{64}$"
+      },
+      "maxItems": 128
+    }
+  },
+  "required": [
+    "version",
+    "archive_id",
+    "cluster",
+    "bootstrap",
+    "group",
+    "implementation_sha256",
+    "limits",
+    "topics",
+    "objects",
+    "provenance"
+  ],
+  "additionalProperties": false
+}

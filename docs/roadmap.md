@@ -10,8 +10,11 @@ review and successful merged-main checks. Issues #11/#12 are closed after the
 [P13 prerequisite audit](p13-acceptance.md), which preserves every earlier failure.
 P13a–c are merged bounded slices; P13c merged-main integration failed. P13d adds
 original source-to-search qualification and the remaining acceptance packet.
-P13 remains open and P14 remains blocked until all technical, owner-review and
-merged-commit gates pass. See the [implementation ledger](implementation-ledger.md)
+The owner accepted bounded P13 semantics and merged #49 as `07e5382`. Final-head
+44202078968 and actual merged-main 44206958555 passed every applicable job and
+required-checks. Issues #1–#13 are closed, project cards P01–P13 are Done and
+M0–M4 are closed. P14 is Ready for design; private recorded AMD64 qualification
+remains unavailable within the accepted P13 limits. See the [implementation ledger](implementation-ledger.md)
 and [P13 acceptance map](p13-acceptance.md) for exact evidence and limits.
 P numbers are planning IDs, not GitHub PR numbers. Milestones require their
 acceptance evidence and authorized merges; documentation alone does not complete
@@ -229,8 +232,9 @@ is recorded in the acceptance map; P13 acceptance is not implied.
   [P13d](p13d-design.md) implements opt-in original-recording qualification and
   the [acceptance map](p13-acceptance.md). ARM64 recorded/integration/search and
   every applicable native AMD64 check passed on implementation head 1645359.
-  Final PR-head checks, owner review, authorized merge and merged-commit success
-  remain required; P13 stays open until those gates actually pass.
+  Final-head 8581887 passed 44202078968. The owner accepted bounded semantics
+  and merged #49 as 07e5382; actual merged-main 44206958555 passed. P13 is Done
+  within accepted scope; historical failures and private recorded AMD64 limits remain.
 
 - Depends on: P08, P11, P12.
 - Deliver: tagged events, linked detections and quality/configuration diagnostics.
@@ -243,7 +247,10 @@ is recorded in the acceptance map; P13 acceptance is not implied.
 
 ### P14 — Archive and historical/current replay
 
-- Readiness: blocked on [P13 acceptance](p13-acceptance.md); implementation has not begun.
+- Readiness: P05 and [P13 acceptance](p13-acceptance.md) complete; Ready for design.
+  Local [owning proposal](p14-design.md), [independent matrix](p14-expectations.md)
+  and [ledger](p14-ledger.md) start P14a–c scoping. Concrete schema/vector freeze
+  commits and implementation remain pending; no archive capability is claimed.
 - Depends on: P05, P13.
 - Deliver: durable archive segments/manifests, pinned artifacts, historical
   membership replay and current-policy reprocessing.

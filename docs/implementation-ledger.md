@@ -1,4 +1,13 @@
-# P10–P13 implementation ledger
+# P10–P14 implementation ledger
+
+Current completion (2026-11-18 UTC): bounded P13 owner acceptance and owner
+regular merge #49 as 07e5382 are complete. Final-head 44202078968 and actual
+merged-main 44206958555 passed; issue #13 is closed and P14 is Ready for design.
+See [P13 acceptance](p13-acceptance.md) for exact evidence and preserved limits.
+P14 owner: primary agent, base 07e5382, branch `docs/p14-archive-design`, same
+checkout. Local [design](p14-design.md), [expectations](p14-expectations.md) and
+[ledger](p14-ledger.md) are pre-implementation proposals; concrete schema/vector
+freeze commits remain pending. The untracked P14 handoff remains uncommitted.
 
 Current P13d audit (2026-11-17): P13a–c are owner-merged; #49 adds recorded
 qualification and the [acceptance map](p13-acceptance.md). Earlier progress entries
@@ -6,7 +15,8 @@ below are historical. The owner explicitly accepted bounded P09/P10 semantics an
 completeness limits on 2026-11-17 after reviewing the [exact expectation
 packet](p13-prerequisite-review.md); issues #9/#10 are closed. This supplies the
 formerly missing review separately from earlier authorization to proceed. P11/P12 bounded
-acceptance and issues #11/#12 are complete. P13 remains open and P14 blocked.
+acceptance and issues #11/#12 are complete. This paragraph records the pre-merge
+checkpoint; subsequent completion below supersedes its status.
 
 The owner instructed implementation after reviewing the
 [consolidated plan](p10-p12-plan.md), and selected a reviewed OpenSSH recording for

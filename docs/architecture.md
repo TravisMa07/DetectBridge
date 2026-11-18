@@ -252,7 +252,10 @@ existing P13 deployment and writer, with a separately pinned qualification plan.
 It reuses accepted source/host/boot and independent source assertions, and corrects
 qualification checkpoint selection/probe attribution without changing persisted
 runtime semantics. See [design](p13d-design.md) and [acceptance map](p13-acceptance.md).
-P14 archive implementation remains pending; P13 completion requires every gate.
+P14 archive implementation remains pending. P13 completed its bounded owner
+acceptance, owner merge #49 and actual merged-main qualification on 07e5382;
+[P14 design](p14-design.md) proposes routine archive/replay choices under A02–A07.
+No new archive contract or architectural change is accepted by that proposal.
 
 The pinned Kafka writer compatibility guard is scoped to P13's existing
 at-least-once sink. It preserves first-error propagation and stock resource

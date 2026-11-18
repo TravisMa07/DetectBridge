@@ -8,12 +8,13 @@ replay.
 ## Current status
 
 **Integrated source adapters, checkpointed evaluation and derived search are implemented;
-complete P13 acceptance remains pending.**
+P13 is complete within its owner-accepted bounded scope.**
 The transport validates replay envelopes and forwards unchanged bytes or quarantine
 references. P08 adds a local OpenSearch metadata writer; qualification status is
 recorded in the writer guide. P09 adds a bounded synthetic normalized-fixture
 compiler/Java evaluator slice and a separate Flink job, with merged-main AMD64
-semantic/recovery CI passed and independent owner semantic review pending.
+semantic/recovery CI passed. The owner accepted bounded P09/P10 semantics and
+completeness limits on 2026-11-17; see the [review packet](docs/p13-prerequisite-review.md).
 P10a adds [source mapping/provenance compatibility](docs/p10-design.md).
 [P10b](docs/p10b-design.md) adds source-indexed evaluation and a separate v2 runtime,
 merged with ARM64/AMD64 qualification evidence. The owner authorized P11/P12;
@@ -47,10 +48,13 @@ adapters, audit assembly and evaluation, with bounded checkpointed output intent
 final-head native qualification passed, but merged-main integration failed.
 [P13d](docs/p13d-design.md) adds opt-in original-recording source-to-search
 qualification and [complete milestone acceptance tracking](docs/p13-acceptance.md).
-ARM64 original-recording qualification and implementation-head native AMD64 checks
-passed. Final PR-head checks, owner acceptance, authorized merge and merged-commit
-checks keep [P13](docs/p13-design.md) open and
-P14 blocked. Management API and UI remain pending.
+ARM64 original-recording qualification, final-head native checks and actual
+merged-main run [44206958555](https://github.com/TravisMa07/DetectBridge/actions/runs/44206958555)
+passed. The owner accepted bounded P13 semantics and merged #49 as `07e5382`;
+issue #13 is closed. Private recorded AMD64 qualification remains unavailable
+within those accepted limits. P14 prerequisites are met; its local
+[design proposal](docs/p14-design.md) and [expectations](docs/p14-expectations.md)
+precede implementation. Archive services, management API and UI remain pending.
 P06 provides local Kafka/Flink infrastructure and optional authenticated OpenSearch.
 Repository hygiene tooling and
 contributor templates were introduced in P01; P02 adds reproducible build tools,

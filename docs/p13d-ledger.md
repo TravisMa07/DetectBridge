@@ -1,5 +1,18 @@
 # P13d qualification ledger
 
+Current completion (2026-11-18 UTC): **P13 is Done within its owner-accepted
+bounded scope; P14 prerequisites are met.** The owner explicitly accepted final
+head `85818875576616e42aa26720dc74486f93b9655c`, including unavailable private
+recorded AMD64 qualification and separate supplemental synthetic coverage, then
+performed regular merge [#49](https://github.com/TravisMa07/DetectBridge/pull/49)
+as `07e53822dd8a5035125804321e5c852f9a466aef`. Final-head run 44202078968 and
+actual merged-main push [44206958555](https://github.com/TravisMa07/DetectBridge/actions/runs/44206958555),
+attempt 1, passed every applicable job and required-checks; merged run completed
+2026-11-18 00:43:43 UTC. Refreshed review threads are empty and issue #13 is closed.
+This completion supersedes pending-status checkpoints below, preserving every
+historical failure, artifact attribution and bounded limitation. No P14 runtime
+capability follows; its own design/freeze/qualification gates remain required.
+
 Current pre-merge checkpoint (2026-11-17): implementation head
 `1645359a1c7ced9efc6a5f514e671b78febb6d21` passed every applicable native AMD64
 job and required-checks in run 44196952063. Final production JAR 51a984de passed

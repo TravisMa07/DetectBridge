@@ -1,0 +1,42 @@
+{
+  "origin": "Original synthetic DetectBridge cases, Apache-2.0; hashes independently computed by system shasum before implementation.",
+  "wire_preimage": [
+    "detectbridge.archive.wire/1",
+    "cluster-A",
+    "topic-A",
+    "0",
+    "9007199254740993"
+  ],
+  "wire_id": "sha256:46af4a7223d8aee75d339db2cee8a3a4d569036492837d9a5aeb279c29fe0e5e",
+  "canonical_value": {
+    "timestamp": "2020-01-01T00:00:00.123456789012Z",
+    "signed": [
+      -9223372036854775808,
+      9007199254740993,
+      9223372036854775807
+    ],
+    "label": "é"
+  },
+  "canonical_utf8_hex": "7b226c6162656c223a22c3a9222c227369676e6564223a5b2d393232333337323033363835343737353830382c393030373139393235343734303939332c393232333337323033363835343737353830375d2c2274696d657374616d70223a22323032302d30312d30315430303a30303a30302e3132333435363738393031325a227d",
+  "canonical_sha256": "de17ee6bc4c5b8334ff149dc8d7edc5fcfb6bd2c24cbc75c3ded7298da57a419",
+  "original_hex": "410d0a0ac3a90a5a",
+  "ranges": [
+    [
+      0,
+      3
+    ],
+    [
+      3,
+      1
+    ],
+    [
+      4,
+      3
+    ],
+    [
+      7,
+      1
+    ]
+  ],
+  "original_sha256": "7fd00bc5aff71e505699ae16069b5578c19eb18b34d7f5542bd56d120404e572"
+}

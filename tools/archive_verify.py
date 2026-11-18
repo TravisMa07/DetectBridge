@@ -133,7 +133,8 @@ def qualify():
     try:
         stack.init("core")
         stack.compose("up", "-d", "--wait", "kafka", profile="core", timeout=180)
-        archive.command("init", "kafka:9092", probe=True)
+        assert archive.command("init", "kafka:9092", probe=True)["created"] == 9
+        assert archive.command("init", "kafka:9092", probe=True)["created"] == 0
         report["phase"] = "freeze_and_initial_roundtrip"
         # Exact opaque originals, null/empty, two equal bodies at different locations, all nine topics.
         exact_json = canonical(

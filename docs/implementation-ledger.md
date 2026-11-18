@@ -2,14 +2,21 @@
 
 Current completion (2026-11-18 UTC): bounded P13 owner acceptance and owner
 regular merge #49 as 07e5382 are complete. Final-head 44202078968 and actual
-merged-main 44206958555 passed; issue #13 is closed and P14 is Ready for design.
+merged-main 44206958555 passed; issue #13 is closed. P14a is merged/qualified and
+P14b implementation is tracked below.
 See [P13 acceptance](p13-acceptance.md) for exact evidence and preserved limits.
-P14 owner: primary agent, base 07e5382, branch `feat/p14a-durable-archive`, same
-checkout. [Design](p14-design.md), [expectations](p14-expectations.md) and
-[ledger](p14-ledger.md) track P14a local implementation after concrete schema/vector
-freeze e9b6143 on `feat/p14a-durable-archive`. Qualification, review and owner merge
-gates remain separate; P14b/c and P05 archive import remain pending. The untracked
-P14 handoff remains uncommitted.
+P14 owner: primary agent, same checkout. The owner merged P14a #50 as cd6f46e;
+its native head bfe656e passed, and merged-main run 44232624596 attempt 2 passed on exact cd6f46e after an
+unchanged toolchain HTTP 429 retry. Original logs are
+retained in the [ledger](p14-ledger.md). Branch `feat/p14b-historical-replay` contains
+the [P14b design/expectation freeze](p14b-design.md) from that merge; no P14b
+production implementation preceded that success; separate freeze 5922901
+precedes the current P14b implementation. The milestone
+[design](p14-design.md) and [expectations](p14-expectations.md) still own the broader
+acceptance. P14b implementation and its [own qualification](p14b-ledger.md) are
+locally qualified; native CI and owner gates remain open. P14c and P05 archive
+import remain pending. The untracked P14 handoff
+remains uncommitted.
 
 Current P13d audit (2026-11-17): P13a–c are owner-merged; #49 adds recorded
 qualification and the [acceptance map](p13-acceptance.md). Earlier progress entries

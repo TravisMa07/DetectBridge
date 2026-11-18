@@ -166,6 +166,7 @@ def doctor():
     print(output.strip())
     consistency()
     run(["uv", "run", "--locked", "python", "tools/check_archive.py"])
+    run(["uv", "run", "--locked", "python", "tools/check_historical.py"])
     run(["uv", "run", "--locked", "python", "tools/check_detection.py"])
 
 
@@ -192,6 +193,27 @@ def bootstrap():
     run([ROOT / "gradlew", "--console=plain", "help"])
     # Populate built-in Java plugin caches; verification subsequently runs offline.
     smoke()
+
+
+def historical():
+    run(["uv", "run", "--locked", "python", "tools/historical.py", "build"])
+    run(["uv", "run", "--locked", "python", "tools/check_historical.py", "--artifacts"])
+    run(
+        [
+            "uv",
+            "run",
+            "--locked",
+            "python",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "tools/tests",
+            "-p",
+            "test_historical*.py",
+            "-v",
+        ]
+    )
 
 
 def archive():
@@ -226,6 +248,7 @@ def archive():
 def check():
     consistency()
     run(["uv", "run", "--locked", "python", "tools/check_archive.py"])
+    run(["uv", "run", "--locked", "python", "tools/check_historical.py"])
     run(["uv", "run", "--locked", "python", "tools/check_detection.py"])
     run(["uv", "run", "--locked", "python", "tools/check_datasets.py"])
     run(["uv", "run", "--locked", "python", "tools/check_contracts.py"])
@@ -509,6 +532,7 @@ def main():
             "integration",
             "search",
             "archive",
+            "historical",
             "verify",
         ],
     )

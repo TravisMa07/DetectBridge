@@ -13,7 +13,7 @@ original source-to-search qualification and the remaining acceptance packet.
 The owner accepted bounded P13 semantics and merged #49 as `07e5382`. Final-head
 44202078968 and actual merged-main 44206958555 passed every applicable job and
 required-checks. Issues #1–#13 are closed, project cards P01–P13 are Done and
-M0–M4 are closed. P14 is Ready for design; private recorded AMD64 qualification
+M0–M4 are closed. P14 implementation is in progress; private recorded AMD64 qualification
 remains unavailable within the accepted P13 limits. See the [implementation ledger](implementation-ledger.md)
 and [P13 acceptance map](p13-acceptance.md) for exact evidence and limits.
 P numbers are planning IDs, not GitHub PR numbers. Milestones require their
@@ -247,12 +247,17 @@ is recorded in the acceptance map; P13 acceptance is not implied.
 
 ### P14 — Archive and historical/current replay
 
-- Readiness: P05 and [P13 acceptance](p13-acceptance.md) complete; P14a work is
-  in progress on its owning branch.
+- Readiness: P05 and [P13 acceptance](p13-acceptance.md) complete; the owner merged
+  P14a #50 as cd6f46e. Merged-main run 44232624596 attempt 2 passed on that exact merge after an
+  unchanged toolchain HTTP 429 retry; attempt 1 remains failed.
   The [owning proposal](p14-design.md), [independent matrix](p14-expectations.md)
   and [ledger](p14-ledger.md) scope P14a–c. P14a schema/vector freeze e9b6143
   precedes local archive implementation on `feat/p14a-durable-archive`; qualification
-  and owner/merge gates remain separate. P14b/c replay and P05 import are pending;
+  and owner/merge gates remain separate. [P14b design/expectations](p14b-design.md)
+  freeze 5922901 precedes historical replay implementation on qualified P14a main.
+  P14b implements bounded [historical replay](historical-replay.md), with its own
+  [qualification and owner gates](p14b-ledger.md). P14c current-policy/retention and
+  P05 import remain pending;
   no complete P14 acceptance is claimed.
 - Depends on: P05, P13.
 - Deliver: durable archive segments/manifests, pinned artifacts, historical

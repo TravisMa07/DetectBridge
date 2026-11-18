@@ -359,6 +359,7 @@ class TransportTests(unittest.TestCase):
                             "integration": "false",
                             "search": "false",
                             "archive": "false",
+                            "historical": "false",
                         },
                     },
                     "repository-hygiene": {"result": "success"},
@@ -374,6 +375,7 @@ class TransportTests(unittest.TestCase):
                     "integration-verification": {"result": "skipped"},
                     "search-verification": {"result": "skipped"},
                     "archive-verification": {"result": "skipped"},
+                    "historical-replay-verification": {"result": "skipped"},
                 }
                 self.assertEqual(
                     gate_passes(needs), result == ("success" if applicable == "true" else "skipped")

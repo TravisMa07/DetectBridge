@@ -185,3 +185,18 @@ fail-closed applicability. `tools/archive.py build` pins immutable production an
 qualification JARs; `verify` exercises an isolated real Kafka/filesystem suite.
 No private recording or P14b/c replay capability is implied. See the
 [archive runbook](archive.md) and [evidence ledger](p14-ledger.md).
+
+P14b [historical replay](historical-replay.md) uses two locked commands:
+
+```sh
+uv run --locked python tools/dev.py historical
+uv run --locked python tools/historical_verify.py
+```
+
+The first builds the thin executor and archive reader, provisions the exact pinned
+base image if missing, and checks contracts/packaging/components. The second runs
+actual original-JAR parsing/evaluation, archive-to-replay isolation, publication
+interruptions, helper recovery and an isolated original-source Kafka/Flink/archive
+flow. Serialize this with other heavy suites. Synthetic qualification does not
+establish private recorded or throughput coverage; exact evidence belongs in the
+[P14b ledger](p14b-ledger.md).

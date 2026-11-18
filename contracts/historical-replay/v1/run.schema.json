@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:historical-replay:1.0.0:run",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": "1.0.0"
+    },
+    "mode": {
+      "const": "historical"
+    },
+    "run_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "selection_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "executor_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "producer_sha256": {
+      "const": "51a984dedc04af7b368fea63a9cec88d2127c6ddf5aa019352f491a3481bad6d"
+    },
+    "plan_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "reader_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "image": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[a-zA-Z0-9._/:-]+@sha256:[0-9a-f]{64}$"
+    },
+    "destination": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "limits": {
+      "const": {
+        "storage_bytes": 536870912,
+        "reserve_bytes": 134217728
+      }
+    }
+  },
+  "required": [
+    "version",
+    "mode",
+    "run_id",
+    "selection_sha256",
+    "executor_sha256",
+    "producer_sha256",
+    "plan_sha256",
+    "reader_sha256",
+    "image",
+    "destination",
+    "limits"
+  ],
+  "additionalProperties": false
+}

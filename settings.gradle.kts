@@ -23,3 +23,6 @@ project(":integration-writer").projectDir = file("packages/integration-writer")
 
 include("archive-writer")
 project(":archive-writer").projectDir = file("packages/archive-writer")
+
+include("historical-replay")
+project(":historical-replay").projectDir = file("packages/historical-replay")

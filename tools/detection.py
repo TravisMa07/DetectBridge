@@ -541,9 +541,10 @@ def mapped_runtime_cases():
 
 
 def qualify_incompatible_restore(test, checkpoint):
-    """Test-only actual restore under a changed group; never rewrite valid configuration."""
+    """Probe an already retained/cancelled checkpoint without rewriting configuration."""
     config = test.config()
-    test.stop()
+    if test.rest("/jobs/" + test.latest_job()["job_id"])["state"] != "CANCELED":
+        raise StackError("checkpoint_job_not_canceled")
     command = [
         "/opt/flink/bin/flink",
         "run",
@@ -717,10 +718,13 @@ def qualify(mapped=False):
             checkpoint = test.wait_checkpoint(restored["job_id"])
             if mapped:
                 stage("incompatible_restore")
+                checkpoint = test.retained_checkpoint(restored["job_id"])
                 qualify_incompatible_restore(test, checkpoint)
                 resumed = test.start(restore=checkpoint["external_path"])
                 test.accounted(expected, invalid)
                 checkpoint = test.wait_checkpoint(resumed["job_id"])
+            stage("jobmanager_checkpoint_retention")
+            checkpoint = test.retained_checkpoint((resumed if mapped else restored)["job_id"])
             stage("jobmanager_shutdown")
             test.stack.down()
             stage("jobmanager_startup")

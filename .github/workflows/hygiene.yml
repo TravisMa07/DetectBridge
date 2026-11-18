@@ -379,6 +379,18 @@
         {
           "name": "Qualify independent detection semantics and recovery",
           "run": "uv run --locked python tools/detection.py build\nuv run --locked python tools/check_detection.py --java\nuv run --locked python tools/detection.py verify\nuv run --locked python tools/detection.py --mapped build\nuv run --locked python tools/detection.py --mapped verify"
+        },
+        {
+          "name": "Retain synthetic detection recovery diagnostics",
+          "if": "${{ failure() }}",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "detection-recovery-failure-diagnostics",
+            "path": ".cache/detection-reports/*.json\n.cache/detection-v2-reports/*.json\n.cache/detection-runtime/*/checkpoint.json\n.cache/detection-v2-runtime/*/checkpoint.json\n.cache/detection-runtime/*/jobs.json\n.cache/detection-v2-runtime/*/jobs.json",
+            "include-hidden-files": true,
+            "if-no-files-found": "warn",
+            "retention-days": 7
+          }
         }
       ]
     },

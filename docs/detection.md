@@ -65,6 +65,12 @@ ID is not P13's detection ID. No archive or exactly-once claim is made.
 
 Use `start --restore file:///state/checkpoints/<job-id>/chk-<number>` for explicit
 recovery, or `--from-beginning` for deliberate retained-input reprocessing.
+Before recreating the stack, cancel the current job with `stop`, then read its
+`status` checkpoint inventory while the JobManager remains available. Select the
+retained COMPLETED checkpoint after cancellation; an earlier observation from a
+running job can be retired during slow shutdown. Qualification uses the shared
+cancel-then-select helper and verifies the actual metadata file before teardown.
+
 The launcher checks checkpoint ownership and image history; operator state binds
 bundle and Kafka identities and rejects incompatible restore. P07's 10-second
 checkpoint cadence and finite three-attempt restart policy apply. Sink failure

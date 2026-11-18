@@ -159,3 +159,17 @@ empty observed intervals with zero wire rows. The next offset is attested by the
 consumer position; no source record is invented. Unit restart and actual four-record
 transaction/control-batch qualification cover that bounded Kafka behavior. P13's
 production at-least-once sink and acknowledgement policy remain unchanged.
+
+## Native compatibility qualification correction
+
+Run 44219814059 on 03ca359 passed the actual archive gate but failed detection
+JobManager restore's metadata-file check; integration failed separately during
+Gradle bootstrap on Maven Central HTTP 429. The detection qualifier had selected a
+checkpoint while its job still ran. Reuse the already implemented/tested shared
+cancel-then-select helper before both the mapped incompatible-restore probe and
+JobManager shutdown. Verify the probe's original job is CANCELED before submission.
+No Flink state, job code, rule semantics, resource budget, binding-failure marker,
+sink requirement or dependency pin changes. An independent lifecycle regression
+retires a running job's observed metadata during shutdown; both qualifier modes
+must restore the checkpoint actually retained after cancellation. Preserve the
+original failures and exact qualification attribution in the ledger.

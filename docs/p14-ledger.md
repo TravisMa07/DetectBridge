@@ -250,3 +250,89 @@ remain pending until directly observed; no ARM64-to-AMD64 transfer, private
 recorded qualification, physical disk-full/power-loss, throughput, HA, P05 import
 or historical/current-policy execution is claimed. Owner acceptance and explicit
 merge permission remain open. Full P14 is not complete.
+
+## First native CI failure and bounded correction — 2026-11-18 UTC
+
+[Run 44219814059](https://github.com/TravisMa07/DetectBridge/actions/runs/44219814059)
+on exact head `03ca35936535b7b45ea156303921521e85e9dcdc` failed detection,
+integration and required-checks. Every other applicable job passed, including
+actual archive-verification on native AMD64. This is a failed required run,
+not an adopted dependency/merge gate or complete P14a acceptance.
+
+Original job logs were retained before diagnosis under
+`.cache/p14a-ci-44219814059/`. Their SHA-256 values are:
+
+- Detection job 134518638709: `5727fc3dfd91a090c89c100a8d6e3f21d0c03ca73c29a589c34d1349df568bff`.
+- Integration job 134518638838: `0794d8ced6be815f76d23d672b9484158305a132bf6da693db62382be6dadfdd`.
+- Archive job 134518638901: `dbdadb963617c89bb1bc4198d2c486492526303920299b83bd38c35eb48f711f`.
+
+The run's artifact listing is empty. Integration failed at `gradlew help` before
+component/runtime tests: Maven Central returned HTTP 429 for plexus-utils 4.0.3
+and commons-codec 1.22.0, disabling the plugin repository's further resolution.
+No version, repository, lock, retry bound or required assertion is changed to
+bypass that failed attempt. A fresh successful run must supply separate evidence.
+
+Detection reached actual legacy semantics/replay, TaskManager recovery, unavailable
+sink and explicit restore, then failed `test -s .../_metadata` at
+`jobmanager_restore_submission`. That establishes an unavailable/empty selected
+metadata file; the original run lacks a retained checkpoint inventory proving its
+exact retirement timing. Code inspection identifies the still-running selection
+window previously corrected in P12/P13 qualification. A focused coordinator test
+reproduces an observed checkpoint being retired during shutdown and fails at that
+same restore operation. The initial model setup lacked its input-topic attribute;
+that setup error is not the behavioral red. The subsequent intended missing-
+metadata failure is retained in `retention-red.log`.
+
+Both detection modes now use `retained_checkpoint` to cancel, select a COMPLETED
+retained checkpoint and verify its actual metadata before shutdown. The mapped
+incompatible-binding probe uses the same retained boundary and explicitly requires
+its original job to be CANCELED; unrelated failure/ambiguous-job rejection stays
+strict. Fifteen archive Java tests and the archive production code are unchanged.
+No new semantic expectation replaces the accepted P09/P10 packet.
+
+Root checks initially exposed the older probe test's direct-stop assertion after
+cancellation moved into its caller. Tests now explicitly prove the required prior
+CANCELED state, reject RUNNING before probe submission, and retain every exact
+binding-failure/unrelated-failure assertion. Locked root checks then passed all
+177 Python regressions plus contracts, hygiene/secrets, formatting/lint and types;
+log `check-final.log` in the diagnostic directory. CI now retains only synthetic
+detection report/checkpoint/job metadata on failure, excluding source inputs.
+
+Native archive project `detectbridge-p14-test-1a3f4f703690` independently passed
+all 26 actual scenarios and 30 exact occurrences in the failed aggregate run.
+It used production JAR 4b8058bd and probe 077d2af0 (full hashes above), with actual
+AMD64 image `sha256:6b26436e8a89f49acaf0133e35f1e3715544e7c984d0f68cd8038137ab2e6be9`.
+This is actual native archive evidence on 03ca359, not a transferred ARM64 pass,
+private-recording qualification, or success of the failed aggregate/new correction.
+The correction is a necessary third cohesive commit after the published freeze
+and implementation; existing published IDs/timestamps are preserved.
+
+### Local correction qualification
+
+The actual suites ran serially on local Linux ARM64, working from 03ca359 with
+the qualification-only correction. Legacy project
+`detectbridge-p09-test-baf7531e654d` passed eleven valid/two invalid inputs and
+11 result entries through semantics/replay, TaskManager recovery,
+unavailable quarantine sink, explicit restore, cancellation/retained metadata,
+JobManager recreation/restore, metrics and payload-free logs. Report SHA-256:
+`864e54e85c790890398506768927efb79b962ad8222020a340a743d4ac893d5d`.
+It used bundle `2a2a81d6a455da844b5588d9480674f2e43e965c557564dda9af3ea995b87479`,
+JAR `890a811254a24b9317bf74457a166cb877a494b80a44312af4d9f94f7a273938`,
+actual image `sha256:29ca51b6f91f72d3b8c9d0af535a4ae5ca4c4b36bdcdd792ec6998d186cf9f92`.
+
+Mapped project `detectbridge-p10-test-7dee22ef6da0` passed sixteen valid/two
+invalid inputs and sixteen result entries through the same scenarios, seven
+isolated runs and the exact incompatible-binding rejection followed by healthy
+restore. It used the same JAR hash but separately pinned mapped bundle
+`a95d40c373cb622cf2125008dd16a0e476634e61ce6479257371423b04f36df2`
+and actual image `sha256:80635c0ff23877e3dd000fc81834c36e105c9fb9a5d7f15ea91797ab9eca865b`.
+Logs are `legacy-runtime.log` and `mapped-runtime.log` in the diagnostic directory;
+source inputs/observations remain ignored and only owned stacks were removed.
+These are actual corrected local qualification paths, not native or merged-commit
+passes. The final mapped run also exercises the added CANCELED-state probe guard.
+
+Locked root checks passed 177 regressions, lint/format/types, contracts/catalog/
+dependencies and hygiene/secrets; Markdown/content/relative-link and workflow
+checks passed. Fresh native CI on the published correction must independently
+qualify the exact new head and rerun integration after its pre-test HTTP 429.
+Owner review and explicit merge authorization remain separate; no merge or release.

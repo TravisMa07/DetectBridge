@@ -374,6 +374,7 @@ class IncompatibleRestoreTests(unittest.TestCase):
         runtime.config.return_value = copy.deepcopy(config)
         runtime.topics = ["input"]
         old, new = "a" * 32, "b" * 32
+        runtime.latest_job.return_value = {"job_id": old}
         runtime.stack.exec.side_effect = (
             StackError("command_failed_job_submission_exit_1") if synchronous else None
         )
@@ -388,6 +389,8 @@ class IncompatibleRestoreTests(unittest.TestCase):
                     [old] if overview_calls == 1 else ([old, new] if created is None else created)
                 )
                 return {"jobs": [{"jid": value, "state": "FAILED"} for value in values]}
+            if path == "/jobs/" + old:
+                return {"state": "CANCELED"}
             if path == "/jobs/" + new:
                 return {"state": "FAILED"}
             if path == "/jobs/" + new + "/exceptions":
@@ -402,10 +405,18 @@ class IncompatibleRestoreTests(unittest.TestCase):
             runtime, original = self.runtime(synchronous)
             detection.qualify_incompatible_restore(runtime, {"external_path": "file:///checkpoint"})
             self.assertEqual(runtime.config.return_value, original)
-            runtime.stop.assert_called_once()
+            runtime.rest.assert_any_call("/jobs/" + "a" * 32)
+            runtime.stop.assert_not_called()
             runtime.stack.exec.assert_called_once()
             self.assertIn("group-incompatible", runtime.stack.exec.call_args.args)
             runtime.rest.assert_any_call("/jobs/" + "b" * 32 + "/exceptions")
+
+    def test_probe_requires_previously_canceled_original_job(self):
+        runtime, _ = self.runtime(False)
+        runtime.rest.side_effect = lambda path: {"state": "RUNNING"}
+        with self.assertRaisesRegex(StackError, "checkpoint_job_not_canceled"):
+            detection.qualify_incompatible_restore(runtime, {"external_path": "file:///checkpoint"})
+        runtime.stack.exec.assert_not_called()
 
     def test_unrelated_failure_and_ambiguous_job_are_not_a_pass(self):
         for synchronous in (False, True):

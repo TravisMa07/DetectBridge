@@ -75,6 +75,22 @@ class MachineTest {
     var late=output.stream().filter(i->i.kind().equals("diagnostic")).findFirst().orElseThrow().document();
     assertEquals("late_evidence",late.get("code").asString());assertEquals(manifest.get("manifest_id"),late.get("original_manifest_id"));
   }
+  @Test void qualificationInventoryPreservesOriginalDeadlineWithoutMutatingRecoveryState() throws Exception {
+    Time time=new Time();Machine m=machine(time);add(m,cases().at("/complete/0"),0);
+    byte[] durable=m.snapshot(1);time.millis=19000;
+    JsonNode group=m.inventory(1,durable).get("groups").get(0);
+    assertNotNull(group.get("opened"));assertTrue(group.get("opened").isIntegralNumber());
+    assertNotNull(group.get("deadline"));assertTrue(group.get("deadline").isIntegralNumber());
+    assertEquals(1000L,group.get("opened").asLong());assertEquals(31000L,group.get("deadline").asLong());
+    assertArrayEquals(durable,m.snapshot(2));
+    time.millis=61000;
+    Machine restored=Machine.restore(time,Assembler.Limits.defaults(),BINDING,SOURCE,Machine::inline,durable);
+    assertEquals(group,restored.inventory(1,durable).get("groups").get(0));
+    assertArrayEquals(durable,restored.snapshot(3));
+    assertTrue(restored.pump());byte[] closed=restored.snapshot(4);
+    JsonNode after=restored.inventory(4,closed);assertTrue(after.get("groups").isEmpty());
+    assertTrue(after.get("outbox").valueStream().anyMatch(i->i.get("kind").asString().equals("manifest")));
+  }
   @Test void corruptBindingsStateAndQueueExhaustionFailWithoutRetirement() throws Exception {
     Time time=new Time();Machine m=machine(time);var auth=cases().get("auth");add(m,auth,0);byte[] durable=m.snapshot(1);
     assertThrows(IllegalArgumentException.class,()->Machine.restore(time,Assembler.Limits.defaults(),"b".repeat(64),SOURCE,Machine::inline,durable));

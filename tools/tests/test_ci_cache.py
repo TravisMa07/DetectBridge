@@ -1,6 +1,7 @@
 """Single verified dependency preparation precedes CI runtime fan-out."""
 
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -60,6 +61,81 @@ class CacheTests(unittest.TestCase):
                 )
             )
         self.assertEqual(count, 12)
+
+    def test_every_consumer_requires_an_exact_cache_hit_before_bootstrap(self):
+        workflow = json.loads((ROOT / ".github/workflows/hygiene.yml").read_text())
+        guarded = 0
+        for name, job in workflow["jobs"].items():
+            steps = job.get("steps", [])
+            restores = [
+                (i, s)
+                for i, s in enumerate(steps)
+                if s.get("uses", "").startswith("actions/cache/restore@")
+            ]
+            if not restores:
+                continue
+            restore_index, restore = restores[0]
+            guards = [
+                (i, s)
+                for i, s in enumerate(steps)
+                if s.get("id") == "require-prepared-gradle-cache"
+            ]
+            with self.subTest(job=name):
+                self.assertEqual(len(guards), 1)
+                guard_index, guard = guards[0]
+                bootstrap = next(
+                    i for i, s in enumerate(steps) if "tools/dev.py bootstrap" in s.get("run", "")
+                )
+                self.assertEqual(restore["id"], "prepared-gradle-cache")
+                self.assertLess(restore_index, guard_index)
+                self.assertLess(guard_index, bootstrap)
+                self.assertEqual(guard["shell"], "bash")
+                self.assertEqual(
+                    guard["env"]["CACHE_HIT"],
+                    "${{ steps.prepared-gradle-cache.outputs.cache-hit }}",
+                )
+            guarded += 1
+        self.assertEqual(guarded, 12)
+
+    def test_exact_hit_guard_shell_rejects_absent_false_and_empty_outputs(self):
+        workflow = json.loads((ROOT / ".github/workflows/hygiene.yml").read_text())
+        guards = [
+            s
+            for job in workflow["jobs"].values()
+            for s in job.get("steps", [])
+            if s.get("id") == "require-prepared-gradle-cache"
+        ]
+        self.assertEqual(len(guards), 12)
+        for guard in guards:
+            for value, passed in (
+                (None, False),
+                ("", False),
+                ("false", False),
+                ("true", True),
+                ("TRUE", False),
+            ):
+                env = os.environ.copy()
+                env.pop("CACHE_HIT", None)
+                if value is not None:
+                    env["CACHE_HIT"] = value
+                with self.subTest(value=value):
+                    result = subprocess.run(
+                        [
+                            "bash",
+                            "--noprofile",
+                            "--norc",
+                            "-e",
+                            "-o",
+                            "pipefail",
+                            "-c",
+                            guard["run"],
+                        ],
+                        env=env,
+                        capture_output=True,
+                        text=True,
+                        check=False,
+                    )
+                    self.assertEqual(result.returncode == 0, passed)
 
     def test_runtime_tasks_cannot_use_the_dependency_retry_helper(self):
         for task in ("test", "integration", "ciDependencies --continue", ""):

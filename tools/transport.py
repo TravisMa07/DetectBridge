@@ -108,6 +108,94 @@ def build():
     return {"status": "built", "bundle": bundle}
 
 
+def _terminal_checkpoint(test, job_id, allow_failed=False):
+    """Read a verified retained checkpoint only after its producing job is terminal."""
+    if test.latest_job()["job_id"] != job_id:
+        raise StackError("checkpoint_job_not_current")
+    state = test.rest("/jobs/" + job_id)["state"]
+    if state not in ({"CANCELED", "FAILED"} if allow_failed else {"CANCELED"}):
+        raise StackError(
+            "checkpoint_job_not_quiesced" if allow_failed else "checkpoint_job_not_canceled"
+        )
+    checkpoint = test.rest("/jobs/" + job_id + "/checkpoints").get("latest", {}).get("completed")
+    if not checkpoint or checkpoint.get("status") != "COMPLETED":
+        raise StackError("retained_checkpoint_missing")
+    import re
+
+    parsed = urlsplit(checkpoint.get("external_path", ""))
+    path = parsed.path.rstrip("/")
+    match = re.fullmatch("/state/checkpoints/" + re.escape(job_id) + r"/chk-([0-9]+)", path)
+    if (
+        parsed.scheme != "file"
+        or parsed.netloc
+        or parsed.query
+        or parsed.fragment
+        or not match
+        or type(checkpoint.get("id")) is not int
+        or int(match[1]) != checkpoint["id"]
+    ):
+        raise StackError("unsafe_retained_checkpoint")
+    test.stack.exec("jobmanager", "test", "-s", path + "/_metadata")
+    if test.rest("/jobs/" + job_id)["state"] != state:
+        raise StackError("checkpoint_job_changed_after_selection")
+    replay.atomic_json(
+        test.folder / "checkpoint.json",
+        {
+            "job_id": job_id,
+            "bundle_sha256": test.config()["bundle"]["bundle_sha256"],
+            "checkpoint": checkpoint,
+        },
+    )
+    return checkpoint
+
+
+def checkpoint_retains_group(inventory, original, manifest_id):
+    """The exact pending state or its frozen closure must still be durable."""
+    pending = [
+        g
+        for g in inventory["groups"]
+        if g["members"][0]["record_id"] == original["members"][0]["record_id"]
+    ]
+    if pending:
+        return len(pending) == 1 and pending[0] == original
+    return any(i["kind"] == "manifest" and i["key"] == manifest_id for i in inventory["outbox"])
+
+
+def broker_pause_checkpoint(test, job_id, original, manifest_id, observe):
+    """Freeze and verify original fault state before allowing Kafka to recover."""
+    test.pause_broker(True)
+    try:
+        time.sleep(40)
+        during_checkpoint = test.rest("/jobs/" + job_id + "/checkpoints")["latest"]["completed"]
+        during = observe(test, during_checkpoint)
+        if not checkpoint_retains_group(during, original, manifest_id):
+            raise StackError("broker_pause_original_state_not_retained")
+        checkpoint = test.quiesced_checkpoint(job_id)
+        terminal = observe(test, checkpoint)
+        if not checkpoint_retains_group(terminal, original, manifest_id):
+            raise StackError("broker_pause_terminal_state_not_retained")
+        state = test.rest("/jobs/" + job_id)["state"]
+        save(
+            test.folder / "broker-paused-terminal-checkpoint.json",
+            dict(
+                checkpoint=checkpoint,
+                inventory=terminal,
+                original=original,
+                terminal_state=state,
+                during_checkpoint=during_checkpoint,
+                during_inventory=during,
+            ),
+        )
+        if state == "FAILED":
+            save(
+                test.folder / "broker-paused-exceptions.json",
+                test.rest("/jobs/" + job_id + "/exceptions"),
+            )
+        return checkpoint
+    finally:
+        test.pause_broker(False)
+
+
 class Transport:
     def __init__(self, project="detectbridge-dev", data_cache=replay.DATA_CACHE, runs=replay.RUNS):
         self.stack = Stack(project)
@@ -422,41 +510,22 @@ class Transport:
             time.sleep(1)
         raise StackError("completed_checkpoint_timeout")
 
+    def quiesced_checkpoint(self, job_id):
+        """Freeze existing progress during an outage, without waiting for RUNNING."""
+        if self.latest_job()["job_id"] != job_id:
+            raise StackError("checkpoint_job_not_current")
+        state = self.rest("/jobs/" + job_id)["state"]
+        if state not in ("CANCELED", "FAILED", "FINISHED"):
+            self.stop()
+        return _terminal_checkpoint(self, job_id, allow_failed=True)
+
     def retained_checkpoint(self, job_id):
         """Cancel, then select a durable completed checkpoint before slow stack shutdown."""
         if self.latest_job()["job_id"] != job_id:
             raise StackError("checkpoint_job_not_current")
         self.wait_checkpoint(job_id)
         self.stop()
-        if self.rest("/jobs/" + job_id)["state"] != "CANCELED":
-            raise StackError("checkpoint_job_not_canceled")
-        checkpoint = (
-            self.rest("/jobs/" + job_id + "/checkpoints").get("latest", {}).get("completed")
-        )
-        if not checkpoint or checkpoint.get("status") != "COMPLETED":
-            raise StackError("retained_checkpoint_missing")
-        import re
-
-        parsed = urlsplit(checkpoint.get("external_path", ""))
-        path = parsed.path.rstrip("/")
-        if (
-            parsed.scheme != "file"
-            or parsed.netloc
-            or parsed.query
-            or parsed.fragment
-            or not re.fullmatch("/state/checkpoints/" + re.escape(job_id) + r"/chk-[0-9]+", path)
-        ):
-            raise StackError("unsafe_retained_checkpoint")
-        self.stack.exec("jobmanager", "test", "-s", path + "/_metadata")
-        replay.atomic_json(
-            self.folder / "checkpoint.json",
-            {
-                "job_id": job_id,
-                "bundle_sha256": self.config()["bundle"]["bundle_sha256"],
-                "checkpoint": checkpoint,
-            },
-        )
-        return checkpoint
+        return _terminal_checkpoint(self, job_id)
 
     def stop(self):
         self.config()

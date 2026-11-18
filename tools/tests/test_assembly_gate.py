@@ -1,6 +1,7 @@
 """Linux contract consumer selection and fail-closed component gating."""
 
 import copy
+import json
 import sys
 import unittest
 from pathlib import Path
@@ -73,8 +74,30 @@ class AssemblyIntegrationTests(unittest.TestCase):
         self.assertIn("linux-assembly-verification", workflow["jobs"]["required-checks"]["needs"])
         self.assertIn(
             "tools/dev.py assembly",
-            workflow["jobs"]["linux-assembly-verification"]["steps"][-1]["run"],
+            next(
+                s["run"]
+                for s in workflow["jobs"]["linux-assembly-verification"]["steps"]
+                if s.get("name") == "Qualify checkpointed Linux assembly and real recovery"
+            ),
         )
+
+    def test_restore_diagnostics_are_retained_after_the_runtime_step(self):
+        workflow = load_json(check_assembly.ROOT / ".github/workflows/hygiene.yml")
+        steps = workflow["jobs"]["linux-assembly-verification"]["steps"]
+        runtime = next(
+            i
+            for i, s in enumerate(steps)
+            if s.get("name") == "Qualify checkpointed Linux assembly and real recovery"
+        )
+        index, upload = next(
+            (i, s)
+            for i, s in enumerate(steps)
+            if s.get("name") == "Retain synthetic assembly failure diagnostics"
+        )
+        self.assertGreater(index, runtime)
+        self.assertEqual(upload["if"], "${{ failure() }}")
+        self.assertIn("detectbridge-p12-test-*.json", upload["with"]["path"])
+        self.assertNotIn("originals", upload["with"]["path"])
 
     def test_inventory_rejects_a_coordinate_without_review(self):
         original = check_assembly.load_json
@@ -89,6 +112,76 @@ class AssemblyIntegrationTests(unittest.TestCase):
         with patch.object(check_assembly, "load_json", side_effect=changed):
             with self.assertRaisesRegex(ValueError, "assembly_unreviewed_dependency"):
                 check_assembly.check()
+
+
+class RestoreProbeTests(unittest.TestCase):
+    def fixture(self, retained=True):
+        from unittest.mock import Mock
+
+        import linux_assembly
+
+        first = dict(id=1, external_path="file:///state/checkpoints/" + "a" * 32 + "/chk-1")
+        latest = dict(id=2, external_path="file:///state/checkpoints/" + "a" * 32 + "/chk-2")
+        test = Mock()
+        test.project = "detectbridge-p12-test-regression"
+        test.latest_job.return_value = dict(job_id="a" * 32)
+        test.retained_checkpoint.return_value = latest
+        test.config.return_value = dict(
+            consumer_group="group",
+            broker=dict(
+                cluster_id="cluster", topics={t: dict(id=t) for t in linux_assembly.TOPICS}
+            ),
+            bundle=dict(jar_sha256="a" * 64),
+            limits_profile="default",
+            evidence_registry_sha256="b" * 64,
+        )
+        observed = []
+
+        def submit(*args):
+            observed.append(args)
+            return "JobID " + "b" * 32
+
+        test.stack.exec.side_effect = submit
+        overviews = iter([dict(jobs=[]), dict(jobs=[dict(jid="b" * 32)])])
+
+        def rest(path):
+            if path == "/jobs/overview":
+                return next(overviews)
+            if path.endswith("/exceptions"):
+                return {
+                    "root-exception": "incompatible_assembly_restore"
+                    if retained and latest["external_path"] in observed[0]
+                    else "FileNotFoundException old checkpoint removed"
+                }
+            return dict(state="FAILED")
+
+        test.rest.side_effect = rest
+        return test, first, latest, observed
+
+    def test_probe_reselects_after_cancel_before_incompatible_restore(self):
+        import linux_assembly
+
+        test, first, latest, observed = self.fixture()
+        with patch.object(linux_assembly, "save"):
+            selected = linux_assembly.reject_incompatible(test, first)
+        self.assertEqual(selected, latest)
+        self.assertIn(latest["external_path"], observed[0])
+        self.assertNotIn(first["external_path"], observed[0])
+        test.retained_checkpoint.assert_called_once_with("a" * 32)
+
+    def test_unrelated_restore_failure_is_retained_and_still_fails(self):
+        import linux_assembly
+
+        test, first, latest, observed = self.fixture(retained=False)
+        with patch.object(linux_assembly, "save") as save:
+            with self.assertRaisesRegex(
+                linux_assembly.StackError, "assembly_unrelated_restore_failure"
+            ):
+                linux_assembly.reject_incompatible(test, first)
+            self.assertEqual(save.call_count, 1)
+            value = save.call_args.args[1]
+            self.assertEqual(value["job_id"], "b" * 32)
+            self.assertIn("FileNotFoundException", json.dumps(value))
 
 
 if __name__ == "__main__":

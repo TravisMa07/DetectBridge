@@ -346,7 +346,17 @@
             "path": ".cache/gradle/caches/modules-2/files-2.1\n.cache/gradle/caches/modules-2/metadata-*",
             "key": "${{ runner.os }}-${{ runner.arch }}-gradle-modules-v1-${{ hashFiles('settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'packages/**/*.gradle.kts', 'packages/**/gradle.lockfile', 'settings-gradle.lockfile', 'gradle/verification-metadata.xml', 'gradle/libs.versions.toml', 'gradle/wrapper/**', 'tools/toolchains.json') }}",
             "fail-on-cache-miss": true
-          }
+          },
+          "id": "prepared-gradle-cache"
+        },
+        {
+          "name": "Require exact prepared dependency cache hit",
+          "id": "require-prepared-gradle-cache",
+          "shell": "bash",
+          "env": {
+            "CACHE_HIT": "${{ steps.prepared-gradle-cache.outputs.cache-hit }}"
+          },
+          "run": "if [ \"${CACHE_HIT:-}\" != \"true\" ]; then\n  echo \"Prepared Gradle dependency cache was not restored exactly.\" >&2\n  exit 1\nfi"
         },
         {
           "name": "Install pinned development tools",
@@ -394,7 +404,17 @@
             "path": ".cache/gradle/caches/modules-2/files-2.1\n.cache/gradle/caches/modules-2/metadata-*",
             "key": "${{ runner.os }}-${{ runner.arch }}-gradle-modules-v1-${{ hashFiles('settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'packages/**/*.gradle.kts', 'packages/**/gradle.lockfile', 'settings-gradle.lockfile', 'gradle/verification-metadata.xml', 'gradle/libs.versions.toml', 'gradle/wrapper/**', 'tools/toolchains.json') }}",
             "fail-on-cache-miss": true
-          }
+          },
+          "id": "prepared-gradle-cache"
+        },
+        {
+          "name": "Require exact prepared dependency cache hit",
+          "id": "require-prepared-gradle-cache",
+          "shell": "bash",
+          "env": {
+            "CACHE_HIT": "${{ steps.prepared-gradle-cache.outputs.cache-hit }}"
+          },
+          "run": "if [ \"${CACHE_HIT:-}\" != \"true\" ]; then\n  echo \"Prepared Gradle dependency cache was not restored exactly.\" >&2\n  exit 1\nfi"
         },
         {
           "name": "Install pinned development tools",
@@ -449,7 +469,17 @@
             "path": ".cache/gradle/caches/modules-2/files-2.1\n.cache/gradle/caches/modules-2/metadata-*",
             "key": "${{ runner.os }}-${{ runner.arch }}-gradle-modules-v1-${{ hashFiles('settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'packages/**/*.gradle.kts', 'packages/**/gradle.lockfile', 'settings-gradle.lockfile', 'gradle/verification-metadata.xml', 'gradle/libs.versions.toml', 'gradle/wrapper/**', 'tools/toolchains.json') }}",
             "fail-on-cache-miss": true
-          }
+          },
+          "id": "prepared-gradle-cache"
+        },
+        {
+          "name": "Require exact prepared dependency cache hit",
+          "id": "require-prepared-gradle-cache",
+          "shell": "bash",
+          "env": {
+            "CACHE_HIT": "${{ steps.prepared-gradle-cache.outputs.cache-hit }}"
+          },
+          "run": "if [ \"${CACHE_HIT:-}\" != \"true\" ]; then\n  echo \"Prepared Gradle dependency cache was not restored exactly.\" >&2\n  exit 1\nfi"
         },
         {
           "name": "Install pinned development tools",
@@ -513,7 +543,17 @@
             "path": ".cache/gradle/caches/modules-2/files-2.1\n.cache/gradle/caches/modules-2/metadata-*",
             "key": "${{ runner.os }}-${{ runner.arch }}-gradle-modules-v1-${{ hashFiles('settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'packages/**/*.gradle.kts', 'packages/**/gradle.lockfile', 'settings-gradle.lockfile', 'gradle/verification-metadata.xml', 'gradle/libs.versions.toml', 'gradle/wrapper/**', 'tools/toolchains.json') }}",
             "fail-on-cache-miss": true
-          }
+          },
+          "id": "prepared-gradle-cache"
+        },
+        {
+          "name": "Require exact prepared dependency cache hit",
+          "id": "require-prepared-gradle-cache",
+          "shell": "bash",
+          "env": {
+            "CACHE_HIT": "${{ steps.prepared-gradle-cache.outputs.cache-hit }}"
+          },
+          "run": "if [ \"${CACHE_HIT:-}\" != \"true\" ]; then\n  echo \"Prepared Gradle dependency cache was not restored exactly.\" >&2\n  exit 1\nfi"
         },
         {
           "name": "Install pinned development tools",
@@ -561,7 +601,17 @@
             "path": ".cache/gradle/caches/modules-2/files-2.1\n.cache/gradle/caches/modules-2/metadata-*",
             "key": "${{ runner.os }}-${{ runner.arch }}-gradle-modules-v1-${{ hashFiles('settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'packages/**/*.gradle.kts', 'packages/**/gradle.lockfile', 'settings-gradle.lockfile', 'gradle/verification-metadata.xml', 'gradle/libs.versions.toml', 'gradle/wrapper/**', 'tools/toolchains.json') }}",
             "fail-on-cache-miss": true
-          }
+          },
+          "id": "prepared-gradle-cache"
+        },
+        {
+          "name": "Require exact prepared dependency cache hit",
+          "id": "require-prepared-gradle-cache",
+          "shell": "bash",
+          "env": {
+            "CACHE_HIT": "${{ steps.prepared-gradle-cache.outputs.cache-hit }}"
+          },
+          "run": "if [ \"${CACHE_HIT:-}\" != \"true\" ]; then\n  echo \"Prepared Gradle dependency cache was not restored exactly.\" >&2\n  exit 1\nfi"
         },
         {
           "name": "Install pinned development tools",
@@ -616,7 +666,17 @@
             "path": ".cache/gradle/caches/modules-2/files-2.1\n.cache/gradle/caches/modules-2/metadata-*",
             "key": "${{ runner.os }}-${{ runner.arch }}-gradle-modules-v1-${{ hashFiles('settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'packages/**/*.gradle.kts', 'packages/**/gradle.lockfile', 'settings-gradle.lockfile', 'gradle/verification-metadata.xml', 'gradle/libs.versions.toml', 'gradle/wrapper/**', 'tools/toolchains.json') }}",
             "fail-on-cache-miss": true
-          }
+          },
+          "id": "prepared-gradle-cache"
+        },
+        {
+          "name": "Require exact prepared dependency cache hit",
+          "id": "require-prepared-gradle-cache",
+          "shell": "bash",
+          "env": {
+            "CACHE_HIT": "${{ steps.prepared-gradle-cache.outputs.cache-hit }}"
+          },
+          "run": "if [ \"${CACHE_HIT:-}\" != \"true\" ]; then\n  echo \"Prepared Gradle dependency cache was not restored exactly.\" >&2\n  exit 1\nfi"
         },
         {
           "name": "Install pinned development tools",
@@ -668,7 +728,17 @@
             "path": ".cache/gradle/caches/modules-2/files-2.1\n.cache/gradle/caches/modules-2/metadata-*",
             "key": "${{ runner.os }}-${{ runner.arch }}-gradle-modules-v1-${{ hashFiles('settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'packages/**/*.gradle.kts', 'packages/**/gradle.lockfile', 'settings-gradle.lockfile', 'gradle/verification-metadata.xml', 'gradle/libs.versions.toml', 'gradle/wrapper/**', 'tools/toolchains.json') }}",
             "fail-on-cache-miss": true
-          }
+          },
+          "id": "prepared-gradle-cache"
+        },
+        {
+          "name": "Require exact prepared dependency cache hit",
+          "id": "require-prepared-gradle-cache",
+          "shell": "bash",
+          "env": {
+            "CACHE_HIT": "${{ steps.prepared-gradle-cache.outputs.cache-hit }}"
+          },
+          "run": "if [ \"${CACHE_HIT:-}\" != \"true\" ]; then\n  echo \"Prepared Gradle dependency cache was not restored exactly.\" >&2\n  exit 1\nfi"
         },
         {
           "name": "Install pinned development tools",
@@ -720,7 +790,17 @@
             "path": ".cache/gradle/caches/modules-2/files-2.1\n.cache/gradle/caches/modules-2/metadata-*",
             "key": "${{ runner.os }}-${{ runner.arch }}-gradle-modules-v1-${{ hashFiles('settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'packages/**/*.gradle.kts', 'packages/**/gradle.lockfile', 'settings-gradle.lockfile', 'gradle/verification-metadata.xml', 'gradle/libs.versions.toml', 'gradle/wrapper/**', 'tools/toolchains.json') }}",
             "fail-on-cache-miss": true
-          }
+          },
+          "id": "prepared-gradle-cache"
+        },
+        {
+          "name": "Require exact prepared dependency cache hit",
+          "id": "require-prepared-gradle-cache",
+          "shell": "bash",
+          "env": {
+            "CACHE_HIT": "${{ steps.prepared-gradle-cache.outputs.cache-hit }}"
+          },
+          "run": "if [ \"${CACHE_HIT:-}\" != \"true\" ]; then\n  echo \"Prepared Gradle dependency cache was not restored exactly.\" >&2\n  exit 1\nfi"
         },
         {
           "name": "Install pinned development tools",
@@ -741,6 +821,18 @@
         {
           "name": "Qualify checkpointed Linux assembly and real recovery",
           "run": "uv run --locked python tools/dev.py assembly\nuv run --locked python tools/linux_assembly.py build\nuv run --locked python tools/linux_assembly.py verify"
+        },
+        {
+          "name": "Retain synthetic assembly failure diagnostics",
+          "if": "${{ failure() }}",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "assembly-failure-diagnostics",
+            "path": ".cache/linux-assembly-reports/detectbridge-p12-test-*.json",
+            "include-hidden-files": true,
+            "if-no-files-found": "warn",
+            "retention-days": 7
+          }
         }
       ]
     },
@@ -804,7 +896,17 @@
             "path": ".cache/gradle/caches/modules-2/files-2.1\n.cache/gradle/caches/modules-2/metadata-*",
             "key": "${{ runner.os }}-${{ runner.arch }}-gradle-modules-v1-${{ hashFiles('settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'packages/**/*.gradle.kts', 'packages/**/gradle.lockfile', 'settings-gradle.lockfile', 'gradle/verification-metadata.xml', 'gradle/libs.versions.toml', 'gradle/wrapper/**', 'tools/toolchains.json') }}",
             "fail-on-cache-miss": true
-          }
+          },
+          "id": "prepared-gradle-cache"
+        },
+        {
+          "name": "Require exact prepared dependency cache hit",
+          "id": "require-prepared-gradle-cache",
+          "shell": "bash",
+          "env": {
+            "CACHE_HIT": "${{ steps.prepared-gradle-cache.outputs.cache-hit }}"
+          },
+          "run": "if [ \"${CACHE_HIT:-}\" != \"true\" ]; then\n  echo \"Prepared Gradle dependency cache was not restored exactly.\" >&2\n  exit 1\nfi"
         },
         {
           "name": "Install pinned development tools",
@@ -868,7 +970,17 @@
             "path": ".cache/gradle/caches/modules-2/files-2.1\n.cache/gradle/caches/modules-2/metadata-*",
             "key": "${{ runner.os }}-${{ runner.arch }}-gradle-modules-v1-${{ hashFiles('settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'packages/**/*.gradle.kts', 'packages/**/gradle.lockfile', 'settings-gradle.lockfile', 'gradle/verification-metadata.xml', 'gradle/libs.versions.toml', 'gradle/wrapper/**', 'tools/toolchains.json') }}",
             "fail-on-cache-miss": true
-          }
+          },
+          "id": "prepared-gradle-cache"
+        },
+        {
+          "name": "Require exact prepared dependency cache hit",
+          "id": "require-prepared-gradle-cache",
+          "shell": "bash",
+          "env": {
+            "CACHE_HIT": "${{ steps.prepared-gradle-cache.outputs.cache-hit }}"
+          },
+          "run": "if [ \"${CACHE_HIT:-}\" != \"true\" ]; then\n  echo \"Prepared Gradle dependency cache was not restored exactly.\" >&2\n  exit 1\nfi"
         },
         {
           "name": "Install pinned development tools",
@@ -932,7 +1044,17 @@
             "path": ".cache/gradle/caches/modules-2/files-2.1\n.cache/gradle/caches/modules-2/metadata-*",
             "key": "${{ runner.os }}-${{ runner.arch }}-gradle-modules-v1-${{ hashFiles('settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'packages/**/*.gradle.kts', 'packages/**/gradle.lockfile', 'settings-gradle.lockfile', 'gradle/verification-metadata.xml', 'gradle/libs.versions.toml', 'gradle/wrapper/**', 'tools/toolchains.json') }}",
             "fail-on-cache-miss": true
-          }
+          },
+          "id": "prepared-gradle-cache"
+        },
+        {
+          "name": "Require exact prepared dependency cache hit",
+          "id": "require-prepared-gradle-cache",
+          "shell": "bash",
+          "env": {
+            "CACHE_HIT": "${{ steps.prepared-gradle-cache.outputs.cache-hit }}"
+          },
+          "run": "if [ \"${CACHE_HIT:-}\" != \"true\" ]; then\n  echo \"Prepared Gradle dependency cache was not restored exactly.\" >&2\n  exit 1\nfi"
         },
         {
           "name": "Install pinned development tools",
@@ -996,7 +1118,17 @@
             "path": ".cache/gradle/caches/modules-2/files-2.1\n.cache/gradle/caches/modules-2/metadata-*",
             "key": "${{ runner.os }}-${{ runner.arch }}-gradle-modules-v1-${{ hashFiles('settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'packages/**/*.gradle.kts', 'packages/**/gradle.lockfile', 'settings-gradle.lockfile', 'gradle/verification-metadata.xml', 'gradle/libs.versions.toml', 'gradle/wrapper/**', 'tools/toolchains.json') }}",
             "fail-on-cache-miss": true
-          }
+          },
+          "id": "prepared-gradle-cache"
+        },
+        {
+          "name": "Require exact prepared dependency cache hit",
+          "id": "require-prepared-gradle-cache",
+          "shell": "bash",
+          "env": {
+            "CACHE_HIT": "${{ steps.prepared-gradle-cache.outputs.cache-hit }}"
+          },
+          "run": "if [ \"${CACHE_HIT:-}\" != \"true\" ]; then\n  echo \"Prepared Gradle dependency cache was not restored exactly.\" >&2\n  exit 1\nfi"
         },
         {
           "name": "Install pinned development tools",

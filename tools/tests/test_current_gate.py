@@ -14,8 +14,28 @@ from historical import ROOT
 
 
 class CurrentGateTests(unittest.TestCase):
+    def test_metadata_observes_prepared_digest_without_a_tag_alias(self):
+        from current_replay_verify import image_identity
+
+        digest = "sha256:" + "a" * 64
+        with patch("current_replay_verify.subprocess.check_output") as inspect:
+            inspect.return_value = digest + " linux arm64\n"
+            self.assertEqual(
+                image_identity("flink:fixed@" + digest),
+                dict(id=digest, os="linux", architecture="arm64"),
+            )
+            self.assertEqual(
+                inspect.call_args.args[0][:4], ["docker", "image", "inspect", "flink@" + digest]
+            )
+            inspect.return_value = digest + " linux arm64 unexpected\n"
+            with self.assertRaises(AssertionError):
+                image_identity("flink:fixed@" + digest)
+
     def test_native_job_runs_actual_verification_and_is_required(self):
         workflow = load_json(ROOT / ".github/workflows/hygiene.yml")
+        for base in ("main", "fix/ci-gradle-cache-fanout", "feat/p14c1-current-replay"):
+            self.assertIn(base, workflow["on"]["pull_request"]["branches"])
+        self.assertEqual(workflow["on"]["push"]["branches"], ["main"])
         self.assertIn("current", workflow["jobs"]["classify-changes"]["outputs"])
         self.assertIn("current-replay-verification", workflow["jobs"]["required-checks"]["needs"])
         job = workflow["jobs"]["current-replay-verification"]

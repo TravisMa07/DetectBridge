@@ -828,6 +828,29 @@ def full_cases(
     ]
 
 
+def image_identity(image):
+    # Match the canonical immutable reference prepared by historical.build().
+    repository, digest = image.split("@")
+    prepared = repository.rsplit(":", 1)[0] + "@" + digest
+    identity = (
+        subprocess.check_output(
+            [
+                "docker",
+                "image",
+                "inspect",
+                prepared,
+                "--format",
+                "{{.Id}} {{.Os}} {{.Architecture}}",
+            ],
+            text=True,
+        )
+        .strip()
+        .split()
+    )
+    assert len(identity) == 3 and identity[0].startswith("sha256:") and len(identity[0]) == 71
+    return dict(id=identity[0], os=identity[1], architecture=identity[2])
+
+
 def qualify(focused=False):
     folder = history.ROOT / ".cache" / ("current-replay-qualification-" + uuid.uuid4().hex[:12])
     folder.mkdir(mode=0o700)
@@ -873,23 +896,7 @@ def qualify(focused=False):
     path = folder / "report.json"
     path.write_bytes(history.encoded(report) + b"\n")
     try:
-        identity = (
-            subprocess.check_output(
-                [
-                    "docker",
-                    "image",
-                    "inspect",
-                    report["bundle"]["image"],
-                    "--format",
-                    "{{.Id}} {{.Os}} {{.Architecture}}",
-                ],
-                text=True,
-            )
-            .strip()
-            .split()
-        )
-        assert len(identity) == 3 and identity[0].startswith("sha256:") and len(identity[0]) == 71
-        report["docker_image"] = dict(id=identity[0], os=identity[1], architecture=identity[2])
+        report["docker_image"] = image_identity(report["bundle"]["image"])
         report["qualification_source_sha256"] = history.sha(
             history.encoded(report["source_sha256"])
         )

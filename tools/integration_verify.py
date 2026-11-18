@@ -24,7 +24,8 @@ from integration_oracle import Oracle
 from linux_assembly import wait_failure
 from linux_assembly_cases import PARTS, audit, context, record, references
 from linux_assembly_verify import require
-from stack import project_lock, run, save
+from stack import StackError, project_lock, run, save
+from transport import broker_pause_checkpoint, checkpoint_retains_group
 
 
 def exception_classes(detail):
@@ -110,14 +111,55 @@ def deadline_checkpoint(test, job, original, manifest, timeout=120):
         ]
         if pending:
             require(len(pending) == 1 and pending[0] == original)
-        else:
-            require(
-                any(
-                    i["kind"] == "manifest" and i["key"] == manifest["manifest_id"]
-                    for i in inventory["outbox"]
-                )
-            )
+        elif checkpoint_retains_group(inventory, original, manifest["manifest_id"]):
             return checkpoint
+        else:
+            # A later checkpoint can already have retired the manifest outbox.
+            # Search only independently confirmed completed transition snapshots.
+            history = test.rest("/jobs/" + job["job_id"] + "/checkpoints").get("history", [])
+            completed = [c for c in history if c.get("status") == "COMPLETED"]
+            require(all(type(c.get("id")) is int and c["id"] >= 0 for c in completed))
+            for candidate in sorted(completed, key=lambda c: c["id"]):
+                if candidate["id"] == checkpoint["id"]:
+                    continue
+                if time.monotonic() >= deadline:
+                    break
+                candidate = dict(candidate)
+                if "external_path" not in candidate:
+                    require(re.fullmatch(r"[a-f0-9]{32}", job["job_id"]) is not None)
+                    candidate["external_path"] = (
+                        f"file:///state/checkpoints/{job['job_id']}/chk-{candidate['id']}"
+                    )
+                require(
+                    re.fullmatch(
+                        r"file:/+state/checkpoints/"
+                        + re.escape(job["job_id"])
+                        + r"/chk-"
+                        + str(candidate["id"])
+                        + r"/?(?:_metadata)?",
+                        candidate["external_path"],
+                    )
+                    is not None
+                )
+                try:
+                    observed = checkpoint_inventory(test, candidate)
+                except StackError as error:
+                    if str(error) == "unconfirmed_integration_checkpoint":
+                        continue  # The bounded REST history may evict an old entry between reads.
+                    raise
+                save(
+                    test.folder / "broker-deadline-history-observation.json",
+                    dict(checkpoint=candidate, inventory=observed, latest_checkpoint=checkpoint),
+                )
+                candidate_pending = [
+                    g
+                    for g in observed["groups"]
+                    if g["members"][0]["record_id"] == original["members"][0]["record_id"]
+                ]
+                if candidate_pending:
+                    require(len(candidate_pending) == 1 and candidate_pending[0] == original)
+                elif checkpoint_retains_group(observed, original, manifest["manifest_id"]):
+                    return candidate
         time.sleep(0.2)
     raise RuntimeError("integration_absolute_deadline_not_closed")
 
@@ -302,31 +344,13 @@ def verify():
                     for g in checkpoint_inventory(test, checkpoint)["groups"]
                 )
             )
-            test.pause_broker(True)
-            try:
-                time.sleep(40)
-                checkpoint = test.rest("/jobs/" + job["job_id"] + "/checkpoints")["latest"][
-                    "completed"
-                ]
-                retained = checkpoint_inventory(test, checkpoint)
-                require(
-                    any(
-                        g["members"][0]["record_id"] == paused["raw"]["record_id"]
-                        for g in retained["groups"]
-                    )
-                    or any(
-                        i["kind"] == "manifest" and i["key"] == paused_manifest["manifest_id"]
-                        for i in retained["outbox"]
-                    )
-                )
-            finally:
-                test.pause_broker(False)
-            if test.rest("/jobs/" + job["job_id"])["state"] not in (
-                "FAILED",
-                "CANCELED",
-                "FINISHED",
-            ):
-                test.stop()
+            checkpoint = broker_pause_checkpoint(
+                test,
+                job["job_id"],
+                paused_state,
+                paused_manifest["manifest_id"],
+                checkpoint_inventory,
+            )
             job = test.start(restore=checkpoint["external_path"])
             deadline_checkpoint(test, job, paused_state, paused_manifest)
             wait_outputs(test, oracle)

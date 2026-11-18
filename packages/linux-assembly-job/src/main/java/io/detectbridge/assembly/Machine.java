@@ -203,7 +203,10 @@ public final class Machine {
     result.put("binding",binding);result.put("snapshot_sha256",Json.sha(snapshot));result.put("received_offset",state.get("received_offset").asLong());
     ArrayNode groups=result.putArray("groups");
     for(JsonNode group:state.at("/assembler/groups")) {
-      ObjectNode item=groups.addObject();item.set("key",group.get("key"));ArrayNode members=item.putArray("members");
+      ObjectNode item=groups.addObject();item.set("key",group.get("key"));
+      item.set("opened",group.get("opened"));
+      item.put("deadline",Math.addExact(group.get("opened").asLong(),limits.ageMillis()));
+      ArrayNode members=item.putArray("members");
       for(JsonNode member:group.get("members")) members.add(Json.MAPPER.valueToTree(Map.of("record_id",member.at("/raw/record_id").asString(),
           "evidence_sha256",member.at("/raw/evidence/sha256").asString(),"raw_sha256",hash(member.get("raw")),"context_sha256",hash(member.get("context")))));
     }

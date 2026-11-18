@@ -174,3 +174,79 @@ injected I/O do not prove physical power-loss or disk-loss protection. Native CI
 owner review/acceptance, owner-authorized merge and actual merged qualification
 remain distinct. P14c2 may stack after P14c1 acceptance checks pass, as explicitly
 authorized by the owner; no merge permission or completed P14 claim is inferred.
+
+## Qualified CI repair integration and stack
+
+PR #54 native run 44400444347 attempt 1 passed every applicable job and required
+aggregate 135159697427 on exact head
+`b4d86831bb910de9d45e2ac73a8950472d7fa1d6`, completed 2026-11-18 21:50:23 UTC.
+The five explicit acquisition/recorded opt-ins were skipped. Actual PR checkout was
+GitHub test merge `ec523ff8c8fcc753fe0885d3421b3cecf77cb078`; this is PR evidence,
+not an owner-merged-main pass. Reviews and refreshed inline threads were empty.
+Full run/jobs, assembly/integration logs and thread metadata remain under the
+original checkout's `.cache/ci-cache-pr-44400444347/`.
+
+Native Linux AMD64 assembly project `detectbridge-p12-test-d0a66eb428e7` passed
+52 inputs, 83 logical / 93 physical outputs with new JAR b328f293 and bundle b6c9f3b1
+(full identities in [CI repair](ci-cache-fanout.md)). Its actual image is
+`sha256:e4062260cbbbf5837b48ec2cf38b943e998389a85141c98550787a6615f984a4`.
+Integration `detectbridge-p13-test-63864760253f` passed 44 inputs, 103 logical / 145
+physical outputs with unchanged JAR 51a984de, bundle
+`85976dd240d5816ef1dac29fec888e55be3ad251df293cc496b236f29979963a`,
+image `sha256:5cbce1c92fc7f769a6baf935b13e15d6b29b03c97857651be03a1db902930845`.
+These independently qualify the affected repair suites on native CI; they do not
+transfer a pass to the new current-replay implementation or an eventual merge.
+
+Integrate that qualified PR head with a regular local merge preserving all
+published IDs. PR #52 stacks on `fix/ci-gradle-cache-fanout` while #54 remains
+owner-controlled and unmerged. This additional integration boundary is necessary
+to carry the verified shared checks into the new consumer; it is not a progress-only
+commit or permission to merge. The source prerequisite remains qualified main
+b495c2b; the CI repair is not made a circular service prerequisite.
+
+The new current replay job now depends on successful toolchain preparation and
+requires the same exact cache hit before bootstrap. The existing cache regression
+first rejected the missing dependency/cache steps; after integration its explicit
+consumer-count expectations increase from twelve to thirteen. Red/green logs are
+`.cache/p14c1-ci-cache-integration-{red,green}.log`; the intermediate whole-source
+check retained the three expected count mismatches rather than suppressing them.
+Neither the executor nor processing contracts change in this integration.
+
+The first combined-tree rerun failed before executing source inputs because the
+new metadata observer inspected a tag-plus-digest alias absent from the local
+Docker catalog. The prepared immutable repository-plus-digest reference existed,
+as verified by the accepted builder. Preserve failed report
+`.cache/current-replay-qualification-3896caacba10/report.json` and
+`.cache/p14c1-ci-integrated-runtime.log`. Normalize only the observer's reference
+exactly as the builder does; the selected image digest and helper execution do
+not change. A permanent regression checks canonical reference use and rejects
+malformed image metadata. This is a preparation/observer failure, not a replay
+fault assertion or production behavior change.
+
+The complete combined-tree replay/fault suite then passed again on Linux ARM64:
+`.cache/current-replay-qualification-82ce2cf52e4d/report.json`, SHA-256
+`d275067cd6507567fc3c4485f835c3fc8304d38df4cf69ec9654c2dedfa5efc1`;
+log `.cache/p14c1-ci-integrated-runtime-final.log`. Its qualification-source hash is
+`2db4412b3b73940882252cdba342c9988b014ff009f7e095b818d7e936620f2c`.
+The recorded source is aac3217 plus the regular qualified-repair integration working
+tree. Executor ea9d4740, reader e5eaea35, producer 51a984de and selected Linux ARM64
+image ID remain unchanged (full identities above). All frozen schedules, three
+fresh-JVM resumes, isolation, source/quality, eleven interruption windows and
+negative storage/integrity/helper cases passed; archive/history stayed unchanged.
+
+Actual prefetch with the new module passed in
+`.cache/p14c1-ci-integrated-prefetch.log`. Locked final checks passed 229 Python
+regressions and all contracts/catalog/dependency/hygiene/secrets/workflow/lint/type
+checks in `.cache/p14c1-final-stack-source-check.log`. Native CI on this integrated
+implementation head remains required; the earlier freeze's pass is not its runtime
+qualification. After those acceptance checks pass, the owner explicitly authorized
+P14c2 work stacked on this branch without waiting for merge permission.
+
+Stacked PRs also need actual native workflow triggers: the previous filter selected
+only PRs targeting main. A focused regression failed for the two intended stack
+bases. Explicitly allow `fix/ci-gradle-cache-fanout` and
+`feat/p14c1-current-replay` alongside main for the existing read-only pull-request
+event; main-only push qualification is unchanged. No privileged event or token
+permission is added. Logs are `.cache/p14c1-stack-trigger-{red,green}.log`.
+The explicit required aggregate and actual workflow jobs remain the acceptance
+gate even if a temporary stack base has different branch-protection rules.

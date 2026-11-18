@@ -219,12 +219,14 @@ def transient_dependency_failure(output):
     )
 
 
-def bootstrap_gradle():
+def bootstrap_gradle(task="help"):
     """Retry only explicit transient dependency HTTP errors during Gradle setup."""
+    if task not in {"help", "ciDependencies"}:
+        raise RuntimeError("Only dependency setup tasks may use bootstrap retries")
     parent = ROOT / ".cache/bootstrap"
     parent.mkdir(parents=True, exist_ok=True)
-    logs = Path(tempfile.mkdtemp(prefix="gradle-help-", dir=parent))
-    args = [str(ROOT / "gradlew"), "--console=plain", "help"]
+    logs = Path(tempfile.mkdtemp(prefix="gradle-" + task + "-", dir=parent))
+    args = [str(ROOT / "gradlew"), "--console=plain", task]
     stagger = (
         int(hashlib.sha256(os.environ.get("GITHUB_JOB", "local").encode()).hexdigest(), 16) % 7
     )
@@ -269,6 +271,10 @@ def current():
             "-v",
         ]
     )
+
+
+def dependencies():
+    bootstrap_gradle("ciDependencies")
 
 
 def historical():
@@ -600,6 +606,7 @@ def main():
         choices=[
             "doctor",
             "bootstrap",
+            "dependencies",
             "check",
             "smoke",
             "java",

@@ -24,6 +24,10 @@ Gradle setup retries explicit dependency HTTP 429/502/503/504 failures at most
 three times, retaining every attempt under `.cache/bootstrap/gradle-help-*`.
 Missing coordinates, integrity/compiler errors and runtime checks still fail.
 See [bootstrap recovery and evidence](ci-bootstrap-recovery.md).
+CI's existing toolchain job prepares a verified public Gradle module cache with
+`python3 tools/dev.py dependencies`; downstream bootstrap jobs restore the exact
+cache before qualification. Cache misses fail visibly. The prefetch command does
+not run source compilation or tests; see [cache fan-out repair](ci-cache-fanout.md).
 
 `doctor` reports effective versions and pin drift; `check` runs repository hygiene,
 Ruff lint/format checks, mypy, offline contracts/catalog checks and Python regressions.

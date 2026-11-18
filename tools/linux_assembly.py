@@ -22,7 +22,7 @@ from linux_assembly_cases import (
     encoded,
 )
 from stack import DEPLOY, StackError, project_lock, run, save
-from transport import Transport, java_env
+from transport import Transport, broker_pause_checkpoint, java_env
 
 CACHE = ROOT / ".cache/linux-assembly-runtime"
 BUILDS = ROOT / ".cache/linux-assembly-build"
@@ -395,7 +395,9 @@ def checkpoint_inventory(test, checkpoint):
 
 def reject_incompatible(test, checkpoint):
     config = test.config()
-    test.stop()
+    # A running job can supersede/delete the caller's candidate before cancellation.
+    # Select and verify the retained checkpoint only after the original job stops.
+    checkpoint = test.retained_checkpoint(test.latest_job()["job_id"])
     command = [
         "/opt/flink/bin/flink",
         "run",
@@ -429,10 +431,17 @@ def reject_incompatible(test, checkpoint):
     while time.monotonic() < deadline:
         state = test.rest("/jobs/" + job)["state"]
         if state == "FAILED":
-            detail = json.dumps(test.rest("/jobs/" + job + "/exceptions"))
+            exceptions = test.rest("/jobs/" + job + "/exceptions")
+            save(
+                ROOT
+                / ".cache/linux-assembly-reports"
+                / (test.project + "-incompatible-exceptions.json"),
+                dict(job_id=job, checkpoint=checkpoint, exceptions=exceptions),
+            )
+            detail = json.dumps(exceptions)
             if "incompatible_assembly_restore" not in detail:
                 raise StackError("assembly_unrelated_restore_failure")
-            return
+            return checkpoint
         if state in ("FINISHED", "CANCELED", "SUSPENDED"):
             raise StackError("assembly_restore_not_rejected")
         time.sleep(1)
@@ -612,7 +621,7 @@ def _qualify_default():
             wait_outputs(test, oracle)
             stage("checkpoint_restore_binding_and_jobmanager_recovery")
             cp = test.wait_checkpoint(job["job_id"])
-            reject_incompatible(test, cp)
+            cp = reject_incompatible(test, cp)
             job = test.start(restore=cp["external_path"])
             wait_outputs(test, oracle)
             cp = test.retained_checkpoint(job["job_id"])
@@ -631,37 +640,15 @@ def _qualify_default():
             test.wait_input_checkpoint(paused_ack[-1]["offset"])
             before_pause = test.wait_checkpoint(job["job_id"])
             paused_inventory = checkpoint_inventory(test, before_pause)
-            require(
-                any(
-                    g["members"][0]["record_id"] == paused_row["raw"]["record_id"]
-                    for g in paused_inventory["groups"]
-                )
+            paused_state = next(
+                g
+                for g in paused_inventory["groups"]
+                if g["members"][0]["record_id"] == paused_row["raw"]["record_id"]
             )
-            test.pause_broker(True)
-            try:
-                # Exceed the original admission deadline while Kafka is actually unavailable.
-                time.sleep(40)
-                latest = test.rest("/jobs/" + job["job_id"] + "/checkpoints")["latest"]["completed"]
-                # A racing pre-pause checkpoint may complete, but cannot retire the timed closure.
-                during_pause = checkpoint_inventory(test, latest)
-                require(
-                    any(
-                        g["members"][0]["record_id"] == paused_row["raw"]["record_id"]
-                        for g in during_pause["groups"]
-                    )
-                    or any(
-                        i["kind"] == "manifest" and i["key"] == paused_group["manifest_id"]
-                        for i in during_pause["outbox"]
-                    )
-                )
-            finally:
-                test.pause_broker(False)
-            if test.rest("/jobs/" + job["job_id"])["state"] not in (
-                "FAILED",
-                "CANCELED",
-                "FINISHED",
-            ):
-                test.stop()
+            require(paused_state["deadline"] == paused_state["opened"] + 30000)
+            latest = broker_pause_checkpoint(
+                test, job["job_id"], paused_state, paused_group["manifest_id"], checkpoint_inventory
+            )
             job = test.start(restore=latest["external_path"])
             wait_outputs(test, oracle)
             broker_evidence = dict(

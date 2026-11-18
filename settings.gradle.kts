@@ -38,3 +38,6 @@ project(":archive-writer").projectDir = file("packages/archive-writer")
 
 include("historical-replay")
 project(":historical-replay").projectDir = file("packages/historical-replay")
+
+include("current-replay")
+project(":current-replay").projectDir = file("packages/current-replay")

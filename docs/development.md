@@ -204,3 +204,21 @@ interruptions, helper recovery and an isolated original-source Kafka/Flink/archi
 flow. Serialize this with other heavy suites. Synthetic qualification does not
 establish private recorded or throughput coverage; exact evidence belongs in the
 [P14b ledger](p14b-ledger.md).
+
+## P14c1 current-policy replay checks
+
+```sh
+uv run --locked python tools/dev.py current
+uv run --locked python tools/current_replay_verify.py
+```
+
+The first builds the thin current executor and original-profile helpers, checks
+closed contracts and installed resources, and runs current component/gate tests.
+The second executes actual archive/current JVM replay against independent source,
+count, membership and attribution expectations, with isolated runs and publication
+faults. Serialize heavy qualification with historical and other runtime suites.
+The fail-closed `current-replay-verification` job runs both commands when applicable;
+component checks alone do not establish runtime recovery. Private originals remain
+outside public CI. See the [operator guide](current-replay.md),
+[owning design](p14c1-design.md) and [qualification ledger](p14c1-ledger.md) for exact
+bounds and separate acceptance gates.

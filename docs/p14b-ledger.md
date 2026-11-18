@@ -254,3 +254,89 @@ checked through the locked Markdownlint API; content/relative-link and workflow
 validation passed. Public native CI, owner semantic review and merge authorization
 remain separate open gates. No private recorded replay or complete P14 acceptance
 is claimed.
+
+## Native attempt 1 — setup failures retained
+
+PR #51 run 44252222524 on exact head
+`c18f77828676ec9ee3a35aa4cb868fe8e26fa90c` is still running. Completed Windows
+job 134625439174 and search job 134625439249 failed during locked development-tool
+bootstrap / Gradle project configuration. Their actual failing requests were Maven
+Central POM downloads returning HTTP 429: Plexus Utils 4.0.3 and Kotlin Metadata
+JVM 2.4.10 respectively. Neither runtime qualification step started; these failures
+are not archive/replay fault assertions or passing qualification.
+
+Original complete logs and observed jobs are retained under
+`.cache/p14b-ci-44252222524/`. Windows log SHA-256 is
+`0dbef2560c2552b54a5bd80b8c10d533e6908e863eb529e5b9744021adb2b9a2`;
+search log SHA-256 is
+`d4d9f1ea3f6614cb511d64559bda0b258ba66c5a2789859efdcf1c148f3fbd9e`.
+Individual unchanged job-rerun requests were rejected by GitHub with HTTP 403:
+“The workflow run containing this job is already running”. Retry must await the
+active run's completion. No source correction or passing native result is claimed
+from this observation. These completion notes remain local until consolidated
+qualification evidence is available.
+
+Native attempt 1 subsequently completed as failure at aggregate job 134636056088.
+Every other applicable job passed, including historical replay 134625439236,
+archive 134625439220 and integration 134625439218. The five acquisition/private
+recorded opt-in jobs were deliberately skipped. The aggregate correctly rejected
+the two failed setup jobs; no passing aggregate is claimed. Completed run metadata
+and original aggregate/runtime logs are retained in the same local CI directory.
+After completion, GitHub accepted the unchanged failed-jobs rerun on exact
+`c18f77828676ec9ee3a35aa4cb868fe8e26fa90c`; its result is pending and will be
+recorded separately from attempt 1. No source changes were needed for the observed
+HTTP 429 failures.
+
+## Native PR gate completed — unchanged attempt 2
+
+Run 44252222524 attempt 2 completed successfully at 2026-11-18 07:33:50 UTC,
+associated with exact PR head `c18f77828676ec9ee3a35aa4cb868fe8e26fa90c`.
+Every applicable job and aggregate 134650227484 passed; the five explicit
+acquisition/private-recorded opt-in jobs were skipped. Windows job 134642865472
+and search job 134642865769 passed after the unchanged setup retry. Attempt 1
+remains failed. No code correction, new commit or transferred passing result is
+implied by the retry. Latest run/job metadata and full logs are retained under
+`.cache/p14b-ci-44252222524/`.
+
+The runtime report identifies GitHub's synthetic PR test merge
+`bb4eab7934ba2fe19459a8e623801aba340cab1c`, parents
+`cd6f46ec70e6c7ca17e3cd21594e396ef541509c` and the above PR head, tree
+`ce4e171b08da0401d3986de1b8ff0fe699579c0d`. The working-tree diff was empty.
+This is a passing PR gate; it is not an actual owner-merged-main qualification.
+Successful runtime logs retained in the latest attempt can retain their original
+execution timestamps; they are not claimed to be independently rerun executions.
+
+The native Linux AMD64 historical report qualified project
+`detectbridge-p13-history-3bc53a81f7`, 24 inputs / 57 physical outputs and two isolated
+replays, fifteen component units, eleven unit/advisory and seven artifact/pin
+interruption points, helper cleanup, original-range/conflict/missing-object checks
+and both separate closure edges. Executor SHA-256 is
+`32bad6f526e3208bf4b2684979a4d600c82b35070e39cbeb3a5fce6d5fccfcc4`;
+reader `e5eaea3560d150e176cb0f68e941ca22efb25fb6f16b2a1d1d76465a94ef02d0`;
+original producer `51a984dedc04af7b368fea63a9cec88d2127c6ddf5aa019352f491a3481bad6d`.
+Trusted image index remains 55ccb2ad; actual AMD64 image ID is
+`sha256:6b26436e8a89f49acaf0133e35f1e3715544e7c984d0f68cd8038137ab2e6be9`.
+Kafka selection is `5df9ddf91f3e5bfa3735b318cb17eb39dcc42d475a9f55cf7df85980774fde88`.
+Historical full-log SHA-256 is
+`3b9393b258c9ad3853aed4fb9d2f0fb24b5893ed6577b3d37f206b36ecb13855`.
+Private recorded replay remains pending and is not inferred from synthetic CI.
+
+PR #51 reviews and inline review threads were both empty when refreshed after
+success. Owner semantic review, explicit merge authorization and actual merged-main
+qualification remain open. These final completion notes stay local to avoid a
+progress-only evidence commit that would change the already qualified PR head.
+
+## Owner merge and actual merged-main qualification
+
+The owner merged #51 regularly as
+`943d143eb4e5dc6d07871513f993efbddf1ab230`, with final head c18f778.
+Actual merged-main run 44326278636 attempt 1 failed OpenSearch writer setup at
+Gradle plugin classpath resolution; all runtime jobs including integration passed.
+That log reports unresolved Plugin Portal artifacts, not a verified HTTP 429.
+Original log/metadata remain in `.cache/p14b-merge-ci-44326278636/`.
+Unchanged attempt 2 passed every applicable job and aggregate 134909773433 on
+exact 943d143, completing 2026-11-18 15:24:07 UTC. The five deliberate
+acquisition/private-recorded opt-in jobs stayed skipped. This is actual merged
+qualification, distinct from PR head/test-merge evidence. CI repair #53 addresses
+recurring setup failures separately; current-policy implementation remains on #52
+after that repair's owner merge and actual merged qualification.

@@ -169,6 +169,7 @@ def doctor():
     consistency()
     run(["uv", "run", "--locked", "python", "tools/check_archive.py"])
     run(["uv", "run", "--locked", "python", "tools/check_historical.py"])
+    run(["uv", "run", "--locked", "python", "tools/check_current_replay.py"])
     run(["uv", "run", "--locked", "python", "tools/check_detection.py"])
 
 
@@ -249,6 +250,27 @@ def bootstrap_gradle():
         time.sleep(delay)
 
 
+def current():
+    run(["uv", "run", "--locked", "python", "tools/current_replay.py", "build"])
+    run(["uv", "run", "--locked", "python", "tools/check_current_replay.py", "--artifacts"])
+    run(
+        [
+            "uv",
+            "run",
+            "--locked",
+            "python",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "tools/tests",
+            "-p",
+            "test_current*.py",
+            "-v",
+        ]
+    )
+
+
 def historical():
     run(["uv", "run", "--locked", "python", "tools/historical.py", "build"])
     run(["uv", "run", "--locked", "python", "tools/check_historical.py", "--artifacts"])
@@ -303,6 +325,7 @@ def check():
     consistency()
     run(["uv", "run", "--locked", "python", "tools/check_archive.py"])
     run(["uv", "run", "--locked", "python", "tools/check_historical.py"])
+    run(["uv", "run", "--locked", "python", "tools/check_current_replay.py"])
     run(["uv", "run", "--locked", "python", "tools/check_detection.py"])
     run(["uv", "run", "--locked", "python", "tools/check_datasets.py"])
     run(["uv", "run", "--locked", "python", "tools/check_contracts.py"])
@@ -587,6 +610,7 @@ def main():
             "search",
             "archive",
             "historical",
+            "current",
             "verify",
         ],
     )

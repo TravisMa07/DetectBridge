@@ -86,7 +86,8 @@
         "integration": "${{ steps.paths.outputs.integration }}",
         "search": "${{ steps.paths.outputs.search }}",
         "archive": "${{ steps.paths.outputs.archive }}",
-        "historical": "${{ steps.paths.outputs.historical }}"
+        "historical": "${{ steps.paths.outputs.historical }}",
+        "current": "${{ steps.paths.outputs.current }}"
       }
     },
     "repository-hygiene": {
@@ -222,7 +223,8 @@
         "integration-verification",
         "search-verification",
         "archive-verification",
-        "historical-replay-verification"
+        "historical-replay-verification",
+        "current-replay-verification"
       ]
     },
     "dataset-acquisition": {
@@ -892,6 +894,60 @@
           "with": {
             "name": "p14b-historical-failure-diagnostics",
             "path": ".cache/historical-qualification-*/report.json\n.cache/historical-qualification-*/failure-*.json\n.cache/historical-qualification-*/**/failures/*.json",
+            "include-hidden-files": true,
+            "if-no-files-found": "warn",
+            "retention-days": 7
+          }
+        }
+      ]
+    },
+    "current-replay-verification": {
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 45,
+      "needs": [
+        "classify-changes"
+      ],
+      "if": "${{ needs.classify-changes.outputs.current == 'true' }}",
+      "steps": [
+        {
+          "uses": "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "with": {
+            "persist-credentials": false
+          }
+        },
+        {
+          "uses": "actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0",
+          "with": {
+            "python-version": "3.12.12"
+          }
+        },
+        {
+          "name": "Install pinned development tools",
+          "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
+        },
+        {
+          "name": "Retain bootstrap dependency diagnostics",
+          "if": "${{ failure() }}",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "bootstrap-current-replay-verification",
+            "path": ".cache/bootstrap/gradle-help-*/attempt-*.log",
+            "include-hidden-files": true,
+            "if-no-files-found": "ignore",
+            "retention-days": 7
+          }
+        },
+        {
+          "name": "Qualify explicit current policies, regrouping and isolated recovery",
+          "run": "uv run --locked python tools/dev.py current\nuv run --locked python tools/current_replay_verify.py"
+        },
+        {
+          "name": "Retain synthetic current replay summary",
+          "if": "${{ failure() }}",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "p14c1-current-replay-failure-summary",
+            "path": ".cache/current-replay-qualification-*/report.json",
             "include-hidden-files": true,
             "if-no-files-found": "warn",
             "retention-days": 7

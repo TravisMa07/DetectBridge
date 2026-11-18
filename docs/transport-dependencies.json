@@ -290,6 +290,12 @@
           ]
         },
         {
+          "lockfile": "packages/current-replay/gradle.lockfile",
+          "configurations": [
+            "compileClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/historical-replay/gradle.lockfile",
           "configurations": [
             "compileClasspath",
@@ -1517,6 +1523,12 @@
           ]
         },
         {
+          "lockfile": "packages/current-replay/gradle.lockfile",
+          "configurations": [
+            "compileClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/historical-replay/gradle.lockfile",
           "configurations": [
             "compileClasspath",
@@ -2403,6 +2415,12 @@
           ]
         },
         {
+          "lockfile": "packages/current-replay/gradle.lockfile",
+          "configurations": [
+            "compileClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/historical-replay/gradle.lockfile",
           "configurations": [
             "compileClasspath",
@@ -2497,6 +2515,12 @@
           "configurations": [
             "compileClasspath",
             "runtimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/current-replay/gradle.lockfile",
+          "configurations": [
+            "compileClasspath"
           ]
         },
         {
@@ -2680,6 +2704,12 @@
           "configurations": [
             "compileClasspath",
             "runtimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/current-replay/gradle.lockfile",
+          "configurations": [
+            "compileClasspath"
           ]
         },
         {

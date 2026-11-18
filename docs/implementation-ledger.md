@@ -1,22 +1,25 @@
 # P10–P14 implementation ledger
 
-Current completion (2026-11-18 UTC): bounded P13 owner acceptance and owner
-regular merge #49 as 07e5382 are complete. Final-head 44202078968 and actual
-merged-main 44206958555 passed; issue #13 is closed. P14a is merged/qualified and
-P14b implementation is tracked below.
+Current completion (2026-11-18 UTC): bounded P13 owner acceptance, regular merge
+PR #49 as 07e5382 and actual merged-main 44206958555 passed; issue #13 is closed.
 See [P13 acceptance](p13-acceptance.md) for exact evidence and preserved limits.
-P14 owner: primary agent, same checkout. The owner merged P14a #50 as cd6f46e;
-its native head bfe656e passed, and merged-main run 44232624596 attempt 2 passed on exact cd6f46e after an
-unchanged toolchain HTTP 429 retry. Original logs are
-retained in the [ledger](p14-ledger.md). Branch `feat/p14b-historical-replay` contains
-the [P14b design/expectation freeze](p14b-design.md) from that merge; no P14b
-production implementation preceded that success; separate freeze 5922901
-precedes the current P14b implementation. The milestone
-[design](p14-design.md) and [expectations](p14-expectations.md) still own the broader
-acceptance. P14b implementation and its [own qualification](p14b-ledger.md) are
-locally qualified; native CI and owner gates remain open. P14c and P05 archive
-import remain pending. The untracked P14 handoff
-remains uncommitted.
+P14a #50 and P14b #51 are owner-merged and independently qualified on their actual
+merged commits. P14b main 44326278636 attempt 2 passed on 943d143; its earlier
+setup failure remains failed. The owner merged CI bootstrap repair #53 as b495c2b;
+actual main 44339557684 attempt 3 passed on that exact merge after two retained
+setup failures. [P14c1](p14c1-ledger.md) implements explicit current-policy replay
+from qualified b495c2b with the independently frozen expectations in b068b53.
+Native CI, owner acceptance/merge and actual merged qualification remain separate.
+The untracked P14 handoff remains uncommitted.
+
+P14c1 coordination: the primary agent owns contracts, core, shared tooling/CI and
+status integration. Independent agents own the runtime qualification harness,
+core review/operator guide and recurring CI failure investigation; heavy suites
+are serialized and feature changes are isolated in the P14c1 worktree. The owner
+authorized starting P14c2 stacked on P14c1 after its acceptance checks pass without
+waiting for P14c1 merge. This does not authorize merging either PR. Remaining P14
+scope includes retention/deletion, controlled recorded reuse, P05 archive import
+and the explicit milestone acceptance map; no completed P14 claim follows here.
 
 Current P13d audit (2026-11-17): P13a–c are owner-merged; #49 adds recorded
 qualification and the [acceptance map](p13-acceptance.md). Earlier progress entries

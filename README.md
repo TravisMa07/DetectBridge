@@ -60,9 +60,13 @@ merged-main run 44232624596 attempt 2 passed after an unchanged retry of a
 dependency-download HTTP 429.
 [P14b historical replay](docs/historical-replay.md) implements sealed selections,
 original-membership execution and isolated resumable output after its separate
-expectation freeze 5922901. [Qualification and limits](docs/p14b-ledger.md) remain
-separate from owner acceptance and merge. Current-policy reprocessing, retention,
-P05 archive import, management API and UI remain pending; P14 is not complete.
+expectation freeze 5922901. The owner merged #51 as `943d143`; actual merged-main
+run 44326278636 attempt 2 passed on that exact revision.
+[Qualification and limits](docs/p14b-ledger.md) retain the earlier failed attempt. [P14c1 current-policy replay](docs/current-replay.md)
+adds explicit new-plan evaluation and scheduled regrouping in a separate resumable
+local workspace. Its [qualification and acceptance gates](docs/p14c1-ledger.md)
+remain separate. Retention, P05 archive import, management API and UI remain pending;
+P14 is not complete.
 P06 provides local Kafka/Flink infrastructure and optional authenticated OpenSearch.
 Repository hygiene tooling and
 contributor templates were introduced in P01; P02 adds reproducible build tools,
@@ -94,6 +98,8 @@ caps are planned; finite operational limits are still required.
 - [Event/source contract field reference](contracts/v1/README.md)
 - [Recorded dataset acquisition](docs/datasets.md)
 - [Local replay, timing and recovery](docs/replay.md)
+- [Historical archive replay](docs/historical-replay.md)
+- [Explicit current-policy archive replay](docs/current-replay.md)
 - [Local infrastructure and qualification](docs/local-stack.md)
 - [Kafka/Flink replay transport](docs/transport.md)
 - [Compiler/evaluator slice](docs/detection.md)

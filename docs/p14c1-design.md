@@ -1,9 +1,10 @@
 # P14c1 explicit current-policy replay freeze
 
-Status: owning design and independent expectations before production code.
+Status: design/expectations frozen in b068b53 before production code; implementation
+and qualification are tracked in the [ledger](p14c1-ledger.md).
 Owner: primary agent, issue #14, branch `feat/p14c1-current-replay`.
 Base: owner-merged P14b #51, `943d143eb4e5dc6d07871513f993efbddf1ab230`.
-Its actual merged-main qualification must pass before implementation. The original
+Its actual merged-main qualification subsequently passed; see the ledger. The original
 handoff and local P14b completion notes are preserved. Apply A02–A07 and the
 [P14 milestone design](p14-design.md); this is a bounded subdivision of P14c.
 
@@ -13,9 +14,10 @@ Implement explicit new-plan evaluation and deterministic offline regrouping of
 original inputs from a verified P14b sealed selection. Output remains private,
 local and isolated, with resumable atomic transition/state publication. Preserve
 the original archive, historical pin, original contexts and historical outputs.
-P14c2 owns retention plans, deletion, leases/anchors and P16 coordination; a later
-qualification PR owns controlled recorded archive-to-replay reuse and the complete
-P14 acceptance map. P05 archive import remains explicit later work. No deletion,
+P14c2 owns retention plans, deletion, leases/anchors and P16 coordination. The
+owner subsequently requested P14c2 as the final P14 slice, so its owning design
+will also cover controlled recorded archive-to-replay reuse, P05 archive import
+and the complete P14 acceptance map. Those additions do not expand P14c1. No deletion,
 activation, identity repair, API/UI, live forwarding, HA or throughput claim is
 introduced here. These remaining items prevent claiming P14 complete.
 

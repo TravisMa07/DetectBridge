@@ -256,8 +256,11 @@ is recorded in the acceptance map; P13 acceptance is not implied.
   and owner/merge gates remain separate. [P14b design/expectations](p14b-design.md)
   freeze 5922901 precedes historical replay implementation on qualified P14a main.
   P14b implements bounded [historical replay](historical-replay.md), with its own
-  [qualification and owner gates](p14b-ledger.md). P14c current-policy/retention and
-  P05 import remain pending;
+  [qualification and owner gates](p14b-ledger.md); the owner merged #51 as 943d143
+  and actual merged-main attempt 2 passed. P14c1 implements bounded explicit
+  [current-policy replay](current-replay.md) after freeze b068b53, with its own
+  [qualification and acceptance gates](p14c1-ledger.md). Retention/deletion, controlled
+  recorded reuse, P05 import and complete milestone acceptance remain open;
   no complete P14 acceptance is claimed.
 - Depends on: P05, P13.
 - Deliver: durable archive segments/manifests, pinned artifacts, historical

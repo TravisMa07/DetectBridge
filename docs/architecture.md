@@ -252,10 +252,10 @@ existing P13 deployment and writer, with a separately pinned qualification plan.
 It reuses accepted source/host/boot and independent source assertions, and corrects
 qualification checkpoint selection/probe attribution without changing persisted
 runtime semantics. See [design](p13d-design.md) and [acceptance map](p13-acceptance.md).
-P14 archive implementation remains pending. P13 completed its bounded owner
+P13 completed its bounded owner
 acceptance, owner merge #49 and actual merged-main qualification on 07e5382;
-[P14 design](p14-design.md) proposes routine archive/replay choices under A02–A07.
-No new archive contract or architectural change is accepted by that proposal.
+[P14 design](p14-design.md) scopes archive/replay work under A02–A07;
+its implemented slices and separate qualification gates are recorded below.
 
 The pinned Kafka writer compatibility guard is scoped to P13's existing
 at-least-once sink. It preserves first-error propagation and stock resource
@@ -279,4 +279,14 @@ contract. Separate processes keep archive dependencies out of the historical
 classpath. No P13 checkpoint adoption, activation or live search forwarding occurs.
 [Freeze 5922901](p14b-design.md), [operator guide](historical-replay.md) and
 [qualification](p14b-ledger.md) retain the supported profile, finite bounds and
-separate owner/native gates. Current-policy/retention remain P14c.
+separate owner/native gates.
+
+P14c1 adds explicit new-plan evaluation and virtual-clock admission of selected
+original inputs through that supported original Machine, assembler and evaluator.
+Current membership may change; original archive bytes, membership and historical
+results remain immutable. A disjoint local workspace binds the request, artifacts,
+root and limits; each atomic transition includes actual machine state, and resume
+re-executes and verifies the complete committed prefix before appending. No old
+checkpoint, live forwarding or activation is adopted. See the [owning freeze](p14c1-design.md),
+[operator guide](current-replay.md) and [qualification gates](p14c1-ledger.md).
+Retention/deletion and remaining milestone acceptance are separate work.

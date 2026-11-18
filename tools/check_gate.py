@@ -4,6 +4,7 @@ import json
 import os
 
 CONDITIONAL = {
+    "current-replay-verification": "current",
     "historical-replay-verification": "historical",
     "archive-verification": "archive",
     "search-verification": "search",

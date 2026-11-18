@@ -56,11 +56,13 @@ within those accepted limits. P14 prerequisites are met; its local
 [design](docs/p14-design.md) and [expectations](docs/p14-expectations.md)
 precede implementation. [P14a local archive](docs/archive.md) implements exact-byte
 storage and independent Kafka offset recovery, owner-merged in #50 as `cd6f46e`;
-actual merged-main qualification is still open after a dependency-download HTTP 429.
-The [P14b design draft](docs/p14b-design.md) prepares pinned historical replay; its
-implementation waits for that prerequisite. Qualification and acceptance are
-tracked [separately](docs/p14-ledger.md). Historical/current-policy
-archive replay, management API and UI remain pending.
+merged-main run 44232624596 attempt 2 passed after an unchanged retry of a
+dependency-download HTTP 429.
+[P14b historical replay](docs/historical-replay.md) implements sealed selections,
+original-membership execution and isolated resumable output after its separate
+expectation freeze 5922901. [Qualification and limits](docs/p14b-ledger.md) remain
+separate from owner acceptance and merge. Current-policy reprocessing, retention,
+P05 archive import, management API and UI remain pending; P14 is not complete.
 P06 provides local Kafka/Flink infrastructure and optional authenticated OpenSearch.
 Repository hygiene tooling and
 contributor templates were introduced in P01; P02 adds reproducible build tools,

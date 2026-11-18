@@ -110,6 +110,7 @@ class StackTests(unittest.TestCase):
                             "integration": "false",
                             "search": "false",
                             "archive": "false",
+                            "historical": "false",
                         },
                     },
                     "repository-hygiene": {"result": "success"},
@@ -126,6 +127,7 @@ class StackTests(unittest.TestCase):
                     "integration-verification": {"result": "skipped"},
                     "search-verification": {"result": "skipped"},
                     "archive-verification": {"result": "skipped"},
+                    "historical-replay-verification": {"result": "skipped"},
                     "local-stack-verification": {
                         "result": "success" if selected == "true" else "skipped"
                     },

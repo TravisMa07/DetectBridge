@@ -271,3 +271,12 @@ root/group. [Owning freeze](p14a-design.md) e9b6143 precedes implementation;
 [qualification and limits](p14-ledger.md) remain separate. Original P03/P05/P12/P13
 contracts, producers and derived-search roles stay compatible. This is not P14b/c
 historical/current execution, P05 archive import, automatic retention or HA.
+
+P14b adds sealed selections, an external replay catalog and original-membership
+historical batch execution under A02–A07. It invokes the exact accepted P13 JAR's
+adapters/assembler/evaluator and pins its controlling CLI and local publication
+contract. Separate processes keep archive dependencies out of the historical
+classpath. No P13 checkpoint adoption, activation or live search forwarding occurs.
+[Freeze 5922901](p14b-design.md), [operator guide](historical-replay.md) and
+[qualification](p14b-ledger.md) retain the supported profile, finite bounds and
+separate owner/native gates. Current-policy/retention remain P14c.

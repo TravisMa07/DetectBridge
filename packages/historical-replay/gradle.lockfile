@@ -1,0 +1,10 @@
+# This is a Gradle generated file for dependency locking.
+# Manual edits can break the build and are not advised.
+# This file is expected to be part of source control.
+# To regenerate this file, run: ./gradlew :historical-replay:dependencies --write-locks
+com.fasterxml.jackson.core:jackson-annotations:2.21=compileClasspath,testCompileClasspath
+org.apache.kafka:kafka-clients:4.2.0=compileClasspath,testCompileClasspath
+tools.jackson.core:jackson-core:3.1.8=compileClasspath,testCompileClasspath
+tools.jackson.core:jackson-databind:3.1.8=compileClasspath,testCompileClasspath
+tools.jackson:jackson-bom:3.1.8=compileClasspath,testCompileClasspath
+empty=annotationProcessor,testAnnotationProcessor

@@ -401,6 +401,48 @@ def needs_archive(paths):
     )
 
 
+def needs_historical(paths):
+    shared = {
+        "settings.gradle.kts",
+        "settings-gradle.lockfile",
+        "build.gradle.kts",
+        "gradlew",
+        "gradlew.bat",
+        "gradle.properties",
+        "tools/dev.py",
+        "tools/stack.py",
+        "tools/integration.py",
+        "tools/archive.py",
+        "tools/toolchains.json",
+        "pyproject.toml",
+        "uv.lock",
+        "tools/classify_changes.py",
+        "tools/check_gate.py",
+        "tools/dependency_inventory.py",
+        "docs/transport-dependencies.json",
+    }
+    prefixes = (
+        "packages/historical-replay/",
+        "packages/archive-writer/",
+        "packages/integration-job/",
+        "packages/linux-adapters/",
+        "packages/windows-adapters/",
+        "packages/detection-evaluator/",
+        "packages/transport-contracts/",
+        "contracts/",
+        "tools/historical",
+        "tools/check_historical",
+        "tools/tests/test_historical",
+        "tools/integration_oracle",
+        "tools/integration_cases",
+        "tools/linux_assembly",
+        "gradle/",
+        "deploy/local/",
+        ".github/workflows/",
+    )
+    return any(p in shared or p.startswith(prefixes) for p in paths if not p.endswith(".md"))
+
+
 if __name__ == "__main__":
     base = os.environ.get("CHANGE_BASE", "")
     head = os.environ.get("CHANGE_HEAD", "HEAD")
@@ -420,6 +462,7 @@ if __name__ == "__main__":
         output.write(f"transport={str(needs_transport([p for p in paths if p])).lower()}\n")
         output.write(f"writer={str(needs_writer([p for p in paths if p])).lower()}\n")
         output.write(f"integration={str(needs_integration([p for p in paths if p])).lower()}\n")
+        output.write(f"historical={str(needs_historical([p for p in paths if p])).lower()}\n")
         output.write(f"archive={str(needs_archive([p for p in paths if p])).lower()}\n")
         output.write(f"search={str(needs_search([p for p in paths if p])).lower()}\n")
         output.write(f"assembly={str(needs_assembly([p for p in paths if p])).lower()}\n")

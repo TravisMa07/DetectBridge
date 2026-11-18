@@ -416,3 +416,42 @@ contracts/catalog/dependency checks, hygiene/secrets, lint/format and types on t
 documentation-only working tree. Log: `.cache/p14b-preimplementation-check.log`.
 The new untracked schemas/fixture hashes/text/relative links were also checked
 explicitly, since tracked-file discovery omits them. No P14b runtime pass is claimed.
+
+Attempt 1 completed failed at 2026-11-18 04:18:11 UTC. Every applicable runtime
+job passed on cd6f46e, including assembly and integration; only toolchain bootstrap
+and the correctly failing aggregate failed. Integration project
+`detectbridge-p13-test-1146eae339c3` passed 44 inputs, 103 logical/144 physical
+outputs, all seven required sink failures and 40-second broker pause. Exact JAR
+remains 51a984de; bundle
+`843d8fad661afe4ec777d16ce504741eea72a416d96a7138d9b1516c6067f30d`,
+evaluation bundle `9cf012a4583903b1f5518df83a4842922b4a1c9e5f3c1f17bfedb4222f14b69b`,
+actual AMD64 image
+`sha256:49c2f078c03a960971d04c29dc3991104d1b3acb46601ded18bf0224ac92449c`.
+
+Original merged-run integration/archive/assembly logs are retained beside the
+failed toolchain log; SHA-256 values respectively:
+`ee1987e495ef36eca11bd420b468563985c3053f9db65b263391ed8acf53ab6b`,
+`3d16ab6883cc7aedf7dc98b624ae931a9f9a580313e412dde2ea72cf7026710b`,
+`f47b28f4c0c535cedaee73d8f7bf0a40cab9d4073cd86324484b72f0e94abb34`.
+The original attempt's job metadata is retained as `attempt-1-jobs.json`.
+After completion GitHub accepted an unchanged failed-jobs rerun on the same SHA.
+Its outcome is separate evidence; the original failed attempt stays failed.
+
+## Exact merged-main gate passed before P14b production work
+
+Run 44232624596 attempt 2 completed successfully on exact merge
+`cd6f46ec70e6c7ca17e3cd21594e396ef541509c` at 2026-11-18 04:20:11 UTC.
+Every applicable job and `required-checks` passed; only the five deliberately
+unselected acquisition/recorded jobs skipped. The unchanged toolchain retry is
+job 134573465429 and the fresh aggregate is 134574053423. Original successful
+runtime jobs from attempt 1 remain attributed to those same-SHA jobs, not to a PR
+head. Attempt 1 remains failed; the retry is separate successful evidence.
+
+The original retry toolchain log is retained as
+`.cache/p14a-merge-ci-44232624596/toolchain-attempt-2.log`, SHA-256
+`482c99f7bbd478465a9e759e227a35e6bddc67f9ba72977cdda75d0d4899d542`.
+Exact run/job metadata is retained as `attempt-2-run.json` and
+`attempt-2-jobs.json`. No source change, test waiver or resource increase was used.
+The P14a bounded merge/qualification gate is complete. P14b production code began
+only after this result; its separate freeze 5922901 already existed. P14b's own
+[evidence and remaining gates](p14b-ledger.md) do not claim complete P14 acceptance.

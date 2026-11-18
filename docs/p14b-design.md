@@ -1,10 +1,11 @@
 # P14b pinned historical replay freeze
 
-Status: pre-implementation design/independent expectation freeze, 2026-11-18 UTC.
-No P14b production implementation yet; [qualification ledger](p14b-ledger.md).
+Status: design/independent expectation freeze 5922901, 2026-11-18 UTC, followed by
+local implementation. The [ledger](p14b-ledger.md) separates actual qualification,
+unavailable coverage and remaining owner/native gates.
 Owner: primary agent, branch `feat/p14b-historical-replay`, issue #14. P14a is
-owner-merged as cd6f46e; actual merged-main qualification remains a prerequisite
-before implementing/adopting this base. Local P14a completion notes are preserved;
+owner-merged as cd6f46e; merged-main run 44232624596 attempt 2 passed before
+production implementation. Original failed-attempt evidence is preserved;
 the handoff stays uncommitted. Preserve A02–A07 and the P14 milestone design.
 
 ## Bounded behavior and exclusions
@@ -60,7 +61,10 @@ strings, changed artifacts and arbitrary Java/Python supplied by a manifest neve
 become an executable fallback. Future artifacts need explicit supported-profile
 review and qualification, not automatic nearest-version adoption.
 
-Build a small original Java executor JAR containing only its own history classes.
+Build a small original Java executor JAR containing only its own history classes
+and metadata copies of its controlling CLI, validator, lock and closed schemas.
+Verify those controlling bytes against the pinned artifact before execution;
+an incompatible orchestrator cannot silently continue a partial run.
 Run it in an isolated JVM with the exact trusted original P13 JAR on its classpath;
 verify the original JAR hash before class loading and enforce actual class origins.
 No P13 producer/library bytecode or state serializer is changed. The archive reader
@@ -68,6 +72,12 @@ runs in a separate process, preventing its newer dependencies from shadowing the
 historical classes. Both helpers have pinned artifact/image hashes, no network,
 512 MiB memory, 320 MiB heap and bounded filesystem mounts; no arbitrary artifact
 lookup, shell interpolation or user-supplied class entrypoint.
+
+The pinned Flink base image supplies the original logging runtime on its fixed
+library classpath; parser/evaluator/boundary classes must originate in the verified
+original JAR. The bridge also invokes the original P13 input schemas and registered
+object/range/framing resolver. These private APIs share the single-JAR pin and
+maintenance boundary; no newer library approximates original admission semantics.
 
 Windows and authentication use original pure adapters. Audit uses the original
 Assembler's exact private `close` method with validated explicit original members,
@@ -135,6 +145,18 @@ future migration, never silent adoption. Never adopt P05/P12/P13 or current-poli
 checkpoints. A completed resume validates and appends nothing. One mutator per root;
 no overwrite of committed output, silent repair or reuse of original run identity.
 
+Create a helper container before starting it, with a deterministic catalog-owned
+name and durable active marker. Under the catalog lock, stop surviving owned
+helpers before cleaning unpublished work; killed parents and client timeouts cannot
+leave a writer racing resume. Catalog publication is atomic. Foreign checkpoint
+roots fail validation before lock creation. Storage scans reject unreadable
+directories, and initialization cleanup treats root names literally.
+
+`progress.json` is an atomic advisory hint after a unit commits. Resume ignores its
+contents and rebuilds progress from verified units. Interrupted initial publication
+may leave no run specification; repeat `run` only when initialization never
+published one. Missing committed runs fail explicitly.
+
 ## Finite bounds and compatibility
 
 At most 128 units, 1000 distinct wire references, 256 group members and 64 MiB
@@ -177,8 +199,9 @@ eligible/incomplete memberships and late linkage before the executor exists.
 Shared group field expectations apply to eligible groups; incomplete groups use
 their existing source oracle's quality-dependent projection.
 Reuse the literal P13 nine-rule fixture counts and P11/P12 source expectations;
-recorded opt-in uses the accepted twelve-rule P13d table, exact controlled catalogs
-and original membership/late-link evidence. Never derive expected source fields,
+private-recording archive-to-replay qualification remains pending for P14c and must
+reuse the accepted twelve-rule P13d table, controlled catalogs and original
+membership/late-link evidence. Never derive expected source fields,
 counts or match membership from this new executor's output.
 
 | ID | Requirement-derived input | Expected observation |

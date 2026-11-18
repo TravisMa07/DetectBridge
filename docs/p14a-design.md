@@ -4,6 +4,8 @@ Status: pre-implementation freeze, 2026-11-18 UTC, base 07e5382. Owner: primary
 agent, branch `feat/p14a-durable-archive`, issue #14. Preserves A02–A07 and the
 [milestone design](p14-design.md). Historical/current execution remains P14b/c.
 No archive implementation existed when these contracts/vectors were authored.
+The freeze is e9b6143. Subsequent implementation/evidence is in the
+[ledger](p14-ledger.md); original pre-code expectations below remain authoritative.
 
 ## Concrete scope and contracts
 
@@ -117,3 +119,43 @@ consumers. Record exact source/JAR/container/plan/platform, failures and unavail
 coverage in the ledger. Native CI is synthetic; private originals stay local and
 P14b/c recorded replay qualification is separate. Owner acceptance and explicit
 merge authorization remain required after a concrete implementation/evidence PR.
+
+## Implementation refinements
+
+The consumer polls at most four records, within the proposed sixteen-record upper
+bound, to keep the complete bounded wire working window at most 16 MiB. Broker
+identities are checked after polling before publication and again before offset
+commit. Restart verifies and syncs surviving committed directories before adopting
+them. Partial cleanup recognizes only bounded object, segment or progress staging
+contents; unknown staged evidence is retained and blocks. Source byte-range offsets
+must fit signed 64-bit before conversion. These are requirement-preserving routine
+refinements; no expectation was changed to match evaluator/archive observations.
+
+Classification marks recognizable source admission shapes and verifies referenced
+bytes; it does not independently certify host trust, context semantics, parser
+support or historical readiness. Original contexts/quality remain exact wire data.
+Prometheus CLI metrics use fixed topic labels. Helper failure reports retain original
+exit/stdout/stderr privately; routine output exposes fixed categories and exception
+class names without messages. Production and qualification JAR hashes plus pinned
+image and loaded tool hashes are attributed per run, never via a mutable pointer.
+
+## Metadata integrity regression
+
+Frozen D09 requires corruption of counts, lengths or intervals to reject adoption.
+A focused regression demonstrated that changing the last segment's `next` field
+could evade the predecessor chain, because no successor yet referenced that last
+metadata hash. The separate file-byte checksum promised above was missing. The
+corrected layout requires `archive.sha256`, `object.sha256` and `segment.sha256`
+sidecars, each the SHA-256 of the exact corresponding JSON file bytes (including
+its final LF), followed by LF. Verify these before parsing/adopting metadata;
+write/fsync them before staging-directory publication. This fulfills the original
+checksum expectation without changing schema fields, identities or their canonical
+hash preimages. Unknown/missing sidecars reject adoption; unpublished intermediate
+layouts are not automatically migrated. The failing regression and original local
+logs are retained in the ledger; no frozen expectation was weakened.
+
+Broker positions that advance solely over control batches are retained as explicit
+empty observed intervals with zero wire rows. The next offset is attested by the
+consumer position; no source record is invented. Unit restart and actual four-record
+transaction/control-batch qualification cover that bounded Kafka behavior. P13's
+production at-least-once sink and acknowledgement policy remain unchanged.

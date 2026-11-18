@@ -356,6 +356,51 @@ def needs_search(paths):
     )
 
 
+def needs_archive(paths):
+    shared = {
+        "settings.gradle.kts",
+        "settings-gradle.lockfile",
+        "build.gradle.kts",
+        "gradlew",
+        "gradlew.bat",
+        "gradle.properties",
+        "tools/dev.py",
+        "tools/stack.py",
+        "tools/integration.py",
+        "tools/search_writer.py",
+        "tools/toolchains.json",
+        "pyproject.toml",
+        "uv.lock",
+        "tools/classify_changes.py",
+        "tools/check_gate.py",
+        "tools/dependency_inventory.py",
+        "docs/transport-dependencies.json",
+    }
+    return any(
+        p in shared
+        or p.startswith(
+            (
+                "packages/archive-writer/",
+                "packages/integration-job/",
+                "packages/integration-writer/",
+                "packages/transport-contracts/",
+                "contracts/archive/",
+                "contracts/v1/",
+                "contracts/integration-runtime/",
+                "contracts/integration/",
+                "tools/archive",
+                "tools/check_archive",
+                "tools/tests/test_archive",
+                "gradle/",
+                "deploy/local/",
+                ".github/workflows/",
+            )
+        )
+        for p in paths
+        if not p.endswith(".md")
+    )
+
+
 if __name__ == "__main__":
     base = os.environ.get("CHANGE_BASE", "")
     head = os.environ.get("CHANGE_HEAD", "HEAD")
@@ -375,6 +420,7 @@ if __name__ == "__main__":
         output.write(f"transport={str(needs_transport([p for p in paths if p])).lower()}\n")
         output.write(f"writer={str(needs_writer([p for p in paths if p])).lower()}\n")
         output.write(f"integration={str(needs_integration([p for p in paths if p])).lower()}\n")
+        output.write(f"archive={str(needs_archive([p for p in paths if p])).lower()}\n")
         output.write(f"search={str(needs_search([p for p in paths if p])).lower()}\n")
         output.write(f"assembly={str(needs_assembly([p for p in paths if p])).lower()}\n")
         output.write(f"linux={str(needs_linux([p for p in paths if p])).lower()}\n")

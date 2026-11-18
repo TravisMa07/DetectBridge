@@ -21,6 +21,7 @@ def artifacts():
         *ROOT.glob("packages/linux-assembly-job/gradle.lockfile"),
         *ROOT.glob("packages/integration-job/gradle.lockfile"),
         *ROOT.glob("packages/integration-writer/gradle.lockfile"),
+        *ROOT.glob("packages/archive-writer/gradle.lockfile"),
     ]
     for path in sorted(paths):
         for line in path.read_text().splitlines():

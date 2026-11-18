@@ -264,3 +264,10 @@ to an already propagated failure. JVM/resource-cleanup failures remain fatal.
 The [owning decision](p13d-design.md) records the private-API pin, deterministic
 regressions and mandatory fresh-artifact recovery qualification. No upstream class
 is replaced and no persisted contract or writer commit policy changes.
+
+P14a refines A02/A06/A07 with a separate local archive consumer, compressed NDJSON
+object/segment backend and immutable binding/offset recovery under a distinct
+root/group. [Owning freeze](p14a-design.md) e9b6143 precedes implementation;
+[qualification and limits](p14-ledger.md) remain separate. Original P03/P05/P12/P13
+contracts, producers and derived-search roles stay compatible. This is not P14b/c
+historical/current execution, P05 archive import, automatic retention or HA.

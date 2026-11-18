@@ -174,3 +174,14 @@ Build `tools/integration.py build` and `tools/search_writer.py build`, then run
 The new real search-verification gate is fail-closed; recorded original sources
 remain a separate opt-in milestone gate. See [commands and limits](search-writer.md)
 and [qualification](p13c-ledger.md). Existing P08 commands/configuration stay compatible.
+
+## P14a archive checks
+
+`uv run --locked python tools/dev.py archive` runs the real archive Java recovery,
+byte/identity, format/corruption, source-reference, bounds and filesystem tests,
+packaged schema/license checks and independent Python contract/gate regressions.
+Root `java` includes the module and root `check` validates schemas/vectors and
+fail-closed applicability. `tools/archive.py build` pins immutable production and
+qualification JARs; `verify` exercises an isolated real Kafka/filesystem suite.
+No private recording or P14b/c replay capability is implied. See the
+[archive runbook](archive.md) and [evidence ledger](p14-ledger.md).

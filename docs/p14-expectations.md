@@ -1,7 +1,8 @@
 # P14 independent expectation matrix
 
-Status: local pre-code requirements matrix, 2026-11-18 UTC. No test execution or
-owner semantic review is claimed. [Design](p14-design.md) owns proposed limits and
+Status: requirements matrix authored before code, 2026-11-18 UTC. This document
+records independent expectations; actual P14a execution is attributed in the
+[ledger](p14-ledger.md). Owner review and P14b/c execution remain separate. [Design](p14-design.md) owns proposed limits and
 interfaces; [ledger](p14-ledger.md) owns observed evidence. Before each slice's
 implementation, freeze concrete schemas, byte fixtures and literal identity/hash
 vectors in a separate commit. This matrix does not replace those concrete gates.

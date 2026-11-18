@@ -1,10 +1,12 @@
 # P14 archive and historical/current replay design
 
-Status: local pre-implementation proposal, 2026-11-18 UTC. No P14 implementation,
-contract schema, freeze commit, qualification or owner acceptance exists yet.
+Status: milestone proposal authored before implementation, 2026-11-18 UTC.
+P14a concrete schemas/vectors were frozen in e9b6143 before local implementation;
+see [owning freeze](p14a-design.md) and [actual evidence](p14-ledger.md).
+P14b/c and owner milestone acceptance remain pending.
 Owner: current primary agent; issue [#14](https://github.com/TravisMa07/DetectBridge/issues/14).
 Base: qualified `07e53822dd8a5035125804321e5c852f9a466aef`;
-branch `docs/p14-archive-design`. [Independent expectations](p14-expectations.md)
+branch `feat/p14a-durable-archive`. [Independent expectations](p14-expectations.md)
 are authored from requirements and existing contracts before archive code.
 The [ledger](p14-ledger.md) separates readiness, design and later evidence.
 
@@ -110,11 +112,13 @@ Reject symlinks, traversal and nonregular object files. Hold an exclusive proces
 lock for mutations; readers use committed immutable directories only.
 
 ```text
-archive.json                         immutable root binding/version/limits
+archive.json + archive.sha256        immutable root binding/version/limits
 objects/<original-sha256>/
   bytes.ndjson.gz + object.json       original byte chunks and commit metadata
+  object.sha256                       exact metadata-file checksum
 segments/<topic-uuid>/<partition>/<first-offset>/
   records.ndjson.gz + segment.json    exact wire rows and commit metadata
+  segment.sha256                      exact metadata-file checksum
 pins/<selection-sha256>.json          P14b immutable dependency selection
 progress.json                        advisory, rebuilt from committed segments
 .partial-<random>/                    unpublished owned transactions

@@ -4,10 +4,12 @@ Current completion (2026-11-18 UTC): bounded P13 owner acceptance and owner
 regular merge #49 as 07e5382 are complete. Final-head 44202078968 and actual
 merged-main 44206958555 passed; issue #13 is closed and P14 is Ready for design.
 See [P13 acceptance](p13-acceptance.md) for exact evidence and preserved limits.
-P14 owner: primary agent, base 07e5382, branch `docs/p14-archive-design`, same
-checkout. Local [design](p14-design.md), [expectations](p14-expectations.md) and
-[ledger](p14-ledger.md) are pre-implementation proposals; concrete schema/vector
-freeze commits remain pending. The untracked P14 handoff remains uncommitted.
+P14 owner: primary agent, base 07e5382, branch `feat/p14a-durable-archive`, same
+checkout. [Design](p14-design.md), [expectations](p14-expectations.md) and
+[ledger](p14-ledger.md) track P14a local implementation after concrete schema/vector
+freeze e9b6143 on `feat/p14a-durable-archive`. Qualification, review and owner merge
+gates remain separate; P14b/c and P05 archive import remain pending. The untracked
+P14 handoff remains uncommitted.
 
 Current P13d audit (2026-11-17): P13a–c are owner-merged; #49 adds recorded
 qualification and the [acceptance map](p13-acceptance.md). Earlier progress entries

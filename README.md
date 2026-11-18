@@ -53,8 +53,11 @@ merged-main run [44206958555](https://github.com/TravisMa07/DetectBridge/actions
 passed. The owner accepted bounded P13 semantics and merged #49 as `07e5382`;
 issue #13 is closed. Private recorded AMD64 qualification remains unavailable
 within those accepted limits. P14 prerequisites are met; its local
-[design proposal](docs/p14-design.md) and [expectations](docs/p14-expectations.md)
-precede implementation. Archive services, management API and UI remain pending.
+[design](docs/p14-design.md) and [expectations](docs/p14-expectations.md)
+precede implementation. [P14a local archive](docs/archive.md) implements exact-byte
+storage and independent Kafka offset recovery on its feature branch; qualification
+and acceptance are tracked [separately](docs/p14-ledger.md). Historical/current-policy
+archive replay, management API and UI remain pending.
 P06 provides local Kafka/Flink infrastructure and optional authenticated OpenSearch.
 Repository hygiene tooling and
 contributor templates were introduced in P01; P02 adds reproducible build tools,

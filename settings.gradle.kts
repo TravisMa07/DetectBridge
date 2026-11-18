@@ -20,3 +20,6 @@ project(":integration-job").projectDir = file("packages/integration-job")
 
 include("integration-writer")
 project(":integration-writer").projectDir = file("packages/integration-writer")
+
+include("archive-writer")
+project(":archive-writer").projectDir = file("packages/archive-writer")

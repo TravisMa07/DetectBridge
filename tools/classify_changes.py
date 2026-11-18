@@ -322,6 +322,7 @@ def needs_integration(paths):
             p.startswith(
                 (
                     "packages/integration-job/",
+                    "deploy/local/integration",
                     "contracts/integration-runtime/",
                     "contracts/integration/",
                     "tools/integration",

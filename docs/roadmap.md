@@ -1,17 +1,18 @@
 # Delivery roadmap and decision ownership
 
-P01–P10, P11 #38 and P12a #39 are merged. The owner authorized P11/P12
-implementation after P10 completion. P11 adapters and offline qualification passed
-their PR CI; recorded host-binding evidence and owner review remain acceptance blockers. P12a
-offline core and a reviewed local authentication recording passed PR CI.
-P12b #42 is merged with final-artifact ARM64/final-head AMD64 qualification.
-Merged-main qualification also passed. P12c adds selected reviewed audit evidence
-and recorded qualification, merged in #43 as c024497 with completed owner
-semantic/completeness review recorded in its description. Its merged-main CI
-passed in run 43873905332. A new controlled Windows capture supplies technical
-identity/eligible evidence with bounded owner semantic acceptance; completion PR
-qualification and separately authorized integration remain outstanding; later capabilities remain planned. See the
-[implementation ledger](implementation-ledger.md) for exact evidence and limits.
+P01–P12 implementations are merged. The owner accepted bounded P09/P10 semantics
+and completeness limits on 2026-11-17 after reviewing the [exact expectation
+packet](p13-prerequisite-review.md); issues #9/#10 are closed. P11 controlled-source
+completion #45 is owner-merged as 4ac31fa with exact-head and merged-main
+qualification; older public Windows recordings still lack trusted host identity.
+P12c #43 is owner-merged as c024497 with completed owner semantic/completeness
+review and successful merged-main checks. Issues #11/#12 are closed after the
+[P13 prerequisite audit](p13-acceptance.md), which preserves every earlier failure.
+P13a–c are merged bounded slices; P13c merged-main integration failed. P13d adds
+original source-to-search qualification and the remaining acceptance packet.
+P13 remains open and P14 remains blocked until all technical, owner-review and
+merged-commit gates pass. See the [implementation ledger](implementation-ledger.md)
+and [P13 acceptance map](p13-acceptance.md) for exact evidence and limits.
 P numbers are planning IDs, not GitHub PR numbers. Milestones require their
 acceptance evidence and authorized merges; documentation alone does not complete
 a milestone.
@@ -137,6 +138,10 @@ No application scaffolding, runtime capability claims or release tag.
 
 ### P09 — Compiler and evaluator vertical slice
 
+- Local status: merged #34; technical qualification passed. The owner accepted
+  bounded semantics and completeness limits on 2026-11-17; issue #9 is closed.
+  See the [exact expectation packet](p13-prerequisite-review.md).
+
 - Depends on: P03, P07.
 - Deliver: pySigma parser/validation integration, execution-plan compiler and
   minimal Java evaluator together, integrated into a Flink path.
@@ -149,8 +154,9 @@ No application scaffolding, runtime capability claims or release tag.
 ### P10 — Compatibility matrix and mapping coverage
 
 - Local status: P10a/P10b merged with ARM64/AMD64 qualification evidence. The
-  owner declared P10 finished and authorized P11/P12; formal semantic review
-  history remains recorded separately. See [design notes](p10b-design.md).
+  owner declared P10 finished and authorized P11/P12. Bounded independent semantic
+  review was accepted on 2026-11-17; see the [exact packet](p13-prerequisite-review.md)
+  and [design notes](p10b-design.md).
 
 - Depends on: P04, P09.
 - Deliver: supported-feature matrix, semantic regressions, mapping validation and
@@ -168,9 +174,9 @@ No application scaffolding, runtime capability claims or release tag.
 - Local status: bounded Security/Sysmon adapter and offline runner merged in #38
   after AMD64 CI; recorded preservation accounting passes, but no recorded eligible
   coverage for the old public recordings is claimed without trusted host bindings.
-  A [new controlled capture](p11-recording-review.md) passed local eligible offline
-  matching and received bounded owner semantic acceptance. Final-head PR
-  qualification and separately authorized integration remain gates.
+  The [controlled capture completion](p11-recording-review.md) received bounded
+  owner semantic acceptance and is owner-merged in #45 as 4ac31fa. Exact-head
+  43884159909 and merged-main 43900545102 passed; issue #11 is closed.
   See [design](p11-design.md).
 
 - Depends on: P04, P10.
@@ -218,9 +224,13 @@ is recorded in the acceptance map; P13 acceptance is not implied.
   are complete. P13a #46 is owner-merged as e09c271 with exact-head and merged-main
   qualification passed. [P13b runtime](p13b-design.md) is owner-merged in #47 as
   500ffc7 with ARM64 and final-head native AMD64 qualification passed.
-  [P13c search](p13c-design.md) is implemented on this branch with
-  [qualification in progress](p13c-ledger.md). Full recorded source-to-search
-  acceptance remains separate.
+  [P13c search](p13c-design.md) is owner-merged in #48 as 0f6d758.
+  Final-head native checks passed; merged-main integration failed.
+  [P13d](p13d-design.md) implements opt-in original-recording qualification and
+  the [acceptance map](p13-acceptance.md). ARM64 recorded/integration/search and
+  every applicable native AMD64 check passed on implementation head 1645359.
+  Final PR-head checks, owner review, authorized merge and merged-commit success
+  remain required; P13 stays open until those gates actually pass.
 
 - Depends on: P08, P11, P12.
 - Deliver: tagged events, linked detections and quality/configuration diagnostics.
@@ -233,6 +243,7 @@ is recorded in the acceptance map; P13 acceptance is not implied.
 
 ### P14 — Archive and historical/current replay
 
+- Readiness: blocked on [P13 acceptance](p13-acceptance.md); implementation has not begun.
 - Depends on: P05, P13.
 - Deliver: durable archive segments/manifests, pinned artifacts, historical
   membership replay and current-policy reprocessing.

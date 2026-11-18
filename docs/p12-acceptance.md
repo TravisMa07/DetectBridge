@@ -24,7 +24,12 @@ attempts and qualification limits; the [P12a ledger](p12-ledger.md) and
 [P12b ledger](p12b-ledger.md) retain their histories. Source and mapping snapshots,
 P03 contracts, at-least-once delivery and the accepted architecture stay unchanged.
 
-P11 trusted Windows recording bindings remain a Windows/P13 acceptance dependency.
+P12 issue #12 is closed after the P13d audit, with bounded acceptance and exact
+CI evidence recorded in its body. P11 issue #11 is likewise closed after accepted
+controlled-source completion #45. Full [P13 acceptance](p13-acceptance.md) remains open.
+
+Accepted P11 controlled recordings now supply trusted Windows bindings. Older
+public Windows recordings retain unavailable bindings and are not repaired by P12.
 They are not missing Linux implementation. Production P13 enrichment/evaluation/
 writer wiring, archive services, throughput qualification, arbitrary authentication
 grammars and general audit-corpus coverage are outside P12. No such capability is

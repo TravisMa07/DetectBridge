@@ -378,6 +378,99 @@ def inputs(catalog, directory, run_id):
     return rows
 
 
+def verify_event(catalog, directory, original, item, event):
+    """Independent source assertions shared by offline and actual streaming qualification."""
+    raw, context = original["raw"], original["context"]
+    run_id = context["run_id"]
+    require(
+        not ContractValidator().validate(
+            "normalized-event", event, source_contract=context["source_contract"]["snapshot"]
+        )
+    )
+    ex = item["expected"]
+    require(
+        event["process"]["executable"] == ex["image"]
+        and event["process"]["pid"] == ex["pid"]
+        and event["process"]["parent"]["pid"] == ex["parent_pid"]
+        and event["process"]["command_line"] == ex["command_line"]
+    )
+    require(event["user"]["domain"] + "\\" + event["user"]["name"] == ex["user"])
+    require(event["host"] == dict(id=catalog["host_id"], name=item["computer"]))
+    system, fields, _ = xml_record((directory / item["filename"]).read_bytes())
+    system_values = {child.tag.removeprefix(NS): child.text or "" for child in system}
+    system_attributes = {child.tag.removeprefix(NS): child.attrib for child in system}
+    require(
+        event["source_fields"]
+        == dict(fields, windows_system=dict(values=system_values, attributes=system_attributes))
+    )
+    security = item["family"] == "security"
+    if security:
+        require(event["user"].get("id") == fields["SubjectUserSid"])
+    else:
+        for key, source_name in (
+            ("entity_id", "ProcessGuid"),
+            ("working_directory", "CurrentDirectory"),
+        ):
+            require(event["process"].get(key) == (fields.get(source_name) or None))
+        for key, source_name in (
+            ("entity_id", "ParentProcessGuid"),
+            ("executable", "ParentImage"),
+            ("command_line", "ParentCommandLine"),
+        ):
+            require(event["process"]["parent"].get(key) == (fields.get(source_name) or None))
+    db = event["detectbridge"]
+    require(db["quality"] == dict(integrity="sufficient", eligibility="eligible", diagnostics=[]))
+    timestamp = (
+        ex["source_time"]
+        if item["family"] == "security"
+        else ex["source_time"].replace(" ", "T") + "Z"
+    )
+    require(event["@timestamp"] == timestamp and event["event"]["created"] == raw["first_observed"])
+    require(
+        db["time"]
+        == dict(
+            basis="source",
+            quality="valid",
+            first_observed=raw["first_observed"],
+            source_value=ex["source_time"],
+            source_utc=timestamp,
+        )
+    )
+    require(db["run_id"] == run_id and db["source"] == raw["source"])
+    require(db["evidence"] == [dict(record_id=raw["record_id"], evidence=raw["evidence"])])
+    require(db["source_contract"] == {k: context["source_contract"][k] for k in ("id", "version")})
+    require(
+        db["processing"]
+        == dict(
+            parser="windows-xml/1.0.0",
+            normalizer="windows-normalizer/1.0.0",
+            mapping=context["mapping_profile"]["id"] + "/1.0.0",
+        )
+    )
+    event_id = identity([raw["source"]["namespace"], raw["source"]["instance"], [raw["record_id"]]])
+    require(
+        event["event"]
+        == dict(
+            id=event_id,
+            kind="event",
+            category=["process"],
+            type=["start"],
+            code="4688" if security else "1",
+            created=raw["first_observed"],
+            provider=SIGNATURES[item["family"]][0],
+        )
+    )
+    require(
+        db["assembly"]
+        == dict(
+            mode="standalone",
+            closure="not_required",
+            quality="source_indicated",
+            assembler_version="1.0.0",
+        )
+    )
+
+
 def verify(catalog, directory, supplied, published, plan, run_id):
     expected_inputs = inputs(catalog, directory, run_id)
     require(supplied == expected_inputs and len(published) == len(supplied) == 5)
@@ -400,7 +493,7 @@ def verify(catalog, directory, supplied, published, plan, run_id):
             and output["context"] == original["context"]
             and output["version"] == "1.0.0"
         )
-        raw, context = original["raw"], original["context"]
+        raw = original["raw"]
         require(not validator.validate("raw-record", raw))
         if item["expected"]["disposition"] == "unsupported_source":
             require(set(output) == {"version", "raw", "context", "preservation"})
@@ -420,101 +513,9 @@ def verify(catalog, directory, supplied, published, plan, run_id):
             continue
         require(set(output) == {"version", "raw", "context", "event", "evaluation"})
         event, evaluation = output["event"], output["evaluation"]
-        require(
-            not validator.validate(
-                "normalized-event", event, source_contract=context["source_contract"]["snapshot"]
-            )
-        )
+        verify_event(catalog, directory, original, item, event)
+        event_id = event["event"]["id"]
         ex = item["expected"]
-        require(
-            event["process"]["executable"] == ex["image"]
-            and event["process"]["pid"] == ex["pid"]
-            and event["process"]["parent"]["pid"] == ex["parent_pid"]
-            and event["process"]["command_line"] == ex["command_line"]
-        )
-        require(event["user"]["domain"] + "\\" + event["user"]["name"] == ex["user"])
-        require(event["host"] == dict(id=catalog["host_id"], name=item["computer"]))
-        system, fields, _ = xml_record((directory / item["filename"]).read_bytes())
-        system_values = {child.tag.removeprefix(NS): child.text or "" for child in system}
-        system_attributes = {child.tag.removeprefix(NS): child.attrib for child in system}
-        require(
-            event["source_fields"]
-            == dict(fields, windows_system=dict(values=system_values, attributes=system_attributes))
-        )
-        security = item["family"] == "security"
-        if security:
-            require(event["user"].get("id") == fields["SubjectUserSid"])
-        else:
-            for key, source_name in (
-                ("entity_id", "ProcessGuid"),
-                ("working_directory", "CurrentDirectory"),
-            ):
-                require(event["process"].get(key) == (fields.get(source_name) or None))
-            for key, source_name in (
-                ("entity_id", "ParentProcessGuid"),
-                ("executable", "ParentImage"),
-                ("command_line", "ParentCommandLine"),
-            ):
-                require(event["process"]["parent"].get(key) == (fields.get(source_name) or None))
-        db = event["detectbridge"]
-        require(
-            db["quality"] == dict(integrity="sufficient", eligibility="eligible", diagnostics=[])
-        )
-        timestamp = (
-            ex["source_time"]
-            if item["family"] == "security"
-            else ex["source_time"].replace(" ", "T") + "Z"
-        )
-        require(
-            event["@timestamp"] == timestamp and event["event"]["created"] == raw["first_observed"]
-        )
-        require(
-            db["time"]
-            == dict(
-                basis="source",
-                quality="valid",
-                first_observed=raw["first_observed"],
-                source_value=ex["source_time"],
-                source_utc=timestamp,
-            )
-        )
-        require(db["run_id"] == run_id and db["source"] == raw["source"])
-        require(db["evidence"] == [dict(record_id=raw["record_id"], evidence=raw["evidence"])])
-        require(
-            db["source_contract"] == {k: context["source_contract"][k] for k in ("id", "version")}
-        )
-        require(
-            db["processing"]
-            == dict(
-                parser="windows-xml/1.0.0",
-                normalizer="windows-normalizer/1.0.0",
-                mapping=context["mapping_profile"]["id"] + "/1.0.0",
-            )
-        )
-        event_id = identity(
-            [raw["source"]["namespace"], raw["source"]["instance"], [raw["record_id"]]]
-        )
-        require(
-            event["event"]
-            == dict(
-                id=event_id,
-                kind="event",
-                category=["process"],
-                type=["start"],
-                code="4688" if security else "1",
-                created=raw["first_observed"],
-                provider=SIGNATURES[item["family"]][0],
-            )
-        )
-        require(
-            db["assembly"]
-            == dict(
-                mode="standalone",
-                closure="not_required",
-                quality="source_indicated",
-                assembler_version="1.0.0",
-            )
-        )
         require_schema("result", evaluation)
         require(evaluation["counts"] == ex["counts"] and evaluation["diagnostics"] == [])
         matches = (

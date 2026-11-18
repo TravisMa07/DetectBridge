@@ -1,5 +1,10 @@
 # Compiler and evaluator slice
 
+Current review status (2026-11-17): the owner accepted bounded P09/P10 semantics
+and completeness limits in the [prerequisite packet](p13-prerequisite-review.md).
+Issues #9/#10 are closed; pending-review caveats below are historical.
+P13 acceptance, merge authorization and merged checks remain separate.
+
 P09 provides a bounded proof of concept over original synthetic normalized events.
 It does not parse raw replay input or establish Windows/Linux adapter coverage.
 P08's writer and P07's relay remain independent. See [design decisions](p09-design.md).

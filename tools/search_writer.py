@@ -11,6 +11,7 @@ import signal
 import tarfile
 import time
 import uuid
+from pathlib import Path
 
 import replay
 from check_contracts import load_json
@@ -522,10 +523,10 @@ class SearchWriter:
         self.config()
         return {"metrics": self.runtime("metrics")}
 
-    def verify(self, recorded=False):
+    def verify(self, recorded=False, windows=None, audit=None, auth=None):
         from search_writer_qualification import qualify
 
-        return qualify(recorded)
+        return qualify(recorded, windows, audit, auth)
 
 
 def main():
@@ -534,7 +535,13 @@ def main():
     sub = parser.add_subparsers(dest="command", required=True)
     for name in ("build", "init", "start", "stop", "status", "metrics"):
         sub.add_parser(name)
-    sub.add_parser("verify")
+    verify = sub.add_parser("verify")
+    verify.add_argument("--recorded", action="store_true")
+    verify.add_argument(
+        "--windows", type=Path, default=ROOT / ".cache/p11-windows-capture/attempt3/originals"
+    )
+    verify.add_argument("--audit", type=Path, default=ROOT / ".cache/p12-audit-reviewed-v1")
+    verify.add_argument("--auth", type=Path, default=ROOT / ".cache/p12-auth-reviewed-v1")
     args = parser.parse_args()
     signal.signal(signal.SIGTERM, lambda *_: (_ for _ in ()).throw(KeyboardInterrupt()))
     try:
@@ -543,7 +550,7 @@ def main():
             result = (
                 build()
                 if args.command == "build"
-                else writer.verify()
+                else writer.verify(args.recorded, args.windows, args.audit, args.auth)
                 if args.command == "verify"
                 else getattr(writer, args.command)()
             )

@@ -40,6 +40,38 @@ def exception_classes(detail):
     )[:64]
 
 
+def failure_exceptions(test, phase):
+    """Select the actual failed operation, without reusing a prior successful probe."""
+    probe = test.folder / "incompatible-probe-exceptions.json"
+    if phase == "explicit_incompatible_binding_restore" and probe.exists():
+        return load_json(probe)
+    return test.rest("/jobs/" + test.latest_job()["job_id"] + "/exceptions")
+
+
+def observe_workers(test, phase):
+    """Bounded VM metadata before synthetic fault cases; never used as a recovery source."""
+    path = test.folder / (phase + "-workers.json")
+    try:
+        registered = test.rest("/taskmanagers")
+        samples = [
+            dict(
+                id=worker["id"],
+                metrics=test.rest(
+                    "/taskmanagers/"
+                    + worker["id"]
+                    + "/metrics?get=Status.JVM.Memory.Metaspace.Used,Status.JVM.Memory.Metaspace.Max,Status.JVM.Threads.Count,Status.JVM.Memory.Heap.Used,Status.JVM.Memory.Heap.Max"
+                ),
+                threads=test.rest("/taskmanagers/" + worker["id"] + "/thread-dump"),
+            )
+            for worker in registered["taskmanagers"]
+        ]
+        if len(encoded(samples)) > 4194304:
+            raise ValueError("worker_observation_limit")
+        save(path, dict(status="observed", registered=registered, samples=samples))
+    except Exception as error:
+        save(path, dict(status="unavailable", error_type=type(error).__name__))
+
+
 def wait_outputs(test, oracle, timeout=180):
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
@@ -54,6 +86,40 @@ def wait_outputs(test, oracle, timeout=180):
             raise RuntimeError("integration_job_terminated")
         time.sleep(1)
     raise RuntimeError("integration_accounting_timeout")
+
+
+def deadline_checkpoint(test, job, original, manifest, timeout=120):
+    """Observe a timer transition in a completed checkpoint, without resetting its deadline."""
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        checkpoint = test.wait_checkpoint(job["job_id"])
+        inventory = checkpoint_inventory(test, checkpoint)
+        save(
+            test.folder / "broker-deadline-observation.json",
+            dict(checkpoint=checkpoint, inventory=inventory),
+        )
+        if not (test.folder / "broker-deadline-first.json").exists():
+            save(
+                test.folder / "broker-deadline-first.json",
+                dict(checkpoint=checkpoint, inventory=inventory),
+            )
+        pending = [
+            g
+            for g in inventory["groups"]
+            if g["members"][0]["record_id"] == original["members"][0]["record_id"]
+        ]
+        if pending:
+            require(len(pending) == 1 and pending[0] == original)
+        else:
+            require(
+                any(
+                    i["kind"] == "manifest" and i["key"] == manifest["manifest_id"]
+                    for i in inventory["outbox"]
+                )
+            )
+            return checkpoint
+        time.sleep(0.2)
+    raise RuntimeError("integration_absolute_deadline_not_closed")
 
 
 def idle_checkpoint(test, job, timeout=120):
@@ -80,6 +146,8 @@ def verify():
         phase = name
         save(report, dict(status="running", phase=phase, project=project))
         print(json.dumps(dict(phase=phase, project=project)), flush=True)
+        if name.startswith("required_sink_"):
+            observe_workers(test, name)
 
     with project_lock(project):
         try:
@@ -205,9 +273,9 @@ def verify():
                 ]
             )
             wait_outputs(test, oracle)
-            stage("explicit_restore_incompatible_binding_jobmanager_restart")
-            checkpoint = test.wait_checkpoint(job["job_id"])
-            reject_incompatible(test, checkpoint)
+            stage("explicit_incompatible_binding_restore")
+            checkpoint = reject_incompatible(test)
+            stage("healthy_restore_jobmanager_restart")
             job = test.start(restore=checkpoint["external_path"])
             wait_outputs(test, oracle)
             checkpoint = test.retained_checkpoint(job["job_id"])
@@ -260,19 +328,7 @@ def verify():
             ):
                 test.stop()
             job = test.start(restore=checkpoint["external_path"])
-            first_restored = checkpoint_inventory(test, test.wait_checkpoint(job["job_id"]))
-            require(
-                not any(
-                    g["members"][0]["record_id"] == paused["raw"]["record_id"]
-                    for g in first_restored["groups"]
-                )
-            )
-            require(
-                any(
-                    i["kind"] == "manifest" and i["key"] == paused_manifest["manifest_id"]
-                    for i in first_restored["outbox"]
-                )
-            )
+            deadline_checkpoint(test, job, paused_state, paused_manifest)
             wait_outputs(test, oracle)
             stage("every_required_sink_rejection_and_healthy_restore")
             faults = []
@@ -466,9 +522,7 @@ def verify():
             if str(error).replace("_", "").isalnum():
                 failure["category"] = str(error)
             try:
-                original_exceptions = test.rest(
-                    "/jobs/" + test.latest_job()["job_id"] + "/exceptions"
-                )
+                original_exceptions = failure_exceptions(test, phase)
                 save(test.folder / "original-exceptions.json", original_exceptions)
                 details = json.dumps(original_exceptions)
                 failure["exception_sha256"] = hashlib.sha256(details.encode()).hexdigest()
@@ -497,6 +551,9 @@ def verify():
                     states.append(
                         {
                             "id": container["Id"],
+                            "service": container["Config"]["Labels"].get(
+                                "com.docker.compose.service"
+                            ),
                             **{
                                 key: state[key]
                                 for key in ("Status", "OOMKilled", "ExitCode", "Error")
@@ -504,6 +561,21 @@ def verify():
                         }
                     )
                 save(test.folder / "failure-container-states.json", states)
+                logs = []
+                for container in test.stack.containers():
+                    observed = run(
+                        ["docker", "logs", "--tail", "2000", container["Id"]], check=False
+                    )
+                    logs.append(
+                        dict(
+                            id=container["Id"],
+                            service=container["Config"]["Labels"].get("com.docker.compose.service"),
+                            stdout=observed.stdout[-2097152:],
+                            stderr=observed.stderr[-2097152:],
+                        )
+                    )
+                save(test.folder / "failure-container-logs.json", logs)
+                save(test.folder / "failure-taskmanagers.json", test.rest("/taskmanagers"))
             except Exception:
                 pass
             save(report, failure)

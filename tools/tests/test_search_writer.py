@@ -62,6 +62,56 @@ class SearchWriterTests(unittest.TestCase):
         with self.assertRaisesRegex(Exception, "search_controlled_probe_changed"):
             view.outputs()
 
+    def test_synthetic_admission_keeps_audit_builder_callable_with_directory_arguments(self):
+        import tempfile
+        from unittest.mock import MagicMock, patch
+
+        from integration_cases import windows
+        from linux_assembly_cases import cases
+        from search_writer_qualification import qualify
+
+        class Published(Exception):
+            pass
+
+        fixtures = cases()
+        fixtures.update(
+            windows=windows(),
+            sysmon=windows("sysmon"),
+            windows_skipped=windows(binding=False),
+            windows_budget=windows(budget=True),
+        )
+        with tempfile.TemporaryDirectory() as folder:
+            pipeline, writer, oracle = MagicMock(), MagicMock(), MagicMock()
+            pipeline.stack.folder = Path(folder)
+            writer.folder = Path(folder)
+            oracle.events = {}
+            oracle.native.groups = {}
+            oracle.expected = {}
+            pipeline.inject_rows.side_effect = Published
+            with (
+                patch("search_writer_qualification.ROOT", Path(folder)),
+                patch("search_writer_qualification.Integration", return_value=pipeline),
+                patch("search_writer_qualification.SearchWriter", return_value=writer),
+                patch("search_writer_qualification.Oracle", return_value=oracle),
+                patch("search_writer_qualification.runtime_binding", return_value="binding"),
+                patch("search_writer_qualification.project_lock"),
+                patch(
+                    "search_writer_qualification.load_json",
+                    side_effect=[fixtures, {"time_vectors": []}],
+                ),
+            ):
+                with self.assertRaises(Published):
+                    qualify(False, Path("windows"), Path("audit"), Path("auth"))
+            admitted = pipeline.inject_rows.call_args.args[0]
+            rows = [json.loads(value) for value in admitted]
+            self.assertTrue(
+                any(
+                    "msg=audit(" in row.get("raw", {}).get("evidence", {}).get("inline", "")
+                    for row in rows
+                )
+            )
+            self.assertTrue(any(row["kind"] == "windows_record" for row in rows))
+
     def test_modes_and_projects_cannot_be_adopted(self):
         old = json.loads((ROOT / "contracts/writer/v1/examples/configuration.json").read_text())
         legacy_require("configuration", old)

@@ -1,5 +1,10 @@
 # P09 compiler and evaluator design
 
+Current acceptance audit (2026-11-17): the owner accepted bounded P09/P10 semantics
+and completeness limits after reviewing the [exact expectation packet](p13-prerequisite-review.md).
+Issues #9/#10 are closed. Earlier pending-review statements below retain their
+historical checkpoint; this does not accept P13 or authorize a merge.
+
 Status: merged in PR #34 as 4d7d685. Merged-main AMD64 semantic/runtime CI passed;
 independent owner expectation review remains required before semantic acceptance.
 [P10](p10-design.md) adds separately versioned offline mapping compatibility.

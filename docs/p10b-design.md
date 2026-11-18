@@ -1,5 +1,10 @@
 # P10b source selection and isolated runtime
 
+Current acceptance audit (2026-11-17): the owner accepted bounded P09/P10 semantics
+and completeness limits after reviewing the [exact expectation packet](p13-prerequisite-review.md).
+Issues #9/#10 are closed. Earlier pending-review statements below retain their
+historical checkpoint; this does not accept P13 or authorize a merge.
+
 Status: implemented for review on merged P10a b45fba4. Merged-main CI was
 running when work began and subsequently passed on b45fba4. Independent owner review of
 P09/P10 semantic expectations remains pending. This does not complete acceptance.

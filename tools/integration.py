@@ -36,7 +36,7 @@ ROUTES = {
 TOPICS = [INPUT, *ROUTES.values()]
 
 
-def build():
+def build(plan_path=None):
     run(
         [
             ROOT / "gradlew",
@@ -50,13 +50,16 @@ def build():
     from integration_cases import prepare
 
     prepare()
-    plan = ROOT / ".cache/integration/plan.json"
+    plan = Path(plan_path) if plan_path is not None else ROOT / ".cache/integration/plan.json"
     jar = ROOT / "packages/integration-job/build/libs/integration-job.jar"
-    dockerfile, logger = DEPLOY / "integration.Dockerfile", DEPLOY / "transport-log4j.properties"
+    dockerfile, logger = DEPLOY / "integration.Dockerfile", DEPLOY / "integration-log4j.properties"
     from stack import Stack
 
     if dockerfile.read_text().splitlines()[0] != "FROM " + Stack().image("flink"):
         raise StackError("integration_base_image_mismatch")
+    from integration_logging import check_logging
+
+    check_logging(Stack().image("flink"))
     fingerprint = hashlib.sha256(
         jar.read_bytes() + dockerfile.read_bytes() + logger.read_bytes() + plan.read_bytes()
     ).hexdigest()
@@ -401,9 +404,9 @@ def checkpoint_inventory(test, checkpoint):
     return inventory
 
 
-def reject_incompatible(test, checkpoint):
+def reject_incompatible(test):
     config = test.config()
-    test.stop()
+    checkpoint = test.retained_checkpoint(test.latest_job()["job_id"])
     command = [
         "/opt/flink/bin/flink",
         "run",
@@ -433,14 +436,18 @@ def reject_incompatible(test, checkpoint):
     if len(created) != 1 or (match and match[1] not in created):
         raise StackError("integration_ambiguous_incompatible_job")
     job = created.pop()
+    save(test.folder / "incompatible-probe.json", dict(job_id=job, checkpoint=checkpoint))
     deadline = time.monotonic() + 180
     while time.monotonic() < deadline:
         state = test.rest("/jobs/" + job)["state"]
         if state == "FAILED":
-            detail = json.dumps(test.rest("/jobs/" + job + "/exceptions"))
+            original = test.rest("/jobs/" + job + "/exceptions")
+            save(test.folder / "incompatible-probe-exceptions.json", original)
+            save(test.folder / "incompatible-probe.json", dict(job_id=job, checkpoint=checkpoint))
+            detail = json.dumps(original)
             if "incompatible_integration_restore" not in detail:
                 raise StackError("integration_unrelated_restore_failure")
-            return
+            return checkpoint
         if state in ("FINISHED", "CANCELED", "SUSPENDED"):
             raise StackError("integration_restore_not_rejected")
         time.sleep(1)

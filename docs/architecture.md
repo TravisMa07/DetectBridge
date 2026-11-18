@@ -1,8 +1,9 @@
 # Architecture decision register
 
-Status: accepted architectural direction; implementation pending. Individual
-wire formats, algorithms, version pins, and numerical limits are assigned to PRs
-in the [roadmap](roadmap.md). No statement here asserts implemented capability.
+Status: accepted architectural direction; implementation and qualification status
+varies by milestone. Individual wire formats, algorithms, version pins, and
+numerical limits are assigned to PRs in the [roadmap](roadmap.md). Accepted
+direction alone does not establish implemented or qualified capability.
 
 For a material change, add a numbered ADR under `docs/decisions/` describing
 context, alternatives, decision, consequences, validation, and revisit conditions.
@@ -245,3 +246,18 @@ content conflict checks and retains original Kafka evidence/manifest links.
 [Compatibility decisions](p13c-design.md) keep A02–A07 and ADR 0008's independent
 consumer/acknowledged-failure boundary; [qualification](p13c-ledger.md) is separate
 from complete recorded source-to-search milestone acceptance.
+
+P13d adds opt-in qualification of the accepted controlled originals through the
+existing P13 deployment and writer, with a separately pinned qualification plan.
+It reuses accepted source/host/boot and independent source assertions, and corrects
+qualification checkpoint selection/probe attribution without changing persisted
+runtime semantics. See [design](p13d-design.md) and [acceptance map](p13-acceptance.md).
+P14 archive implementation remains pending; P13 completion requires every gate.
+
+The pinned Kafka writer compatibility guard is scoped to P13's existing
+at-least-once sink. It preserves first-error propagation and stock resource
+cleanup, and only attaches a secondary send error after proven producer closure
+to an already propagated failure. JVM/resource-cleanup failures remain fatal.
+The [owning decision](p13d-design.md) records the private-API pin, deterministic
+regressions and mandatory fresh-artifact recovery qualification. No upstream class
+is replaced and no persisted contract or writer commit policy changes.

@@ -357,9 +357,11 @@ def check_views(writer, original_outputs):
     return found
 
 
-def qualify(recorded=False):
+def qualify(recorded=False, windows_directory=None, audit_directory=None, auth_directory=None):
     if recorded:
-        raise StackError("recorded_search_plan_not_qualified")
+        from search_writer_recorded import qualify as qualify_recorded
+
+        return qualify_recorded(windows_directory, audit_directory, auth_directory)
     project = "detectbridge-p13-search-" + uuid.uuid4().hex[:10]
     pipeline, writer = Integration(project), SearchWriter(project)
     reports = ROOT / ".cache/search-writer-reports"

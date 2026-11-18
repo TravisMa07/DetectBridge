@@ -1,5 +1,9 @@
 # P13b integrated runtime qualification
 
+Current audit (2026-11-17): P13b #47 is owner-merged as 500ffc7; exact-head 8cc680c passed run 43978412654. Merged-main 44004484594 failed assembly checkpoint selection; the P13c ledger preserves that failure and correction.
+[Complete P13 acceptance](p13-acceptance.md) remains separate; earlier pending
+statements below retain their historical checkpoint.
+
 Base: owner-merged P13a #46, e09c271. Its exact PR head passed every applicable
 native AMD64 check; merged-main 43954609201 was still running when implementation
 began and subsequently succeeded before P13b runtime initialization. No merge

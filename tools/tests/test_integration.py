@@ -14,11 +14,51 @@ from classify_changes import needs_integration
 from integration import INPUT, TOPICS, Integration
 from integration_cases import digest, encoded
 from integration_oracle import Oracle, identity
-from integration_verify import exception_classes
+from integration_verify import deadline_checkpoint, exception_classes, failure_exceptions
 from linux_assembly_verify import transport_id
 
 
 class IntegrationTests(unittest.TestCase):
+    def test_deadline_checkpoint_allows_timer_after_first_snapshot_but_never_resets_deadline(self):
+        import tempfile
+        from types import SimpleNamespace
+        from unittest.mock import patch
+
+        from stack import StackError
+
+        original = dict(members=[dict(record_id="original")], opened=1000, deadline=31000)
+        closed = dict(groups=[], outbox=[dict(kind="manifest", key="frozen-manifest")])
+        for changed, passes in ((original, True), (dict(original, deadline=32000), False)):
+            with tempfile.TemporaryDirectory() as folder, self.subTest(passes=passes):
+                runtime = SimpleNamespace(
+                    folder=Path(folder), wait_checkpoint=lambda job: dict(id=1)
+                )
+                with (
+                    patch(
+                        "integration_verify.checkpoint_inventory",
+                        side_effect=[dict(groups=[changed], outbox=[]), closed],
+                    ),
+                    patch("integration_verify.time.sleep"),
+                ):
+                    if passes:
+                        self.assertEqual(
+                            dict(id=1),
+                            deadline_checkpoint(
+                                runtime,
+                                dict(job_id="job"),
+                                original,
+                                dict(manifest_id="frozen-manifest"),
+                            ),
+                        )
+                    else:
+                        with self.assertRaises(StackError):
+                            deadline_checkpoint(
+                                runtime,
+                                dict(job_id="job"),
+                                original,
+                                dict(manifest_id="frozen-manifest"),
+                            )
+
     def test_failure_log_retains_only_bounded_exception_class_names(self):
         detail = {
             "root-exception": "org.apache.flink.FlinkException: private-body-sentinel\n"
@@ -38,6 +78,33 @@ class IntegrationTests(unittest.TestCase):
             64,
         )
 
+    def test_healthy_restore_failure_does_not_reuse_prior_probe_exceptions(self):
+        import json
+        import tempfile
+        from types import SimpleNamespace
+
+        with tempfile.TemporaryDirectory() as folder:
+            probe = dict(exception="incompatible_integration_restore")
+            (Path(folder) / "incompatible-probe-exceptions.json").write_text(json.dumps(probe))
+            targets = []
+
+            def rest(path):
+                targets.append(path)
+                return dict(exception="healthy_restore_failure")
+
+            runtime = SimpleNamespace(
+                folder=Path(folder), latest_job=lambda: dict(job_id="healthy"), rest=rest
+            )
+            self.assertEqual(
+                probe, failure_exceptions(runtime, "explicit_incompatible_binding_restore")
+            )
+            self.assertEqual([], targets)
+            self.assertEqual(
+                dict(exception="healthy_restore_failure"),
+                failure_exceptions(runtime, "healthy_restore_jobmanager_restart"),
+            )
+            self.assertEqual(["/jobs/healthy/exceptions"], targets)
+
     def test_real_contracts_and_project_isolation(self):
         check()
         self.assertEqual(8, len(TOPICS))
@@ -55,6 +122,7 @@ class IntegrationTests(unittest.TestCase):
             "packages/detection-evaluator/src/main/java/Evaluator.java",
             "contracts/integration/v1.1/tagged-event.schema.json",
             "deploy/local/integration.Dockerfile",
+            "deploy/local/integration-log4j.properties",
             "tools/integration_oracle.py",
         ):
             self.assertTrue(needs_integration([path]), path)

@@ -1,5 +1,9 @@
 # P13a implementation qualification
 
+Current audit (2026-11-17): P13a #46 is owner-merged as e09c271; merged-main 43954609201 passed.
+[Complete P13 acceptance](p13-acceptance.md) remains separate; earlier pending
+statements below retain their historical checkpoint.
+
 Branch: feat/p13-output-contracts, base origin/main 4ac31fa, refreshed 2026-11-16.
 PR #45 is owner-merged; merged-main run 43900545102 succeeded. P08/P11/P12 bounded
 prerequisites and owner source acceptance are complete. This is the first P13

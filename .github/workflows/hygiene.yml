@@ -169,6 +169,18 @@
         },
         {
           "run": "python3 tools/dev.py bootstrap\npython3 tools/dev.py smoke"
+        },
+        {
+          "name": "Retain bootstrap dependency diagnostics",
+          "if": "${{ failure() }}",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "bootstrap-toolchain-verification",
+            "path": ".cache/bootstrap/gradle-help-*/attempt-*.log",
+            "include-hidden-files": true,
+            "if-no-files-found": "ignore",
+            "retention-days": 7
+          }
         }
       ],
       "needs": [
@@ -322,6 +334,18 @@
           "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
         },
         {
+          "name": "Retain bootstrap dependency diagnostics",
+          "if": "${{ failure() }}",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "bootstrap-transport-verification",
+            "path": ".cache/bootstrap/gradle-help-*/attempt-*.log",
+            "include-hidden-files": true,
+            "if-no-files-found": "ignore",
+            "retention-days": 7
+          }
+        },
+        {
           "name": "Build and qualify checkpointed transport",
           "run": "uv run --locked python tools/transport.py build\nuv run --locked python tools/transport.py verify"
         }
@@ -347,6 +371,18 @@
         {
           "name": "Install pinned development tools",
           "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
+        },
+        {
+          "name": "Retain bootstrap dependency diagnostics",
+          "if": "${{ failure() }}",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "bootstrap-recorded-transport-qualification",
+            "path": ".cache/bootstrap/gradle-help-*/attempt-*.log",
+            "include-hidden-files": true,
+            "if-no-files-found": "ignore",
+            "retention-days": 7
+          }
         },
         {
           "name": "Build and qualify checkpointed transport",
@@ -377,6 +413,18 @@
         {
           "name": "Install pinned development tools",
           "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
+        },
+        {
+          "name": "Retain bootstrap dependency diagnostics",
+          "if": "${{ failure() }}",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "bootstrap-detection-verification",
+            "path": ".cache/bootstrap/gradle-help-*/attempt-*.log",
+            "include-hidden-files": true,
+            "if-no-files-found": "ignore",
+            "retention-days": 7
+          }
         },
         {
           "name": "Qualify independent detection semantics and recovery",
@@ -421,6 +469,18 @@
           "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
         },
         {
+          "name": "Retain bootstrap dependency diagnostics",
+          "if": "${{ failure() }}",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "bootstrap-opensearch-writer-verification",
+            "path": ".cache/bootstrap/gradle-help-*/attempt-*.log",
+            "include-hidden-files": true,
+            "if-no-files-found": "ignore",
+            "retention-days": 7
+          }
+        },
+        {
           "name": "Build and qualify idempotent OpenSearch writer",
           "run": "uv run --locked python tools/transport.py build\nuv run --locked python tools/writer.py build\nuv run --locked python tools/writer.py verify"
         }
@@ -446,6 +506,18 @@
         {
           "name": "Install pinned development tools",
           "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
+        },
+        {
+          "name": "Retain bootstrap dependency diagnostics",
+          "if": "${{ failure() }}",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "bootstrap-recorded-writer-qualification",
+            "path": ".cache/bootstrap/gradle-help-*/attempt-*.log",
+            "include-hidden-files": true,
+            "if-no-files-found": "ignore",
+            "retention-days": 7
+          }
         },
         {
           "name": "Build and qualify idempotent OpenSearch writer",
@@ -478,6 +550,18 @@
           "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
         },
         {
+          "name": "Retain bootstrap dependency diagnostics",
+          "if": "${{ failure() }}",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "bootstrap-windows-verification",
+            "path": ".cache/bootstrap/gradle-help-*/attempt-*.log",
+            "include-hidden-files": true,
+            "if-no-files-found": "ignore",
+            "retention-days": 7
+          }
+        },
+        {
           "name": "Build and qualify Windows adapter semantics and offline recovery",
           "run": "uv run --locked python tools/dev.py windows"
         }
@@ -508,6 +592,18 @@
           "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
         },
         {
+          "name": "Retain bootstrap dependency diagnostics",
+          "if": "${{ failure() }}",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "bootstrap-linux-verification",
+            "path": ".cache/bootstrap/gradle-help-*/attempt-*.log",
+            "include-hidden-files": true,
+            "if-no-files-found": "ignore",
+            "retention-days": 7
+          }
+        },
+        {
           "name": "Build and qualify Linux parser and bounded offline assembly",
           "run": "uv run --locked python tools/dev.py linux"
         }
@@ -536,6 +632,18 @@
         {
           "name": "Install pinned development tools",
           "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
+        },
+        {
+          "name": "Retain bootstrap dependency diagnostics",
+          "if": "${{ failure() }}",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "bootstrap-linux-assembly-verification",
+            "path": ".cache/bootstrap/gradle-help-*/attempt-*.log",
+            "include-hidden-files": true,
+            "if-no-files-found": "ignore",
+            "retention-days": 7
+          }
         },
         {
           "name": "Qualify checkpointed Linux assembly and real recovery",
@@ -600,6 +708,18 @@
           "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
         },
         {
+          "name": "Retain bootstrap dependency diagnostics",
+          "if": "${{ failure() }}",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "bootstrap-integration-verification",
+            "path": ".cache/bootstrap/gradle-help-*/attempt-*.log",
+            "include-hidden-files": true,
+            "if-no-files-found": "ignore",
+            "retention-days": 7
+          }
+        },
+        {
           "name": "Qualify integrated adapters, evaluation and checkpoint recovery",
           "run": "uv run --locked python tools/dev.py integration\nuv run --locked python tools/integration.py build\nuv run --locked python tools/integration.py verify"
         },
@@ -640,6 +760,18 @@
         {
           "name": "Install pinned development tools",
           "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
+        },
+        {
+          "name": "Retain bootstrap dependency diagnostics",
+          "if": "${{ failure() }}",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "bootstrap-search-verification",
+            "path": ".cache/bootstrap/gradle-help-*/attempt-*.log",
+            "include-hidden-files": true,
+            "if-no-files-found": "ignore",
+            "retention-days": 7
+          }
         },
         {
           "name": "Qualify P13 source-to-search and durable writer recovery",
@@ -684,6 +816,18 @@
           "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
         },
         {
+          "name": "Retain bootstrap dependency diagnostics",
+          "if": "${{ failure() }}",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "bootstrap-archive-verification",
+            "path": ".cache/bootstrap/gradle-help-*/attempt-*.log",
+            "include-hidden-files": true,
+            "if-no-files-found": "ignore",
+            "retention-days": 7
+          }
+        },
+        {
           "name": "Qualify durable archive, exact originals and Kafka offset recovery",
           "run": "uv run --locked python tools/dev.py archive\nuv run --locked python tools/archive.py build\nuv run --locked python tools/archive.py verify"
         },
@@ -724,6 +868,18 @@
         {
           "name": "Install pinned development tools",
           "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
+        },
+        {
+          "name": "Retain bootstrap dependency diagnostics",
+          "if": "${{ failure() }}",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "bootstrap-historical-replay-verification",
+            "path": ".cache/bootstrap/gradle-help-*/attempt-*.log",
+            "include-hidden-files": true,
+            "if-no-files-found": "ignore",
+            "retention-days": 7
+          }
         },
         {
           "name": "Qualify pinned historical execution, actual archive source and recovery",

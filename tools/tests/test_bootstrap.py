@@ -137,7 +137,7 @@ class BootstrapTests(unittest.TestCase):
             upload = [
                 s
                 for s in steps
-                if s.get("with", {}).get("path") == ".cache/bootstrap/gradle-help-*/attempt-*.log"
+                if s.get("with", {}).get("path") == ".cache/bootstrap/gradle-*/attempt-*.log"
             ]
             self.assertEqual(len(upload), 1)
             setup = next(

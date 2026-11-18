@@ -1,4 +1,5 @@
 import org.gradle.api.plugins.JavaPluginExtension
+import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 
 plugins { base }
 
@@ -11,6 +12,19 @@ allprojects {
     plugins.withId("java") {
         extensions.configure<JavaPluginExtension> {
             toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+        }
+    }
+}
+
+// CI prepares one public module cache before parallel consumers. No source/test tasks run.
+tasks.register("ciDependencies") {
+    doLast {
+        allprojects.sortedBy { it.path }.forEach { project ->
+            project.configurations.filter { it.isCanBeResolved }.sortedBy { it.name }.forEach { configuration ->
+                configuration.incoming.artifactView {
+                    componentFilter { it is ModuleComponentIdentifier }
+                }.files.files
+            }
         }
     }
 }

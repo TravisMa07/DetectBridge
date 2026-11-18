@@ -250,3 +250,23 @@ event; main-only push qualification is unchanged. No privileged event or token
 permission is added. Logs are `.cache/p14c1-stack-trigger-{red,green}.log`.
 The explicit required aggregate and actual workflow jobs remain the acceptance
 gate even if a temporary stack base has different branch-protection rules.
+
+## Native implementation acceptance checks passed
+
+Run 44408227593 attempt 1 passed every applicable job and aggregate 135184964812
+on exact head `8e4c832283268897887999efe22152b2f0b41eb5` at 2026-11-18 22:34:01 UTC;
+five opt-ins stayed skipped. Checkout was test merge
+`096ddc136b5769de5f8537608873647b5809df96`, not an owner-merged commit. Actual
+current replay job 135170171558 passed full Linux AMD64 qualification with executor
+ea9d4740, reader e5eaea35, producer 51a984de and the exact same qualification-source
+aggregate 2db4412b as the final local source set (full hashes above). Docker selected
+`sha256:6b26436e8a89f49acaf0133e35f1e3715544e7c984d0f68cd8038137ab2e6be9`.
+Full native log/metadata/threads remain `.cache/p14c1-native-44408227593/`.
+Reviews/comments/inline threads were empty; #52 is ready for owner review.
+
+The owner explicitly authorized starting the final [P14c2 slice](p14c2-design.md)
+on this qualified branch without waiting for merge. That work has begun on
+`feat/p14c2-retention-qualification`. These completion notes accompany that owning
+freeze instead of changing the already qualified #52 head in a progress commit.
+Owner semantic acceptance/merge and actual merged-main qualification remain open;
+P14 is not complete.

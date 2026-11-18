@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:archive-maintenance:1.0.0:registration",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": "1.0.0"
+    },
+    "profile": {
+      "const": "archive-managed/1.0.0"
+    },
+    "managed_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "archive_binding_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "implementation_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "destination": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096,
+      "pattern": "^/"
+    },
+    "catalog_destination": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096,
+      "pattern": "^/"
+    },
+    "group": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "limits": {
+      "type": "object",
+      "properties": {
+        "maintenance_reserve_bytes": {
+          "const": 67108864
+        },
+        "metadata_bytes": {
+          "const": 16777216
+        },
+        "plan_segments": {
+          "const": 256
+        },
+        "scan_rows": {
+          "const": 65536
+        },
+        "identity_tokens": {
+          "const": 262144
+        },
+        "source_fingerprints": {
+          "const": 131072
+        },
+        "control_bytes": {
+          "const": 33554432
+        }
+      },
+      "required": [
+        "maintenance_reserve_bytes",
+        "metadata_bytes",
+        "plan_segments",
+        "scan_rows",
+        "identity_tokens",
+        "source_fingerprints",
+        "control_bytes"
+      ],
+      "additionalProperties": false
+    },
+    "origin": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "fresh",
+            "clone"
+          ]
+        },
+        "source_scope_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "source_scope_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "control_destination": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096,
+      "pattern": "^/"
+    }
+  },
+  "required": [
+    "version",
+    "profile",
+    "managed_id",
+    "archive_binding_sha256",
+    "implementation_sha256",
+    "destination",
+    "catalog_destination",
+    "group",
+    "limits",
+    "origin",
+    "control_destination"
+  ],
+  "additionalProperties": false
+}

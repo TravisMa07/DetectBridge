@@ -9,7 +9,8 @@ setup failure remains failed. The owner merged CI bootstrap repair #53 as b495c2
 actual main 44339557684 attempt 3 passed on that exact merge after two retained
 setup failures. [P14c1](p14c1-ledger.md) implements explicit current-policy replay
 from qualified b495c2b with the independently frozen expectations in b068b53.
-Native CI, owner acceptance/merge and actual merged qualification remain separate.
+Native P14c1 run 44408227593 passed every applicable job on 8e4c832. Owner
+acceptance/merge and actual merged qualification remain separate.
 The untracked P14 handoff remains uncommitted.
 
 P14c1 coordination: the primary agent owns contracts, core, shared tooling/CI and
@@ -20,6 +21,14 @@ authorized starting P14c2 stacked on P14c1 after its acceptance checks pass with
 waiting for P14c1 merge. This does not authorize merging either PR. Remaining P14
 scope includes retention/deletion, controlled recorded reuse, P05 archive import
 and the explicit milestone acceptance map; no completed P14 claim follows here.
+
+Current P14c2 owner: primary agent, branch
+`feat/p14c2-retention-qualification`, stack base 8e4c832 and PR target
+`feat/p14c1-current-replay`. The owner authorized this stack after P14c1 acceptance
+checks; native run 44408227593 supplies that check gate. The
+[owning design](p14c2-design.md), [independent cases](p14c2-expectations.md) and
+[ledger](p14c2-ledger.md) freeze retention/import/recorded/final acceptance before
+production code. No parent merge or completed P14 claim follows.
 
 Current P13d audit (2026-11-17): P13a–c are owner-merged; #49 adds recorded
 qualification and the [acceptance map](p13-acceptance.md). Earlier progress entries

@@ -65,7 +65,10 @@ run 44326278636 attempt 2 passed on that exact revision.
 [Qualification and limits](docs/p14b-ledger.md) retain the earlier failed attempt. [P14c1 current-policy replay](docs/current-replay.md)
 adds explicit new-plan evaluation and scheduled regrouping in a separate resumable
 local workspace. Its [qualification and acceptance gates](docs/p14c1-ledger.md)
-remain separate. Retention, P05 archive import, management API and UI remain pending;
+remain separate; native run 44408227593 passed on head `8e4c832`. The final
+[P14c2 owning design](docs/p14c2-design.md) starts retention, P05 archive import and
+recorded qualification on that stack. Its runtime remains unimplemented at this
+freeze checkpoint. Management API and UI remain future work;
 P14 is not complete.
 P06 provides local Kafka/Flink infrastructure and optional authenticated OpenSearch.
 Repository hygiene tooling and

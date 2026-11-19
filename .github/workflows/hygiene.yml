@@ -187,7 +187,7 @@
         {
           "name": "Retain bootstrap dependency diagnostics",
           "if": "${{ failure() }}",
-          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "uses": "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
           "with": {
             "name": "bootstrap-toolchain-verification",
             "path": ".cache/bootstrap/gradle-*/attempt-*.log",
@@ -373,7 +373,7 @@
         {
           "name": "Retain bootstrap dependency diagnostics",
           "if": "${{ failure() }}",
-          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "uses": "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
           "with": {
             "name": "bootstrap-transport-verification",
             "path": ".cache/bootstrap/gradle-*/attempt-*.log",
@@ -431,7 +431,7 @@
         {
           "name": "Retain bootstrap dependency diagnostics",
           "if": "${{ failure() }}",
-          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "uses": "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
           "with": {
             "name": "bootstrap-recorded-transport-qualification",
             "path": ".cache/bootstrap/gradle-*/attempt-*.log",
@@ -496,7 +496,7 @@
         {
           "name": "Retain bootstrap dependency diagnostics",
           "if": "${{ failure() }}",
-          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "uses": "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
           "with": {
             "name": "bootstrap-detection-verification",
             "path": ".cache/bootstrap/gradle-*/attempt-*.log",
@@ -512,7 +512,7 @@
         {
           "name": "Retain synthetic detection recovery diagnostics",
           "if": "${{ failure() }}",
-          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "uses": "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
           "with": {
             "name": "detection-recovery-failure-diagnostics",
             "path": ".cache/detection-reports/*.json\n.cache/detection-v2-reports/*.json\n.cache/detection-runtime/*/checkpoint.json\n.cache/detection-v2-runtime/*/checkpoint.json\n.cache/detection-runtime/*/jobs.json\n.cache/detection-v2-runtime/*/jobs.json",
@@ -570,7 +570,7 @@
         {
           "name": "Retain bootstrap dependency diagnostics",
           "if": "${{ failure() }}",
-          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "uses": "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
           "with": {
             "name": "bootstrap-opensearch-writer-verification",
             "path": ".cache/bootstrap/gradle-*/attempt-*.log",
@@ -628,7 +628,7 @@
         {
           "name": "Retain bootstrap dependency diagnostics",
           "if": "${{ failure() }}",
-          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "uses": "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
           "with": {
             "name": "bootstrap-recorded-writer-qualification",
             "path": ".cache/bootstrap/gradle-*/attempt-*.log",
@@ -693,7 +693,7 @@
         {
           "name": "Retain bootstrap dependency diagnostics",
           "if": "${{ failure() }}",
-          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "uses": "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
           "with": {
             "name": "bootstrap-windows-verification",
             "path": ".cache/bootstrap/gradle-*/attempt-*.log",
@@ -755,7 +755,7 @@
         {
           "name": "Retain bootstrap dependency diagnostics",
           "if": "${{ failure() }}",
-          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "uses": "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
           "with": {
             "name": "bootstrap-linux-verification",
             "path": ".cache/bootstrap/gradle-*/attempt-*.log",
@@ -817,7 +817,7 @@
         {
           "name": "Retain bootstrap dependency diagnostics",
           "if": "${{ failure() }}",
-          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "uses": "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
           "with": {
             "name": "bootstrap-linux-assembly-verification",
             "path": ".cache/bootstrap/gradle-*/attempt-*.log",
@@ -833,7 +833,7 @@
         {
           "name": "Retain synthetic assembly failure diagnostics",
           "if": "${{ failure() }}",
-          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "uses": "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
           "with": {
             "name": "assembly-failure-diagnostics",
             "path": ".cache/linux-assembly-reports/detectbridge-p12-test-*.json",
@@ -865,7 +865,7 @@
         },
         {
           "name": "Retain encrypted recording only",
-          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "uses": "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
           "with": {
             "name": "p11-controlled-windows-encrypted",
             "path": "${{ runner.temp }}/detectbridge-p11-sealed/recording.p7m",
@@ -923,7 +923,7 @@
         {
           "name": "Retain bootstrap dependency diagnostics",
           "if": "${{ failure() }}",
-          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "uses": "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
           "with": {
             "name": "bootstrap-integration-verification",
             "path": ".cache/bootstrap/gradle-*/attempt-*.log",
@@ -939,7 +939,7 @@
         {
           "name": "Retain synthetic integration failure diagnostics",
           "if": "${{ failure() }}",
-          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "uses": "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
           "with": {
             "name": "p13-integration-failure-diagnostics",
             "path": ".cache/integration-reports/*.json\n.cache/integration-runtime/*/original-exceptions.json\n.cache/integration-runtime/*/failure-container-states.json\n.cache/integration-runtime/*/last-helper-failure.json\n.cache/integration-runtime/*/incompatible-probe*.json\n.cache/integration-runtime/*/failure-container-logs.json\n.cache/integration-runtime/*/failure-taskmanagers.json\n.cache/integration-logging/*-probe.json\n.cache/integration-runtime/*/required_sink_*-workers.json\n.cache/integration-runtime/*/broker-deadline-*.json",
@@ -997,7 +997,7 @@
         {
           "name": "Retain bootstrap dependency diagnostics",
           "if": "${{ failure() }}",
-          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "uses": "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
           "with": {
             "name": "bootstrap-search-verification",
             "path": ".cache/bootstrap/gradle-*/attempt-*.log",
@@ -1013,7 +1013,7 @@
         {
           "name": "Retain synthetic search failure diagnostics",
           "if": "${{ failure() }}",
-          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "uses": "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
           "with": {
             "name": "p13-search-failure-diagnostics",
             "path": ".cache/search-writer-reports/*.json",
@@ -1071,7 +1071,7 @@
         {
           "name": "Retain bootstrap dependency diagnostics",
           "if": "${{ failure() }}",
-          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "uses": "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
           "with": {
             "name": "bootstrap-archive-verification",
             "path": ".cache/bootstrap/gradle-*/attempt-*.log",
@@ -1087,7 +1087,7 @@
         {
           "name": "Retain synthetic archive failure diagnostics",
           "if": "${{ failure() }}",
-          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "uses": "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
           "with": {
             "name": "p14-archive-failure-diagnostics",
             "path": ".cache/archive-reports/*.json\n.cache/archive/detectbridge-p14-test-*/helper-failure-*.json\n.cache/archive/detectbridge-p14-test-*/tooling.json\n.cache/archive/detectbridge-p14-test-*/archive/archive.json",
@@ -1145,7 +1145,7 @@
         {
           "name": "Retain bootstrap dependency diagnostics",
           "if": "${{ failure() }}",
-          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "uses": "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
           "with": {
             "name": "bootstrap-historical-replay-verification",
             "path": ".cache/bootstrap/gradle-*/attempt-*.log",
@@ -1161,7 +1161,7 @@
         {
           "name": "Retain synthetic historical diagnostics",
           "if": "${{ failure() }}",
-          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "uses": "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
           "with": {
             "name": "p14b-historical-failure-diagnostics",
             "path": ".cache/historical-qualification-*/report.json\n.cache/historical-qualification-*/failure-*.json\n.cache/historical-qualification-*/**/failures/*.json",
@@ -1219,7 +1219,7 @@
         {
           "name": "Retain bootstrap dependency diagnostics",
           "if": "${{ failure() }}",
-          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "uses": "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
           "with": {
             "name": "bootstrap-current-replay-verification",
             "path": ".cache/bootstrap/gradle-*/attempt-*.log",
@@ -1235,7 +1235,7 @@
         {
           "name": "Retain synthetic current replay summary",
           "if": "${{ failure() }}",
-          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "uses": "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
           "with": {
             "name": "p14c1-current-replay-failure-summary",
             "path": ".cache/current-replay-qualification-*/report.json",
@@ -1293,7 +1293,7 @@
         {
           "name": "Retain bootstrap dependency diagnostics",
           "if": "${{ failure() }}",
-          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "uses": "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
           "with": {
             "name": "bootstrap-archive-maintenance-verification",
             "path": ".cache/bootstrap/gradle-*/attempt-*.log",
@@ -1309,7 +1309,7 @@
         {
           "name": "Retain synthetic maintenance summary",
           "if": "${{ failure() }}",
-          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "uses": "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
           "with": {
             "name": "p14c2-maintenance-failure-summary",
             "path": ".cache/archive-maintenance-reports/*.json",
@@ -1321,7 +1321,7 @@
         {
           "name": "Retain maintenance build and pinned-image diagnostics",
           "if": "${{ failure() }}",
-          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "uses": "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
           "with": {
             "name": "p14c2-maintenance-setup-diagnostics",
             "path": ".cache/archive-maintenance-build/build-*.json\n.cache/archive-maintenance-bootstrap/*/*.json",
@@ -1379,7 +1379,7 @@
         {
           "name": "Retain bootstrap dependency diagnostics",
           "if": "${{ failure() }}",
-          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "uses": "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
           "with": {
             "name": "bootstrap-lifecycle-verification",
             "path": ".cache/bootstrap/gradle-*/attempt-*.log",
@@ -1395,7 +1395,7 @@
         {
           "name": "Retain synthetic lifecycle qualification evidence",
           "if": "${{ always() }}",
-          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "uses": "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
           "with": {
             "name": "p15a-lifecycle-qualification",
             "path": ".cache/lifecycle-qualification/summary.json\n.cache/lifecycle-qualification/build.log\n.cache/lifecycle-qualification/tests.log",

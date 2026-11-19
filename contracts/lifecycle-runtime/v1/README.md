@@ -1,7 +1,8 @@
-# Lifecycle runtime contract draft 1.0.0
+# Lifecycle runtime contract 1.0.0
 
-Original DetectBridge content, Apache-2.0. This is a design-only P15b1 contract
-draft, pending integrated review and freeze. It is not implemented behavior,
+Original DetectBridge content, Apache-2.0. This P15b1 contract was frozen before
+production code in commit `0a41ee4900fb3430d4fff98b9fd9b884c383b4f1`.
+The contract alone does not establish implemented behavior,
 cryptographic qualification, archive support or runtime evidence. See the
 [owning draft](../../../docs/p15b-design.md),
 [independent expectations](../../../docs/p15b-expectations.md) and
@@ -87,7 +88,12 @@ intents retain their original bytes and origin incarnation.
 
 The deployment common runtime binding is SHA-256 of canonical closed object:
 
-`{version, deployment_id, authority_id, authority_key_sha256, cluster_id, runtime_sha256, producer_sha256, image, topics:{control,artifact,ack,output}, compatibility_sha256, limits}`.
+`{version, deployment_id, authority_id, authority_key_sha256, cluster_id, runtime_sha256, producer_sha256, image, topics:{control,artifact,ack,output}, compatibility_sha256, limits, validator}`.
+
+The owner-selected [worker compiler addendum](../../../docs/p15b-validator-design.md)
+defines the separately pinned closed validator descriptor and local framed protocol.
+Its packet and actual platform image identities inherit into every execution and
+checkpoint binding. Controller signatures do not replace worker recompilation.
 
 Each topic is its closed name/ID/partition descriptor. The binding excludes stable
 worker, input topic, incarnation, run assignments, current command and local paths.

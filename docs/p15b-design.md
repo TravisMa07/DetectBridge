@@ -1,14 +1,19 @@
 # P15b — Applied worker activation and rollback
 
-Status: read-only design draft on owner-merged P15a
+Status: design frozen in commit `0a41ee4900fb3430d4fff98b9fd9b884c383b4f1`
+before production implementation, on owner-merged P15a
 `f44403e2975db46554c9c5033f87886d880c4087`. Its exact merged-main push run
 44472864062 attempt 1 passed all nineteen applicable jobs and required-checks.
 No P15b production implementation, runtime qualification or owner acceptance is
-established by this draft. The [P15 owning design](p15-design.md),
+established by the freeze. The [P15 owning design](p15-design.md),
 [P15a evidence](p15a-ledger.md) and
 [independent P15b cases](p15b-expectations.md) remain authoritative inputs.
 The slice map below assigns archive/replay completion to a real dependent artifact
 boundary; neither runtime-only delivery nor this draft completes P15.
+
+The owner subsequently retained S12's independent worker recompilation boundary.
+The separately frozen [validator addendum](p15b-validator-design.md) extends the
+runtime binding and isolated deployment before that new artifact is implemented.
 
 ## Reviewable slices and total milestone gate
 

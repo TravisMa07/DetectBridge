@@ -1,6 +1,7 @@
 # P15b independent runtime expectations
 
-Status: independent draft before P15b production code. Base is owner-merged P15a
+Status: independent expectations frozen before production code in commit
+`0a41ee4900fb3430d4fff98b9fd9b884c383b4f1`. Base is owner-merged P15a
 `f44403e2975db46554c9c5033f87886d880c4087`; actual merged-main push run
 44472864062 was pending when discovery began and subsequently passed all nineteen
 applicable jobs and required-checks in attempt 1 on that exact merge. No dependent implementation
@@ -256,13 +257,16 @@ change domain, inner kind/key, revision type and field order; object serializati
 must not be confused with the fixed array preimage.
 
 The independent [binding vectors](../contracts/lifecycle-runtime/v1/fixtures/binding-vectors.json)
-freeze both exact documented canonical binding objects with all current fixed
+freeze both exact documented canonical binding objects, including the owner-required
+pinned validator descriptor (artifact/image/base image), with all current fixed
 limits. The deployment clone variant changes only broker cluster ID, keeping topic
 names/IDs unchanged; its expected common hash differs. Worker variants change
 only stable worker, input topic ID/name or inherited common binding, and each
 expected checkpoint hash differs. Repeated-digit artifact/public-key/evidence
-hashes are explicitly synthetic vector inputs. No implementation generated these
-values. Artifact signatures bind the same common runtime hash; cross-broker bytes
+hashes are explicitly synthetic vector inputs. Changing only validator artifact/image also changes the common binding. The
+previous seven-vector packet is retained privately with its exact hash; the new
+nine-vector packet is independently refrozen before validator implementation.
+No implementation generated these values. Artifact signatures bind the same common runtime hash; cross-broker bytes
 cannot be adopted solely because authority/bundle/topic descriptors match.
 
 Verify actual source namespace/instance, original raw/evidence IDs/hashes, run,

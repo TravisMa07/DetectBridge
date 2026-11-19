@@ -185,3 +185,15 @@ registration snapshot; a proposal-only hash cannot satisfy acknowledgment scope.
 These vectors establish canonical expected hashes, not signature correctness or
 successful cross-broker runtime rejection. The existing output identity vectors
 remain unchanged.
+
+The owner retained independent worker-side compiler validation for S12. Before
+new validator production code, the common binding adds its exact `validator`
+descriptor (version, artifact hash, image ID and pinned Python base image). The
+packet now has nine vectors: original cases are recomputed independently with
+this descriptor, and changing only its artifact or image produces a different
+common binding. Descriptor artifact/image hashes are explicitly synthetic inputs.
+The previous seven-vector packet is preserved privately at
+`.cache/p15b-prerequisites/binding-vectors-before-validator.json`, SHA-256
+`b8edebad6b634f7ef61a0eb2620a77b969d829406e1c545c691868b61f3e04bc`. This is a pre-implementation
+expectation correction for the owner's stronger validation requirement; it is not
+a response to worker output. Existing output identity vectors remain unchanged.

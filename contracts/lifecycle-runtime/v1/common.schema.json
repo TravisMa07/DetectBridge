@@ -339,6 +339,106 @@
         "retained_checkpoints": 3,
         "concurrent_checkpoints": 1
       }
+    },
+    "validator": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": "1.0.0"
+        },
+        "artifact_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "image_id": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "base_image": {
+          "const": "python:3.12.12-slim-bookworm@sha256:593bd06efe90efa80dc4eee3948be7c0fde4134606dd40d8dd8dbcade98e669c"
+        }
+      },
+      "required": [
+        "version",
+        "artifact_sha256",
+        "image_id",
+        "base_image"
+      ],
+      "additionalProperties": false
+    },
+    "validator_request": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": "1.0.0"
+        },
+        "nonce": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "plan_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "plan_base64": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 5592408
+        },
+        "validator_binding_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "version",
+        "nonce",
+        "plan_sha256",
+        "plan_base64",
+        "validator_binding_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "validator_response": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": "1.0.0"
+        },
+        "nonce": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "plan_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "validator_binding_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "category": {
+          "enum": [
+            "ok",
+            "compiler_rejected",
+            "invalid_request",
+            "validation_timeout",
+            "validation_failed"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "nonce",
+        "plan_sha256",
+        "validator_binding_sha256",
+        "passed",
+        "category"
+      ]
     }
   }
 }

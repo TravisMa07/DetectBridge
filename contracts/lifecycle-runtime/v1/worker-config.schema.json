@@ -138,6 +138,12 @@
       "minLength": 1,
       "maxLength": 192,
       "pattern": "^[A-Za-z0-9._-]+$"
+    },
+    "validator": {
+      "$ref": "urn:detectbridge:lifecycle-runtime:1.0.0:common#/$defs/validator"
+    },
+    "validator_socket_path": {
+      "const": "/validation/compiler.sock"
     }
   },
   "required": [
@@ -165,7 +171,9 @@
     "state_root",
     "limits",
     "worker_checkpoint_binding_sha256",
-    "flink_project"
+    "flink_project",
+    "validator",
+    "validator_socket_path"
   ],
   "additionalProperties": false
 }

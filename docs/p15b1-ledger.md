@@ -832,3 +832,47 @@ its separately qualified archive/replay graph before complete P15 acceptance and
 dependent P16 implementation. Private recorded AMD64 remains unavailable. There
 is no HA, disk-loss, physical power-loss, unbounded-outage, rescaling or throughput
 claim. Owner authorization remains required for the next merge and any release.
+
+## Focused batch completion and cold bootstrap correction
+
+The previously pending focused run `9acc4cd3923749479f34ff02f26778b2`
+completed with `partial_passed`: core two-worker A/B/A and mixed-worker cases
+passed, with 42 admissions and 66 logical/physical outputs. The other 12 scenarios
+remain unqualified for this source; this is not a full gate pass. All owned runtime
+was stopped. Summary SHA-256 is `017388ecf729716571005adfb94d5d16361be489b72bb8e1142a530a8da23ad1`.
+The recorded dirty source hashes match the corresponding files committed in
+`f2911a2f88e1f0ce5abdf7090d4a596ef8ed6483`.
+
+Native run `44617619871` on f2911a2 failed toolchain job `135890522365`
+before activation: Gradle reported Shadow 9.6.1's implementation POM missing at
+Central. Activation was skipped, not failed on a scenario. Both POM and module
+endpoints subsequently returned HTTP 200; the original remote lookup cause is
+unproven. Original job log is retained privately at
+`.cache/lifecycle-runtime-qualification/native-44617619871-toolchain.log`, SHA-256
+`a07efddac9596f0dc11f8f25ca63eb5d4d641044fde05116db46bcf6b86f7b30`.
+
+The correction explicitly enables module-first metadata for only
+`com.gradleup.shadow:shadow-gradle-plugin` at Central, with POM fallback.
+This removes POM discovery as a prerequisite for the already pinned module.
+The marker remains Portal-only; other dependencies retain their existing policy.
+No dependency version, checksum, lock, retry classification or verification setting
+changes. Independent read-only review found no issue in this scoped change.
+Gradle's metadata source behavior is documented in its
+[official manual](https://docs.gradle.org/9.9.1/userguide/supported_metadata_formats.html).
+
+Actual Gradle 9.9.1 `--no-daemon --console=plain --info help` passed in 14 seconds
+on Darwin ARM64 with an empty, isolated dependency cache; only the already verified
+wrapper distribution was shared. The log confirms direct download of Shadow's
+module and JAR without its POM lookup. Existing strict verification passed.
+Log `.cache/lifecycle-runtime-qualification/shadow-module-cold-help.log` SHA-256
+`7b20d08d30e952485e74a76d7b30ece5129b67069e3620bce611529cd5c6caf6`; cache identity/result are retained in
+`shadow-module-cold-result.json`. This is bootstrap evidence, not runtime acceptance.
+The full native gate remains pending; no full local runtime rerun is required for
+this repository-metadata-only correction. This additional published CI correction
+preserves earlier commit IDs and all failed evidence under the SDLC exception.
+
+The correction's complete repository check passed 413 Python tests, lint,
+formatting and mypy for 115 source files. Retained log
+`.cache/lifecycle-runtime-qualification/shadow-module-static-check.log` SHA-256
+`e54ac48b1a3ad1b35089785fcdf18d8c7773cbdf91023cb8b6d45f82845efd15`. The initial documentation check
+caught an extra blank line; it was corrected before this passing run.

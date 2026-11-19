@@ -993,13 +993,31 @@ class Qualification:
             and prior["origin_incarnation"] == self.registration(WORKERS[1])["incarnation"],
             "prior_worker_selection",
         )
-        started = time.monotonic()
-        self.runtime.fault("worker_pause", WORKERS[1])
-        observation: dict[str, Any] = dict(budget_seconds=40, phase="paused", resumed=False)
+        proposal = self.proposal("B")
+        cases = phase_cases(2)
+        started: float | None = None
+        paused = False
+        paused_before = None
+        observation: dict[str, Any] = dict(budget_seconds=40, phase="preparing", resumed=False)
         self.mixed_pause_observations.append(observation)
-        try:
+
+        def pause_before_control(phase):
+            nonlocal started, paused, paused_before
+            if phase != "before_control_publication":
+                return
+            require(started is None, "mixed_control_hook_repeated")
+            started = time.monotonic()
+            # publish already holds the deployment lock; preserve the same owned-fault checks.
+            self.runtime._fault_locked("worker_pause", WORKERS[1])
+            paused = True
+            observation["phase"] = "paused"
             paused_before = self.paused_worker_proof(WORKERS[1])
-            self.publish("B")
+
+        try:
+            with patch("lifecycle_runtime.HOOK", side_effect=pause_before_control):
+                self.publish("B", prepared=proposal)
+            require(started is not None and paused_before is not None, "mixed_control_hook_missing")
+            assert started is not None and paused_before is not None
             observation["phase"] = "completed_selection"
             active = self.wait(
                 lambda: self.completed_selection(WORKERS[0], self.current),
@@ -1008,7 +1026,7 @@ class Qualification:
             )
             active_hash = self.private_evidence("mixed-completed-selection", active)
             observation["phase"] = "actual_b_outputs"
-            for case in phase_cases(2):
+            for case in cases:
                 if case["worker_id"] == WORKERS[0]:
                     self.mixed_pause_remaining(started)
                     self.add_case(case, "B")
@@ -1028,13 +1046,16 @@ class Qualification:
             self.mixed_pause_remaining(started)
             observation["phase"] = "proved_mixed"
         finally:
-            observation["pause_seconds_before_resume"] = time.monotonic() - started
-            self.runtime.fault("worker_resume", WORKERS[1])
-            observation["resumed"] = True
-            observation["pause_seconds_through_resume"] = time.monotonic() - started
+            if paused:
+                assert started is not None
+                observation["pause_seconds_before_resume"] = time.monotonic() - started
+                self.runtime.fault("worker_resume", WORKERS[1])
+                observation["resumed"] = True
+                observation["pause_seconds_through_resume"] = time.monotonic() - started
+        assert started is not None
         self.mixed_pause_remaining(started)
         self.converge()  # Actual signed ACKs and exact named CPs remain mandatory after resume.
-        for case in phase_cases(2):
+        for case in cases:
             if case["worker_id"] == WORKERS[1]:
                 self.add_case(case, "B")
         self.collect()

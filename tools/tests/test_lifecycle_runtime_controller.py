@@ -234,6 +234,31 @@ class ControllerTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "adoption_conflict"):
             self.publish(proposal, changed)
 
+    def test_control_send_hook_follows_artifacts_and_precedes_broker_control(self):
+        proposal = self.proposal()
+        observations = []
+
+        def before_control(phase):
+            if phase == "before_control_publication":
+                roles = [item["role"] for item in self.sent]
+                self.assertTrue(roles)
+                self.assertEqual({"artifact"}, set(roles))
+                observations.append(roles)
+                raise OSError("qualification boundary before control")
+
+        with patch("lifecycle_runtime.HOOK", side_effect=before_control):
+            with self.assertRaisesRegex(OSError, "qualification boundary before control"):
+                self.publish(proposal)
+        self.assertEqual(1, len(observations))
+        self.assertFalse(any(item["role"] == "control" for item in self.sent))
+        self.assertEqual("adopted_pending", self.runtime.status()["publication"])
+        original = control.checked(self.root / "publications/1.json")
+        published = self.publish(proposal)
+        self.assertEqual(1, published["revision"])
+        self.assertIsNotNone(published["receipt"])
+        self.assertEqual(original, control.checked(self.root / "publications/1.json"))
+        self.assertEqual(1, sum(item["role"] == "control" for item in self.sent))
+
     def test_uncertain_broker_ack_does_not_allocate_another_revision(self):
         proposal = self.proposal()
 

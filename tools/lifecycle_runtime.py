@@ -1397,6 +1397,7 @@ class Runtime:
         with self._temporary(recovery=True) as temporary:
             wire = base64.b64decode(intent["wire_base64"], validate=True)
             require(local.document(wire) == intent["control"], "intent_wire")
+            HOOK("before_control_publication")
             receipt = self._send_bytes("control", str(entry["revision"]), wire, temporary)
         HOOK("after_control_broker_ack")
         self._append(
@@ -1756,55 +1757,59 @@ class Runtime:
         """Explicit operator fault controls, scoped to this registered deployment only."""
         with self._locked():
             self._load()
-            if action in ("broker_pause", "broker_resume", "output_reject", "output_restore"):
-                self._verify_broker_owner()
-                file = self.root / "broker.compose.json"
-                if action.startswith("broker_"):
-                    self._compose(
-                        self.config["project"],
-                        file,
-                        "pause" if action == "broker_pause" else "unpause",
-                        "kafka",
-                    )
-                else:
-                    descriptor = self._common()["topics"]["output"]
-                    self._compose(
-                        self.config["project"],
-                        file,
-                        "exec",
-                        "-T",
-                        "kafka",
-                        "/opt/kafka/bin/kafka-configs.sh",
-                        "--bootstrap-server",
-                        "kafka:9092",
-                        "--alter",
-                        "--entity-type",
-                        "topics",
-                        "--entity-name",
-                        descriptor["name"],
-                        "--add-config",
-                        "max.message.bytes=" + ("1" if action == "output_reject" else str(4 * MIB)),
-                    )
-            elif action in ("worker_pause", "worker_resume", "worker_kill"):
-                registration = self.state["workers"].get(worker)
-                require(registration is not None, "worker_missing")
-                targets = [
-                    item
-                    for item in self._containers(registration)
-                    if item["Config"]["Labels"]["com.docker.compose.service"] == "taskmanager"
-                ]
-                require(len(targets) == 1, "worker_container_missing")
-                command = (
-                    "pause"
-                    if action == "worker_pause"
-                    else "unpause"
-                    if action == "worker_resume"
-                    else "kill"
+            return self._fault_locked(action, worker)
+
+    def _fault_locked(self, action, worker=None):
+        """Owned operator fault while the caller already holds the deployment lock."""
+        if action in ("broker_pause", "broker_resume", "output_reject", "output_restore"):
+            self._verify_broker_owner()
+            file = self.root / "broker.compose.json"
+            if action.startswith("broker_"):
+                self._compose(
+                    self.config["project"],
+                    file,
+                    "pause" if action == "broker_pause" else "unpause",
+                    "kafka",
                 )
-                self._command(["docker", command, targets[0]["Id"]])
             else:
-                raise RuntimeError("lifecycle_runtime_unknown_fault")
-            return dict(action=action, worker_id=worker, status="executed")
+                descriptor = self._common()["topics"]["output"]
+                self._compose(
+                    self.config["project"],
+                    file,
+                    "exec",
+                    "-T",
+                    "kafka",
+                    "/opt/kafka/bin/kafka-configs.sh",
+                    "--bootstrap-server",
+                    "kafka:9092",
+                    "--alter",
+                    "--entity-type",
+                    "topics",
+                    "--entity-name",
+                    descriptor["name"],
+                    "--add-config",
+                    "max.message.bytes=" + ("1" if action == "output_reject" else str(4 * MIB)),
+                )
+        elif action in ("worker_pause", "worker_resume", "worker_kill"):
+            registration = self.state["workers"].get(worker)
+            require(registration is not None, "worker_missing")
+            targets = [
+                item
+                for item in self._containers(registration)
+                if item["Config"]["Labels"]["com.docker.compose.service"] == "taskmanager"
+            ]
+            require(len(targets) == 1, "worker_container_missing")
+            command = (
+                "pause"
+                if action == "worker_pause"
+                else "unpause"
+                if action == "worker_resume"
+                else "kill"
+            )
+            self._command(["docker", command, targets[0]["Id"]])
+        else:
+            raise RuntimeError("lifecycle_runtime_unknown_fault")
+        return dict(action=action, worker_id=worker, status="executed")
 
     def evidence(self, worker_id):
         """Retain original owned container state/logs privately before destructive recovery."""

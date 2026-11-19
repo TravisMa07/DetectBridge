@@ -590,3 +590,23 @@ inside each owned cluster; no host unauthenticated management port is published.
 Controller commands use the local Docker administrative boundary and fixed private
 helper/exec operations. Reuse the existing768m JobManager /1536m one-slot TaskManager
 process budgets (1g/2g container limits); no old deployment settings are changed.
+
+### Mixed-worker control-send scheduling refinement
+
+The mixed-worker qualification prepares the B proposal, adopts its immutable
+controller intent, signs and transfers its artifacts while both workers still
+have only A control. A fixed first-party controller hook immediately before
+control publication then pauses the same registered worker21 taskmanager and
+captures its actual paused-state proof. Only then may the B control message reach
+Kafka. The unchanged40-second interval covers control send, active-worker exact
+completed B selection, literal B output accounting, same paused-worker proof and
+resume. Exact signed ACK/checkpoint convergence follows resume. Preparation is
+not publication or application proof; artifact availability alone never activates
+B. Failures before the hook leave the worker unpaused; failures after pause resume
+in finally. The hook is never configured by imported candidates. No deadline,
+resource ceiling, original runtime artifact or acceptance expectation changes.
+
+The hook executes while publication already holds the deployment lock. It reuses
+the owner-checked fault body under that lock; post-publication cleanup reacquires
+the normal public fault lock. No nested acquisition or unlocked public fault path
+is introduced.

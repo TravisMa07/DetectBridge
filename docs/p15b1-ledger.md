@@ -935,3 +935,66 @@ Full-check log `ack-quantum-static-check.log` SHA-256 is
 handoff/document hashes remain unchanged. No repeated full local runtime run is
 claimed; corrected native all14 remains pending. This small published CI follow-up
 preserves earlier commit IDs and failure evidence under the SDLC exception.
+
+## Mixed-worker preparation scheduling correction
+
+Native run44624758138 at head `db6391c5233c7101b153648be8e8920f6d912647`
+failed activation job135916777706 with
+`lifecycle_qualification_timeout_source_accounting`. Its original summary and log
+are retained in `.cache/lifecycle-runtime-qualification/native-44624758138-*`.
+The mixed pause was in `actual_b_outputs`:45.994 seconds before resume and46.245
+through resume, exceeding its unchanged40-second budget. All27 logical/physical
+outputs observed by then were accepted by the unchanged oracle;16 inputs had
+been admitted. No query, oracle or unexpected job failure was reported, and all
+owned runtime was stopped. No scenario pass or full qualification is claimed.
+The earlier ACK batching correction was not the failing path in this run.
+
+Before implementation, the owning design records moving preparation, signing and
+artifact transfer before the pause. A fixed hook just before the control send
+must establish the actual paused-worker proof, then the normal publication path
+sends B. Independent regression expectations require artifact-before-pause,
+pause-before-control ordering, no unnecessary resume if preparation fails,
+finally-resume after a paused failure, and the unchanged40-second bound. Publication
+and application remain separate: preparation/artifact availability alone cannot
+satisfy B selection, literal output or signed checkpoint acceptance.
+
+The new controller boundary regression failed before the hook existed, then
+passed after implementation. Independent qualifier regressions cover preparation
+before pause, pause/inspection before control send, no unnecessary resume before
+the hook, finally-resume after a post-pause failure, and unchanged total budget.
+All41 oracle tests and the complete repository check passed:418 Python tests,
+Ruff/formatting and mypy for115 source files. The fixed hook runs under the existing
+publication lock; its pause uses the same owner-checked fault body without a second
+lock acquisition, and finally-resume uses the public fault API after lock release.
+Independent read-only review found no blocker in ordering, ownership or cleanup.
+`mixed-send-hook-red.log` SHA-256: `31d043b9f81e941753ee160e841d50c376f9207b7b73989f3617e700b0d36231`.
+`mixed-send-hook-green.log` SHA-256: `3000b1bb25b6cbab5771efc8409608de03c78048af2b7cefd9cbc8e7dbe5b1f1`.
+`mixed-control-hook-red.log` SHA-256: `418bccec8fcaad0ffd2544f93ba209a46142ece34e1e73026d7382514ca2eb96`.
+`mixed-control-hook-green.log` SHA-256: `066bbff6c234374cefafc48be75a478ac7848e3b6b70ae21d360b669e2d11c4d`.
+`mixed-control-hook-static-check.log` SHA-256: `f2fc588d15389029991541d7e4978fe0fabccb36f58a34f218c8189972568343`.
+
+Original native artifact summary SHA-256 is
+`79b7c9a9f1feb44773e8f358a0fbf9b46b38a9dc465845dcd4789c8b4a69a979`.
+Two local focused attempts, `034aa066c4244a66b109af29a0c4ef90` and
+`1d4c1b59d85a4a69864eba7652e4adf6`, failed setup before scenarios because Docker's
+predefined network address pools were exhausted. Both original summaries/logs and
+private compose stderr remain retained; owned runtime was stopped. These are setup
+failures, not semantic reds. Three empty networks from the previously stopped
+`4990a094173b490ba8ce42893101a42d` attempt were retired after retaining complete
+network and stopped-container inspections. No container, volume or evidence was
+deleted. Unrelated networks remain untouched. A fresh focused mixed attempt then
+started with the unchanged hash-pinned artifacts; its result is recorded below.
+
+Actual focused ARM64 mixed-worker attempt
+`e7085a14b59c43e08569257f4c16e0d1` passed with `partial_passed`:15 journal
+admissions and25 logical/physical outputs. The pause lasted14.768 seconds before
+resume and14.905 through resume, within the unchanged40-second budget. Actual
+paused-state identity, exact current-incarnation B completed selection, literal
+B outputs during pause and normal signed-ACK/checkpoint convergence after resume
+all passed. All owned runtime was stopped. Summary SHA-256 is
+`b6d72684ecd1188da3d8c86314e40d8b71103d0083bf9745af34ea5355a830b4`.
+The original log is `mixed-control-hook-runtime-3.log`; its report identifies
+source db6391c plus the recorded dirty source hashes and unchanged pinned artifacts.
+This is one bounded case, not a full native gate or throughput claim. All eight
+protected handoff/document hashes remain unchanged. This cohesive published CI
+correction preserves prior commits under the documented SDLC exception.

@@ -1027,30 +1027,149 @@ class LifecycleRuntimeOracleTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "mixed_pause_budget"):
                 qualifier.mixed_pause_remaining(0)
 
-    def test_mixed_failure_resumes_worker_without_recording_pass(self):
+    def mixed_hook_fixture(self):
+        """Scheduling doubles only; no broker, ACK, or qualification evidence is produced."""
         from lifecycle_runtime_verify import WORKERS, Qualification
 
-        registration = dict(worker_id=WORKERS[1], incarnation="current")
-        selected = dict(revision=1, command_sha256="1" * 64, origin_incarnation="current")
-        runtime = SimpleNamespace(fault=Mock())
+        order: list[Any] = []
+        clock = [0.0]
+        registrations = [
+            dict(worker_id=worker, incarnation=str(index)) for index, worker in enumerate(WORKERS)
+        ]
+        old = dict(revision=1, command_sha256="1" * 64, origin_incarnation="1")
+        active = dict(
+            checkpoint=dict(id=7, status="COMPLETED"),
+            inventory=dict(
+                selection=dict(revision=2, command_sha256="2" * 64, origin_incarnation="0")
+            ),
+        )
+
+        def fault(action, worker):
+            order.append(action)
+            clock[0] += 1
+
+        runtime = SimpleNamespace(
+            fault=Mock(side_effect=fault),
+            _fault_locked=Mock(side_effect=fault),
+            status=Mock(return_value=dict(converged=False, participants=registrations)),
+        )
         qualifier: Any = Qualification(
             ROOT / ".cache", runtime, self.bundles, None, ROOT / "probe.jar"
         )
         qualifier.current = dict(revision=1, command_sha256="1" * 64)
-        qualifier.registrations = [registration]
-        qualifier.completed = Mock(return_value=dict(inventory=dict(selection=selected)))
-        qualifier.paused_worker_proof = Mock(return_value={})
-        qualifier.publish = Mock()
-        qualifier.wait = Mock(side_effect=ValueError("missing_completed_proof"))
-        qualifier.record = Mock()
-        with self.assertRaisesRegex(ValueError, "missing_completed_proof"):
+        qualifier.registrations = registrations
+        qualifier.completed = Mock(
+            return_value=dict(inventory=dict(selection=old, snapshot_sha256="a" * 64))
+        )
+        qualifier.completed_selection = Mock(return_value=active)
+        qualifier.private_evidence = Mock(return_value="b" * 64)
+
+        def paused(_worker):
+            order.append("paused_inspection")
+            clock[0] += 1
+            return dict(taskmanager_id_sha256="c" * 64)
+
+        qualifier.paused_worker_proof = Mock(side_effect=paused)
+
+        def prepare(*_args):
+            order.append("prepare_proposal")
+            return {"proposal": "B"}
+
+        qualifier.proposal = Mock(side_effect=prepare)
+
+        def publish(*args, **kwargs):
+            import lifecycle_runtime
+
+            self.assertEqual({"proposal": "B"}, kwargs["prepared"])
+            order.append("prepare_artifacts")
+            clock[0] += 60  # Preparation is deliberately longer than the frozen pause budget.
+            lifecycle_runtime.HOOK("before_control_publication")
+            order.append("control_send")
+            clock[0] += 1
+            qualifier.current = dict(revision=2, command_sha256="2" * 64)
+            lifecycle_runtime.HOOK("after_control_broker_ack")
+
+        qualifier.publish = Mock(side_effect=publish)
+        qualifier.wait = Mock(side_effect=lambda predicate, _category, timeout: predicate())
+        qualifier.add_case = Mock(
+            side_effect=lambda case, *_: order.append(("source", case["worker_id"]))
+        )
+
+        def collect(**_kwargs):
+            order.append("collect")
+            clock[0] += 1
+
+        qualifier.collect = Mock(side_effect=collect)
+        qualifier.converge = Mock(side_effect=lambda: order.append("signed_ack_converge"))
+        qualifier.record = Mock(side_effect=lambda *_args, **_kwargs: order.append("record_pass"))
+        return qualifier, runtime, order, clock
+
+    def test_mixed_pauses_after_artifacts_before_control_and_defers_signed_ack_until_resume(self):
+        qualifier, runtime, order, clock = self.mixed_hook_fixture()
+        with patch("lifecycle_runtime_verify.time.monotonic", side_effect=lambda: clock[0]):
+            qualifier.mixed_workers()
+        self.assertLess(order.index("prepare_proposal"), order.index("prepare_artifacts"))
+        self.assertLess(order.index("prepare_artifacts"), order.index("worker_pause"))
+        self.assertLess(order.index("worker_pause"), order.index("paused_inspection"))
+        self.assertLess(order.index("paused_inspection"), order.index("control_send"))
+        self.assertLess(order.index("worker_resume"), order.index("signed_ack_converge"))
+        self.assertLess(order.index("signed_ack_converge"), order.index("record_pass"))
+        runtime._fault_locked.assert_called_once_with(
+            "worker_pause", qualifier.registrations[1]["worker_id"]
+        )
+        runtime.fault.assert_called_once_with(
+            "worker_resume", qualifier.registrations[1]["worker_id"]
+        )
+        self.assertEqual(2, qualifier.paused_worker_proof.call_count)
+        self.assertLess(qualifier.mixed_pause_observations[0]["pause_seconds_through_resume"], 40)
+        self.assertGreater(clock[0], 60)
+
+    def test_mixed_failure_before_publication_hook_never_resumes_unpaused_worker(self):
+        qualifier, runtime, _order, _clock = self.mixed_hook_fixture()
+        qualifier.publish.side_effect = ValueError("before_hook_failure")
+        with self.assertRaisesRegex(ValueError, "before_hook_failure"):
+            qualifier.mixed_workers()
+        runtime.fault.assert_not_called()
+        runtime._fault_locked.assert_not_called()
+        qualifier.record.assert_not_called()
+        qualifier.converge.assert_not_called()
+
+    def test_mixed_failure_after_publication_hook_always_resumes_without_pass(self):
+        qualifier, runtime, _order, clock = self.mixed_hook_fixture()
+        qualifier.wait.side_effect = ValueError("missing_completed_proof")
+        with (
+            patch("lifecycle_runtime_verify.time.monotonic", side_effect=lambda: clock[0]),
+            self.assertRaisesRegex(ValueError, "missing_completed_proof"),
+        ):
             qualifier.mixed_workers()
         self.assertEqual(
-            [("worker_pause", WORKERS[1]), ("worker_resume", WORKERS[1])],
-            [call.args for call in runtime.fault.call_args_list],
+            ["worker_pause", "worker_resume"],
+            [
+                call.args[0]
+                for call in runtime._fault_locked.call_args_list + runtime.fault.call_args_list
+            ],
         )
         qualifier.record.assert_not_called()
+        qualifier.converge.assert_not_called()
         self.assertTrue(qualifier.mixed_pause_observations[0]["resumed"])
+
+    def test_mixed_publication_hook_preserves_original_total_pause_budget(self):
+        qualifier, runtime, _order, clock = self.mixed_hook_fixture()
+        qualifier.collect.side_effect = lambda **_: clock.__setitem__(0, clock[0] + 41)
+        with (
+            patch("lifecycle_runtime_verify.time.monotonic", side_effect=lambda: clock[0]),
+            self.assertRaisesRegex(ValueError, "mixed_pause_budget"),
+        ):
+            qualifier.mixed_workers()
+        self.assertEqual(
+            ["worker_pause", "worker_resume"],
+            [
+                call.args[0]
+                for call in runtime._fault_locked.call_args_list + runtime.fault.call_args_list
+            ],
+        )
+        qualifier.record.assert_not_called()
+        qualifier.converge.assert_not_called()
 
     def test_failure_classifier_exposes_only_pinned_category_and_hashes(self):
         from lifecycle_runtime_verify import classify_unexpected_failure

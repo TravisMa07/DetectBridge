@@ -421,3 +421,31 @@ Do not implement those alternatives without owner discussion and an ADR.
 
 P14 acceptance, P15 semantic/completeness acceptance, merge authorization and
 release authorization remain distinct gates. This design grants none of them.
+
+## Pre-qualification executable-closure correction
+
+The initial standalone evaluator invocation using only the retained producer JAR
+failed before semantic evaluation: `NoClassDefFoundError` for
+`org/slf4j/LoggerFactory`. The unchanged integration JAR intentionally excludes
+SLF4J because Flink provides logging. This is a dependency/setup failure, not a
+behavioral red or passing candidate test. The scaffold stage failure observed in
+that attempt also cannot establish the intended valid-stage red because its test
+report was failed; preserve this distinction.
+
+The trusted standalone runner additionally requires the already reviewed/locked
+`org.slf4j:slf4j-api:2.0.20` JAR with SHA-256
+`7e1446499b359675d8aabe6af2de86b85e72ae8a2a932c0b40d0e5ba57097439`.
+This exact checksum is already in `gradle/verification-metadata.xml`, and the
+version is in the original integration module's compile/test lock. The profile
+adds closed constant fields `logging_api` and `logging_api_sha256`; compatibility
+and bundle identities cover them. Resolve only that exact regular file from the
+prepared project Gradle module cache, verify its bytes on every operation and
+include it in the fixed classpath with the original producer. No candidate can
+supply a path, alternative version or additional dependency. Missing/corrupt bytes
+fail closed; no runtime download. SLF4J's no-provider warning is discarded with
+stderr; original matching expectations and the original producer stay unchanged.
+
+This correction precedes successful runtime qualification and is preserved as a
+separate freeze-correction commit. Original freeze 2ff0e4f remains intact. The
+bounded PR uses three cohesive commits: freeze, executable-closure correction,
+then consolidated implementation/regressions/docs/evidence.

@@ -92,6 +92,12 @@
             "journal_bytes": 65536,
             "test_temporary_bytes": 25165824
           }
+        },
+        "logging_api": {
+          "const": "org.slf4j:slf4j-api:2.0.20"
+        },
+        "logging_api_sha256": {
+          "const": "7e1446499b359675d8aabe6af2de86b85e72ae8a2a932c0b40d0e5ba57097439"
         }
       },
       "required": [
@@ -103,7 +109,9 @@
         "enrichment",
         "source_sha256",
         "mappings_sha256",
-        "limits"
+        "limits",
+        "logging_api",
+        "logging_api_sha256"
       ],
       "additionalProperties": false
     },

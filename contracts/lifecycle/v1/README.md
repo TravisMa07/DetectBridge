@@ -37,7 +37,7 @@ Their declarations do not transfer qualification to a new artifact.
 
 The profile is closed with fields `version`, `evaluator_artifact_sha256`,
 `evaluator`, `selector`, `parsers`, `enrichment`, `source_sha256`,
-`mappings_sha256` and `limits`. The executable pin binds the actual existing
+`mappings_sha256`, `limits`, `logging_api` and `logging_api_sha256`. The executable pin binds the actual existing
 parser/assembler code as well as evaluator code. No declaration can make different
 source/mapping/parser semantics live-swap compatible. A future P15b runtime/profile
 requires its own design, measured artifact identity and qualification.
@@ -104,3 +104,11 @@ These schemas cannot prove OS authorization, file durability, executable identit
 independent expectation provenance or worker runtime behavior. Those properties
 require the owning implementation and independently attributed checks. No runtime
 or performance validation is claimed by this contract freeze.
+
+The pre-qualification closure correction additionally pins the already locked
+`org.slf4j:slf4j-api:2.0.20`, SHA-256
+`7e1446499b359675d8aabe6af2de86b85e72ae8a2a932c0b40d0e5ba57097439`.
+The standalone runner verifies this dependency from the prepared Gradle cache;
+the original producer excludes it because Flink normally provides logging. No
+runtime download or candidate-provided classpath is supported. See the owning
+design's retained setup failure and separate correction boundary.

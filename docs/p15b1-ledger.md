@@ -998,3 +998,72 @@ source db6391c plus the recorded dirty source hashes and unchanged pinned artifa
 This is one bounded case, not a full native gate or throughput claim. All eight
 protected handoff/document hashes remain unchanged. This cohesive published CI
 correction preserves prior commits under the documented SDLC exception.
+
+## Exact completion/ACK join under native history eviction
+
+Native run44627979056, head `eacf0e781e26268a7e48c1786cd5235cca3c1ca4`,
+passed core A/B/A and mixed workers (pause22.353 seconds through resume, within40).
+It observed42 admissions and66 exact logical/physical outputs; publisher
+uncertainty also passed. Activation job135928014196 then timed out in replacement
+convergence. Worker21 repeatedly produced authenticated ACKs whose named
+checkpoints had left that same job's REST history:16 before17–26,38 before40–49,
+42 before43–52 and later acknowledgments still behind retained history.
+No unexpected job or oracle failure was reported; all owned runtime was stopped.
+The smaller ACK polling quantum did not resolve this demonstrated evidence race.
+Original log and extracted diagnostic summary are retained under
+`.cache/lifecycle-runtime-qualification/native-44627979056-*`.
+
+Before implementation, the owning design and independent test expectations specify
+bounded pre-readback completion evidence and an exact authenticated-ACK join.
+Candidate proofs are scoped by worker/incarnation/command/job/checkpoint, bounded
+to16 per current worker context and discarded on context changes. Normal ACK
+verification, immutable journaling and contiguous cursor advancement remain
+mandatory. No ACK alone, unmatched completion proof, stale-context proof or
+uncached evicted checkpoint can establish convergence. Existing deadlines and
+runtime/QA/compiler artifacts remain unchanged.
+
+Independent regression RED captured the actual old convergence failure: an exact
+CP12 completion observed before readback could no longer be fetched afterward,
+while a newer authenticated ACK named another unproven checkpoint. The corrected
+path joins the retained CP12 only after normal verified ACK readback. Negative
+cases require no convergence without an ACK, with an unmatched checkpoint, with
+wrong selection/origin, or with a non-COMPLETED candidate. Bounds/context-change
+cases enforce16 and clear changed worker contexts. All46 oracle tests pass,
+including the original eviction/unknown-query/failed-job/deadline regressions.
+The fallback post-ACK path now also checks current origin incarnation; its new
+negative regression is GREEN-only and is not represented as a captured red.
+Independent read-only review found no blocker in trust boundaries or exact joins.
+Unmatched candidate metadata is exported as pending evidence, never confirmation.
+`completion-ack-join-red.log` SHA-256: `f72423f51ec20155889a7e931a758e2c93915b340824956d1dadccdf7d68a88c`.
+`completion-ack-join-green.log` SHA-256: `700cb355aa8d5c680c3004da441c2c27ac14596d03f8675e6cc668bf09c09d1a`.
+`fallback-origin-green.log` SHA-256: `43d3d7c56f104f670c85029e0e96384dd5cac0ba7e1c0433217e8198c835e9dc`.
+Original native artifact summary SHA-256: `6c1a0f74fec99ac57959b6b480c6bc4ba46c3d8556dbd59e48af96f51b66b767`.
+
+Before a fresh actual focused mixed-worker run, three empty networks from the
+stopped e7085a14b59c43e08569257f4c16e0d1 attempt were retired to free Docker
+address pools. Complete original network/stopped-container inspections remain
+private in `completion-join-retired-inspection.json`; no container, volume or
+original evidence was deleted, and unrelated networks were untouched.
+
+The complete repository check passed423 Python tests, Ruff/formatting and mypy for
+115 source files; log `completion-ack-join-static-check.log` SHA-256:
+`95a46452d0663fc5d3bbc6df7f7e92e691272ccce21baba6e68667145cdd92e4`. All eight protected original
+handoff/document hashes remain unchanged. Candidate-proof and verified-ACK joining
+is bounded local qualification logic; full native AMD64 all14 remains required.
+
+Actual focused ARM64 attempt `bd1dda6f14974f3d8bfede2b894a96e0` established three exact
+pre-readback completion/authenticated-ACK joins. Its mixed-state critical proof
+completed in20.432 seconds through resume, within40, and normal signed checkpoint
+convergence succeeded. The overall attempt **failed**, not partial_passed: a later
+six-record audit batch retained certified receipts0–3 and raw ACK0–4, then the
+unchanged cdab helper reported IllegalArgumentException before certifying index4.
+The controller retained only the certified prefix, marked the operation failed
+and did not resend the uncertain suffix. Its exact helper failure cause is not
+established by the sanitized class. No whole-scenario pass is claimed; this is
+actual evidence only for the three joined proofs and the observed critical pause.
+All owned runtime was stopped. Original summary SHA-256 is
+`214c3debfb1ee2c1de75d9e247bb1c5e93d3ac7a87de5fe636ee0ece8ad148db`; log
+`completion-ack-join-runtime.log` and the complete private batch/failure directories
+remain retained. No QA/runtime/compiler artifact was changed for this correction.
+The full native gate must qualify the corrected source. This cohesive published
+CI correction preserves prior commits and failed evidence under the SDLC exception.

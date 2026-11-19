@@ -610,3 +610,19 @@ The hook executes while publication already holds the deployment lock. It reuses
 the owner-checked fault body under that lock; post-publication cleanup reacquires
 the normal public fault lock. No nested acquisition or unlocked public fault path
 is introduced.
+
+### Qualification completion and authenticated ACK evidence join
+
+Convergence may observe exact independently COMPLETED checkpoint evidence before
+its signed durable ACK reaches the controller's contiguous authenticated prefix.
+The qualifier retains at most16 candidate proofs per current worker context,
+keyed by worker, incarnation, command, job and checkpoint ID; a context change
+clears that worker's pending candidates. Each candidate must prove the current
+selection and current origin incarnation through the existing worker inventory API.
+After normal ACK verification and journaling, only an exact same-context,
+same-checkpoint durable ACK can join that retained proof. Either evidence alone
+is insufficient. An evicted checkpoint with no retained exact proof remains
+unproven; no latest-checkpoint substitution or inferred completion is permitted.
+The existing120-second convergence deadline and all runtime artifacts, source
+expectations, controller prefix checks and resource ceilings remain unchanged.
+This is qualifier evidence scheduling, not a new controller acceptance rule.

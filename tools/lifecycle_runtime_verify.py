@@ -197,6 +197,9 @@ class Qualification:
         self.query_failures: list[dict[str, Any]] = []
         self.oracle_failure_observations: list[dict[str, Any]] = []
         self.confirmed_ack_checkpoints: dict[tuple[str, str, str, str], dict[str, Any]] = {}
+        self.observed_completed_checkpoints: dict[
+            tuple[str, str, str, str, int], dict[str, Any]
+        ] = {}
 
     def record(self, name, mode, requirements, **evidence):
         self.coverage[name] = dict(
@@ -418,12 +421,72 @@ class Qualification:
         self.current = published
         return published
 
+    def capture_completed_candidate(self, worker):
+        """Retain exact completion evidence; this alone never confirms an ACK."""
+        registration = self.registration(worker)
+        job_id = self.runtime.state["jobs"][worker]["job_id"]
+        scope = (worker, registration["incarnation"], self.current["command_sha256"], job_id)
+        for key in list(self.observed_completed_checkpoints):
+            if key[0] == worker and key[:4] != scope:
+                del self.observed_completed_checkpoints[key]
+        if scope in self.confirmed_ack_checkpoints:
+            return
+        latest = self.runtime.checkpoints(worker).get("latest", {}).get("completed")
+        if not latest:
+            return
+        require(
+            latest.get("status") == "COMPLETED" and type(latest.get("id")) is int,
+            "checkpoint_candidate_identity",
+        )
+        checkpoint_id = latest["id"]
+        key = (*scope, checkpoint_id)
+        if key in self.observed_completed_checkpoints:
+            return
+        try:
+            proof = self.runtime.worker_inventory(worker, checkpoint_id)
+        except Exception as error:
+            path = "/jobs/" + job_id + "/checkpoints/details/" + str(checkpoint_id)
+            self.retain_query_failure(worker, path, error)
+            if self.checkpoint_was_evicted(worker, job_id, checkpoint_id, error):
+                return
+            raise
+        require(
+            self.runtime.state["jobs"][worker]["job_id"] == job_id
+            and proof["checkpoint"]["id"] == checkpoint_id
+            and proof["checkpoint"]["status"] == "COMPLETED",
+            "checkpoint_candidate_identity",
+        )
+        selection = proof["inventory"]["selection"]
+        if not (
+            isinstance(selection, dict)
+            and selection.get("revision") == self.current["revision"]
+            and selection.get("command_sha256") == self.current["command_sha256"]
+            and selection.get("origin_incarnation") == registration["incarnation"]
+        ):
+            return
+        retained = self.private_evidence("completed-before-ack-" + worker, proof)
+        self.observed_completed_checkpoints[key] = dict(
+            worker_id=worker,
+            incarnation=registration["incarnation"],
+            job_id=job_id,
+            checkpoint_id=checkpoint_id,
+            snapshot_sha256=proof["inventory"]["snapshot_sha256"],
+            command_sha256=self.current["command_sha256"],
+            confirmation_sha256=retained,
+            selection=copy.deepcopy(selection),
+            completion_observation_order="before_ack_readback",
+        )
+        keys = sorted(k for k in self.observed_completed_checkpoints if k[:4] == scope)
+        for old in keys[:-16]:
+            del self.observed_completed_checkpoints[old]
+
     def converge(self, workers=None, timeout=120):
         wanted = set(workers or WORKERS)
 
         def ready():
             for worker in wanted:
                 self.fail_on_failed_job(worker)
+                self.capture_completed_candidate(worker)
             # Check exact checkpoint proofs between small authenticated prefixes.
             # A large prefix can finish after the deadline or outlive REST history.
             status = self.runtime.observe(limit=8)
@@ -445,8 +508,24 @@ class Qualification:
                     and row["payload"]["incarnation"] == registration["incarnation"]
                     and row["payload"]["command_sha256"] == self.current["command_sha256"]
                     and row["payload"]["phase"] == "durable"
+                    and row["payload"].get("category") == "ok"
                 ]
                 require(bool(proofs), "durable_proof_missing")
+                joined = [
+                    row
+                    for row in proofs
+                    if (*key, row["checkpoint_id"]) in self.observed_completed_checkpoints
+                ]
+                if joined:
+                    ack = max(joined, key=lambda row: row["checkpoint_id"])
+                    candidate = self.observed_completed_checkpoints[(*key, ack["checkpoint_id"])]
+                    evidence = {
+                        **candidate,
+                        "evidence": "exact signed ACK-named independently COMPLETED checkpoint; retained proof cache scoped to command/incarnation/job",
+                    }
+                    self.confirmed_ack_checkpoints[key] = evidence
+                    self.checkpoint_evidence.append(evidence)
+                    continue
                 ack = max(proofs, key=lambda row: row["checkpoint_id"])
                 try:
                     checkpoint = self.runtime.worker_inventory(worker, ack["checkpoint_id"])
@@ -461,7 +540,8 @@ class Qualification:
                 selection = checkpoint["inventory"]["selection"]
                 require(
                     selection["revision"] == self.current["revision"]
-                    and selection["command_sha256"] == self.current["command_sha256"],
+                    and selection["command_sha256"] == self.current["command_sha256"]
+                    and selection["origin_incarnation"] == registration["incarnation"],
                     "checkpoint_selection",
                 )
                 private_proof = self.private_evidence(
@@ -2152,6 +2232,7 @@ def main(argv=None):
                 qualification_batch_states=qualification.batch_state_summary(),
                 oracle_failure_observations=qualification.oracle_failure_observations,
                 checkpoints=qualification.checkpoint_evidence,
+                completion_candidates=list(qualification.observed_completed_checkpoints.values()),
                 approved_fault_proofs=qualification.approved_fault_proofs,
                 unexpected_job_failures=qualification.unexpected_job_failures,
                 mixed_pause_observations=qualification.mixed_pause_observations,

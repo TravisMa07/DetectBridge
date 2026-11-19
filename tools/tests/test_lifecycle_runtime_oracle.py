@@ -300,6 +300,7 @@ class LifecycleRuntimeOracleTests(unittest.TestCase):
                 incarnation=self.registration["incarnation"],
                 command_sha256=command,
                 phase="durable",
+                category="ok",
                 checkpoint_id=12,
             )
             runtime = SimpleNamespace(
@@ -319,6 +320,7 @@ class LifecycleRuntimeOracleTests(unittest.TestCase):
                         participants=[dict(worker_id=worker, durable=True, rejected=False)]
                     )
                 ),
+                checkpoints=Mock(return_value={}),
                 worker_inventory=Mock(side_effect=failure),
             )
             qualifier = Qualification(public, runtime, self.bundles, None, root / "probe.jar")
@@ -359,6 +361,7 @@ class LifecycleRuntimeOracleTests(unittest.TestCase):
                 incarnation=self.registration["incarnation"],
                 command_sha256=command,
                 phase="durable",
+                category="ok",
                 checkpoint_id=12,
             )
             history = {
@@ -378,7 +381,12 @@ class LifecycleRuntimeOracleTests(unittest.TestCase):
             confirmed = dict(
                 checkpoint=dict(id=15, status="COMPLETED"),
                 inventory=dict(
-                    selection=dict(revision=2, command_sha256=command), snapshot_sha256="f" * 64
+                    selection=dict(
+                        revision=2,
+                        command_sha256=command,
+                        origin_incarnation=self.registration["incarnation"],
+                    ),
+                    snapshot_sha256="f" * 64,
                 ),
             )
             runtime = SimpleNamespace(
@@ -390,6 +398,7 @@ class LifecycleRuntimeOracleTests(unittest.TestCase):
                     )
                 ),
                 observe=Mock(side_effect=observe),
+                checkpoints=Mock(return_value={}),
                 worker_inventory=Mock(side_effect=[failure, confirmed]),
             )
             qualifier = Qualification(public, runtime, self.bundles, None, root / "probe.jar")
@@ -432,12 +441,17 @@ class LifecycleRuntimeOracleTests(unittest.TestCase):
                 incarnation=self.registration["incarnation"],
                 command_sha256=command,
                 phase="durable",
+                category="ok",
                 checkpoint_id=15,
             )
             proof = dict(
                 checkpoint=dict(id=15, status="COMPLETED"),
                 inventory=dict(
-                    selection=dict(revision=2, command_sha256=command),
+                    selection=dict(
+                        revision=2,
+                        command_sha256=command,
+                        origin_incarnation=self.registration["incarnation"],
+                    ),
                     snapshot_sha256="f" * 64,
                 ),
             )
@@ -456,6 +470,7 @@ class LifecycleRuntimeOracleTests(unittest.TestCase):
                 ),
                 rest=Mock(return_value=dict(state="RUNNING")),
                 observe=Mock(side_effect=proportional_observe),
+                checkpoints=Mock(return_value={}),
                 worker_inventory=Mock(return_value=proof),
             )
             qualifier = Qualification(root, runtime, self.bundles, None, root / "probe.jar")
@@ -481,6 +496,210 @@ class LifecycleRuntimeOracleTests(unittest.TestCase):
                 )
             self.assertEqual(128, clock[0])
 
+    def completed_candidate_fixture(self, root):
+        """Independent exact-join mechanics; mocked ACK state is never runtime qualification."""
+        from lifecycle_runtime_verify import Qualification
+
+        worker, job, command = self.registration["worker_id"], "a" * 32, "2" * 64
+        ack = dict(
+            worker_id=worker,
+            incarnation=self.registration["incarnation"],
+            command_sha256=command,
+            phase="durable",
+            category="ok",
+            checkpoint_id=12,
+        )
+        proof = dict(
+            checkpoint=dict(id=12, status="COMPLETED"),
+            inventory=dict(
+                checkpoint_id=12,
+                selection=dict(
+                    revision=2,
+                    command_sha256=command,
+                    origin_incarnation=self.registration["incarnation"],
+                ),
+                snapshot_sha256="f" * 64,
+            ),
+        )
+        evicted: Any = RuntimeError("lifecycle_runtime_helper_failed")
+        evicted.stdout, evicted.stderr, evicted.returncode = (
+            b"",
+            b"curl: (22) The requested URL returned error: 404\n",
+            22,
+        )
+        state: dict[str, Any] = dict(jobs={worker: dict(job_id=job)}, acks={})
+        status = dict(participants=[dict(worker_id=worker, durable=True, rejected=False)])
+        runtime = SimpleNamespace(
+            root=root / "deployment",
+            state=state,
+            rest=Mock(
+                side_effect=lambda _worker, path: (
+                    dict(history=[dict(id=20, status="COMPLETED")])
+                    if path.endswith("/checkpoints")
+                    else dict(state="RUNNING")
+                )
+            ),
+            checkpoints=Mock(
+                return_value=dict(latest=dict(completed=dict(id=12, status="COMPLETED")))
+            ),
+            worker_inventory=Mock(return_value=proof),
+            observe=Mock(),
+        )
+        qualifier: Any = Qualification(root, runtime, self.bundles, None, root / "probe.jar")
+        qualifier.current = dict(revision=2, command_sha256=command)
+        qualifier.registrations = [copy.deepcopy(self.registration)]
+
+        def one_poll(predicate, *_args, **_kwargs):
+            value = predicate()
+            if not value:
+                raise ValueError("test_no_convergence")
+            return value
+
+        qualifier.wait = Mock(side_effect=one_poll)
+        return qualifier, runtime, worker, job, ack, proof, evicted, status
+
+    def test_predrain_exact_completion_joins_authenticated_ack_after_rest_eviction(self):
+        with tempfile.TemporaryDirectory(dir=(ROOT / ".cache").resolve()) as folder:
+            qualifier, runtime, worker, _job, ack, _proof, evicted, status = (
+                self.completed_candidate_fixture(Path(folder))
+            )
+            order = []
+
+            def inventory(_worker, checkpoint):
+                order.append(("exact_completed_proof", checkpoint))
+                if runtime.observe.call_count:
+                    raise evicted
+                return _proof
+
+            def observe(limit):
+                order.append(("authenticated_observe", limit))
+                runtime.state["acks"] = {
+                    "matched": dict(payload=ack),
+                    "newer_unproven": dict(payload={**ack, "checkpoint_id": 16}),
+                }
+                return status
+
+            runtime.worker_inventory.side_effect = inventory
+            runtime.observe.side_effect = observe
+            self.assertIs(status, qualifier.converge([worker]))
+            self.assertEqual([("exact_completed_proof", 12), ("authenticated_observe", 8)], order)
+            self.assertEqual(12, qualifier.checkpoint_evidence[0]["checkpoint_id"])
+            self.assertTrue(qualifier.confirmed_ack_checkpoints)
+            self.assertEqual(1, runtime.worker_inventory.call_count)
+
+    def test_predrain_completed_snapshot_without_matching_ack_cannot_converge(self):
+        for acknowledged_checkpoint in (None, 13):
+            with (
+                self.subTest(acknowledged_checkpoint=acknowledged_checkpoint),
+                tempfile.TemporaryDirectory(dir=(ROOT / ".cache").resolve()) as folder,
+            ):
+                qualifier, runtime, worker, _job, ack, _proof, evicted, status = (
+                    self.completed_candidate_fixture(Path(folder))
+                )
+
+                def observe(limit):
+                    if acknowledged_checkpoint is None:
+                        return dict(
+                            participants=[dict(worker_id=worker, durable=False, rejected=False)]
+                        )
+                    runtime.state["acks"] = {
+                        "different_cp": dict(
+                            payload={**ack, "checkpoint_id": acknowledged_checkpoint}
+                        )
+                    }
+                    runtime.worker_inventory.side_effect = evicted
+                    return status
+
+                runtime.observe.side_effect = observe
+                with self.assertRaisesRegex(ValueError, "test_no_convergence"):
+                    qualifier.converge([worker])
+                self.assertTrue(qualifier.observed_completed_checkpoints)
+                self.assertFalse(qualifier.confirmed_ack_checkpoints)
+                self.assertFalse(qualifier.checkpoint_evidence)
+
+    def test_fresh_ack_named_fallback_rejects_snapshot_from_old_incarnation(self):
+        with tempfile.TemporaryDirectory(dir=(ROOT / ".cache").resolve()) as folder:
+            qualifier, runtime, worker, _job, ack, proof, _evicted, status = (
+                self.completed_candidate_fixture(Path(folder))
+            )
+            runtime.checkpoints.return_value = {}  # Exercise actual ACK-named fresh fallback.
+            runtime.state["acks"] = {"authenticated_current_inc": dict(payload=ack)}
+            runtime.observe.return_value = status
+            proof["inventory"]["selection"]["origin_incarnation"] = (
+                "71500000-0000-4000-8000-000000000099"
+            )
+            with self.assertRaisesRegex(ValueError, "checkpoint_selection"):
+                qualifier.converge([worker])
+            runtime.worker_inventory.assert_called_once_with(worker, ack["checkpoint_id"])
+            self.assertFalse(qualifier.confirmed_ack_checkpoints)
+            self.assertFalse(qualifier.checkpoint_evidence)
+
+    def test_predrain_candidate_bound_and_context_isolation(self):
+        with tempfile.TemporaryDirectory(dir=(ROOT / ".cache").resolve()) as folder:
+            qualifier, runtime, worker, job, _ack, proof, _evicted, _status = (
+                self.completed_candidate_fixture(Path(folder))
+            )
+            for checkpoint in range(1, 19):
+                runtime.checkpoints.return_value = dict(
+                    latest=dict(completed=dict(id=checkpoint, status="COMPLETED"))
+                )
+                proof["checkpoint"]["id"] = checkpoint
+                proof["inventory"]["checkpoint_id"] = checkpoint
+                qualifier.capture_completed_candidate(worker)
+            keys = list(qualifier.observed_completed_checkpoints)
+            self.assertEqual(16, len(keys))
+            self.assertEqual(set(range(3, 19)), {key[-1] for key in keys})
+            self.assertTrue(
+                all(
+                    key[:4] == (worker, self.registration["incarnation"], "2" * 64, job)
+                    for key in keys
+                )
+            )
+            for field in ("command", "incarnation", "job"):
+                with self.subTest(field=field):
+                    qualifier.current = dict(revision=2, command_sha256="2" * 64)
+                    qualifier.registrations = [copy.deepcopy(self.registration)]
+                    runtime.state["jobs"][worker]["job_id"] = job
+                    runtime.checkpoints.return_value = dict(
+                        latest=dict(completed=dict(id=18, status="COMPLETED"))
+                    )
+                    qualifier.capture_completed_candidate(worker)
+                    self.assertTrue(qualifier.observed_completed_checkpoints)
+                    if field == "command":
+                        qualifier.current = dict(revision=3, command_sha256="3" * 64)
+                    elif field == "incarnation":
+                        qualifier.registrations[0]["incarnation"] = (
+                            "71500000-0000-4000-8000-000000000099"
+                        )
+                    else:
+                        runtime.state["jobs"][worker]["job_id"] = "b" * 32
+                    runtime.checkpoints.return_value = {}
+                    qualifier.capture_completed_candidate(worker)
+                    self.assertFalse(qualifier.observed_completed_checkpoints)
+
+    def test_predrain_candidate_rejects_wrong_selection_and_uncompleted_snapshot(self):
+        for changed in ("revision", "command_sha256", "origin_incarnation", "status"):
+            with (
+                self.subTest(changed=changed),
+                tempfile.TemporaryDirectory(dir=(ROOT / ".cache").resolve()) as folder,
+            ):
+                qualifier, runtime, worker, _job, _ack, proof, _evicted, _status = (
+                    self.completed_candidate_fixture(Path(folder))
+                )
+                if changed == "status":
+                    runtime.checkpoints.return_value["latest"]["completed"]["status"] = "FAILED"
+                else:
+                    proof["inventory"]["selection"][changed] = (
+                        99 if changed == "revision" else "wrong"
+                    )
+                if changed == "status":
+                    with self.assertRaisesRegex(ValueError, "checkpoint_candidate_identity"):
+                        qualifier.capture_completed_candidate(worker)
+                else:
+                    qualifier.capture_completed_candidate(worker)
+                self.assertFalse(qualifier.observed_completed_checkpoints)
+                self.assertFalse(qualifier.confirmed_ack_checkpoints)
+
     def test_failed_checkpoint_is_not_an_eviction_or_completion_fallback(self):
         from lifecycle_runtime_verify import Qualification
 
@@ -495,6 +714,7 @@ class LifecycleRuntimeOracleTests(unittest.TestCase):
                 incarnation=self.registration["incarnation"],
                 command_sha256=command,
                 phase="durable",
+                category="ok",
                 checkpoint_id=12,
             )
             runtime = SimpleNamespace(
@@ -506,6 +726,7 @@ class LifecycleRuntimeOracleTests(unittest.TestCase):
                         participants=[dict(worker_id=worker, durable=True, rejected=False)]
                     )
                 ),
+                checkpoints=Mock(return_value={}),
                 worker_inventory=Mock(side_effect=failure),
             )
             qualifier = Qualification(public, runtime, self.bundles, None, root / "probe.jar")
@@ -536,6 +757,7 @@ class LifecycleRuntimeOracleTests(unittest.TestCase):
                 incarnation=self.registration["incarnation"],
                 command_sha256=command,
                 phase="durable",
+                category="ok",
                 checkpoint_id=12,
             )
 
@@ -553,6 +775,7 @@ class LifecycleRuntimeOracleTests(unittest.TestCase):
                         participants=[dict(worker_id=worker, durable=True, rejected=False)]
                     )
                 ),
+                checkpoints=Mock(return_value={}),
                 worker_inventory=Mock(side_effect=missing),
             )
             qualifier = Qualification(public, runtime, self.bundles, None, root / "probe.jar")
@@ -599,7 +822,9 @@ class LifecycleRuntimeOracleTests(unittest.TestCase):
                 dict(
                     checkpoint_id=7,
                     ack=dict(
-                        payload=dict(checkpoint_id=7, phase="durable", command_sha256="2" * 64)
+                        payload=dict(
+                            checkpoint_id=7, phase="durable", category="ok", command_sha256="2" * 64
+                        )
                     ),
                 )
             ],

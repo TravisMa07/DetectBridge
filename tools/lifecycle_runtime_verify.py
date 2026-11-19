@@ -53,6 +53,7 @@ REQUIRED = (
 SCENARIO_GROUPS = {
     "all": REQUIRED,
     "core": ("core_two_worker_a_b_a", "mixed_workers"),
+    "mixed-workers": ("mixed_workers",),
     "production-faults": (
         "publisher_uncertainty",
         "registered_replacement",
@@ -79,6 +80,64 @@ def scenario_outcome(scenario_group, coverage):
         executed_scenarios=sorted(coverage),
         unqualified_required_scenarios=sorted(set(REQUIRED) - set(coverage)),
     )
+
+
+def classify_unexpected_failure(document):
+    """Recognize one pinned Flink exception template; never publish arbitrary messages."""
+    raw = encoded(document)
+    result: dict[str, Any] = dict(
+        rule="flink-2.2.1-taskmanager-heartbeat-v1",
+        category="unclassified",
+        document_sha256=sha(raw),
+    )
+    if len(raw) > 2 * 1024 * 1024:
+        return result
+    texts = []
+
+    def walk(node, depth=0):
+        if depth > 16:
+            return
+        if isinstance(node, dict):
+            for key, value in node.items():
+                if (
+                    key in ("root-exception", "exception", "stacktrace")
+                    and isinstance(value, str)
+                    and len(value) <= 65536
+                ):
+                    texts.append(value)
+                elif isinstance(value, (dict, list)):
+                    walk(value, depth + 1)
+        elif isinstance(node, list):
+            for value in node[:128]:
+                walk(value, depth + 1)
+
+    walk(document)
+    pattern = re.compile(
+        r"^(?:Caused by: )?java\.util\.concurrent\.TimeoutException: "
+        r"Heartbeat of TaskManager with id ([A-Za-z0-9][A-Za-z0-9.-]{0,252})"
+        r"(?::([0-9]{1,5}))?-([0-9a-f]{6}) timed out\.$",
+        re.M,
+    )
+    messages = set()
+    for text in texts:
+        for match in pattern.finditer(text):
+            host, port = match.group(1), match.group(2)
+            if any(
+                not label or len(label) > 63 or label.startswith("-") or label.endswith("-")
+                for label in host.split(".")
+            ):
+                continue
+            if port is not None and not 1 <= int(port) <= 65535:
+                continue
+            messages.add(sha(match.group(0).encode()))
+    if 0 < len(messages) <= 128:
+        result.update(
+            category="flink_taskmanager_heartbeat_timeout"
+            if len(messages) == 1
+            else "ambiguous_taskmanager_heartbeat_messages",
+            matched_message_sha256=sorted(messages),
+        )
+    return result
 
 
 def expected_bindings(runtime, registration):
@@ -134,6 +193,7 @@ class Qualification:
         self.checkpoint_evidence: list[dict[str, Any]] = []
         self.approved_fault_proofs: dict[str, Any] = {}
         self.unexpected_job_failures: list[dict[str, Any]] = []
+        self.mixed_pause_observations: list[dict[str, Any]] = []
         self.query_failures: list[dict[str, Any]] = []
         self.confirmed_ack_checkpoints: dict[tuple[str, str, str, str], dict[str, Any]] = {}
 
@@ -523,6 +583,7 @@ class Qualification:
                 job_response_sha256=original,
                 exceptions_sha256=exception_hash,
                 exception_classes=exception_classes(exceptions),
+                recognized_exception=classify_unexpected_failure(exceptions),
                 evidence_scope="full canonical REST documents retained privately; unknown raw logs are not approved public fault proofs",
             )
         )
@@ -663,32 +724,7 @@ class Qualification:
         for case in phase_cases(1):
             self.add_case(case, "A")
         self.collect()
-        old = self.completed(WORKERS[1])
-        self.runtime.fault("worker_pause", WORKERS[1])
-        try:
-            self.publish("B")
-            mixed = self.converge([WORKERS[0]], timeout=40)
-            require(not mixed["converged"], "mixed_inferred_convergence")
-            for case in phase_cases(2):
-                if case["worker_id"] == WORKERS[0]:
-                    self.add_case(case, "B")
-            self.collect()
-            require(old["inventory"]["selection"]["revision"] == 1, "prior_worker_selection")
-            self.record(
-                "mixed_workers",
-                "production-runtime",
-                ["C07"],
-                paused_worker=WORKERS[1],
-                paused_checkpoint_sha256=old["inventory"]["snapshot_sha256"],
-                active_revision=2,
-            )
-        finally:
-            self.runtime.fault("worker_resume", WORKERS[1])
-        self.converge()
-        for case in phase_cases(2):
-            if case["worker_id"] == WORKERS[1]:
-                self.add_case(case, "B")
-        self.collect()
+        self.mixed_workers()
         self.publish("A", "rollback")
         self.converge()
         for case in phase_cases(3):
@@ -703,6 +739,126 @@ class Qualification:
             admitted_locations=42,
             source_runs=6,
             command_revisions=[1, 2, 3],
+        )
+
+    def completed_selection(self, worker, publication):
+        """One observation only; the caller owns the bounded scheduling deadline."""
+        self.fail_on_failed_job(worker)
+        checkpoint = self.runtime.checkpoints(worker).get("latest", {}).get("completed")
+        if not checkpoint or checkpoint.get("status") != "COMPLETED":
+            return None
+        proof = self.runtime.worker_inventory(worker, checkpoint["id"])
+        selected = proof["inventory"]["selection"]
+        if (
+            selected["revision"] != publication["revision"]
+            or selected["command_sha256"] != publication["command_sha256"]
+            or selected["origin_incarnation"] != self.registration(worker)["incarnation"]
+        ):
+            return None
+        return proof
+
+    def paused_worker_proof(self, worker):
+        registration = self.runtime.state["workers"][worker]
+        require(
+            registration["incarnation"] == self.registration(worker)["incarnation"],
+            "mixed_worker_incarnation",
+        )
+        containers = self.runtime._containers(registration)
+        managers = {
+            item["Config"]["Labels"]["com.docker.compose.service"]: item
+            for item in containers
+            if item["Config"]["Labels"]["com.docker.compose.service"]
+            in ("jobmanager", "taskmanager")
+        }
+        require(
+            set(managers) == {"jobmanager", "taskmanager"}
+            and managers["jobmanager"]["State"]["Running"]
+            and managers["taskmanager"]["State"]["Running"]
+            and managers["taskmanager"]["State"]["Paused"],
+            "mixed_worker_not_paused",
+        )
+        return dict(
+            worker_id=worker,
+            incarnation=registration["incarnation"],
+            taskmanager_id_sha256=sha(managers["taskmanager"]["Id"].encode()),
+            private_container_proof_sha256=self.private_evidence("mixed-paused-worker", containers),
+            paused=True,
+        )
+
+    @staticmethod
+    def mixed_pause_remaining(started):
+        remaining = 40 - (time.monotonic() - started)
+        require(remaining > 0, "mixed_pause_budget")
+        return remaining
+
+    def mixed_workers(self):
+        old = self.completed(WORKERS[1])
+        before = copy.deepcopy(self.current)
+        prior = old["inventory"]["selection"]
+        require(
+            prior["revision"] == before["revision"]
+            and prior["command_sha256"] == before["command_sha256"]
+            and prior["origin_incarnation"] == self.registration(WORKERS[1])["incarnation"],
+            "prior_worker_selection",
+        )
+        started = time.monotonic()
+        self.runtime.fault("worker_pause", WORKERS[1])
+        observation: dict[str, Any] = dict(budget_seconds=40, phase="paused", resumed=False)
+        self.mixed_pause_observations.append(observation)
+        try:
+            paused_before = self.paused_worker_proof(WORKERS[1])
+            self.publish("B")
+            observation["phase"] = "completed_selection"
+            active = self.wait(
+                lambda: self.completed_selection(WORKERS[0], self.current),
+                "mixed_completed_selection",
+                timeout=self.mixed_pause_remaining(started),
+            )
+            active_hash = self.private_evidence("mixed-completed-selection", active)
+            observation["phase"] = "actual_b_outputs"
+            for case in phase_cases(2):
+                if case["worker_id"] == WORKERS[0]:
+                    self.mixed_pause_remaining(started)
+                    self.add_case(case, "B")
+            self.collect(timeout=self.mixed_pause_remaining(started))
+            paused_after = self.paused_worker_proof(WORKERS[1])
+            require(
+                paused_after["taskmanager_id_sha256"] == paused_before["taskmanager_id_sha256"],
+                "mixed_worker_replaced",
+            )
+            mixed = self.runtime.status()  # Do not drain the ACK backlog while a TM is frozen.
+            require(not mixed["converged"], "mixed_inferred_convergence")
+            require(
+                {(p["worker_id"], p["incarnation"]) for p in mixed["participants"]}
+                == {(r["worker_id"], r["incarnation"]) for r in self.registrations},
+                "mixed_participant_obligations",
+            )
+            self.mixed_pause_remaining(started)
+            observation["phase"] = "proved_mixed"
+        finally:
+            observation["pause_seconds_before_resume"] = time.monotonic() - started
+            self.runtime.fault("worker_resume", WORKERS[1])
+            observation["resumed"] = True
+            observation["pause_seconds_through_resume"] = time.monotonic() - started
+        self.mixed_pause_remaining(started)
+        self.converge()  # Actual signed ACKs and exact named CPs remain mandatory after resume.
+        for case in phase_cases(2):
+            if case["worker_id"] == WORKERS[1]:
+                self.add_case(case, "B")
+        self.collect()
+        self.record(
+            "mixed_workers",
+            "production-runtime",
+            ["C07"],
+            paused_worker=WORKERS[1],
+            paused_checkpoint_sha256=old["inventory"]["snapshot_sha256"],
+            paused_state_before=paused_before,
+            paused_state_after=paused_after,
+            active_revision=active["inventory"]["selection"]["revision"],
+            active_completed_checkpoint_id=active["checkpoint"]["id"],
+            active_completed_proof_sha256=active_hash,
+            pause_observation=observation,
+            convergence_proof="normal signed ACK-named COMPLETED checkpoints after resume",
         )
 
     def production_faults(self):
@@ -1436,7 +1592,12 @@ class Qualification:
             self.core()
         else:
             self.setup_workers()
-            if scenario_group == "open-group":
+            if scenario_group == "mixed-workers":
+                prior = self.extra("security-alice", 210)
+                prior["worker_id"] = WORKERS[1]
+                self.add_case(prior, "A")
+                self.collect()
+            elif scenario_group == "open-group":
                 self.publish("B")
                 self.converge()
             elif scenario_group == "retention":
@@ -1448,6 +1609,7 @@ class Qualification:
                 self.replacement(WORKERS[1])
                 self.converge()
             method = {
+                "mixed-workers": self.mixed_workers,
                 "production-faults": self.production_faults,
                 "pressure": self.pressure,
                 "open-group": self.open_group,
@@ -1773,6 +1935,7 @@ def main(argv=None):
                 checkpoints=qualification.checkpoint_evidence,
                 approved_fault_proofs=qualification.approved_fault_proofs,
                 unexpected_job_failures=qualification.unexpected_job_failures,
+                mixed_pause_observations=qualification.mixed_pause_observations,
                 query_failures=qualification.query_failures,
             )
         if runtime is not None:

@@ -83,6 +83,7 @@ entire passed prefix:
 
 ```sh
 uv run --locked python tools/lifecycle_runtime_verify.py
+uv run --locked python tools/lifecycle_runtime_verify.py --scenario-group mixed-workers
 uv run --locked python tools/lifecycle_runtime_verify.py --scenario-group partial-recovery
 uv run --locked python tools/lifecycle_runtime_verify.py --scenario-group checkpoint-timeout
 uv run --locked python tools/lifecycle_runtime_verify.py --scenario-group hostile-ast

@@ -2,8 +2,9 @@
 
 Status: actual ARM64 attempt12 passed all fourteen required bounded runtime
 scenarios on its exact recorded source and unchanged production artifacts. Later
-qualification-harness refinements have static coverage; their native full run and
-PR CI remain pending. No merge, owner acceptance, P15b2 archive/replay or complete
+qualification-harness refinements have static and focused runtime coverage. Initial
+native PR CI failed in the mixed-worker pause; its bounded scheduling correction
+awaits a new full native run. No merge, owner acceptance, P15b2 archive/replay or complete
 P15/P16 gate is established. Original private evidence and build artifacts
 remain ignored locally. Neither review nor a component test substitutes for an
 actual Kafka/Flink scenario.
@@ -628,6 +629,98 @@ attempts retain their original evidence and outcomes. Actual timeout snapshot
 serialization, observed durable-ACK candidate and absence of that checkpoint's
 durable ACK remain distinct from direct task-side abort callback execution, and open-group application timing is not independently
 claimed from a retained numerical deadline.
+
+## Native PR failure and bounded mixed-worker scheduling correction
+
+Actual native AMD64 GitHub run44604141541, attempt1, activation job135844572369,
+executed test-merge `5905a21f04a84b2c6c583cd49fefb22e356bd6bb` associated with
+PR head `1d271ef`. Its internal qualification attempt
+`f06893909f264de5984b9d2d433faf5e` failed with
+`lifecycle_qualification_unexpected_job_failure`, after16 admissions and22 logical/
+physical outputs, before any named scenario passed. Worker21's actual job was
+FAILED; public metadata records `java.util.concurrent.TimeoutException` and
+`org.apache.flink.runtime.JobException`. All owned runtime was reported stopped.
+This native run does not pass the activation gate.
+
+| Retained native evidence under `.cache/lifecycle-runtime-qualification/` | SHA-256 |
+| --- | --- |
+| `native-44604141541-activation/summary.json` | `21cb6e29721f9deb23ffd17fec6aa0f3a1ed4eba7064d9e27bec2e7a28dfd0e7` |
+| Original `native-44604141541-activation.zip` | `ae61ce60ce9b75673d2b17c44b8258dead6ce39d970e970f821eac6af4122a76` |
+| Actual `native-44604141541-activation.log` | `77a276271be72e7cc9f62b40696f17a3d81a985207e5fed87ede4b55649480a5` |
+
+The native REST exception document hash is
+`ee2850823b09812ee574c1b4772b2a29464017e3d7c9acef308995a73a568b27`,
+and job-state document hash is
+`3a1692a66cc8059682420c99999a05616d846fc597cb9f070c603bfb3e908f31`.
+Unknown raw REST documents were retained privately on the runner and were not
+uploaded. Their hashes and exception classes do not establish an exact originating
+native heartbeat message or root cause. No claim here retroactively reconstructs
+that missing native raw evidence.
+
+Pinned Flink2.2.1 bytecode establishes the default heartbeat timeout is50 seconds.
+The core JAR SHA-256 is
+`b29b9e87c6124fefed668a4275c0c1cbfbcc1e073fdaae4e5723416814312db1`;
+the runtime JAR containing the exact TaskManager heartbeat timeout template is
+`cd60a8ae96d5baed7cf19a6637555cbbdc04739da8b3d26c9f828da3bb2b44e3`.
+The mixed-worker case pauses only a TaskManager while its JobManager remains live;
+heavy signed-ACK readback inside that window can overrun the heartbeat budget.
+This is a source-supported scheduling risk, not proven native causality from the
+available classes alone.
+
+The correction preserves C07: during one shared40-second monotonic acceptance
+budget, publish B, require an actual globally COMPLETED worker20 checkpoint with
+exact current B command/revision/incarnation, check actual B source outputs against
+the unchanged oracle, prove the same owned/current-incarnation worker21 TaskManager
+remains paused before and after with its prior actual COMPLETED A state, and require
+mixed status with both exact participant obligations and convergence false.
+`finally` resumes worker21; only afterward does normal exact signed-ACK/named
+COMPLETED checkpoint convergence run, followed by worker21 B source outputs. Core
+accounting remains42 admissions/66 logical outputs. No heartbeat, checkpoint,
+source-assembler or other timeout, artifact, resource or fixed expectation changed.
+
+A diagnostic classifier recognizes only the exact pinned TimeoutException heartbeat
+template with bounded valid host/port/lowercase-six-hex resource grammar. It exports
+fixed categories and document/message hashes only. Unknown messages remain
+unclassified failures, multiple distinct matches remain ambiguous, and arbitrary
+REST/log values remain private. This adds future diagnostic evidence without
+changing failure acceptance or retroclassifying the unavailable native message.
+
+The before-fix actual focused mixed run `4d2f92023e874659ab8fa73731476931` passed
+on qualifier SHA-256
+`14fa62245da498cf4d306361d95d9737eb911481a7a14174c4e2d7d724dec94f`,
+with15 admissions/25 logical and physical outputs, all owned runtime stopped.
+Its summary SHA-256 is
+`528c4c5f2a7f7b19a74e1dee397c387612c67f7dc7cc2e812147554838ad0865`;
+coverage SHA-256 `da2b88ff9d0b86800cc749a4ceadea3c6a814c7c8d7d31f483b4237ddcfadb0d`;
+`native-fix-mixed-before.log` SHA-256
+`0b6ad2ae64585e0f975adb22b6a167b751735bf1ad7206887b64de6f9c234c7e`.
+This is green-only local evidence, not a reproduced native red or proof of its cause.
+
+The after-fix actual focused mixed run `4990a094173b490ba8ce42893101a42d` also
+passed, on current qualifier SHA-256
+`0a81b3b9b8290045d69e8b88e8d12498ec865e3add597e0bba000975402d24fe`.
+Its summary SHA-256 is
+`4304843e0a3535f330dcb520b773547e6533e3ff05eb7bdafd8016e4e6a77418`;
+coverage SHA-256 `4f653beac0a3890908231b63a368844b2afaa3f21fc5e12a460629fee72b388c`;
+`native-fix-mixed-after.log` SHA-256
+`d4482b5de0e1fffb2146dfdd12a03266046101425fe8d78b344c2ea0ca5b66f3`.
+It records15 admissions/25 logical and physical outputs, actual B checkpoint10,
+matching owned paused TaskManager identity/incarnation before and after, and
+22.831198208004935 seconds through resume within the40-second acceptance budget.
+All owned runtime is reported stopped. Both focused reports are `partial_passed`,
+`full_gate: false`; thirteen other required scenarios remain unqualified in each.
+Neither report replaces the pending corrected-source full native gate.
+
+The first correction static run passed its Python tests but failed formatting;
+original `static-check-native-mixed-fix.log` SHA-256 is
+`7cdb30c264360b1b262cbd69ad50764f4d1b29eb38f9b39b394ec9ee664db89b`.
+After that formatting correction, the final check passed392 Python tests in34.498s,
+Ruff/static checks, formatting and mypy for115 source files. Retained
+`static-check-native-mixed-fix-final.log` SHA-256 is
+`4f2d14f4e8a16734742f50778b0008dbe671e511f1cae624c33c4a157df4bd45`.
+This correction is a fourth cohesive published-history CI commit under the SDLC
+exception; earlier commits and evidence are preserved without amending published
+history. Corrected full native CI and final review remain required.
 
 Final-source full native AMD64 PR CI and review gates remain open. P15b2 must deliver
 its separately qualified archive/replay graph before complete P15 acceptance and

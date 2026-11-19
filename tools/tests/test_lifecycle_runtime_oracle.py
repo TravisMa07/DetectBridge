@@ -763,6 +763,7 @@ class LifecycleRuntimeOracleTests(unittest.TestCase):
             qualifier.setup_workers = Mock()
             qualifier.core = Mock(side_effect=AssertionError("full core must not run"))
             for name in (
+                "mixed_workers",
                 "production_faults",
                 "pressure",
                 "open_group",
@@ -780,6 +781,37 @@ class LifecycleRuntimeOracleTests(unittest.TestCase):
             qualifier.setup_workers.assert_called_once_with()
             selected.assert_called_once_with()
             self.assertLess(len(SCENARIO_GROUPS[group]), len(SCENARIO_GROUPS["all"]))
+
+    def test_focused_mixed_requires_prior_actual_a_case_before_existing_schedule(self):
+        from lifecycle_runtime_verify import Qualification
+
+        qualifier: Any = Qualification.__new__(Qualification)
+        qualifier.coverage = {}
+        order: list[Any] = []
+        qualifier.setup_workers = Mock(side_effect=lambda: order.append("setup_A"))
+        qualifier.add_case = Mock(side_effect=lambda case, bundle: order.append((case, bundle)))
+        qualifier.collect = Mock(side_effect=lambda: order.append("collect_prior_A"))
+        for name in (
+            "production_faults",
+            "pressure",
+            "open_group",
+            "partial_recovery",
+            "checkpoint_timeout",
+            "invalid_messages",
+            "hostile_ast",
+            "retained",
+        ):
+            setattr(qualifier, name, Mock())
+        qualifier.mixed_workers = Mock(side_effect=lambda: order.append("mixed_schedule"))
+        with self.assertRaisesRegex(ValueError, "required_scenarios_unqualified"):
+            qualifier.run("mixed-workers")
+        self.assertEqual("setup_A", order[0])
+        prior, bundle = order[1]
+        self.assertEqual("A", bundle)
+        self.assertEqual("security-alice", prior["id"])
+        self.assertEqual("71500000-0000-4000-8000-000000000021", prior["worker_id"])
+        self.assertTrue(prior["run_id"].endswith("000000000210"))
+        self.assertEqual(["collect_prior_A", "mixed_schedule"], order[2:])
 
     def test_default_dispatch_retains_every_real_group_and_full_required_check(self):
         from lifecycle_runtime_verify import Qualification
@@ -876,6 +908,122 @@ class LifecycleRuntimeOracleTests(unittest.TestCase):
             self.assertEqual(digest(detail), proof["job_response_sha256"])
             self.assertEqual(digest(exceptions), proof["exceptions_sha256"])
             self.assertEqual(2, len(list((root / "qualification-private-evidence").glob("*.json"))))
+
+    def test_mixed_selection_requires_exact_command_and_current_incarnation(self):
+        from lifecycle_runtime_verify import Qualification
+
+        worker = self.registration["worker_id"]
+        selected = dict(revision=2, command_sha256="2" * 64, origin_incarnation="old")
+        proof = dict(checkpoint=dict(id=7, status="COMPLETED"), inventory=dict(selection=selected))
+        runtime = SimpleNamespace(
+            checkpoints=Mock(return_value=dict(latest=dict(completed=proof["checkpoint"]))),
+            worker_inventory=Mock(return_value=proof),
+        )
+        qualifier: Any = Qualification(
+            ROOT / ".cache", runtime, self.bundles, None, ROOT / "probe.jar"
+        )
+        qualifier.registrations = [self.registration]
+        qualifier.fail_on_failed_job = Mock()
+        desired = dict(revision=2, command_sha256="2" * 64)
+        self.assertIsNone(qualifier.completed_selection(worker, desired))
+        selected["origin_incarnation"] = self.registration["incarnation"]
+        selected["command_sha256"] = "1" * 64
+        self.assertIsNone(qualifier.completed_selection(worker, desired))
+        selected["command_sha256"] = desired["command_sha256"]
+        self.assertIs(proof, qualifier.completed_selection(worker, desired))
+        runtime.checkpoints.return_value = dict(latest=dict(completed=dict(id=7, status="FAILED")))
+        runtime.worker_inventory.reset_mock()
+        self.assertIsNone(qualifier.completed_selection(worker, desired))
+        runtime.worker_inventory.assert_not_called()
+
+    def test_mixed_pause_checks_actual_owned_state_and_shared_budget(self):
+        from lifecycle_runtime_verify import Qualification
+
+        worker = self.registration["worker_id"]
+        managers: list[dict[str, Any]] = [
+            dict(
+                Id=role,
+                Config=dict(Labels={"com.docker.compose.service": role}),
+                State=dict(Running=True, Paused=role == "taskmanager"),
+            )
+            for role in ("jobmanager", "taskmanager")
+        ]
+        runtime = SimpleNamespace(
+            state=dict(workers={worker: self.registration}),
+            _containers=Mock(return_value=managers),
+        )
+        qualifier: Any = Qualification(
+            ROOT / ".cache", runtime, self.bundles, None, ROOT / "probe.jar"
+        )
+        qualifier.registrations = [self.registration]
+        qualifier.private_evidence = Mock(return_value="a" * 64)
+        self.assertTrue(qualifier.paused_worker_proof(worker)["paused"])
+        managers[1]["State"]["Paused"] = False
+        with self.assertRaisesRegex(ValueError, "mixed_worker_not_paused"):
+            qualifier.paused_worker_proof(worker)
+        with patch("lifecycle_runtime_verify.time.monotonic", return_value=39.5):
+            self.assertEqual(0.5, qualifier.mixed_pause_remaining(0))
+        with patch("lifecycle_runtime_verify.time.monotonic", return_value=40):
+            with self.assertRaisesRegex(ValueError, "mixed_pause_budget"):
+                qualifier.mixed_pause_remaining(0)
+
+    def test_mixed_failure_resumes_worker_without_recording_pass(self):
+        from lifecycle_runtime_verify import WORKERS, Qualification
+
+        registration = dict(worker_id=WORKERS[1], incarnation="current")
+        selected = dict(revision=1, command_sha256="1" * 64, origin_incarnation="current")
+        runtime = SimpleNamespace(fault=Mock())
+        qualifier: Any = Qualification(
+            ROOT / ".cache", runtime, self.bundles, None, ROOT / "probe.jar"
+        )
+        qualifier.current = dict(revision=1, command_sha256="1" * 64)
+        qualifier.registrations = [registration]
+        qualifier.completed = Mock(return_value=dict(inventory=dict(selection=selected)))
+        qualifier.paused_worker_proof = Mock(return_value={})
+        qualifier.publish = Mock()
+        qualifier.wait = Mock(side_effect=ValueError("missing_completed_proof"))
+        qualifier.record = Mock()
+        with self.assertRaisesRegex(ValueError, "missing_completed_proof"):
+            qualifier.mixed_workers()
+        self.assertEqual(
+            [("worker_pause", WORKERS[1]), ("worker_resume", WORKERS[1])],
+            [call.args for call in runtime.fault.call_args_list],
+        )
+        qualifier.record.assert_not_called()
+        self.assertTrue(qualifier.mixed_pause_observations[0]["resumed"])
+
+    def test_failure_classifier_exposes_only_pinned_category_and_hashes(self):
+        from lifecycle_runtime_verify import classify_unexpected_failure
+
+        message = (
+            "java.util.concurrent.TimeoutException: "
+            "Heartbeat of TaskManager with id 172.18.0.3:34567-abcdef timed out."
+        )
+        document = {"root-exception": message}
+        result = classify_unexpected_failure(document)
+        self.assertEqual("flink_taskmanager_heartbeat_timeout", result["category"])
+        self.assertEqual(digest(document), result["document_sha256"])
+        self.assertEqual([sha(message.encode())], result["matched_message_sha256"])
+        self.assertNotIn("172.18.0.3", encoded(result).decode())
+        for changed in (
+            message.replace("TimeoutException", "IllegalArgumentException"),
+            message.replace("34567", "65536"),
+            message.replace("abcdef", "ABCDEF"),
+            message.replace("abcdef", "abcdef(private-secret)"),
+            "unknown failure private-secret",
+        ):
+            with self.subTest(changed=changed):
+                classified = classify_unexpected_failure({"root-exception": changed})
+                self.assertEqual("unclassified", classified["category"])
+                self.assertNotIn("private-secret", encoded(classified).decode())
+        multiple = dict(
+            exception=message,
+            history=[dict(stacktrace=message.replace("34567", "12345"))],
+        )
+        self.assertEqual(
+            "ambiguous_taskmanager_heartbeat_messages",
+            classify_unexpected_failure(multiple)["category"],
+        )
 
     def test_missing_expected_source_outputs_cannot_pass(self):
         with self.assertRaisesRegex(ValueError, "incomplete_outputs"):

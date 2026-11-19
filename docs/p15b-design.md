@@ -559,6 +559,17 @@ Every actual signature, broker location, checked journal cursor and exact named
 checkpoint proof remains required. This reduces helper startup overhead without
 changing the production, probe or compiler artifact or adding a new helper protocol.
 
+The native mixed-worker failure exposed a pause window that included signed-ACK
+backlog readback. Pinned Flink2.2.1 has a50-second TaskManager heartbeat timeout;
+the original native REST exception was retained only privately, so its published
+`TimeoutException` class alone does not identify the exact cause. Keep all Flink
+timeouts unchanged. Within a shared40-second qualification pause budget, prove W1's
+exact independently COMPLETED B checkpoint, its literal B outputs, and W2's actual
+owned paused state with its prior A checkpoint. Resume W2 in `finally`, then require
+normal signed-ACK convergence and remaining B outputs before passing C07. No
+snapshot observation is inserted into controller ACK state. A focused mixed-worker
+group retains the same cases and the default core remains42 admissions/66 outputs.
+
 The timeout probe records the serialized snapshot hash only after actual sealing
 and durable-ack candidate construction. Advisory inventory verifies that
 observation without promoting the snapshot to COMPLETED. After observing the

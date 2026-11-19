@@ -28,7 +28,18 @@ Current P14c2 owner: primary agent, branch
 checks; native run 44408227593 supplies that check gate. The
 [owning design](p14c2-design.md), [independent cases](p14c2-expectations.md) and
 [ledger](p14c2-ledger.md) freeze retention/import/recorded/final acceptance before
-production code. No parent merge or completed P14 claim follows.
+production code. Managed retention, P05 import/restore and recorded qualification
+are implemented. Final managed artifact 95982890 passed 53 Java tests, 44 actual
+ARM64 synthetic cases, approved-original P05 import/restore and fresh controlled
+recording source/archive/historical/current qualification (49 admissions, 160
+wires, two 62-output historical runs and 49-output current replay). Exact source,
+artifacts, failed attempts and private/native limits are in the owning ledger.
+Native implementation CI and owner acceptance remain open.
+The [milestone map](p14-acceptance.md) keeps exact artifact/platform evidence and
+remaining owner/native/merged gates separate. Primary agent owns core/CI/status;
+independent agents own fault qualification, recorded-source qualification and
+retention safety review. Heavy runs are serialized. No parent merge or completed
+P14 claim follows.
 
 Current P13d audit (2026-11-17): P13a–c are owner-merged; #49 adds recorded
 qualification and the [acceptance map](p13-acceptance.md). Earlier progress entries

@@ -495,6 +495,33 @@ def needs_current(paths):
     return any(p in shared or p.startswith(prefixes) for p in paths if not p.endswith(".md"))
 
 
+def needs_maintenance(paths):
+    direct = {
+        "tools/archive_profiles.py",
+        "tools/replay.py",
+        "tools/replay_time.py",
+        "tools/check_replay.py",
+        "tools/datasets.py",
+        "tools/check_datasets.py",
+        "tools/contract_identity.py",
+    }
+    prefixes = (
+        "packages/archive-maintenance/",
+        "catalog/datasets/",
+        "tools/archive_maintenance",
+        "tools/check_archive_maintenance",
+        "tools/managed_replay",
+        "tools/p05_archive",
+        "tools/tests/test_maintenance",
+        "tools/tests/test_archive_maintenance",
+        "tools/tests/test_managed_replay",
+        "tools/tests/test_p05_archive",
+    )
+    return needs_current(paths) or any(
+        p in direct or p.startswith(prefixes) for p in paths if not p.endswith(".md")
+    )
+
+
 if __name__ == "__main__":
     base = os.environ.get("CHANGE_BASE", "")
     head = os.environ.get("CHANGE_HEAD", "HEAD")
@@ -515,6 +542,7 @@ if __name__ == "__main__":
         output.write(f"writer={str(needs_writer([p for p in paths if p])).lower()}\n")
         output.write(f"integration={str(needs_integration([p for p in paths if p])).lower()}\n")
         output.write(f"historical={str(needs_historical([p for p in paths if p])).lower()}\n")
+        output.write(f"maintenance={str(needs_maintenance([p for p in paths if p])).lower()}\n")
         output.write(f"current={str(needs_current([p for p in paths if p])).lower()}\n")
         output.write(f"archive={str(needs_archive([p for p in paths if p])).lower()}\n")
         output.write(f"search={str(needs_search([p for p in paths if p])).lower()}\n")

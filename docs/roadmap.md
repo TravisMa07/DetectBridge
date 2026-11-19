@@ -262,7 +262,10 @@ is recorded in the acceptance map; P13 acceptance is not implied.
   [qualification and acceptance gates](p14c1-ledger.md). Retention/deletion, controlled
   recorded reuse, P05 import and complete milestone acceptance are owned by the final
   [P14c2 design/expectation freeze](p14c2-design.md), stacked on qualified P14c1
-  head 8e4c832. Its implementation and [qualification](p14c2-ledger.md) remain open;
+  head 8e4c832. Its [managed implementation](archive-maintenance.md) passed local
+  ARM64 fault, approved-original P05 and controlled-recording
+  [qualification](p14c2-ledger.md); native CI and
+  [milestone acceptance](p14-acceptance.md) remain open;
   no complete P14 acceptance is claimed.
 - Depends on: P05, P13.
 - Deliver: durable archive segments/manifests, pinned artifacts, historical

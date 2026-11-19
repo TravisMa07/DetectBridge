@@ -112,7 +112,11 @@ identity as a dependency. Hash identity tokens in plans; ordinary host, policy a
 rule IDs are not evidence identities. Retained quarantine/writer-failure rows or
 unrecognized reference graphs block partial retirement. Unknown graphs may retire
 only when the complete retained wire population is selected and no external hold
-or pin remains. These conservative blockers are visible, not silently waived.
+or pin remains. Recognition validates the pinned closed topic schema and nested
+references; unknown versions/extensions remain blockers. Open Windows context and
+preservation diagnostics are conservatively unknown. Observational source fields
+do not supply evidence references. These conservative blockers are visible, not
+silently waived.
 
 Preserve retired source identity/content fingerprints so later admission at a new
 Kafka location still exposes conflicting raw/context content. Identical bytes at
@@ -152,7 +156,8 @@ archive itself can never exceed cap minus 32 MiB, even while retiring; ordinary
 admission stops at cap minus 64 MiB. Existing separate historical/current 512 MiB
 catalog/workspace budgets and externally retained build/image hash pins remain
 unchanged. Metadata/plans are at most 16 MiB; one plan has at most 256 segments.
-Bound dependency analysis to 65,536 rows and 262,144 identity tokens, and retained
+Bound dependency analysis to 65,536 rows and 262,144 identity tokens/filesystem
+entries (also preflight legacy clones before collecting paths), and retained
 source fingerprint summaries to 131,072 entries. Exhaustion stops planning or
 admission visibly; it does not drop old fingerprints or infer independence.
 All records, anchors, imports, partials and advisory files count toward the cap.
@@ -186,6 +191,10 @@ A later P05 execution may update its own restored advisory checkpoint. Import do
 not manufacture Kafka offsets, P13 contexts, missing Windows host identity or a
 P13 historical-processing claim. Whole imports may retire only after their own
 holds/readers and exact closure checks; global registered archive objects stay held.
+Whole-import planning also scans retained wire graphs within the same bounds.
+Unknown retained graphs or recognized import/run/closure references block deletion;
+import planning does not select or implicitly retire Kafka rows. An independently
+eligible wire retirement may precede a new explicit import plan.
 
 ## Controlled-original qualification and completion
 

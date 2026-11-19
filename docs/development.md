@@ -226,3 +226,28 @@ component checks alone do not establish runtime recovery. Private originals rema
 outside public CI. See the [operator guide](current-replay.md),
 [owning design](p14c1-design.md) and [qualification ledger](p14c1-ledger.md) for exact
 bounds and separate acceptance gates.
+
+## P14c2 managed archive checks
+
+```sh
+uv run --locked python tools/dev.py maintenance
+uv run --locked python tools/archive_maintenance_verify.py
+```
+
+The first builds the separate managed/probe artifacts, verifies exact legacy and
+controller/schema resources, and runs Java/Python component checks. The second
+executes synthetic retention, corruption, publication/recovery, Kafka, pressure
+and isolated replay cases. The applicable `archive-maintenance-verification` job
+requires both and the exact prepared dependency cache; its aggregate fails closed.
+Serialize heavy suites and keep every project and physical data/control root
+isolated. Source fingerprints and retirement records are finite preservation
+metadata, with visible exhaustion rather than eviction.
+
+Accepted controlled originals remain local. The separate opt-in command is
+`uv run --locked python tools/archive_recorded.py --recorded`; pass the original
+physical paths explicitly when using a worktree, as described in the
+[managed operator guide](archive-maintenance.md). It rechecks catalog/terms/source
+bindings, performs actual source-to-archive/historical/current qualification,
+keeps private diagnostics local and restores the default integration build.
+Actual platforms/artifacts, failures and remaining gates belong in the
+[ledger](p14c2-ledger.md) and [milestone map](p14-acceptance.md).

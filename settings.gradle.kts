@@ -41,3 +41,6 @@ project(":historical-replay").projectDir = file("packages/historical-replay")
 
 include("current-replay")
 project(":current-replay").projectDir = file("packages/current-replay")
+
+include("archive-maintenance")
+project(":archive-maintenance").projectDir = file("packages/archive-maintenance")

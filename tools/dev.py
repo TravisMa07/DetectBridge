@@ -170,6 +170,7 @@ def doctor():
     run(["uv", "run", "--locked", "python", "tools/check_archive.py"])
     run(["uv", "run", "--locked", "python", "tools/check_historical.py"])
     run(["uv", "run", "--locked", "python", "tools/check_current_replay.py"])
+    run(["uv", "run", "--locked", "python", "tools/check_archive_maintenance.py"])
     run(["uv", "run", "--locked", "python", "tools/check_detection.py"])
 
 
@@ -252,6 +253,33 @@ def bootstrap_gradle(task="help"):
         time.sleep(delay)
 
 
+def maintenance():
+    run(["uv", "run", "--locked", "python", "tools/archive_maintenance.py", "build"])
+    run(["uv", "run", "--locked", "python", "tools/check_archive_maintenance.py", "--artifacts"])
+    for pattern in (
+        "test_maintenance*.py",
+        "test_p05_archive.py",
+        "test_managed_replay.py",
+        "test_archive_maintenance*.py",
+    ):
+        run(
+            [
+                "uv",
+                "run",
+                "--locked",
+                "python",
+                "-m",
+                "unittest",
+                "discover",
+                "-s",
+                "tools/tests",
+                "-p",
+                pattern,
+                "-v",
+            ]
+        )
+
+
 def current():
     run(["uv", "run", "--locked", "python", "tools/current_replay.py", "build"])
     run(["uv", "run", "--locked", "python", "tools/check_current_replay.py", "--artifacts"])
@@ -332,6 +360,7 @@ def check():
     run(["uv", "run", "--locked", "python", "tools/check_archive.py"])
     run(["uv", "run", "--locked", "python", "tools/check_historical.py"])
     run(["uv", "run", "--locked", "python", "tools/check_current_replay.py"])
+    run(["uv", "run", "--locked", "python", "tools/check_archive_maintenance.py"])
     run(["uv", "run", "--locked", "python", "tools/check_detection.py"])
     run(["uv", "run", "--locked", "python", "tools/check_datasets.py"])
     run(["uv", "run", "--locked", "python", "tools/check_contracts.py"])
@@ -618,6 +647,7 @@ def main():
             "archive",
             "historical",
             "current",
+            "maintenance",
             "verify",
         ],
     )

@@ -67,8 +67,11 @@ adds explicit new-plan evaluation and scheduled regrouping in a separate resumab
 local workspace. Its [qualification and acceptance gates](docs/p14c1-ledger.md)
 remain separate; native run 44408227593 passed on head `8e4c832`. The final
 [P14c2 owning design](docs/p14c2-design.md) starts retention, P05 archive import and
-recorded qualification on that stack. Its runtime remains unimplemented at this
-freeze checkpoint. Management API and UI remain future work;
+recorded qualification on that stack. Its [managed archive implementation](docs/archive-maintenance.md)
+and [milestone evidence map](docs/p14-acceptance.md) record passing local ARM64
+fault, approved-original P05 and controlled-recording qualification. Native CI
+and owner acceptance remain open.
+Management API and UI remain future work;
 P14 is not complete.
 P06 provides local Kafka/Flink infrastructure and optional authenticated OpenSearch.
 Repository hygiene tooling and

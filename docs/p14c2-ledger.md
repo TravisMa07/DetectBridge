@@ -1,7 +1,7 @@
 # P14c2 retention/import/final qualification ledger
 
-Status: owning design/contracts/independent expectation freeze preparation. No
-P14c2 production code or runtime qualification is claimed yet. Branch
+Status: local implementation in progress after the published design freeze.
+Focused component checks exist; complete runtime qualification remains open. Branch
 `feat/p14c2-retention-qualification` starts at qualified P14c1 head 8e4c832 and
 will target `feat/p14c1-current-replay`. The owner explicitly authorized this
 stack before parent merges; merges/releases remain owner-controlled.
@@ -81,3 +81,34 @@ catalog/dependency/hygiene/secrets/workflow checks, lint/format/types in
 PR number as a Markdown heading; the corrected result is separate. These checks
 and the old-reader fixture run do not qualify the new managed runtime. Preserve
 this design/expectation commit before writing its production code.
+
+## Independent recorded-count correction before qualification
+
+The published original freeze `a19693bccd346d24c5c3d899dafea5a1a139b435`
+(packet SHA-256 45ce9bc93b5614fc301417373d8325ac978cd12f6cd6c84141d7572b59a5961d)
+incorrectly copied thirteen original preservations into a schedule that also admits
+one distinct controlled late occurrence. Preserve that original freeze as history.
+Before any new recorded runtime execution, revalidated catalog counts independently
+show audit 27 group members plus three extraction failures; auth two normalized
+plus nine unsupported; Windows four eligible plus one unsupported. The 46 originals
+therefore produce thirteen preservations. The controlled late member is distinct
+and adds one `late_evidence` preservation; exact redelivery adds only a receipt.
+Historical/current each require fourteen preservations, and current total is
+16 + 10 + 14 + 9 = 49. Source fields, quality, membership and all other expectations
+remain unchanged.
+
+This correction comes from the accepted catalogs and existing
+`tools/search_writer_recorded.py` late-preservation oracle, not from the new archive
+implementation. The old original-only packet's per-run thirteen remains correct
+and unchanged. [P13d](p13d-ledger.md) already records 28 preservations over two runs,
+223 logical/233 physical outputs, on accepted producer 51a984de in project
+`detectbridge-p13-recorded-8348892e80`. New read-only preflight independently
+reverified original hashes/terms/bindings in
+`.cache/p14c2-recorded-preflight.log`; its report explicitly says runtime unqualified.
+
+The corrected packet SHA-256 is
+`46eede25ee08f2f2cd576de96417004bc0c4e53a3f582031aea7040f6216e3dd`.
+A separate pre-qualification correction commit preserves this evidence boundary;
+it is an explained additional commit beyond the normal three-commit target.
+No owner semantics acceptance, merge, milestone completion or runtime pass is
+implied by correcting the expectation arithmetic.

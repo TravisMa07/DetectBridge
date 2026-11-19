@@ -421,13 +421,13 @@
     "historical": {
       "tagged": 16,
       "manifest": 10,
-      "preservation": 13,
+      "preservation": 14,
       "detection": 3
     },
     "current": {
       "tagged": 16,
       "manifest": 10,
-      "preservation": 13,
+      "preservation": 14,
       "processing": 9,
       "detection": 0
     },

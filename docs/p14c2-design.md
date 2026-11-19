@@ -213,8 +213,9 @@ is zero, with no current detections. Preserve the original source fields/quality
 and ten original audit groups. Use an explicit tick before the controlled late
 cursor so the recorded current run preserves that original late relationship;
 P14c1's separate synthetic cases already qualify changed membership. Original
-catalogs predict 16 tagged events, 10 manifests, 13 preservations and nine quality
-diagnostics for this current schedule (48 outputs; receipts are not current output).
+catalogs plus the controlled late admission predict 16 tagged events, 10 manifests,
+14 preservations and nine quality
+diagnostics for this current schedule (49 outputs; receipts are not current output).
 These expectations come from accepted catalogs and the frozen two-rule source
 order, never from the new archive/replay implementation.
 

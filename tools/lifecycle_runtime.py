@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any
 
 import lifecycle as local
+import lifecycle_diagnostics as diagnostic
 import lifecycle_validation as candidate
 from check_contracts import StrictValidator, load_json
 from jsonschema import FormatChecker
@@ -314,6 +315,7 @@ class Runtime:
         with self._locked():
             self._load()
 
+    @diagnostic.measured("immutable_verification")
     def _verify_immutable_inputs(self):
         try:
             self._verify_immutable_inputs_checked()
@@ -453,6 +455,7 @@ class Runtime:
             shutil.disk_usage(self.root).free >= LIMITS["reserve_bytes"] + amount, "disk_reserve"
         )
 
+    @diagnostic.measured("load_replay_and_references")
     def _load(self):
         self._verify_immutable_inputs()
         self._usage()
@@ -699,6 +702,7 @@ class Runtime:
         else:
             raise RuntimeError("lifecycle_runtime_unknown_record")
 
+    @diagnostic.measured("journal_append")
     def _append(self, kind, value, recovery=False):
         record = dict(
             sequence=self.state["sequence"] + 1,
@@ -805,6 +809,7 @@ class Runtime:
         self._verify_signature(kind, self.root / "authority/public.der", target, payload)
         return wire
 
+    @diagnostic.measured("network_other")
     def _network(self, *args, timeout=120):
         self._verify_immutable_inputs()
         broker = self.state["broker"]
@@ -1455,6 +1460,7 @@ class Runtime:
             "cluster_id": self.state["broker"]["cluster_id"],
         }
 
+    @diagnostic.measured("record_validation")
     def _ack_payload(self, wire, path, temporary):
         signed = local.document(wire)
         schema("ack", signed)
@@ -1574,7 +1580,9 @@ class Runtime:
             self._reserve(len(request) + 131072, recovery=True)
             path = temporary / ("ack-batch-" + uuid.uuid4().hex + ".json")
             local.write_exclusive(path, request)
-            raw = self._local_ack_batch(path, sha(request)).encode()
+            with diagnostic.span("signature_batch", self):
+                diagnostic.note(requested=len(rows))
+                raw = self._local_ack_batch(path, sha(request)).encode()
             if len(raw) > 65536:
                 raise IntegrityError("lifecycle_runtime_ack_batch_result_limit")
             try:
@@ -1621,8 +1629,12 @@ class Runtime:
         finally:
             self._qualification_ack_proofs = None
 
+    @diagnostic.measured("observe")
     def observe(self, limit=64, *, qualification_batch=False):
         require(type(limit) is int and 1 <= limit <= 128, "read_limit")
+        diagnostic.note(
+            requested=limit, fetched=0, processed=0, accepted=0, rejected=0, duplicates=0
+        )
         with self._locked():
             self._load()
             descriptor = self._common()["topics"]["ack"]
@@ -1641,6 +1653,8 @@ class Runtime:
                     self._path(temporary),
                 )
                 self._batch_scope(batch, descriptor)
+                diagnostic.note(fetched=len(batch["records"]))
+                processed = accepted = rejected = duplicates = 0
                 with self._qualification_ack_verification(
                     batch["records"], temporary, qualification_batch
                 ):
@@ -1672,6 +1686,7 @@ class Runtime:
                                 "lifecycle_runtime_helper_output_limit",
                             }:
                                 raise
+                            rejected += 1
                             previous_rejection = self.state["ack_rejected_positions"].get(
                                 str(record["offset"])
                             )
@@ -1712,7 +1727,9 @@ class Runtime:
                                     recovery=True,
                                 )
                         else:
+                            accepted += 1
                             previous = self.state["acks"].get(ack["ack_id"])
+                            duplicates += int(bool(previous))
                             if previous:
                                 require(previous["wire_sha256"] == sha(wire), "ack_conflict")
                             else:
@@ -1725,15 +1742,16 @@ class Runtime:
                                 )
                                 destination = self.root / "acks" / (ack["ack_id"][7:] + ".json")
                                 self._reserve(len(wire) + 131072, recovery=True)
-                                if destination.exists():
-                                    require(
-                                        private_file(destination) == wire, "ack_orphan_conflict"
-                                    )
-                                else:
-                                    local.write_exclusive(destination, wire)
-                                with destination.open("rb") as persisted:
-                                    os.fsync(persisted.fileno())
-                                local.sync_directory(destination.parent)
+                                with diagnostic.span("ack_file_fsync", self):
+                                    if destination.exists():
+                                        require(
+                                            private_file(destination) == wire, "ack_orphan_conflict"
+                                        )
+                                    else:
+                                        local.write_exclusive(destination, wire)
+                                    with destination.open("rb") as persisted:
+                                        os.fsync(persisted.fileno())
+                                    local.sync_directory(destination.parent)
                                 self._append(
                                     "ack",
                                     dict(
@@ -1761,6 +1779,13 @@ class Runtime:
                             "ack_cursor",
                             dict(next_offset=record["offset"] + 1, value_sha256=sha(wire)),
                             recovery=True,
+                        )
+                        processed += 1
+                        diagnostic.note(
+                            processed=processed,
+                            accepted=accepted,
+                            rejected=rejected,
+                            duplicates=duplicates,
                         )
                     # Every individual proof/cursor is durable before this contiguous-prefix commit.
                     if self.state["ack_cursor"] > 0:
@@ -2466,6 +2491,13 @@ class Runtime:
             ],
         ]
         require(payload["ack_id"] == "sha256:" + identity(preimage), "ack_identity")
+        diagnostic.note(
+            checkpoint_id=payload["checkpoint_id"],
+            command_sha256=payload["command_sha256"],
+            wire_sha256=sha(wire),
+            worker_id=payload["worker_id"],
+            incarnation=payload["incarnation"],
+        )
         return payload
 
     def verify_ack_wire(self, wire, registration):
@@ -2476,7 +2508,9 @@ class Runtime:
             with self._temporary() as temporary:
                 return self._verify_ack_wire(wire, registration, temporary)
 
+    @diagnostic.measured("inspect")
     def inspect_acks(self, start=0, limit=16, *, qualification_batch=False):
+        diagnostic.note(requested=limit, fetched=0, processed=0)
         require(
             type(start) is int and start >= 0 and type(limit) is int and 1 <= limit <= 128,
             "read_limit",
@@ -2498,50 +2532,54 @@ class Runtime:
                     self._path(temporary),
                 )
                 self._batch_scope(batch, descriptor)
+                diagnostic.note(fetched=len(batch["records"]))
                 with self._qualification_ack_verification(
                     batch["records"], temporary, qualification_batch
                 ):
                     records = []
                     for record in batch["records"]:
-                        path = temporary / record["value_file"]
-                        require(
-                            path.parent == temporary
-                            and re.fullmatch(r"[0-9]{20}\.value", path.name),
-                            "ack_file",
-                        )
-                        wire = private_file(path, 128 * 1024)
-                        require(sha(wire) == record["value_sha256"], "ack_wire")
-                        verified, payload, category = False, None, "invalid_ack"
-                        try:
-                            require(len(wire) <= 65536, "ack_limit")
-                            signed = local.document(wire)
-                            schema("ack", signed)
-                            incarnation = signed["payload"]["incarnation"]
-                            registration = dict(
-                                worker_id=signed["payload"]["worker_id"],
-                                incarnation=incarnation,
-                                public_key=self.state["incarnation_keys"].get(incarnation),
+                        with diagnostic.span("record_validation", self):
+                            path = temporary / record["value_file"]
+                            require(
+                                path.parent == temporary
+                                and re.fullmatch(r"[0-9]{20}\.value", path.name),
+                                "ack_file",
                             )
-                            payload = self._verify_ack_wire(wire, registration, temporary)
-                            verified, category = True, "ok"
-                        except ValueError as failure:
-                            if isinstance(failure, IntegrityError):
-                                raise
-                            if str(failure) in {
-                                "lifecycle_runtime_helper_failed",
-                                "lifecycle_runtime_helper_invalid_result",
-                                "lifecycle_runtime_helper_output_limit",
-                            }:
-                                raise
-                        records.append(
-                            dict(
-                                wire=record,
-                                value_base64=base64.b64encode(wire).decode(),
-                                payload=payload,
-                                signature_verified=verified,
-                                category=category,
+                            wire = private_file(path, 128 * 1024)
+                            require(sha(wire) == record["value_sha256"], "ack_wire")
+                            verified, payload, category = False, None, "invalid_ack"
+                            try:
+                                require(len(wire) <= 65536, "ack_limit")
+                                signed = local.document(wire)
+                                schema("ack", signed)
+                                incarnation = signed["payload"]["incarnation"]
+                                registration = dict(
+                                    worker_id=signed["payload"]["worker_id"],
+                                    incarnation=incarnation,
+                                    public_key=self.state["incarnation_keys"].get(incarnation),
+                                )
+                                payload = self._verify_ack_wire(wire, registration, temporary)
+                                verified, category = True, "ok"
+                            except ValueError as failure:
+                                if isinstance(failure, IntegrityError):
+                                    raise
+                                if str(failure) in {
+                                    "lifecycle_runtime_helper_failed",
+                                    "lifecycle_runtime_helper_invalid_result",
+                                    "lifecycle_runtime_helper_output_limit",
+                                }:
+                                    raise
+                            records.append(
+                                dict(
+                                    wire=record,
+                                    value_base64=base64.b64encode(wire).decode(),
+                                    payload=payload,
+                                    signature_verified=verified,
+                                    category=category,
+                                )
                             )
-                        )
+                            diagnostic.note(processed=1)
+                        diagnostic.note(processed=len(records))
                 return dict(records=records, next_offset=batch["next_offset"])
 
     def sign_injection(self, kind, payload):

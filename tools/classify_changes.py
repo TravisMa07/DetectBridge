@@ -537,6 +537,8 @@ def needs_activation(paths):
                 "packages/lifecycle-job/",
                 "contracts/lifecycle-runtime/",
                 "tools/lifecycle_runtime",
+                "tools/lifecycle_diagnostics",
+                "tools/tests/test_lifecycle_diagnostics",
                 "tools/check_lifecycle_runtime",
                 "tools/tests/test_lifecycle_runtime",
                 "tools/tests/test_activation",

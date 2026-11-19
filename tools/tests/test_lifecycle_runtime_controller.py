@@ -570,6 +570,36 @@ class ControllerTests(unittest.TestCase):
         with patch.object(self.runtime, "_network", side_effect=network):
             return self.runtime.observe(), commits
 
+    def test_diagnostic_observe_reports_durable_prefix_and_commit_failure_truthfully(self):
+        import lifecycle_diagnostics as diagnostic
+
+        publication = self.publish()
+        wire = self.ack_wire(publication)
+        timings = diagnostic.Timings()
+        with timings.activate():
+            result, commits = self.deliver_ack(wire)
+        self.assertTrue(result["converged"])
+        self.assertEqual(commits, [1])
+        outer = next(row for row in timings.samples if row["stage"] == "observe")
+        self.assertEqual(outer["start_state"]["ack_cursor"], 0)
+        self.assertEqual(outer["end_state"]["ack_cursor"], 1)
+        self.assertEqual(
+            outer["counters"],
+            dict(requested=64, fetched=1, processed=1, accepted=1, rejected=0, duplicates=0),
+        )
+        stages = [row["stage"] for row in timings.samples]
+        self.assertLess(stages.index("ack_file_fsync"), stages.index("journal_ack"))
+        self.assertLess(stages.index("journal_ack"), stages.index("journal_ack_cursor"))
+        self.assertEqual(timings.totals["record_validation"]["calls"], 1)
+        self.assertNotIn(base64.b64encode(wire).decode(), json.dumps(timings.report()))
+        with timings.activate(), self.assertRaisesRegex(OSError, "group commit failure"):
+            self.deliver_ack(wire, fail_commit=True)
+        outer = [row for row in timings.samples if row["stage"] == "observe"][-1]
+        self.assertFalse(outer["success"])
+        self.assertEqual(outer["end_state"]["ack_cursor"], 2)
+        self.assertEqual(outer["counters"]["duplicates"], 1)
+        self.assertEqual(1, len(self.runtime.state["acks"]))
+
     def test_changed_artifacts_on_same_instance_block_before_helper_execution(self):
         for name in ("runtime.jar", "producer.jar", "compiler.tar"):
             path = self.root / "artifacts" / name
@@ -1136,11 +1166,15 @@ class ControllerTests(unittest.TestCase):
         self.assertIsNone(self.runtime._qualification_ack_proofs)
 
     def test_qualification_ack_inspection_is_readonly_and_default_keeps_legacy_verifier(self):
+        import lifecycle_diagnostics as diagnostic
+
+        timings = diagnostic.Timings()
         self.enable_batch_artifact()
         wires = [self.ack_wire(self.runtime.state["publications"][-1])]
         before = (self.root / "head.json").read_bytes()
         commits: list[int] = []
         with (
+            timings.activate(),
             patch.object(
                 self.runtime,
                 "_network",
@@ -1155,6 +1189,9 @@ class ControllerTests(unittest.TestCase):
             self.assertEqual(1, batch.call_count)
         self.assertEqual(before, (self.root / "head.json").read_bytes())
         self.assertEqual([], commits)
+        row = next(row for row in timings.samples if row["stage"] == "inspect")
+        self.assertEqual(row["counters"]["processed"], 1)
+        self.assertEqual(row["counters"]["fetched"], 1)
         with (
             patch.object(
                 self.runtime,

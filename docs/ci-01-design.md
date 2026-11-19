@@ -32,7 +32,9 @@ No added broker/REST queries for logging; snapshots read existing memory only.
 Fixed stage names, booleans, bounded integer counts/cursors and approved identity
 hash/CP context only. No paths, messages, raw ACKs/payloads, public/private keys or
 exception strings. Cap retained samples at8192, aggregate all calls by fixed stage,
-and report dropped samples explicitly. No per-span disk writes/fsync. Persist in
+and report dropped samples explicitly. Sample storage is capped at8MiB; retain
+one final bounded row per fixed stage plus latest/late predicate rows independently
+of sample saturation. No per-span disk writes/fsync. Persist in
 the existing safe summary even on failure. A truthy predicate returning late is
 recorded with its actual end time and still fails the unchanged original cutoff.
 Instrumentation is observational and does not retry, swallow or relabel failures.

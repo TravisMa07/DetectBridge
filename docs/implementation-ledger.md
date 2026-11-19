@@ -336,3 +336,14 @@ literal vectors preceded implementation. The separate writer mode preserves P08
 and P13b state/contracts; [design](p13c-design.md) and [ledger](p13c-ledger.md) record
 actual projection, permission, delivery/failure and qualification boundaries.
 Recorded source-to-search/full P13 acceptance and owner merge remain separate.
+
+## CI-01 activation qualification diagnosis
+
+CI-01 owns only the separate [RCA diagnostic delivery](ci-01-design.md), based on
+frozen P15b6e1ed1c with PR base `feat/p15b-worker-activation`. The CI-01
+implementation agent owns controller instrumentation, qualifier, CI/cache wiring
+and status integration; a read-only independent agent reviewed expectations and
+the actual diagnostic diff. Heavy runtime qualification remains serialized.
+[Evidence and pending gates](ci-01-ledger.md) are separate from P15/#15/#61,
+which remain parked/dependent. No production contracts, artifacts or architecture
+decisions are changed and no owner acceptance, merge or release is inferred.

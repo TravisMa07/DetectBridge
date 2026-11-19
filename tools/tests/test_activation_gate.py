@@ -23,6 +23,8 @@ class ActivationGateTests(unittest.TestCase):
             "contracts/lifecycle-runtime/v1/fixtures/expectations.json",
             "contracts/lifecycle/v1/manifest.schema.json",
             "tools/lifecycle_runtime.py",
+            "tools/lifecycle_diagnostics.py",
+            "tools/tests/test_lifecycle_diagnostics.py",
             "tools/lifecycle_runtime_verify.py",
             "tools/check_lifecycle_runtime.py",
             "tools/build_worker_validator.py",
@@ -63,6 +65,28 @@ class ActivationGateTests(unittest.TestCase):
         value = copy.deepcopy(baseline)
         del value["classify-changes"]["outputs"]["activation"]
         self.assertFalse(gate_passes(value))
+
+    def test_ci01_diagnostic_job_is_additional_and_feature_base_runs_required_gate(self):
+        workflow = json.loads((ROOT / ".github/workflows/hygiene.yml").read_bytes())
+        self.assertIn("feat/p15b-worker-activation", workflow["on"]["pull_request"]["branches"])
+        self.assertFalse(
+            workflow["on"]["workflow_dispatch"]["inputs"]["activation-diagnostic"]["default"]
+        )
+        jobs = workflow["jobs"]
+        diagnostic = jobs["activation-diagnostic"]
+        self.assertIn("workflow_dispatch", diagnostic["if"])
+        self.assertIn("inputs.activation-diagnostic", diagnostic["if"])
+        self.assertEqual(jobs["activation-verification"]["runs-on"], diagnostic["runs-on"])
+        self.assertEqual(
+            jobs["activation-verification"]["timeout-minutes"], diagnostic["timeout-minutes"]
+        )
+        step = next(
+            s for s in diagnostic["steps"] if "lifecycle_runtime_verify.py" in s.get("run", "")
+        )
+        self.assertTrue(step["run"].endswith("--scenario-group production-faults"))
+        self.assertNotIn("DETECTBRIDGE_ACTIVATION_REQUIRED", step.get("env", {}))
+        self.assertNotIn("activation-diagnostic", jobs["required-checks"]["needs"])
+        self.assertIn("activation-verification", jobs["required-checks"]["needs"])
 
     def test_runtime_job_uses_exact_seed_cache_before_real_qualification(self):
         jobs = json.loads((ROOT / ".github/workflows/hygiene.yml").read_bytes())["jobs"]

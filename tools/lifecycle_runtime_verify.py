@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any
 from unittest.mock import patch
 
+import lifecycle_diagnostics as diagnostic
 from lifecycle import Store, checked
 from lifecycle_runtime_cases import (
     AUTHORITY,
@@ -209,15 +210,27 @@ class Qualification:
 
     def wait(self, predicate, category, timeout=120):
         deadline = time.monotonic() + timeout
-        while time.monotonic() < deadline:
-            value = predicate()
-            finished = time.monotonic()
-            if value and finished <= deadline:
-                return value
-            if finished >= deadline:
-                break
-            time.sleep(min(0.5, deadline - finished))
-        raise ValueError("lifecycle_qualification_timeout_" + category)
+        collector = diagnostic.ACTIVE.get()
+        prior_deadline = collector.deadline_ns if collector is not None else None
+        if collector is not None:
+            collector.deadline_ns = int(deadline * 1_000_000_000)
+        try:
+            while time.monotonic() < deadline:
+                with diagnostic.span(
+                    "predicate", self.runtime if hasattr(self, "runtime") else None
+                ):
+                    value = predicate()
+                    diagnostic.note(truthy=bool(value))
+                finished = time.monotonic()
+                if value and finished <= deadline:
+                    return value
+                if finished >= deadline:
+                    break
+                time.sleep(min(0.5, deadline - finished))
+            raise ValueError("lifecycle_qualification_timeout_" + category)
+        finally:
+            if collector is not None:
+                collector.deadline_ns = prior_deadline
 
     @staticmethod
     def uncompleted_snapshot_observation(marker, inventory):
@@ -421,6 +434,7 @@ class Qualification:
         self.current = published
         return published
 
+    @diagnostic.measured("candidate_capture")
     def capture_completed_candidate(self, worker):
         """Retain exact completion evidence; this alone never confirms an ACK."""
         registration = self.registration(worker)
@@ -439,6 +453,13 @@ class Qualification:
             "checkpoint_candidate_identity",
         )
         checkpoint_id = latest["id"]
+        diagnostic.note(
+            checkpoint_id=checkpoint_id,
+            worker_id=worker,
+            incarnation=registration["incarnation"],
+            job_id=job_id,
+            command_sha256=self.current["command_sha256"],
+        )
         key = (*scope, checkpoint_id)
         if key in self.observed_completed_checkpoints:
             return
@@ -490,75 +511,87 @@ class Qualification:
             # Check exact checkpoint proofs between small authenticated prefixes.
             # A large prefix can finish after the deadline or outlive REST history.
             status = self.runtime.observe(limit=8, qualification_batch=True)
-            for worker in wanted:
-                if not any(
-                    p["worker_id"] == worker and p["durable"] and not p["rejected"]
-                    for p in status["participants"]
-                ):
-                    return None
-                registration = self.registration(worker)
-                job_id = self.runtime.state["jobs"][worker]["job_id"]
-                key = (worker, registration["incarnation"], self.current["command_sha256"], job_id)
-                if key in self.confirmed_ack_checkpoints:
-                    continue
-                proofs = [
-                    row["payload"]
-                    for row in self.runtime.state["acks"].values()
-                    if row["payload"]["worker_id"] == worker
-                    and row["payload"]["incarnation"] == registration["incarnation"]
-                    and row["payload"]["command_sha256"] == self.current["command_sha256"]
-                    and row["payload"]["phase"] == "durable"
-                    and row["payload"].get("category") == "ok"
-                ]
-                require(bool(proofs), "durable_proof_missing")
-                joined = [
-                    row
-                    for row in proofs
-                    if (*key, row["checkpoint_id"]) in self.observed_completed_checkpoints
-                ]
-                if joined:
-                    ack = max(joined, key=lambda row: row["checkpoint_id"])
-                    candidate = self.observed_completed_checkpoints[(*key, ack["checkpoint_id"])]
-                    evidence = {
-                        **candidate,
-                        "evidence": "exact signed ACK-named independently COMPLETED checkpoint; retained proof cache scoped to command/incarnation/job",
-                    }
+            with diagnostic.span("evidence_join", self.runtime):
+                for worker in wanted:
+                    if not any(
+                        p["worker_id"] == worker and p["durable"] and not p["rejected"]
+                        for p in status["participants"]
+                    ):
+                        return None
+                    registration = self.registration(worker)
+                    job_id = self.runtime.state["jobs"][worker]["job_id"]
+                    key = (
+                        worker,
+                        registration["incarnation"],
+                        self.current["command_sha256"],
+                        job_id,
+                    )
+                    if key in self.confirmed_ack_checkpoints:
+                        continue
+                    proofs = [
+                        row["payload"]
+                        for row in self.runtime.state["acks"].values()
+                        if row["payload"]["worker_id"] == worker
+                        and row["payload"]["incarnation"] == registration["incarnation"]
+                        and row["payload"]["command_sha256"] == self.current["command_sha256"]
+                        and row["payload"]["phase"] == "durable"
+                        and row["payload"].get("category") == "ok"
+                    ]
+                    require(bool(proofs), "durable_proof_missing")
+                    joined = [
+                        row
+                        for row in proofs
+                        if (*key, row["checkpoint_id"]) in self.observed_completed_checkpoints
+                    ]
+                    if joined:
+                        ack = max(joined, key=lambda row: row["checkpoint_id"])
+                        candidate = self.observed_completed_checkpoints[
+                            (*key, ack["checkpoint_id"])
+                        ]
+                        evidence = {
+                            **candidate,
+                            "evidence": "exact signed ACK-named independently COMPLETED checkpoint; retained proof cache scoped to command/incarnation/job",
+                        }
+                        diagnostic.note(**evidence)
+                        self.confirmed_ack_checkpoints[key] = evidence
+                        self.checkpoint_evidence.append(evidence)
+                        continue
+                    ack = max(proofs, key=lambda row: row["checkpoint_id"])
+                    try:
+                        checkpoint = self.runtime.worker_inventory(worker, ack["checkpoint_id"])
+                    except Exception as error:
+                        path = (
+                            "/jobs/" + job_id + "/checkpoints/details/" + str(ack["checkpoint_id"])
+                        )
+                        self.retain_query_failure(worker, path, error)
+                        if self.checkpoint_was_evicted(worker, job_id, ack["checkpoint_id"], error):
+                            # This ACK remains unproven. Poll for a fresh signed ACK,
+                            # then confirm its exact named CP within the original deadline.
+                            return None
+                        raise
+                    selection = checkpoint["inventory"]["selection"]
+                    require(
+                        selection["revision"] == self.current["revision"]
+                        and selection["command_sha256"] == self.current["command_sha256"]
+                        and selection["origin_incarnation"] == registration["incarnation"],
+                        "checkpoint_selection",
+                    )
+                    private_proof = self.private_evidence(
+                        "confirmed-ack-checkpoint-" + worker, checkpoint
+                    )
+                    evidence = dict(
+                        worker_id=worker,
+                        incarnation=registration["incarnation"],
+                        job_id=job_id,
+                        checkpoint_id=ack["checkpoint_id"],
+                        snapshot_sha256=checkpoint["inventory"]["snapshot_sha256"],
+                        command_sha256=ack["command_sha256"],
+                        confirmation_sha256=private_proof,
+                        evidence="exact signed ACK-named independently COMPLETED checkpoint; retained proof cache scoped to command/incarnation/job",
+                    )
+                    diagnostic.note(**evidence)
                     self.confirmed_ack_checkpoints[key] = evidence
                     self.checkpoint_evidence.append(evidence)
-                    continue
-                ack = max(proofs, key=lambda row: row["checkpoint_id"])
-                try:
-                    checkpoint = self.runtime.worker_inventory(worker, ack["checkpoint_id"])
-                except Exception as error:
-                    path = "/jobs/" + job_id + "/checkpoints/details/" + str(ack["checkpoint_id"])
-                    self.retain_query_failure(worker, path, error)
-                    if self.checkpoint_was_evicted(worker, job_id, ack["checkpoint_id"], error):
-                        # This ACK remains unproven. Poll for a fresh signed ACK,
-                        # then confirm its exact named CP within the original deadline.
-                        return None
-                    raise
-                selection = checkpoint["inventory"]["selection"]
-                require(
-                    selection["revision"] == self.current["revision"]
-                    and selection["command_sha256"] == self.current["command_sha256"]
-                    and selection["origin_incarnation"] == registration["incarnation"],
-                    "checkpoint_selection",
-                )
-                private_proof = self.private_evidence(
-                    "confirmed-ack-checkpoint-" + worker, checkpoint
-                )
-                evidence = dict(
-                    worker_id=worker,
-                    incarnation=registration["incarnation"],
-                    job_id=job_id,
-                    checkpoint_id=ack["checkpoint_id"],
-                    snapshot_sha256=checkpoint["inventory"]["snapshot_sha256"],
-                    command_sha256=ack["command_sha256"],
-                    confirmation_sha256=private_proof,
-                    evidence="exact signed ACK-named independently COMPLETED checkpoint; retained proof cache scoped to command/incarnation/job",
-                )
-                self.confirmed_ack_checkpoints[key] = evidence
-                self.checkpoint_evidence.append(evidence)
             return status
 
         return self.wait(ready, "convergence", timeout)
@@ -645,6 +678,7 @@ class Qualification:
                 # Preserve the original query failure even if secondary retention fails.
                 metadata[name + "_retention_exception_class"] = type(diagnostic_error).__name__
 
+    @diagnostic.measured("job_health")
     def fail_on_failed_job(self, worker):
         """Convergence cannot heal an irreversibly failed explicit-restart job."""
         from integration_verify import exception_classes
@@ -2074,6 +2108,7 @@ def main(argv=None):
         source_sha256={},
     )
     source_paths = {
+        ROOT / "tools/lifecycle_diagnostics.py",
         ROOT / "tools/lifecycle_runtime_cases.py",
         ROOT / "tools/lifecycle_runtime_verify.py",
         ROOT / "tools/lifecycle_runtime.py",
@@ -2089,6 +2124,9 @@ def main(argv=None):
         for path in sorted(source_paths)
         if path.is_file()
     }
+    timings = diagnostic.Timings()
+    timing_scope = timings.activate()
+    timing_scope.__enter__()
     runtime = None
     qualification = None
     try:
@@ -2221,6 +2259,8 @@ def main(argv=None):
         ):
             report["category"] = category
     finally:
+        report["diagnostics"] = timings.report()
+        timing_scope.__exit__(None, None, None)
         if qualification is not None:
             report.update(
                 coverage=qualification.coverage,

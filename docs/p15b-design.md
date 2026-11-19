@@ -15,6 +15,33 @@ The owner subsequently retained S12's independent worker recompilation boundary.
 The separately frozen [validator addendum](p15b-validator-design.md) extends the
 runtime binding and isolated deployment before that new artifact is implemented.
 
+Implementation review refinements retain the frozen wire/state contracts: verify
+private copied executables/configuration again before every helper and operation;
+bind Kafka drain/commit helpers to the exact cluster/topic ID before and after
+their operation; use withheld recovery headroom for already adopted publication
+and ACK catch-up. A local integrity failure cannot be recorded as a bad remote ACK.
+Container UID checks on Linux use the fixed kernel `/proc/self` owner because
+the JDK passwd-based lookup reports zero for otherwise valid unmapped helper UIDs.
+Candidate path symlink rules remain unchanged.
+
+Each JobManager joins only its worker's private network. TaskManager joins that
+network and the shared private broker network; the validator has no network.
+Kafka calls occur in the TaskManager reader/sink or separate owned admin helpers,
+not the JobManager/client/enumerator. This avoids exposing duplicate `jobmanager`
+aliases or another cluster's REST/RPC endpoint on the shared network.
+[Compose alias rules](https://docs.docker.com/reference/compose-file/services/#aliases)
+do not guarantee which container a shared alias resolves to. Network-list ordering
+therefore cannot establish scheduler isolation. Actual qualification must use the
+corrected topology; earlier successful scenarios alone cannot qualify that boundary.
+
+The exact value-free logger resource is extracted from the verified new JAR and
+mounted read-only at Flink's actually selected console configuration path. Its
+nonsensitive mode0444 file is the sole file-mode exception inside the mode0700
+controller root; keys, inputs and checked state remain mode0600. Startup verifies
+the in-container hash, active JVM configuration argument and an observed structured
+backend record before claiming the job submitted. This records the implementation
+choice; actual runtime evidence remains in the [qualification ledger](p15b1-ledger.md).
+
 ## Reviewable slices and total milestone gate
 
 | Slice | Concrete deliverable | Acceptance boundary |
@@ -520,6 +547,29 @@ probe windows supplement real broker policy/outage/container-replacement cases.
 Actual required-sink broker rejection still needs the named Kafka failure, not a
 probe exception alone. All probe release/cleanup is scoped to its owned operation;
 no timeout/resource is enlarged to pass qualification.
+
+Qualification execution refinement (owner requested faster feedback): retain the
+default complete fourteen-scenario gate and add fresh-deployment focused scenario
+groups for diagnosis. A focused success is explicitly `partial_passed`, never
+`passed`/`full_gate`; required CI rejects focused selection before starting Docker.
+Focused runs cannot import previous passes. The final full gate still executes all
+fourteen scenarios. Batch existing ACK reads at32 records and output reads at64,
+within the already frozen128-record APIs and unchanged byte/storage reservations.
+Every actual signature, broker location, checked journal cursor and exact named
+checkpoint proof remains required. This reduces helper startup overhead without
+changing the production, probe or compiler artifact or adding a new helper protocol.
+
+The timeout probe records the serialized snapshot hash only after actual sealing
+and durable-ack candidate construction. Advisory inventory verifies that
+observation without promoting the snapshot to COMPLETED. After observing the
+named expiration, qualification fences the worker and checks the entire frozen
+broker ACK prefix for an acknowledgment naming that failed checkpoint. A later
+legitimate completed checkpoint is allowed; task-side abort callback execution is
+a separate component claim unless directly observed. Recovery uses only the
+previous independently verified completed checkpoint. Open-group qualification
+confirms all five exact source members and their hashes under the initial
+selection before changing policy, with preexisting ACK catch-up completed before
+opening the fixed thirty-second group window.
 
 Use the existing exact Flink image with verified runtime/retained-producer JARs and
 public logging resources mounted or copied through owned initialization, never

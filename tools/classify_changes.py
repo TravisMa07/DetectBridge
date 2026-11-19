@@ -530,6 +530,27 @@ def needs_lifecycle(paths):
     )
 
 
+def needs_activation(paths):
+    return needs_lifecycle(paths) or any(
+        p.startswith(
+            (
+                "packages/lifecycle-job/",
+                "contracts/lifecycle-runtime/",
+                "tools/lifecycle_runtime",
+                "tools/check_lifecycle_runtime",
+                "tools/tests/test_lifecycle_runtime",
+                "tools/tests/test_activation",
+                "tools/build_worker_validator",
+                "tools/lifecycle_worker_validator",
+                "tools/tests/test_worker_validator",
+                "deploy/lifecycle-validator/",
+            )
+        )
+        for p in paths
+        if not p.endswith(".md")
+    )
+
+
 if __name__ == "__main__":
     base = os.environ.get("CHANGE_BASE", "")
     head = os.environ.get("CHANGE_HEAD", "HEAD")
@@ -550,6 +571,7 @@ if __name__ == "__main__":
         output.write(f"writer={str(needs_writer([p for p in paths if p])).lower()}\n")
         output.write(f"integration={str(needs_integration([p for p in paths if p])).lower()}\n")
         output.write(f"historical={str(needs_historical([p for p in paths if p])).lower()}\n")
+        output.write(f"activation={str(needs_activation([p for p in paths if p])).lower()}\n")
         output.write(f"lifecycle={str(needs_lifecycle([p for p in paths if p])).lower()}\n")
         output.write(f"maintenance={str(needs_maintenance([p for p in paths if p])).lower()}\n")
         output.write(f"current={str(needs_current([p for p in paths if p])).lower()}\n")

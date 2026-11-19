@@ -80,9 +80,13 @@ implements immutable import, compiler validation, actual Java sample tests, stag
 and control-request preparation after its separate design/expectation freeze.
 [Local and native PR qualification](docs/p15a-ledger.md) passed. The owner
 authorized regular merge #57 as `f44403e`; actual merged-main push run 44472864062 attempt 1 passed all applicable jobs and required-checks.
-[P15b runtime discovery](docs/p15b-design.md) and
-[independent expectations](docs/p15b-expectations.md) precede production code.
-Worker activation/convergence/rollback remain P15b; P15 and P16 are not complete.
+[P15b runtime design](docs/p15b-design.md), closed contracts and
+[independent expectations](docs/p15b-expectations.md) were frozen in `0a41ee4`
+before production code. [P15b1 worker activation](docs/worker-activation.md) is
+implemented with all fourteen bounded synthetic ARM64 runtime scenarios passed;
+[qualification evidence](docs/p15b1-ledger.md) separates native PR CI and owner
+review gates, which remain open. P15b2 owns the dependent archive/replay profile;
+P15 and P16 are not complete.
 Management API and UI remain future work.
 P06 provides local Kafka/Flink infrastructure and optional authenticated OpenSearch.
 Repository hygiene tooling and

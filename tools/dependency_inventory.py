@@ -25,6 +25,7 @@ def artifacts():
         *ROOT.glob("packages/historical-replay/gradle.lockfile"),
         *ROOT.glob("packages/current-replay/gradle.lockfile"),
         *ROOT.glob("packages/archive-maintenance/gradle.lockfile"),
+        *ROOT.glob("packages/lifecycle-job/gradle.lockfile"),
     ]
     for path in sorted(paths):
         for line in path.read_text().splitlines():

@@ -300,3 +300,14 @@ activation. The [design](p15-design.md), [operator guide](rule-lifecycle.md) and
 [evidence](p15a-ledger.md) preserve original P13/P14 artifacts and accepted A02–A07.
 P15b owns the separate runtime/acknowledgment/archive boundary; no old checkpoint
 is adopted and no complete P15/P16 capability is inferred.
+
+P15b1's [runtime freeze](p15b-design.md) adds signed effective publication,
+explicit isolated worker incarnations and immutable closure-time attribution,
+with a new checkpoint/output profile. Before its implementation, the owner retained
+S12's requirement to reject even a validly signed self-rehashed AST that disagrees
+with original YAML. The separately frozen [validator boundary](p15b-validator-design.md)
+uses the same pinned compiler in a bounded per-worker service, called over a private
+Unix socket before bundle installation. Its packet and actual image identities
+join the runtime/checkpoint binding; it performs no event-time Python evaluation.
+This records the design and owner decision, not runtime qualification. P15b2 still
+owns the new archive/replay graph before full P15 acceptance or dependent P16 work.

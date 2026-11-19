@@ -44,3 +44,6 @@ project(":current-replay").projectDir = file("packages/current-replay")
 
 include("archive-maintenance")
 project(":archive-maintenance").projectDir = file("packages/archive-maintenance")
+
+include("lifecycle-job")
+project(":lifecycle-job").projectDir = file("packages/lifecycle-job")

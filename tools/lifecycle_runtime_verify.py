@@ -424,7 +424,9 @@ class Qualification:
         def ready():
             for worker in wanted:
                 self.fail_on_failed_job(worker)
-            status = self.runtime.observe(limit=32)
+            # Check exact checkpoint proofs between small authenticated prefixes.
+            # A large prefix can finish after the deadline or outlive REST history.
+            status = self.runtime.observe(limit=8)
             for worker in wanted:
                 if not any(
                     p["worker_id"] == worker and p["durable"] and not p["rejected"]

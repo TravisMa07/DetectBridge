@@ -876,3 +876,62 @@ formatting and mypy for 115 source files. Retained log
 `.cache/lifecycle-runtime-qualification/shadow-module-static-check.log` SHA-256
 `e54ac48b1a3ad1b35089785fcdf18d8c7773cbdf91023cb8b6d45f82845efd15`. The initial documentation check
 caught an extra blank line; it was corrected before this passing run.
+
+## Native ACK proof polling correction
+
+Native run `44619445138` on head `b6ed748e0106113218939ee13835a0d4b5c41d91`
+checked out test merge `d2af195364b1d16eed152bd747c232b1f74808d7`.
+Toolchain verification and every other applicable job passed. Activation job
+`135897918982` failed with `lifecycle_qualification_timeout_convergence`;
+aggregate `135911878547` correctly failed only for that activation result.
+The original artifact and logs are retained under
+`.cache/lifecycle-runtime-qualification/native-44619445138-activation*`.
+Summary SHA-256 is
+`851276882eb027db7223f469432cd114fb98f1e3513d45bd36552cecdc4c15af`.
+
+Eight scenarios passed: core A/B/A, mixed workers, publisher uncertainty,
+registered replacement, broker outage, required sink failure, old-outbox/new-selection
+and finite backpressure. There were 101 journal admissions, 95 admitted locations,
+and 217 logical/physical outputs. Six scenarios remain unqualified; no full gate
+pass is claimed. All owned runtime was stopped, and no unexpected failed job was
+observed. The required sink failure retained its actual RecordTooLargeException.
+
+After pressure, the open-group case observed an actual completed five-member
+B group and published A rollback. Convergence encountered a signed ACK naming
+checkpoint193 after that same job's REST history had advanced to194–203.
+This eviction remained unproven and correctly triggered a fresh-ACK retry.
+Crucially, the report then retained exact authenticated-ACK-named COMPLETED
+proofs for BOTH current-command workers: worker21 checkpoint204 and worker20
+checkpoint192. The predicate finished after its existing120-second deadline,
+so the strict wait correctly rejected it. This supports coarse polling latency;
+it does not establish missing worker acknowledgments or a runtime semantic defect.
+
+The minimal correction reads eight authenticated ACK records per convergence poll
+instead of32, matching the existing frozen-prefix drain quantum. This checks exact
+checkpoint evidence between smaller verification/journal/fsync batches and reduces
+exposure to REST history eviction. Every prefix record is still verified and
+journaled; no cursor is skipped. Existing proof caches remain scoped to worker,
+incarnation, command and job. Exact signed ACK/COMPLETED matching, failure handling,
+all artifact identities, resource ceilings and the120-second deadline remain
+unchanged. Independent diagnosis confirmed both current proofs already existed;
+no new pre-ACK checkpoint cache or widened completion rule was introduced.
+This correction is not a guarantee against arbitrary backlog and still requires
+the full native gate on the corrected source.
+
+A deterministic regression models per-record ACK processing cost, without claiming
+measured runtime throughput. Temporarily restoring the32-record poll makes the
+real convergence path fail with `lifecycle_qualification_timeout_convergence`
+after128 modeled seconds. Restoring eight records passes with the same exact
+ACK-named completed checkpoint proof after32 modeled seconds. The wait still
+rejects truthy results that arrive after120 seconds. Existing unknown-query,
+eviction/fresh-ACK, cache-scope and failed-job checks remain enforced.
+`ack-quantum-red.log` SHA-256: `35dae3cea6e146affb825ff3ad1ce21723fc18ee0cd7c0e1482cd0024ee54a86`.
+`ack-quantum-green.log` SHA-256: `8b4d1d8b8ea0781032860eeb810d3cea8d15b0d7727eeb0b52fc8cfa0f0347b4`.
+
+All38 focused oracle regressions, targeted Ruff/mypy and the complete repository
+check passed:414 Python tests, lint/formatting and mypy115 source files.
+Full-check log `ack-quantum-static-check.log` SHA-256 is
+`40375c49c66ac248317d56000a44388fa159ed4bf9d0fb3eaa1631d9c754f8aa`. All eight protected original
+handoff/document hashes remain unchanged. No repeated full local runtime run is
+claimed; corrected native all14 remains pending. This small published CI follow-up
+preserves earlier commit IDs and failure evidence under the SDLC exception.

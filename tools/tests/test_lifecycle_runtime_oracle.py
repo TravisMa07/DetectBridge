@@ -327,7 +327,7 @@ class LifecycleRuntimeOracleTests(unittest.TestCase):
             with self.assertRaises(RuntimeError) as caught:
                 qualifier.converge([worker])
             self.assertIs(failure, caught.exception)
-            runtime.observe.assert_called_once_with(limit=32)
+            runtime.observe.assert_called_once_with(limit=8)
             runtime.worker_inventory.assert_called_once_with(worker, 12)
             proof = qualifier.query_failures[0]
             self.assertEqual(404, proof["http_status"])
@@ -397,7 +397,7 @@ class LifecycleRuntimeOracleTests(unittest.TestCase):
             qualifier.registrations = [self.registration]
             with patch("lifecycle_runtime_verify.time.sleep"):
                 qualifier.converge([worker])
-            self.assertEqual([32, 32], observed)
+            self.assertEqual([8, 8], observed)
             self.assertEqual(
                 [(worker, 12), (worker, 15)],
                 [call.args for call in runtime.worker_inventory.call_args_list],
@@ -420,6 +420,66 @@ class LifecycleRuntimeOracleTests(unittest.TestCase):
             ]
             with self.assertRaisesRegex(ValueError, "durable_proof_missing"):
                 qualifier.converge([worker])
+
+    def test_eight_ack_poll_keeps_exact_checkpoint_proof_within_original_deadline(self):
+        from lifecycle_runtime_verify import Qualification
+
+        with tempfile.TemporaryDirectory(dir=(ROOT / ".cache").resolve()) as folder:
+            root = Path(folder)
+            worker, job, command = self.registration["worker_id"], "a" * 32, "2" * 64
+            ack = dict(
+                worker_id=worker,
+                incarnation=self.registration["incarnation"],
+                command_sha256=command,
+                phase="durable",
+                checkpoint_id=15,
+            )
+            proof = dict(
+                checkpoint=dict(id=15, status="COMPLETED"),
+                inventory=dict(
+                    selection=dict(revision=2, command_sha256=command),
+                    snapshot_sha256="f" * 64,
+                ),
+            )
+            clock = [0.0]
+            status = dict(participants=[dict(worker_id=worker, durable=True, rejected=False)])
+
+            def proportional_observe(limit):
+                # Deterministic cost model, not a measured throughput/runtime assertion.
+                clock[0] += 4 * limit
+                return status
+
+            runtime = SimpleNamespace(
+                root=root / "deployment",
+                state=dict(
+                    jobs={worker: dict(job_id=job)}, acks={"authenticated": dict(payload=ack)}
+                ),
+                rest=Mock(return_value=dict(state="RUNNING")),
+                observe=Mock(side_effect=proportional_observe),
+                worker_inventory=Mock(return_value=proof),
+            )
+            qualifier = Qualification(root, runtime, self.bundles, None, root / "probe.jar")
+            qualifier.current = dict(revision=2, command_sha256=command)
+            qualifier.registrations = [self.registration]
+            with patch("lifecycle_runtime_verify.time.monotonic", side_effect=lambda: clock[0]):
+                self.assertIs(status, qualifier.converge([worker], timeout=120))
+            runtime.observe.assert_called_once_with(limit=8)
+            runtime.worker_inventory.assert_called_once_with(worker, 15)
+            self.assertEqual(32, clock[0])
+            self.assertEqual(15, qualifier.checkpoint_evidence[0]["checkpoint_id"])
+            self.assertEqual(digest(proof), qualifier.checkpoint_evidence[0]["confirmation_sha256"])
+            self.assertTrue(qualifier.confirmed_ack_checkpoints)
+            # The same modeled per-record cost for a32-record poll crosses the original
+            # deadline; even a truthy complete predicate may not turn that into success.
+            clock[0] = 0
+            with (
+                patch("lifecycle_runtime_verify.time.monotonic", side_effect=lambda: clock[0]),
+                self.assertRaisesRegex(ValueError, "timeout_counterfactual_large_poll"),
+            ):
+                qualifier.wait(
+                    lambda: proportional_observe(32), "counterfactual_large_poll", timeout=120
+                )
+            self.assertEqual(128, clock[0])
 
     def test_failed_checkpoint_is_not_an_eviction_or_completion_fallback(self):
         from lifecycle_runtime_verify import Qualification

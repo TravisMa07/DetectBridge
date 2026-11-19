@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:lifecycle:1.0.0:manifest",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": "1.0.0"
+    },
+    "bundle_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "plan": {
+      "type": "object",
+      "properties": {
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "bundle_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4194304
+        }
+      },
+      "required": [
+        "sha256",
+        "bundle_sha256",
+        "bytes"
+      ],
+      "additionalProperties": false
+    },
+    "profile": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": "1.0.0"
+        },
+        "evaluator_artifact_sha256": {
+          "const": "51a984dedc04af7b368fea63a9cec88d2127c6ddf5aa019352f491a3481bad6d"
+        },
+        "evaluator": {
+          "const": "detectbridge-java/2.0.0"
+        },
+        "selector": {
+          "const": "source-index/1.0.0"
+        },
+        "parsers": {
+          "const": [
+            "windows-xml/1.0.0",
+            "windows-normalizer/1.0.0",
+            "linux-audit/1.0.0",
+            "openssh-password/1.0.0",
+            "linux-p12a/1.0.0",
+            "execution-evidence/1.0.0"
+          ]
+        },
+        "enrichment": {
+          "const": "coverage-and-rule-metadata/1.0.0"
+        },
+        "source_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "mappings_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "limits": {
+          "const": {
+            "manifest_bytes": 65536,
+            "closure_bytes": 8388608,
+            "plan_bytes": 4194304,
+            "rules": 100,
+            "sources": 16,
+            "bundles": 64,
+            "history_records": 4096,
+            "control_bytes": 65536,
+            "workers": 16,
+            "test_cases": 64,
+            "test_case_bytes": 1048576,
+            "test_input_bytes": 16777216,
+            "test_timeout_seconds": 10,
+            "test_stdout_bytes": 2097152,
+            "evaluation_operations": 1000000,
+            "store_bytes": 536870912,
+            "free_reserve_bytes": 134217728,
+            "journal_bytes": 65536,
+            "test_temporary_bytes": 25165824
+          }
+        }
+      },
+      "required": [
+        "version",
+        "evaluator_artifact_sha256",
+        "evaluator",
+        "selector",
+        "parsers",
+        "enrichment",
+        "source_sha256",
+        "mappings_sha256",
+        "limits"
+      ],
+      "additionalProperties": false
+    },
+    "compatibility_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "members": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "const": "plan.json"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4194304
+          }
+        },
+        "required": [
+          "name",
+          "sha256",
+          "bytes"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "maxItems": 1
+    }
+  },
+  "required": [
+    "version",
+    "bundle_sha256",
+    "plan",
+    "profile",
+    "compatibility_sha256",
+    "members"
+  ],
+  "additionalProperties": false
+}

@@ -1,4 +1,19 @@
-# P10–P14 implementation ledger
+# P10–P15 implementation ledger
+
+Current P15 coordination (2026-11-19): the owner explicitly accepted bounded P14
+completion after exact merged-main audit on f44c9f9. Issue #14/project are Done;
+M5 remains open. Primary owns integration/contracts/CI/status on
+`feat/p15-rule-lifecycle`, based on qualified f44c9f9. Interface/design,
+independent expectations and completion/compatibility audit agents performed
+bounded parallel discovery. [P15 design](p15-design.md) and
+[independent cases](p15-expectations.md) precede production code. P15a candidate
+lifecycle/control preparation is the next bounded PR; no P15 runtime or P16
+qualification is claimed. Original worktree documentation/handoffs remain intact.
+
+## Historical P14 coordination checkpoints
+
+The completion and [merged audit](p14-merged-main-audit.md) supersede pending
+merge/acceptance statements below without erasing historical evidence.
 
 Current completion (2026-11-18 UTC): bounded P13 owner acceptance, regular merge
 PR #49 as 07e5382 and actual merged-main 44206958555 passed; issue #13 is closed.
@@ -34,7 +49,11 @@ ARM64 synthetic cases, approved-original P05 import/restore and fresh controlled
 recording source/archive/historical/current qualification (49 admissions, 160
 wires, two 62-output historical runs and 49-output current replay). Exact source,
 artifacts, failed attempts and private/native limits are in the owning ledger.
-Native implementation CI and owner acceptance remain open.
+Native implementation run 44449578701 passed every applicable job on 7b9520c
+(PR test merge cbbc63c). The owner merged the stack as the single merge object
+f44c9f9, whose actual push run 44458422172 attempt 1 passed all eighteen applicable
+jobs and required-checks. [Reconciliation](p14-merged-main-audit.md) preserves the
+separate pending milestone semantic/completeness acceptance gate.
 The [milestone map](p14-acceptance.md) keeps exact artifact/platform evidence and
 remaining owner/native/merged gates separate. Primary agent owns core/CI/status;
 independent agents own fault qualification, recorded-source qualification and

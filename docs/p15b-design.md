@@ -626,3 +626,9 @@ unproven; no latest-checkpoint substitution or inferred completion is permitted.
 The existing120-second convergence deadline and all runtime artifacts, source
 expectations, controller prefix checks and resource ceilings remain unchanged.
 This is qualifier evidence scheduling, not a new controller acceptance rule.
+
+The explicitly opt-in qualification [ACK signature batch boundary](p15b-ack-batch-design.md)
+amortizes helper startup in finite readback. It reuses production cryptography
+and retains all controller checks and exact completion/ACK proof requirements;
+normal controller readback retains its legacy signature verifier. Both ACK paths
+reject unsafe private files before effects; worker semantics remain unchanged.

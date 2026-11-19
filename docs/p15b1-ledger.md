@@ -1067,3 +1067,99 @@ All owned runtime was stopped. Original summary SHA-256 is
 remain retained. No QA/runtime/compiler artifact was changed for this correction.
 The full native gate must qualify the corrected source. This cohesive published
 CI correction preserves prior commits and failed evidence under the SDLC exception.
+
+## Bounded qualification ACK signature batching
+
+Native run44631611463 on head `a72c5e7` checked out test merge
+`e0bd6a75110c136af6f0d0071c6da97d22220156`. Activation135940719819 failed
+`lifecycle_qualification_timeout_convergence`: mixed workers passed within28.440
+seconds through resume,28 admissions/44 logical outputs had been observed, and
+both rollback command's exact joined completion/ACK proofs (worker20 CP54 and
+worker21 CP45) were eventually retained. The predicate nevertheless completed
+past120 seconds. There were12 bounded completion candidates, one proven evicted
+uncached ACK CP52, no unexpected job/oracle failure, and owned runtime stopped.
+This is retained integration failure evidence, not full core qualification.
+The batch-admission failure from the prior local attempt did not occur here.
+
+Measured local profiling separated JVM startup from schema rebuilding, immutable
+checks and storage traversal. The original per-ACK JVM route dominated schema
+cost; small JVM flag tuning did not address that repeated work. The separately
+frozen [ACK batch design](p15b-ack-batch-design.md) and
+[independent K01–K24 expectations](p15b-ack-batch-expectations.md) were committed
+as1458029 before code. One pinned read-only qualification helper now amortizes
+startup while calling unchanged production cryptographic verification for every
+ACK. Explicit qualification-only observe/inspect mode retains every normal
+scope, identity, budget, rejection and durable-prefix/cursor check. Its proof map
+is per-call and cleared in finally; malformed/missing/misbinding/oversized helper
+results fail before any new ACK journal effect. Default controller readback keeps its legacy signature verifier; the separate
+private-file safety correction below applies to both modes. Deadlines, source expectations and worker/runtime/compiler identities
+are unchanged. A formatting-only table cell correction follows the freeze.
+
+Offline Java build/tests passed61 cases:29 original worker,17 existing batch
+producer and15 new ACK-verifier cases. Strict artifact boundaries passed.
+The new qualification JAR SHA-256 is
+`7b677b24bd39308a603e12f4e9c300d67d5b9cc2041a81103cb7481673361afd`.
+Every previously existing QA class is byte-identical to cdab; only the ACK verifier
+and its Entry/Verification nested classes were added. Production runtime055a,
+original producer51a and validatorf2 remain unchanged. Existing full qualification
+results are not transferred to this new QA artifact. First offline build could
+not resolve the isolated Shadow repository in the project cache; actual strict
+online help warmed that same pinned metadata, then offline build passed. The
+setup failure is retained separately and is not a semantic red.
+
+Actual pinned host verification checked eight same real retained signed ACKs
+through the old individual JVM route and one new batch, with exact matching
+payload hashes. Legacy total1.428410792 seconds versus batch0.287962375 seconds is
+a local startup/work-count observation only, not native Kafka/Flink throughput.
+At unchanged256MiB heap, the maximum128×65536-byte/8MiB wire protocol also passed,
+returning28550 bytes of bounded negative proofs. Wrong qualification code origin
+failed nonzero with no stdout. The initial diagnostic parser did not account for
+an existing SLF4J stderr notice before the fixed failure JSON; only the benchmark
+parser was corrected, without artifact changes. Its raw outputs remain private.
+
+Independent review found chmod-before-validation in ACK temporary readback:
+a symlink could change an outside target's permissions before rejection. A genuine
+regression RED reproduced the side effect. All three ACK readback paths now require
+private owned regular single-link0600 files before processing, without repairing
+mode or following symlinks. Eight observe/inspect × legacy/batch × symlink/0644
+variants reject without changing outside or member bytes/mode, journal/cursor or
+Kafka commit. The prior legacy helper nonobject-result guard was also retained.
+Independent review found no signature/proof-cache/cursor bypass. First batch
+mechanics tests were already green when run; no missing per-unit red is invented.
+The native deadline failure remains the integration red; private-file regression
+has separately captured red→green. All103 controller/oracle unit tests pass.
+`native-44631611463-activation/summary.json` SHA-256: `e281326428478bf95ebbb5bc75eb5e46bd4bc3200de177b4038c7050c10503a1`.
+`ack-verification-profile.json` SHA-256: `3e15fc1a76bf1a52cd6bfdb6f4e559ba519b0635c517549980d98d5efbe2b953`.
+`ack-verifier-host-proof/report.json` SHA-256: `0b0fe143610e53fecd9576b14e1bfd9d30246a73d5b4e57f7b192b27a67ff7c0`.
+`ack-private-files-red.log` SHA-256: `4a390f2af532497af5b28e6ecaa78ce9e5904863e62c0982aaabca2ccf85d773`.
+`ack-private-files-combined-green.log` SHA-256: `977c7182f530f39371ba2a013de158f4e608d6dc300c9ca1874712cc44758b41`.
+
+The final complete repository check passed431 Python tests, Ruff/formatting and
+mypy for115 source files. Retained `ack-signature-static-final.log` SHA-256:
+`1cafcc477204443c36ed1a750f5fb4d150ba3b5ca0a178edb7d1502a81330ada`. The prior Markdown table-spacing
+failure is separately retained as `ack-signature-static-check-lint-failed.log`;
+it was corrected without changing expectations. The independent P2 re-review
+confirmed the unsafe-file effects were removed and the legacy result guard
+restored; no remaining signature/cache/cursor blocker was found.
+
+For actual focused core qualification, three empty networks from the stopped
+bd1dda6f14974f3d8bfede2b894a96e0 attempt were retired after retaining complete
+network/stopped-container inspections in `ack-signature-retired-inspection.json`.
+Its failed batch, uncertain raw ACK and original evidence remain untouched; no
+container or volume was deleted, and unrelated networks were preserved.
+
+Actual focused core attempt `9c04211de14a4e66b56aaa47b1e0058b` passed with the new7b677
+qualification artifact:42 journal admissions,66 logical/physical outputs and both
+core A/B/A and mixed-worker scenarios passed. All recorded runtime source hashes
+match the final implementation files. Its report remains `partial_passed` with
+`full_gate:false`; the other12 mandatory scenarios are not qualified by this run.
+The exact completed-checkpoint/authenticated-ACK joins and unchanged literal
+outputs were checked through the new batch path. All owned runtime was stopped.
+Summary SHA-256 is `6bd42d3b1d99894c4dd5c33906c1677ab513783cdaf4bd7cb1ac5c734a3443b6`;
+original run log is `ack-signature-core-runtime.log`. The earlier failed full
+native attempts and prior-artifact passes remain separately attributed. New full
+native AMD64 all14 CI remains pending; it is not replaced by helper benchmarks,
+component tests or this selected-scope pass. All protected documentation/handoff
+hashes remain unchanged. This implementation follows its separately preserved
+freeze as the second cohesive commit in this bounded correction; no published
+commit or failed evidence is rewritten.

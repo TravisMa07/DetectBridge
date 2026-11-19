@@ -329,7 +329,7 @@ class LifecycleRuntimeOracleTests(unittest.TestCase):
             with self.assertRaises(RuntimeError) as caught:
                 qualifier.converge([worker])
             self.assertIs(failure, caught.exception)
-            runtime.observe.assert_called_once_with(limit=8)
+            runtime.observe.assert_called_once_with(limit=8, qualification_batch=True)
             runtime.worker_inventory.assert_called_once_with(worker, 12)
             proof = qualifier.query_failures[0]
             self.assertEqual(404, proof["http_status"])
@@ -372,7 +372,8 @@ class LifecycleRuntimeOracleTests(unittest.TestCase):
             )
             observed = []
 
-            def observe(limit):
+            def observe(limit, *, qualification_batch=False):
+                self.assertTrue(qualification_batch)
                 observed.append(limit)
                 if len(observed) > 1:
                     state["acks"]["new"] = dict(payload={**ack, "checkpoint_id": 15})
@@ -458,7 +459,8 @@ class LifecycleRuntimeOracleTests(unittest.TestCase):
             clock = [0.0]
             status = dict(participants=[dict(worker_id=worker, durable=True, rejected=False)])
 
-            def proportional_observe(limit):
+            def proportional_observe(limit, *, qualification_batch=False):
+                self.assertTrue(qualification_batch)
                 # Deterministic cost model, not a measured throughput/runtime assertion.
                 clock[0] += 4 * limit
                 return status
@@ -478,7 +480,7 @@ class LifecycleRuntimeOracleTests(unittest.TestCase):
             qualifier.registrations = [self.registration]
             with patch("lifecycle_runtime_verify.time.monotonic", side_effect=lambda: clock[0]):
                 self.assertIs(status, qualifier.converge([worker], timeout=120))
-            runtime.observe.assert_called_once_with(limit=8)
+            runtime.observe.assert_called_once_with(limit=8, qualification_batch=True)
             runtime.worker_inventory.assert_called_once_with(worker, 15)
             self.assertEqual(32, clock[0])
             self.assertEqual(15, qualifier.checkpoint_evidence[0]["checkpoint_id"])
@@ -492,7 +494,9 @@ class LifecycleRuntimeOracleTests(unittest.TestCase):
                 self.assertRaisesRegex(ValueError, "timeout_counterfactual_large_poll"),
             ):
                 qualifier.wait(
-                    lambda: proportional_observe(32), "counterfactual_large_poll", timeout=120
+                    lambda: proportional_observe(32, qualification_batch=True),
+                    "counterfactual_large_poll",
+                    timeout=120,
                 )
             self.assertEqual(128, clock[0])
 
@@ -571,7 +575,8 @@ class LifecycleRuntimeOracleTests(unittest.TestCase):
                     raise evicted
                 return _proof
 
-            def observe(limit):
+            def observe(limit, *, qualification_batch=False):
+                self.assertTrue(qualification_batch)
                 order.append(("authenticated_observe", limit))
                 runtime.state["acks"] = {
                     "matched": dict(payload=ack),
@@ -597,7 +602,8 @@ class LifecycleRuntimeOracleTests(unittest.TestCase):
                     self.completed_candidate_fixture(Path(folder))
                 )
 
-                def observe(limit):
+                def observe(limit, *, qualification_batch=False):
+                    self.assertTrue(qualification_batch)
                     if acknowledged_checkpoint is None:
                         return dict(
                             participants=[dict(worker_id=worker, durable=False, rejected=False)]
@@ -864,7 +870,8 @@ class LifecycleRuntimeOracleTests(unittest.TestCase):
                 end=10,
             )
 
-        def observe(limit):
+        def observe(limit, *, qualification_batch=False):
+            self.assertTrue(qualification_batch)
             self.assertEqual(8, limit)
             order.append("checked_observe")
             return dict(ack_cursor=next(positions))

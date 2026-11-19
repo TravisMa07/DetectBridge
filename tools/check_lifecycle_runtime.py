@@ -125,6 +125,7 @@ def check(artifacts=False):
                         "LifecycleQualification",
                         "LifecycleUidProbe",
                         "LifecycleBatchProducer",
+                        "LifecycleAckVerifier",
                     )
                 )
                 for p in classes
@@ -141,6 +142,7 @@ def check(artifacts=False):
             with zipfile.ZipFile(qualification) as probes:
                 probe_classes = {p for p in probes.namelist() if p.endswith(".class")}
                 assert "io/detectbridge/integration/LifecycleBatchProducer.class" in probe_classes
+                assert "io/detectbridge/integration/LifecycleAckVerifier.class" in probe_classes
                 assert not probe_classes.intersection(classes | set(original.namelist()))
                 assert all(
                     p.startswith(
@@ -148,6 +150,7 @@ def check(artifacts=False):
                             "io/detectbridge/integration/LifecycleQualificationJob",
                             "io/detectbridge/integration/LifecycleUidProbe",
                             "io/detectbridge/integration/LifecycleBatchProducer",
+                            "io/detectbridge/integration/LifecycleAckVerifier",
                         )
                     )
                     for p in probe_classes

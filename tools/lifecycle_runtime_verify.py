@@ -273,7 +273,7 @@ class Qualification:
         """Observe/verify a complete frozen broker prefix without inferring CP completion."""
 
         def drained():
-            status = self.runtime.observe(limit=8)
+            status = self.runtime.observe(limit=8, qualification_batch=True)
             return status if status["ack_cursor"] >= barrier["end"] else None
 
         status = self.wait(drained, category, timeout)
@@ -489,7 +489,7 @@ class Qualification:
                 self.capture_completed_candidate(worker)
             # Check exact checkpoint proofs between small authenticated prefixes.
             # A large prefix can finish after the deadline or outlive REST history.
-            status = self.runtime.observe(limit=8)
+            status = self.runtime.observe(limit=8, qualification_batch=True)
             for worker in wanted:
                 if not any(
                     p["worker_id"] == worker and p["durable"] and not p["rejected"]
@@ -1723,7 +1723,7 @@ class Qualification:
 
         def rejected_acks():
             nonlocal cursor
-            batch = self.runtime.inspect_acks(cursor, limit=16)
+            batch = self.runtime.inspect_acks(cursor, limit=16, qualification_batch=True)
             cursor = batch["next_offset"]
             for row in batch["records"]:
                 payload = row.get("payload")

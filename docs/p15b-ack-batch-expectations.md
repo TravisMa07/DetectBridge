@@ -24,7 +24,7 @@ specifies their literal JSON names and version representation. Bounds are1–128
 records, each decoded ACK wire at most65,536 bytes, at most8 MiB total decoded wire,
 at most16 MiB complete serialized request, and at most64 KiB result. Counts and
 indices reject booleans, fractions, overflow, gaps and duplicates. The request is
-a0600 current-UID single-link regular file beneath a0700 private parent, with no
+a 0600 current-UID single-link regular file beneath a 0700 private parent, with no
 symlink path component. No arbitrary command/path/class/network selection is added.
 
 Results bind the exact request SHA, count and dense input indices. Every result
@@ -52,7 +52,7 @@ evidence before qualification can claim convergence.
 | --- | --- | --- |
 | K01 | One exact valid ACK and its recorded worker public key | True plus exact original wire/key/payload hashes; ordinary controller validation produces the same bounded result as legacy verification. No checkpoint claim from this result alone. |
 | K02 | Ordered mixture of valid ACKs and known bad signatures | Dense per-index true/false results in original order. Bad signature is ordinary `signature_invalid`, not helper failure; unrelated valid signatures remain valid. |
-| K03 |128 entries and8 MiB total exact wire, within serialized caps | Protocol-admissible if every other contract holds; bounded result and no omitted/duplicated index. This is not a throughput claim. |
+| K03 | 128 entries and8 MiB total exact wire, within serialized caps | Protocol-admissible if every other contract holds; bounded result and no omitted/duplicated index. This is not a throughput claim. |
 | K04 | Count0/129, wire65,537 bytes, total wire8 MiB+1, request16 MiB+1 or result64 KiB+1 | Reject at the corresponding boundary before accepting any batch proof. No oversized result can become partial trusted success. |
 | K05 | Boolean/fractional/negative/overflow index/count, duplicate/gapped/reordered index, missing/extra field, unsupported version or noncanonical request | Whole-operation fail closed. Do not reinterpret input, silently reindex or accept a matching subset. |
 | K06 | Invalid/noncanonical base64, wire/key hash mismatch or changed request SHA | Whole-operation integrity failure before controller journal effects. Hashes bind decoded exact bytes, not their text spelling. |

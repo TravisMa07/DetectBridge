@@ -120,3 +120,9 @@ operation.
 There is no HA, disk-loss, physical power-loss, unbounded-outage, rescaling or
 throughput claim. Qualification is limited to the source, artifacts and scenarios
 recorded in the ledger; complete P15 acceptance still requires P15b2.
+
+Qualification ACK readback may explicitly use the separately pinned read-only
+[ACK signature batch helper](p15b-ack-batch-design.md). It amortizes JVM startup
+while retaining normal controller verification and durable-prefix handling;
+signature verification alone is never checkpoint or convergence proof. Normal
+controller readback remains on the original path without this explicit mode.

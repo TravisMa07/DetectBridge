@@ -30,7 +30,8 @@ files, keys, evidence, generated plans, runtime reports and builds stay outside 
 
 A separate `lifecycle-probe.jar` contains the first-party
 `LifecycleQualificationJob` entry point, a bounded UID diagnostic and the fixed
-`LifecycleBatchProducer` qualification transport. Its explicit private operation modes hold
+`LifecycleBatchProducer` qualification transport and read-only
+`LifecycleAckVerifier` signature helper. Its explicit private operation modes hold
 data release, target a ready current-incarnation checkpoint timeout, or fail after
 an actual Kafka-acknowledged output write. Normal job configuration cannot choose
 these hooks. A probe alone is not proof of broker failure or global checkpoint
@@ -60,3 +61,9 @@ AST replacing valid A before the independent worker compiler boundary existed.
 Their corrected regressions pass; original failed XML/source hashes are retained
 under ignored `build/evidence/`. Compilation/setup failures remain separate from
 behavioral red evidence.
+
+The ACK helper verifies at most128 bounded signed ACK wires in one JVM using the
+unchanged production cryptographic verifier. It is explicitly enabled only for
+qualification readback; every controller scope, identity, durable prefix and exact
+checkpoint proof check still applies. Its [frozen boundary](../../docs/p15b-ack-batch-design.md)
+and [independent cases](../../docs/p15b-ack-batch-expectations.md) define the limits.

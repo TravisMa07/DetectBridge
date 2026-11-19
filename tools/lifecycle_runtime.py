@@ -305,6 +305,7 @@ class Runtime:
 
     def __init__(self, root):
         self.root = local.path_safe(root)
+        self._qualification_ack_proofs: dict[tuple[str, str], dict[str, Any]] | None = None
         self._private()
         self.config = checked(self.root / "config.json")
         require(
@@ -759,6 +760,16 @@ class Runtime:
             raise
 
     def _verify_signature(self, kind, public_path, path, payload):
+        if kind == "ack" and self._qualification_ack_proofs is not None:
+            pair = (sha(private_file(path, 65536)), sha(private_file(public_path, 64)))
+            proof = self._qualification_ack_proofs.get(pair)
+            if proof is None:
+                raise IntegrityError("lifecycle_runtime_ack_batch_proof_missing")
+            if proof["verified"]:
+                if proof["payload_sha256"] != identity(payload):
+                    raise IntegrityError("lifecycle_runtime_ack_batch_payload_changed")
+                return proof
+            raise RuntimeError("lifecycle_runtime_signature_invalid")
         proof = local.document(self._local("verify", DOMAINS[kind], public_path, path).encode())
         require(isinstance(proof, dict), "helper_invalid_result")
         if proof.get("verified") is False and proof.get("category") == "signature_invalid":
@@ -1478,7 +1489,139 @@ class Runtime:
         assert registration is not None
         return self._verify_ack_wire(wire, registration, temporary)
 
-    def observe(self, limit=64):
+    def _local_ack_batch(self, request, request_sha256):
+        self._verify_immutable_inputs()
+        expected = self.config.get("qualification_sha256")
+        require(isinstance(expected, str), "ack_batch_not_registered")
+        logging = candidate.logging_api()
+        command = [
+            ROOT / ".cache/jdk/bin/java",
+            "-Xmx256m",
+            "-cp",
+            os.pathsep.join(
+                map(
+                    str,
+                    (
+                        self.root / "artifacts/runtime.jar",
+                        self.root / "artifacts/producer.jar",
+                        self.root / "artifacts/qualification.jar",
+                        logging,
+                    ),
+                )
+            ),
+            "io.detectbridge.integration.LifecycleAckVerifier",
+            expected,
+            self.config["runtime_sha256"],
+            request,
+            request_sha256,
+        ]
+        try:
+            return self._command(command)
+        except (OSError, ValueError, subprocess.TimeoutExpired) as failure:
+            self._retain_failure(failure)
+            raise
+
+    @contextlib.contextmanager
+    def _qualification_ack_verification(self, records, temporary, enabled):
+        require(type(enabled) is bool, "ack_batch_mode")
+        if not enabled:
+            yield
+            return
+        require(self.config.get("qualification_sha256") is not None, "ack_batch_not_registered")
+        require(self._qualification_ack_proofs is None, "ack_batch_nested")
+        require(isinstance(records, list) and len(records) <= 128, "ack_batch_count")
+        rows: list[dict[str, Any]] = []
+        total = 0
+        for record in records:
+            path = temporary / record["value_file"]
+            require(
+                path.parent == temporary and re.fullmatch(r"[0-9]{20}\.value", path.name),
+                "ack_file",
+            )
+            wire = private_file(path, 128 * 1024)
+            require(sha(wire) == record["value_sha256"], "ack_wire")
+            try:
+                require(0 < len(wire) <= 65536, "ack_limit")
+                signed = local.document(wire)
+                schema("ack", signed)
+            except ValueError:
+                # The ordinary per-record path retains and classifies this rejection.
+                continue
+            payload = signed["payload"]
+            incarnation = payload["incarnation"]
+            key = self.state["incarnation_keys"].get(incarnation)
+            if (
+                key is None
+                or self.state["incarnation_workers"].get(incarnation) != payload["worker_id"]
+            ):
+                continue
+            public = base64.b64decode(key, validate=True)
+            total += len(wire)
+            require(total <= 8 * MIB, "ack_batch_bytes")
+            rows.append(
+                dict(
+                    index=len(rows),
+                    public_key=key,
+                    wire_base64=base64.b64encode(wire).decode(),
+                    wire_sha256=sha(wire),
+                    key_sha256=sha(public),
+                )
+            )
+        proofs: dict[tuple[str, str], dict[str, Any]] = {}
+        if rows:
+            request = encoded(dict(version="1.0.0", records=rows))
+            require(len(request) <= 16 * MIB, "ack_batch_request_limit")
+            self._reserve(len(request) + 131072, recovery=True)
+            path = temporary / ("ack-batch-" + uuid.uuid4().hex + ".json")
+            local.write_exclusive(path, request)
+            raw = self._local_ack_batch(path, sha(request)).encode()
+            if len(raw) > 65536:
+                raise IntegrityError("lifecycle_runtime_ack_batch_result_limit")
+            try:
+                result = local.document(raw)
+                require(raw in (encoded(result), encoded(result) + b"\n"), "ack_batch_canonical")
+                require(
+                    isinstance(result, dict)
+                    and set(result) == {"version", "request_sha256", "results"}
+                    and result["version"] == "1.0.0"
+                    and result["request_sha256"] == sha(request)
+                    and isinstance(result["results"], list)
+                    and len(result["results"]) == len(rows),
+                    "ack_batch_result",
+                )
+                for row, proof in zip(rows, result["results"], strict=True):
+                    require(
+                        isinstance(proof, dict) and type(proof.get("verified")) is bool,
+                        "ack_batch_result",
+                    )
+                    fields = {"index", "wire_sha256", "key_sha256", "verified"}
+                    fields.add("payload_sha256" if proof["verified"] else "category")
+                    require(
+                        set(proof) == fields
+                        and type(proof["index"]) is int
+                        and all(proof[k] == row[k] for k in ("index", "wire_sha256", "key_sha256")),
+                        "ack_batch_result",
+                    )
+                    if proof["verified"]:
+                        payload = local.document(
+                            base64.b64decode(row["wire_base64"], validate=True)
+                        )["payload"]
+                        require(proof["payload_sha256"] == identity(payload), "ack_batch_payload")
+                    else:
+                        require(proof["category"] == "signature_invalid", "ack_batch_result")
+                    pair = (row["wire_sha256"], row["key_sha256"])
+                    value = {k: v for k, v in proof.items() if k != "index"}
+                    require(pair not in proofs or proofs[pair] == value, "ack_batch_conflict")
+                    proofs[pair] = value
+            except (ValueError, KeyError, TypeError) as error:
+                raise IntegrityError("lifecycle_runtime_ack_batch_invalid_result") from error
+        self._qualification_ack_proofs = proofs
+        try:
+            yield
+        finally:
+            self._qualification_ack_proofs = None
+
+    def observe(self, limit=64, *, qualification_batch=False):
         require(type(limit) is int and 1 <= limit <= 128, "read_limit")
         with self._locked():
             self._load()
@@ -1498,120 +1641,139 @@ class Runtime:
                     self._path(temporary),
                 )
                 self._batch_scope(batch, descriptor)
-                for record in batch["records"]:
-                    require(
-                        record["topic"] == descriptor["name"]
-                        and record["partition"] == 0
-                        and record["offset"] >= self.state["ack_cursor"],
-                        "ack_location",
-                    )
-                    path = temporary / record["value_file"]
-                    require(
-                        path.parent == temporary and re.fullmatch(r"[0-9]{20}\.value", path.name),
-                        "ack_file",
-                    )
-                    path.chmod(0o600)
-                    wire = private_file(path, 128 * 1024)
-                    require(sha(wire) == record["value_sha256"], "ack_wire")
-                    try:
-                        require(len(wire) <= 65536, "ack_limit")
-                        ack = self._ack_payload(wire, path, temporary)
-                    except ValueError as failure:
-                        if isinstance(failure, IntegrityError):
-                            raise
-                        # Infrastructure errors never masquerade as a cryptographic rejection.
-                        if str(failure) in {
-                            "lifecycle_runtime_helper_failed",
-                            "lifecycle_runtime_helper_invalid_result",
-                            "lifecycle_runtime_helper_output_limit",
-                        }:
-                            raise
-                        previous_rejection = self.state["ack_rejected_positions"].get(
-                            str(record["offset"])
+                with self._qualification_ack_verification(
+                    batch["records"], temporary, qualification_batch
+                ):
+                    for record in batch["records"]:
+                        require(
+                            record["topic"] == descriptor["name"]
+                            and record["partition"] == 0
+                            and record["offset"] >= self.state["ack_cursor"],
+                            "ack_location",
                         )
-                        if previous_rejection is not None:
-                            require(previous_rejection == sha(wire), "ack_rejection_conflict")
-                        else:
-                            require(
-                                self.state["ack_rejections"] + len(self.state["acks"])
-                                < LIMITS["ack_observations"]
-                                and self.state["ack_bytes"] + len(wire)
-                                <= LIMITS["ack_observation_bytes"],
-                                "ack_budget",
+                        path = temporary / record["value_file"]
+                        require(
+                            path.parent == temporary
+                            and re.fullmatch(r"[0-9]{20}\.value", path.name),
+                            "ack_file",
+                        )
+                        wire = private_file(path, 128 * 1024)
+                        require(sha(wire) == record["value_sha256"], "ack_wire")
+                        try:
+                            require(len(wire) <= 65536, "ack_limit")
+                            ack = self._ack_payload(wire, path, temporary)
+                        except ValueError as failure:
+                            if isinstance(failure, IntegrityError):
+                                raise
+                            # Infrastructure errors never masquerade as a cryptographic rejection.
+                            if str(failure) in {
+                                "lifecycle_runtime_helper_failed",
+                                "lifecycle_runtime_helper_invalid_result",
+                                "lifecycle_runtime_helper_output_limit",
+                            }:
+                                raise
+                            previous_rejection = self.state["ack_rejected_positions"].get(
+                                str(record["offset"])
                             )
-                            category = str(failure)
-                            if not re.fullmatch(r"lifecycle(?:_runtime)?_[a-z_]{1,64}", category):
-                                category = "lifecycle_runtime_ack_invalid"
-                            self._append(
-                                "ack_rejected",
-                                dict(
-                                    location={
-                                        key: record[key]
-                                        for key in ("topic", "partition", "offset", "value_sha256")
-                                    }
-                                    | dict(
-                                        cluster_id=batch["cluster_id"], topic_id=batch["topic_id"]
-                                    ),
-                                    category=category,
-                                    bytes=len(wire),
-                                ),
-                                recovery=True,
-                            )
-                    else:
-                        previous = self.state["acks"].get(ack["ack_id"])
-                        if previous:
-                            require(previous["wire_sha256"] == sha(wire), "ack_conflict")
-                        else:
-                            require(
-                                self.state["ack_rejections"] + len(self.state["acks"])
-                                < LIMITS["ack_observations"]
-                                and self.state["ack_bytes"] + len(wire)
-                                <= LIMITS["ack_observation_bytes"],
-                                "ack_budget",
-                            )
-                            destination = self.root / "acks" / (ack["ack_id"][7:] + ".json")
-                            self._reserve(len(wire) + 131072, recovery=True)
-                            if destination.exists():
-                                require(private_file(destination) == wire, "ack_orphan_conflict")
+                            if previous_rejection is not None:
+                                require(previous_rejection == sha(wire), "ack_rejection_conflict")
                             else:
-                                local.write_exclusive(destination, wire)
-                            with destination.open("rb") as persisted:
-                                os.fsync(persisted.fileno())
-                            local.sync_directory(destination.parent)
-                            self._append(
-                                "ack",
-                                dict(
-                                    ack_id=ack["ack_id"],
-                                    wire_sha256=sha(wire),
-                                    bytes=len(wire),
-                                    payload=ack,
-                                    location={
-                                        key: record[key]
-                                        for key in ("topic", "partition", "offset", "value_sha256")
-                                    }
-                                    | dict(
-                                        cluster_id=batch["cluster_id"], topic_id=batch["topic_id"]
+                                require(
+                                    self.state["ack_rejections"] + len(self.state["acks"])
+                                    < LIMITS["ack_observations"]
+                                    and self.state["ack_bytes"] + len(wire)
+                                    <= LIMITS["ack_observation_bytes"],
+                                    "ack_budget",
+                                )
+                                category = str(failure)
+                                if not re.fullmatch(
+                                    r"lifecycle(?:_runtime)?_[a-z_]{1,64}", category
+                                ):
+                                    category = "lifecycle_runtime_ack_invalid"
+                                self._append(
+                                    "ack_rejected",
+                                    dict(
+                                        location={
+                                            key: record[key]
+                                            for key in (
+                                                "topic",
+                                                "partition",
+                                                "offset",
+                                                "value_sha256",
+                                            )
+                                        }
+                                        | dict(
+                                            cluster_id=batch["cluster_id"],
+                                            topic_id=batch["topic_id"],
+                                        ),
+                                        category=category,
+                                        bytes=len(wire),
                                     ),
-                                ),
-                                recovery=True,
-                            )
-                    self._append(
-                        "ack_cursor",
-                        dict(next_offset=record["offset"] + 1, value_sha256=sha(wire)),
-                        recovery=True,
-                    )
-                # Every individual proof/cursor is durable before this contiguous-prefix commit.
-                if self.state["ack_cursor"] > 0:
-                    committed = self._network(
-                        "commit",
-                        "kafka:9092",
-                        group,
-                        self.state["broker"]["cluster_id"],
-                        descriptor["name"],
-                        descriptor["id"],
-                        str(self.state["ack_cursor"]),
-                    )
-                    self._batch_scope(committed, descriptor)
+                                    recovery=True,
+                                )
+                        else:
+                            previous = self.state["acks"].get(ack["ack_id"])
+                            if previous:
+                                require(previous["wire_sha256"] == sha(wire), "ack_conflict")
+                            else:
+                                require(
+                                    self.state["ack_rejections"] + len(self.state["acks"])
+                                    < LIMITS["ack_observations"]
+                                    and self.state["ack_bytes"] + len(wire)
+                                    <= LIMITS["ack_observation_bytes"],
+                                    "ack_budget",
+                                )
+                                destination = self.root / "acks" / (ack["ack_id"][7:] + ".json")
+                                self._reserve(len(wire) + 131072, recovery=True)
+                                if destination.exists():
+                                    require(
+                                        private_file(destination) == wire, "ack_orphan_conflict"
+                                    )
+                                else:
+                                    local.write_exclusive(destination, wire)
+                                with destination.open("rb") as persisted:
+                                    os.fsync(persisted.fileno())
+                                local.sync_directory(destination.parent)
+                                self._append(
+                                    "ack",
+                                    dict(
+                                        ack_id=ack["ack_id"],
+                                        wire_sha256=sha(wire),
+                                        bytes=len(wire),
+                                        payload=ack,
+                                        location={
+                                            key: record[key]
+                                            for key in (
+                                                "topic",
+                                                "partition",
+                                                "offset",
+                                                "value_sha256",
+                                            )
+                                        }
+                                        | dict(
+                                            cluster_id=batch["cluster_id"],
+                                            topic_id=batch["topic_id"],
+                                        ),
+                                    ),
+                                    recovery=True,
+                                )
+                        self._append(
+                            "ack_cursor",
+                            dict(next_offset=record["offset"] + 1, value_sha256=sha(wire)),
+                            recovery=True,
+                        )
+                    # Every individual proof/cursor is durable before this contiguous-prefix commit.
+                    if self.state["ack_cursor"] > 0:
+                        committed = self._network(
+                            "commit",
+                            "kafka:9092",
+                            group,
+                            self.state["broker"]["cluster_id"],
+                            descriptor["name"],
+                            descriptor["id"],
+                            str(self.state["ack_cursor"]),
+                        )
+                        self._batch_scope(committed, descriptor)
             return self.status_locked()
 
     def _batch_scope(self, batch, descriptor):
@@ -2314,7 +2476,7 @@ class Runtime:
             with self._temporary() as temporary:
                 return self._verify_ack_wire(wire, registration, temporary)
 
-    def inspect_acks(self, start=0, limit=16):
+    def inspect_acks(self, start=0, limit=16, *, qualification_batch=False):
         require(
             type(start) is int and start >= 0 and type(limit) is int and 1 <= limit <= 128,
             "read_limit",
@@ -2336,47 +2498,50 @@ class Runtime:
                     self._path(temporary),
                 )
                 self._batch_scope(batch, descriptor)
-                records = []
-                for record in batch["records"]:
-                    path = temporary / record["value_file"]
-                    require(
-                        path.parent == temporary and re.fullmatch(r"[0-9]{20}\.value", path.name),
-                        "ack_file",
-                    )
-                    path.chmod(0o600)
-                    wire = private_file(path, 128 * 1024)
-                    require(sha(wire) == record["value_sha256"], "ack_wire")
-                    verified, payload, category = False, None, "invalid_ack"
-                    try:
-                        require(len(wire) <= 65536, "ack_limit")
-                        signed = local.document(wire)
-                        schema("ack", signed)
-                        incarnation = signed["payload"]["incarnation"]
-                        registration = dict(
-                            worker_id=signed["payload"]["worker_id"],
-                            incarnation=incarnation,
-                            public_key=self.state["incarnation_keys"].get(incarnation),
+                with self._qualification_ack_verification(
+                    batch["records"], temporary, qualification_batch
+                ):
+                    records = []
+                    for record in batch["records"]:
+                        path = temporary / record["value_file"]
+                        require(
+                            path.parent == temporary
+                            and re.fullmatch(r"[0-9]{20}\.value", path.name),
+                            "ack_file",
                         )
-                        payload = self._verify_ack_wire(wire, registration, temporary)
-                        verified, category = True, "ok"
-                    except ValueError as failure:
-                        if isinstance(failure, IntegrityError):
-                            raise
-                        if str(failure) in {
-                            "lifecycle_runtime_helper_failed",
-                            "lifecycle_runtime_helper_invalid_result",
-                            "lifecycle_runtime_helper_output_limit",
-                        }:
-                            raise
-                    records.append(
-                        dict(
-                            wire=record,
-                            value_base64=base64.b64encode(wire).decode(),
-                            payload=payload,
-                            signature_verified=verified,
-                            category=category,
+                        wire = private_file(path, 128 * 1024)
+                        require(sha(wire) == record["value_sha256"], "ack_wire")
+                        verified, payload, category = False, None, "invalid_ack"
+                        try:
+                            require(len(wire) <= 65536, "ack_limit")
+                            signed = local.document(wire)
+                            schema("ack", signed)
+                            incarnation = signed["payload"]["incarnation"]
+                            registration = dict(
+                                worker_id=signed["payload"]["worker_id"],
+                                incarnation=incarnation,
+                                public_key=self.state["incarnation_keys"].get(incarnation),
+                            )
+                            payload = self._verify_ack_wire(wire, registration, temporary)
+                            verified, category = True, "ok"
+                        except ValueError as failure:
+                            if isinstance(failure, IntegrityError):
+                                raise
+                            if str(failure) in {
+                                "lifecycle_runtime_helper_failed",
+                                "lifecycle_runtime_helper_invalid_result",
+                                "lifecycle_runtime_helper_output_limit",
+                            }:
+                                raise
+                        records.append(
+                            dict(
+                                wire=record,
+                                value_base64=base64.b64encode(wire).decode(),
+                                payload=payload,
+                                signature_verified=verified,
+                                category=category,
+                            )
                         )
-                    )
                 return dict(records=records, next_offset=batch["next_offset"])
 
     def sign_injection(self, kind, payload):

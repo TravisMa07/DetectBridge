@@ -544,7 +544,7 @@ class ControllerTests(unittest.TestCase):
                 folder = self.root / args[-1].removeprefix("/io/")
                 offset = int(args[6])
                 name = f"{offset:020d}.value"
-                (folder / name).write_bytes(wire)
+                lifecycle.write_exclusive(folder / name, wire)
                 return dict(
                     records=[
                         dict(
@@ -838,6 +838,409 @@ class ControllerTests(unittest.TestCase):
             result = self.runtime.observe(limit=2)
         self.assertTrue(result["converged"])
         self.assertEqual(commits, [2])
+
+    def ack_signature_batch_result(self, request_path, request_sha256):
+        """Explicit signature transport double, never actual cryptographic/runtime evidence."""
+        raw = Path(request_path).read_bytes()
+        self.assertEqual(request_sha256, control.sha(raw))
+        self.assertEqual(0o600, Path(request_path).stat().st_mode & 0o777)
+        request = json.loads(raw)
+        self.assertEqual({"version", "records"}, set(request))
+        self.assertEqual("1.0.0", request["version"])
+        results = []
+        for index, row in enumerate(request["records"]):
+            self.assertEqual(
+                {"index", "public_key", "wire_base64", "wire_sha256", "key_sha256"}, set(row)
+            )
+            self.assertEqual(index, row["index"])
+            wire = base64.b64decode(row["wire_base64"], validate=True)
+            key = base64.b64decode(row["public_key"], validate=True)
+            self.assertEqual(control.sha(wire), row["wire_sha256"])
+            self.assertEqual(control.sha(key), row["key_sha256"])
+            results.append(
+                dict(
+                    index=index,
+                    wire_sha256=row["wire_sha256"],
+                    key_sha256=row["key_sha256"],
+                    verified=True,
+                    payload_sha256=control.identity(json.loads(wire)["payload"]),
+                )
+            )
+        return control.encoded(
+            dict(version="1.0.0", request_sha256=request_sha256, results=results)
+        ).decode()
+
+    def ack_signature_batch_network(self, wires, commits):
+        def network(*args, **_kwargs):
+            if args[0] == "drain":
+                folder = self.root / args[-1].removeprefix("/io/")
+                first = int(args[6])
+                records = []
+                for offset, wire in enumerate(wires, first):
+                    name = f"{offset:020d}.value"
+                    lifecycle.write_exclusive(folder / name, wire)
+                    records.append(
+                        dict(
+                            topic="test.ack",
+                            partition=0,
+                            offset=offset,
+                            value_sha256=control.sha(wire),
+                            value_file=name,
+                            key_base64="",
+                        )
+                    )
+                return dict(
+                    records=records,
+                    next_offset=first + len(wires),
+                    cluster_id="synthetic-cluster",
+                    topic_id="ack_id",
+                )
+            if args[0] == "commit":
+                self.assertEqual(int(args[-1]), self.runtime.state["ack_cursor"])
+                commits.append(int(args[-1]))
+                return dict(cluster_id="synthetic-cluster", topic_id="ack_id")
+            raise AssertionError("unexpected network operation")
+
+        return network
+
+    def test_qualification_ack_batch_one_helper_preserves_normal_ack_prefix_and_commit(self):
+        self.enable_batch_artifact()
+        publication = self.runtime.state["publications"][-1]
+        wires = [self.ack_wire(publication, phase) for phase in ("applied", "durable")]
+        commits: list[int] = []
+        with (
+            patch.object(
+                self.runtime,
+                "_network",
+                side_effect=self.ack_signature_batch_network(wires, commits),
+            ),
+            patch.object(
+                self.runtime,
+                "_local_ack_batch",
+                side_effect=self.ack_signature_batch_result,
+                create=True,
+            ) as batch,
+            patch.object(
+                self.runtime, "_local", side_effect=AssertionError("per-ACK helper must not run")
+            ),
+        ):
+            result = self.runtime.observe(limit=2, qualification_batch=True)
+        self.assertTrue(result["converged"])
+        self.assertEqual(1, batch.call_count)
+        self.assertEqual([2], commits)
+        self.assertEqual(2, self.runtime.state["ack_cursor"])
+        self.assertEqual(2, len(self.runtime.state["acks"]))
+        self.assertIsNone(self.runtime._qualification_ack_proofs)
+
+    def test_qualification_ack_invalid_signature_is_ordinary_rejection_not_helper_failure(self):
+        self.enable_batch_artifact()
+        publication = self.runtime.state["publications"][-1]
+        wires = [self.ack_wire(publication, phase) for phase in ("applied", "durable")]
+        commits: list[int] = []
+
+        def result(path, request_sha):
+            value = json.loads(self.ack_signature_batch_result(path, request_sha))
+            value["results"][0].pop("payload_sha256")
+            value["results"][0].update(verified=False, category="signature_invalid")
+            return control.encoded(value).decode()
+
+        with (
+            patch.object(
+                self.runtime,
+                "_network",
+                side_effect=self.ack_signature_batch_network(wires, commits),
+            ),
+            patch.object(self.runtime, "_local_ack_batch", side_effect=result),
+        ):
+            observed = self.runtime.observe(limit=2, qualification_batch=True)
+        self.assertTrue(observed["converged"])
+        self.assertEqual(1, self.runtime.state["ack_rejections"])
+        self.assertEqual(1, len(self.runtime.state["acks"]))
+        self.assertEqual(2, self.runtime.state["ack_cursor"])
+        self.assertEqual([2], commits)
+        self.assertIsNone(self.runtime._qualification_ack_proofs)
+
+    def test_qualification_ack_result_integrity_fails_before_any_new_journal_prefix(self):
+        self.enable_batch_artifact()
+        publication = self.runtime.state["publications"][-1]
+        wires = [self.ack_wire(publication, phase) for phase in ("applied", "durable")]
+        before = (self.root / "head.json").read_bytes()
+        mutations = (
+            "missing",
+            "extra",
+            "index",
+            "wire",
+            "key",
+            "request",
+            "unknown_top",
+            "unknown_row",
+            "verified_type",
+            "payload",
+            "false_with_payload",
+            "false_category",
+            "true_category",
+            "noncanonical",
+            "oversize",
+        )
+        for mutation in mutations:
+            with self.subTest(mutation=mutation):
+                commits: list[int] = []
+
+                def result(path, request_sha):
+                    value = json.loads(self.ack_signature_batch_result(path, request_sha))
+                    row = value["results"][
+                        -1
+                    ]  # The earlier positive result must not be journaled first.
+                    if mutation == "missing":
+                        value["results"].pop()
+                    elif mutation == "extra":
+                        value["results"].append(copy.deepcopy(row))
+                    elif mutation == "index":
+                        row["index"] = 0
+                    elif mutation == "wire":
+                        row["wire_sha256"] = "0" * 64
+                    elif mutation == "key":
+                        row["key_sha256"] = "0" * 64
+                    elif mutation == "request":
+                        value["request_sha256"] = "0" * 64
+                    elif mutation == "unknown_top":
+                        value["unexpected"] = True
+                    elif mutation == "unknown_row":
+                        row["unexpected"] = True
+                    elif mutation == "verified_type":
+                        row["verified"] = "true"
+                    elif mutation == "payload":
+                        row["payload_sha256"] = "0" * 64
+                    elif mutation == "false_with_payload":
+                        row.update(verified=False, category="signature_invalid")
+                    elif mutation == "false_category":
+                        row.pop("payload_sha256")
+                        row.update(verified=False, category="unknown")
+                    elif mutation == "true_category":
+                        row["category"] = "signature_invalid"
+                    elif mutation == "noncanonical":
+                        return json.dumps(value, indent=2)
+                    elif mutation == "oversize":
+                        return "x" * 65537
+                    return control.encoded(value).decode()
+
+                with (
+                    patch.object(
+                        self.runtime,
+                        "_network",
+                        side_effect=self.ack_signature_batch_network(wires, commits),
+                    ),
+                    patch.object(self.runtime, "_local_ack_batch", side_effect=result),
+                    self.assertRaises(control.IntegrityError),
+                ):
+                    self.runtime.observe(limit=2, qualification_batch=True)
+                self.assertEqual(before, (self.root / "head.json").read_bytes())
+                self.assertEqual(0, self.runtime.state["ack_cursor"])
+                self.assertFalse(self.runtime.state["acks"])
+                self.assertEqual([], commits)
+                self.assertIsNone(self.runtime._qualification_ack_proofs)
+
+    def test_qualification_ack_proofs_are_exact_ephemeral_pairs_not_cross_call_cache(self):
+        self.enable_batch_artifact()
+        wire = self.ack_wire(self.runtime.state["publications"][-1])
+        payload = json.loads(wire)["payload"]
+        public = base64.b64decode(self.registration["public_key"])
+        with self.runtime._temporary() as temporary:
+            path = temporary / "00000000000000000000.value"
+            key = temporary / "test-public.der"
+            lifecycle.write_exclusive(path, wire)
+            lifecycle.write_exclusive(key, public)
+            records = [dict(value_file=path.name, value_sha256=control.sha(wire))]
+            pair = (control.sha(wire), control.sha(public))
+            with patch.object(
+                self.runtime, "_local_ack_batch", side_effect=self.ack_signature_batch_result
+            ) as batch:
+                for _ in range(2):
+                    with self.runtime._qualification_ack_verification(records, temporary, True):
+                        self.assertEqual({pair}, set(self.runtime._qualification_ack_proofs))
+                        self.runtime._verify_signature("ack", key, path, payload)
+                    self.assertIsNone(self.runtime._qualification_ack_proofs)
+                self.assertEqual(2, batch.call_count)
+                changed_wire = temporary / "changed-wire.json"
+                changed_key = temporary / "changed-key.der"
+                lifecycle.write_exclusive(changed_wire, wire + b" ")
+                lifecycle.write_exclusive(changed_key, b"other synthetic public key")
+                with self.runtime._qualification_ack_verification(records, temporary, True):
+                    for public_path, message, claimed_payload in (
+                        (changed_key, path, payload),
+                        (key, changed_wire, payload),
+                        (key, path, {**payload, "revision": 99}),
+                    ):
+                        with self.assertRaises(control.IntegrityError):
+                            self.runtime._verify_signature(
+                                "ack", public_path, message, claimed_payload
+                            )
+                with self.runtime._qualification_ack_verification(records, temporary, True):
+                    self.runtime._qualification_ack_proofs.clear()
+                    with self.assertRaises(control.IntegrityError):
+                        self.runtime._verify_signature("ack", key, path, payload)
+                self.assertIsNone(self.runtime._qualification_ack_proofs)
+            with patch.object(self.runtime, "_local", wraps=self.runtime._local) as legacy:
+                self.runtime._verify_signature("ack", key, path, payload)
+            self.assertEqual(1, legacy.call_count)
+
+    def test_qualification_ack_malformed_unknown_key_keep_ordinary_rejection_boundaries(self):
+        self.enable_batch_artifact()
+        publication = self.runtime.state["publications"][-1]
+        wires = [
+            b"{",
+            self.ack_wire(publication, incarnation=str(uuid.uuid4())),
+            self.ack_wire(publication),
+        ]
+        commits: list[int] = []
+        with (
+            patch.object(
+                self.runtime,
+                "_network",
+                side_effect=self.ack_signature_batch_network(wires, commits),
+            ),
+            patch.object(
+                self.runtime, "_local_ack_batch", side_effect=self.ack_signature_batch_result
+            ) as batch,
+        ):
+            observed = self.runtime.observe(limit=3, qualification_batch=True)
+        self.assertTrue(observed["converged"])
+        self.assertEqual(1, batch.call_count)
+        self.assertEqual(2, self.runtime.state["ack_rejections"])
+        self.assertEqual(1, len(self.runtime.state["acks"]))
+        self.assertEqual([3], commits)
+
+    def test_qualification_ack_helper_failure_does_not_become_remote_rejection(self):
+        self.enable_batch_artifact()
+        wires = [self.ack_wire(self.runtime.state["publications"][-1])]
+        before = (self.root / "head.json").read_bytes()
+        commits: list[int] = []
+        with (
+            patch.object(
+                self.runtime,
+                "_network",
+                side_effect=self.ack_signature_batch_network(wires, commits),
+            ),
+            patch.object(
+                self.runtime,
+                "_local_ack_batch",
+                side_effect=RuntimeError("synthetic_infrastructure_failure"),
+            ),
+            self.assertRaisesRegex(RuntimeError, "synthetic_infrastructure_failure"),
+        ):
+            self.runtime.observe(limit=1, qualification_batch=True)
+        self.assertEqual(before, (self.root / "head.json").read_bytes())
+        self.assertEqual(0, self.runtime.state["ack_rejections"])
+        self.assertEqual(0, self.runtime.state["ack_cursor"])
+        self.assertEqual([], commits)
+        self.assertIsNone(self.runtime._qualification_ack_proofs)
+
+    def test_qualification_ack_inspection_is_readonly_and_default_keeps_legacy_verifier(self):
+        self.enable_batch_artifact()
+        wires = [self.ack_wire(self.runtime.state["publications"][-1])]
+        before = (self.root / "head.json").read_bytes()
+        commits: list[int] = []
+        with (
+            patch.object(
+                self.runtime,
+                "_network",
+                side_effect=self.ack_signature_batch_network(wires, commits),
+            ),
+            patch.object(
+                self.runtime, "_local_ack_batch", side_effect=self.ack_signature_batch_result
+            ) as batch,
+        ):
+            inspected = self.runtime.inspect_acks(limit=1, qualification_batch=True)
+            self.assertTrue(inspected["records"][0]["signature_verified"])
+            self.assertEqual(1, batch.call_count)
+        self.assertEqual(before, (self.root / "head.json").read_bytes())
+        self.assertEqual([], commits)
+        with (
+            patch.object(
+                self.runtime,
+                "_network",
+                side_effect=self.ack_signature_batch_network(wires, commits),
+            ),
+            patch.object(
+                self.runtime,
+                "_local_ack_batch",
+                side_effect=AssertionError("default must not use qualification verifier"),
+            ),
+            patch.object(self.runtime, "_local", wraps=self.runtime._local) as legacy,
+        ):
+            result = self.runtime.inspect_acks(limit=1)
+            self.assertTrue(result["records"][0]["signature_verified"])
+            self.assertEqual(1, legacy.call_count)
+        self.assertEqual(before, (self.root / "head.json").read_bytes())
+
+    def test_ack_readers_never_repair_symlink_target_or_unsafe_member_mode(self):
+        self.enable_batch_artifact()
+        wire = self.ack_wire(self.runtime.state["publications"][-1])
+        for method in ("observe", "inspect_acks"):
+            for qualified in (False, True):
+                for unsafe in ("symlink", "mode"):
+                    with self.subTest(method=method, qualified=qualified, unsafe=unsafe):
+                        outside = self.folder / ("outside-" + uuid.uuid4().hex)
+                        outside.write_bytes(wire)
+                        outside.chmod(0o644)
+                        members: list[Path] = []
+                        cleanup_modes: list[int] = []
+                        original_cleanup = control.shutil.rmtree
+
+                        def cleanup(path, *args, **kwargs):
+                            for member in members:
+                                if member.parent == Path(path) and member.exists():
+                                    cleanup_modes.append(member.stat().st_mode & 0o777)
+                                    self.assertEqual(wire, member.read_bytes())
+                            return original_cleanup(path, *args, **kwargs)
+
+                        def network(*args, **_kwargs):
+                            if args[0] != "drain":
+                                raise AssertionError("unsafe ACK must never commit")
+                            folder = self.root / args[-1].removeprefix("/io/")
+                            name = "00000000000000000000.value"
+                            member = folder / name
+                            if unsafe == "symlink":
+                                member.symlink_to(outside)
+                            else:
+                                member.write_bytes(wire)
+                                member.chmod(0o644)
+                            members.append(member)
+                            return dict(
+                                records=[
+                                    dict(
+                                        topic="test.ack",
+                                        partition=0,
+                                        offset=0,
+                                        value_file=name,
+                                        value_sha256=control.sha(wire),
+                                        key_base64="",
+                                    )
+                                ],
+                                next_offset=1,
+                                cluster_id="synthetic-cluster",
+                                topic_id="ack_id",
+                            )
+
+                        before = (self.root / "head.json").read_bytes()
+                        with (
+                            patch.object(control.shutil, "rmtree", side_effect=cleanup),
+                            patch.object(self.runtime, "_network", side_effect=network),
+                            patch.object(
+                                self.runtime,
+                                "_local_ack_batch",
+                                side_effect=AssertionError(
+                                    "unsafe ACK must fail before signature batch"
+                                ),
+                            ),
+                            self.assertRaises((ValueError, RuntimeError)),
+                        ):
+                            getattr(self.runtime, method)(limit=1, qualification_batch=qualified)
+                        self.assertEqual(0o644, outside.stat().st_mode & 0o777)
+                        self.assertEqual(wire, outside.read_bytes())
+                        self.assertEqual(before, (self.root / "head.json").read_bytes())
+                        self.assertEqual(0, self.runtime.state["ack_cursor"])
+                        self.assertEqual([0o644], cleanup_modes)
 
     def test_ack_requires_authentic_registered_proof_and_durable_phase(self):
         publication = self.publish()

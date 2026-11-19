@@ -75,8 +75,11 @@ single merge object `f44c9f9`; its actual push run 44458422172 attempt 1 passed
 all applicable jobs and required-checks. [Merged-main reconciliation](docs/p14-merged-main-audit.md)
 records that technical gate and the owner’s subsequent explicit bounded P14
 semantic/completeness acceptance. Issue #14 is closed; P14 is complete within
-its documented limits. [P15 design](docs/p15-design.md) and
-[independent expectations](docs/p15-expectations.md) precede new lifecycle code.
+its documented limits. [P15a private candidate lifecycle](docs/rule-lifecycle.md)
+implements immutable import, compiler validation, actual Java sample tests, staging
+and control-request preparation after its separate design/expectation freeze.
+[Local qualification](docs/p15a-ledger.md) passed; native/owner/merged gates remain.
+Worker activation/convergence/rollback remain P15b; P15 and P16 are not complete.
 Management API and UI remain future work.
 P06 provides local Kafka/Flink infrastructure and optional authenticated OpenSearch.
 Repository hygiene tooling and

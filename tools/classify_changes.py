@@ -522,6 +522,14 @@ def needs_maintenance(paths):
     )
 
 
+def needs_lifecycle(paths):
+    return needs_integration(paths) or any(
+        p.startswith(("contracts/lifecycle/", "tools/lifecycle", "tools/tests/test_lifecycle"))
+        for p in paths
+        if not p.endswith(".md")
+    )
+
+
 if __name__ == "__main__":
     base = os.environ.get("CHANGE_BASE", "")
     head = os.environ.get("CHANGE_HEAD", "HEAD")
@@ -542,6 +550,7 @@ if __name__ == "__main__":
         output.write(f"writer={str(needs_writer([p for p in paths if p])).lower()}\n")
         output.write(f"integration={str(needs_integration([p for p in paths if p])).lower()}\n")
         output.write(f"historical={str(needs_historical([p for p in paths if p])).lower()}\n")
+        output.write(f"lifecycle={str(needs_lifecycle([p for p in paths if p])).lower()}\n")
         output.write(f"maintenance={str(needs_maintenance([p for p in paths if p])).lower()}\n")
         output.write(f"current={str(needs_current([p for p in paths if p])).lower()}\n")
         output.write(f"archive={str(needs_archive([p for p in paths if p])).lower()}\n")

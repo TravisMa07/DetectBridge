@@ -132,6 +132,7 @@ class HygieneTests(unittest.TestCase):
                             "historical": "false",
                             "current": "false",
                             "maintenance": "false",
+                            "lifecycle": "false",
                         },
                     },
                     "repository-hygiene": {"result": "success"},
@@ -150,6 +151,7 @@ class HygieneTests(unittest.TestCase):
                     "historical-replay-verification": {"result": "skipped"},
                     "current-replay-verification": {"result": "skipped"},
                     "archive-maintenance-verification": {"result": "skipped"},
+                    "lifecycle-verification": {"result": "skipped"},
                 }
                 self.assertEqual(
                     gate_passes(needs), status == ("success" if applicable == "true" else "skipped")

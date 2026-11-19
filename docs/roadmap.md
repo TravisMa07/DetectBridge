@@ -285,6 +285,8 @@ is recorded in the acceptance map; P13 acceptance is not implied.
   [Owning design](p15-design.md) and [independent cases](p15-expectations.md)
   precede production code. P15a owns candidate lifecycle/control preparation;
   P15b owns actual worker activation/convergence/rollback after P15a merged gates.
+  P15a [candidate lifecycle](rule-lifecycle.md) is implemented with passing
+  [local qualification](p15a-ledger.md); actual native/review/owner/merged gates remain.
   P15 is not complete; P16 implementation remains dependent.
 - Depends on: P10, P13, P14.
 - Deliver: immutable bundles, staging, worker acknowledgments, convergence state,

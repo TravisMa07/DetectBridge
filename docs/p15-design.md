@@ -1,6 +1,11 @@
 # P15 — Rule lifecycle, activation and rollback
 
-Status: owning design proposal before implementation. Base is independently
+Current P15a result: implementation and bounded local qualification passed;
+[owning evidence](p15a-ledger.md) records failures, exact artifacts and open gates.
+P15b remains a proposal requiring its own runtime freeze and qualified P15a merge.
+The original pre-implementation design below remains the expectation boundary.
+
+Status at freeze: owning design proposal before implementation. Base is independently
 qualified merged main `f44c9f91e10414cd2b03481951a2e2a1c7b2a4a0`.
 The owner accepted bounded P14 semantic/completeness completion in this session;
 the owning P14 reconciliation records that disposition separately. The owning [expectations](p15-expectations.md)

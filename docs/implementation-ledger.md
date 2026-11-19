@@ -7,8 +7,12 @@ M5 remains open. Primary owns integration/contracts/CI/status on
 independent expectations and completion/compatibility audit agents performed
 bounded parallel discovery. [P15 design](p15-design.md) and
 [independent cases](p15-expectations.md) precede production code. P15a candidate
-lifecycle/control preparation is the next bounded PR; no P15 runtime or P16
-qualification is claimed. Original worktree documentation/handoffs remain intact.
+lifecycle/control preparation is implemented and [locally qualified](p15a-ledger.md),
+with native PR qualification/review/owner merge still open. The interface agent
+implemented the store, expectation agent authored independent black-box tests,
+and audit agent independently reviewed actual production code and corrections.
+Primary integrated the bounded Java runner, qualification and fail-closed CI.
+No P15 worker runtime or P16 qualification is claimed. Original worktree documentation/handoffs remain intact.
 
 ## Historical P14 coordination checkpoints
 

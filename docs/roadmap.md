@@ -264,9 +264,12 @@ is recorded in the acceptance map; P13 acceptance is not implied.
   [P14c2 design/expectation freeze](p14c2-design.md), stacked on qualified P14c1
   head 8e4c832. Its [managed implementation](archive-maintenance.md) passed local
   ARM64 fault, approved-original P05 and controlled-recording
-  [qualification](p14c2-ledger.md); native CI and
-  [milestone acceptance](p14-acceptance.md) remain open;
-  no complete P14 acceptance is claimed.
+  [qualification](p14c2-ledger.md); native run
+  44449578701 passed on 7b9520c. Owner merges #54/#52/#55 share the single
+  merge object f44c9f9; actual merged-main push run 44458422172 attempt 1
+  passed all applicable jobs and required-checks. The owner explicitly accepted
+  bounded [milestone completion](p14-acceptance.md) in this continuation session;
+  issue #14 and its project card are complete, with all recorded limits retained.
 - Depends on: P05, P13.
 - Deliver: durable archive segments/manifests, pinned artifacts, historical
   membership replay and current-policy reprocessing.
@@ -278,6 +281,13 @@ is recorded in the acceptance map; P13 acceptance is not implied.
 
 ### P15 — Rule lifecycle, activation and rollback
 
+- Readiness: P10/P13 and bounded owner-accepted P14 are complete.
+  [Owning design](p15-design.md) and [independent cases](p15-expectations.md)
+  precede production code. P15a owns candidate lifecycle/control preparation;
+  P15b owns actual worker activation/convergence/rollback after P15a merged gates.
+  P15a [candidate lifecycle](rule-lifecycle.md) is implemented with passing
+  [local qualification](p15a-ledger.md); actual native/review/owner/merged gates remain.
+  P15 is not complete; P16 implementation remains dependent.
 - Depends on: P10, P13, P14.
 - Deliver: immutable bundles, staging, worker acknowledgments, convergence state,
   rollback and version attribution. No exposed unauthenticated management endpoint.

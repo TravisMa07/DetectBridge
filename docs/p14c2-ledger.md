@@ -1,8 +1,19 @@
 # P14c2 retention/import/final qualification ledger
 
+Current reconciliation (2026-11-19): native PR qualification and owner stack merge
+are complete, and actual merged-main push run 44458422172 attempt 1 passed on
+f44c9f91e10414cd2b03481951a2e2a1c7b2a4a0. [Exact merged evidence](p14-merged-main-audit.md)
+supersedes pending native/merge statements at the historical checkpoints below.
+The owner subsequently explicitly accepted bounded P14 completion in this session;
+issue #14 and its project card are complete. No separate prior acceptance is inferred. The old branch/worktree completion edits and handoff
+remain preserved uncommitted in their original working tree.
+
+## Historical pre-merge checkpoint
+
 Status: implementation and local Linux ARM64 qualification passed after the
-published design freeze and separate count correction. Exact-head native CI,
-owner acceptance, authorized merges and actual merged qualification remain open. Branch
+published design freeze and separate count correction. Native PR qualification
+also passed on exact implementation head 7b9520c; owner acceptance, authorized
+merges and actual merged qualification remain open. Branch
 `feat/p14c2-retention-qualification` starts at qualified P14c1 head 8e4c832 and
 will target `feat/p14c1-current-replay`. The owner explicitly authorized this
 stack before parent merges; merges/releases remain owner-controlled.
@@ -501,3 +512,42 @@ outstanding stack, and actual qualification of each merged commit. Private
 recorded AMD64 remains unavailable. No P14 completion, issue closure, merge or
 release is authorized or claimed. The original untracked handoff and all private
 evidence/generated artifacts remain uncommitted.
+
+## Native implementation qualification passed
+
+[Run 44449578701](https://github.com/TravisMa07/DetectBridge/actions/runs/44449578701)
+attempt 1 completed successfully at 2026-11-19 03:35:46 UTC, associated with exact
+implementation head `7b9520cc7163e05859f70c4230c89a1154ebfcde`. All eighteen
+applicable jobs, including required aggregate 135319658190, passed. Five explicit
+acquisition/recording opt-ins were skipped as intended. Existing Windows/Linux,
+assembly, integration, search/writer, transport/detection, archive, historical and
+current consumers passed alongside the new maintenance job.
+
+Actual checkout was PR test merge
+`cbbc63c1fc495df36b642b2f68c99e9c804e209a`, merging that head into stack base
+`8e4c832283268897887999efe22152b2f0b41eb5`. This is independent native PR
+qualification, not actual merged-main qualification. No pass transfers to a later
+owner merge or another source revision.
+
+Maintenance job 135310598769 passed all 44 actual cases in project
+`detectbridge-p14-managed-dd5fe0989107`, Linux AMD64, actual image ID
+`sha256:6b26436e8a89f49acaf0133e35f1e3715544e7c984d0f68cd8038137ab2e6be9`.
+Managed artifact 95982890 and original E5/32/E9/51 matched the local exact hashes.
+Native qualification probe was
+`2267cda9c6a7b612f46e698e7a8ceebcffccc839ed56cd88f78e4ff45b7a7a73`,
+separately attributed from the local probe. Controller/qualifier/helper hashes
+match the final local source set; the native summary preserves every exact hash.
+The maintenance consumer restored the exact prepared Gradle dependency cache
+before bootstrap. This observed pass does not promise immunity to future upstream
+outages or establish private recorded AMD64 coverage.
+
+Metadata, complete maintenance log and decoded summary are retained under
+`.cache/p14c2-native-44449578701/`. Summary SHA-256 is
+`3e7736543223c9e92466bf37b6bdc9f500c1ba8772cf06835e64437af789c7d1`;
+log SHA-256 is
+`ce81a702570ed010edbb71277830fcf0d1f2ab4ebd5b5dc0d9da68d375e6416a`.
+Refreshed issue comments, submitted reviews and inline review threads were empty.
+PR #55 can be presented for owner semantic/completeness review. Outstanding
+stack merges and each actual merged-commit qualification remain owner-controlled;
+P14 is not Done. These completion-record updates remain local and uncommitted
+for the consolidated owner-acceptance boundary. The original handoff is preserved.

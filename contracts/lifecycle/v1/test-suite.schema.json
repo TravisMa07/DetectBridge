@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:lifecycle:1.0.0:test-suite",
+  "title": "Independent normalized lifecycle test cases",
+  "description": "Strict loader also enforces exact file <=16 MiB, each serialized normalized event <=1 MiB, unique case IDs and positive/negative coverage.",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": "1.0.0"
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+          },
+          "event": {
+            "$ref": "urn:detectbridge:contracts:1.0.0:normalized-event"
+          },
+          "expected": {
+            "$ref": "urn:detectbridge:integration:1.0.0:compact-evaluation"
+          }
+        },
+        "required": [
+          "id",
+          "event",
+          "expected"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "version",
+    "cases"
+  ],
+  "additionalProperties": false
+}

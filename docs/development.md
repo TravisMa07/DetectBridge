@@ -251,3 +251,17 @@ bindings, performs actual source-to-archive/historical/current qualification,
 keeps private diagnostics local and restores the default integration build.
 Actual platforms/artifacts, failures and remaining gates belong in the
 [ledger](p14c2-ledger.md) and [milestone map](p14-acceptance.md).
+
+## P15a private candidate qualification
+
+`uv run --locked python tools/lifecycle_verify.py` builds/tests the original
+integration artifact offline with strict dependency verification, checks its exact
+retained hash and locked logging dependency, and runs the actual independent
+candidate-lifecycle suite with skips forbidden. It writes ignored source/artifact/
+plan/bundle/report hashes under `.cache/lifecycle-qualification/`. The
+[operator guide](rule-lifecycle.md) covers private init/import/validate/test/stage
+and inspectable control preparation. [Evidence](p15a-ledger.md) separates these
+facts from worker activation, convergence, runtime rollback and P16 qualification.
+Normal prebuild hygiene explicitly skips unavailable-artifact lifecycle cases;
+the required native lifecycle job builds/verifies the artifact before requiring
+all cases. No runtime dependency download or candidate-supplied executable occurs.

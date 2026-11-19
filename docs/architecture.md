@@ -290,3 +290,13 @@ re-executes and verifies the complete committed prefix before appending. No old
 checkpoint, live forwarding or activation is adopted. See the [owning freeze](p14c1-design.md),
 [operator guide](current-replay.md) and [qualification gates](p14c1-ledger.md).
 Retention/deletion and remaining milestone acceptance are separate work.
+
+P14 bounded owner completion and actual merged-main qualification are reconciled
+in the [merged audit](p14-merged-main-audit.md). P15a refines A05/A07 with a
+private Unix-account candidate store, immutable full-closure identity, explicit
+compiler validation and actual Java sample tests before staging, plus ordered
+local proposal preparation. It does not install desired state or implement worker
+activation. The [design](p15-design.md), [operator guide](rule-lifecycle.md) and
+[evidence](p15a-ledger.md) preserve original P13/P14 artifacts and accepted A02–A07.
+P15b owns the separate runtime/acknowledgment/archive boundary; no old checkpoint
+is adopted and no complete P15/P16 capability is inferred.

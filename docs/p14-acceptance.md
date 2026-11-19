@@ -1,11 +1,22 @@
 # P14 archive and replay acceptance map
 
-Status: draft evidence map; P14 is not accepted or complete. P14a/P14b have
-owner merges and exact merged-main qualification. P14c1 has qualified native PR
-checks. P14c2 passed local component, synthetic fault, approved-original P05 and
-controlled-recording qualification on final artifact 95982890. Native CI and owner
-gates remain open. Historical results below apply only to their named artifacts. Passing one
-slice or an earlier candidate cannot close issue #14.
+Current completion (2026-11-19): **P14 is Done within its owner-accepted bounded
+scope.** The owner explicitly selected “Accept bounded P14 completion” in the P15
+continuation session after reviewing this packet, including unavailable private
+recorded AMD64 coverage and no HA, disk-loss, unbounded-outage or throughput claim.
+The owner merged #54/#52/#55 as the single two-parent merge
+`f44c9f91e10414cd2b03481951a2e2a1c7b2a4a0`. Its actual push run
+[44458422172](https://github.com/TravisMa07/DetectBridge/actions/runs/44458422172),
+attempt 1, passed all eighteen applicable jobs and required-checks; five explicit
+acquisition/recording opt-ins were skipped. Issue #14 is closed and its project
+card is Done. M5 remains open for P15/P16. [Exact audit](p14-merged-main-audit.md)
+records the evidence and separate owner disposition. P15's own gates still apply.
+
+## Historical pre-merge acceptance checkpoint
+
+The requirement map below retains the pre-merge packet and exact artifact evidence.
+The current completion above supersedes its pending native/merge/owner statements;
+no earlier failed run is reclassified.
 
 The [milestone design](p14-design.md), [independent matrix](p14-expectations.md),
 [P14c1 freeze](p14c1-design.md) and [P14c2 expectations](p14c2-expectations.md)
@@ -23,7 +34,7 @@ attempts, corrections, exact artifacts and unavailable coverage.
 | P14c2 freeze | Original `a19693bccd346d24c5c3d899dafea5a1a139b435`; independent recorded-count correction `786ec141d3dff4ea058bdb429fbca45e7216b41b` | Both boundaries preserved; corrected expectations precede new recorded runtime |
 | P14c2 earlier managed candidate | M62ab, 39-case ARM64 report and approved-original P05 import/restore below | Bounded historical evidence only; later M11 safety finding prevents final adoption |
 | P14c2 intermediate candidate | `c799655e30d57656ba1c20a6108a829d4dd301740b79cbafe2ac65e88addadd7`; probe `08445057e76929800d628387c78abc0c0610ee9ed4ff0ee84d92027653f2a875` | Build, 52 Java tests, legacy/resource checks and 44-case ARM64 runtime passed; separate source-fingerprint defect requires another artifact; no final qualification transferred |
-| P14c2 final local candidate | `9598289011727e96e1e633642f6926893161c5889e90ffe1cdd85c2642ff46df`; probe `354756bf1d9e835eb366d17b645e2358295ee8c055555734aa410f18babf32bb` | Build, 53 Java tests, exact legacy/resource checks and full 44-case ARM64 runtime passed; approved-original P05 import/restore also passed; fresh controlled-recording qualification passed; native/owner gates pending |
+| P14c2 final local candidate | `9598289011727e96e1e633642f6926893161c5889e90ffe1cdd85c2642ff46df`; probe `354756bf1d9e835eb366d17b645e2358295ee8c055555734aa410f18babf32bb` | Build, 53 Java tests, exact legacy/resource checks and full 44-case ARM64 runtime passed; approved-original P05 import/restore also passed; fresh controlled-recording qualification and native run 44449578701 passed; owner/merge gates pending |
 
 Empty review-thread lists and CI success are not independent owner semantic
 acceptance. No owner merge/release authorization is supplied by this map. The
@@ -35,17 +46,17 @@ pretending that its PR test merge is an actual merged-main run.
 | Independent requirements | Implemented boundary and evidence | Remaining acceptance |
 | --- | --- | --- |
 | B01–B10: exact bytes, framing, objects/ranges, identity/time and malformed metadata | P14a [acceptance map](p14-ledger.md); original gzip/NDJSON schemas and pinned E5 reader; managed legacy-source/resource pins | Final 95982890 passed its compatibility/corruption cases; private bytes stay local |
-| B11: existing consumers | P14a/P14b native gates; P14c1 native source/assembly/integration/search compatibility; unchanged producer/reader/executor identities | Final P14c2 exact-head native checks pending; no pass transferred between revisions |
+| B11: existing consumers | P14a/P14b native gates; P14c1 native source/assembly/integration/search compatibility; unchanged producer/reader/executor identities | Final P14c2 native checks passed on exact associated head 7b9520c; no pass transferred to a future merge |
 | D01–D15 and I01–I03: durability, offsets, retry/conflicts and recovery | P14a actual Kafka/filesystem fault qualification; M62ab managed Kafka, anchors, duplicate/new-occurrence/conflict and broker-pause cases | Final 95982890 full 44-case runtime passed, including four metadata midwrite/sync crash windows |
 | L01–L05 and T03: finite budgets, dependency backlog and P16 progress | P14a finite admission; M62ab actual payload ENOSPC, sync-EIO injection, lower-cap backlog and broker progress cases | Final 95982890 pressure/failure cases passed; no unbounded outage or Kafka deletion claim |
-| H01–H08: pinned original-membership reproduction | P14b actual original producer and two isolated replays, native AMD64; P14c2 M62ab synthetic managed seals/replays | Final 95982890 reproduced two isolated 62-output recorded historical runs; final native gate pending |
-| C01–C03: explicit changed policy and membership | P14c1 Image/Bob and regroup/timeout/deadline/resource expectations; local ARM64 and native AMD64 passed | Final managed-profile cases and 49-output recorded current replay passed; native/owner gates remain |
+| H01–H08: pinned original-membership reproduction | P14b actual original producer and two isolated replays, native AMD64; P14c2 M62ab synthetic managed seals/replays | Final 95982890 reproduced two isolated 62-output recorded historical runs; native run 44449578701 passed; owner/merge gates pending |
+| C01–C03: explicit changed policy and membership | P14c1 Image/Bob and regroup/timeout/deadline/resource expectations; local ARM64 and native AMD64 passed | Final managed-profile cases and 49-output recorded current replay passed; native checks passed; owner/merge gates remain |
 | R01–R03: isolated recovery and incompatible/corrupt resume | P14b and P14c1 actual interruption matrices; M62ab managed same-operation current prefix recovery | Final 95982890 managed recovery/metadata windows passed; old recorded attempts remain failed |
 | R04 and P14c2 Q06: independent semantic rejection | P14c1 source/count/attribution/membership mutations; separate M62ab retained-output checker rejects nine detached mutations and verifies 30 original audit ranges | Fresh final 95982890 run rejected all nine mutations and verified 30 original ranges; old failed attempts remain failed |
 | T01 and P14c2 M09–M14: pins, holds, reader leases and retained dependencies | M62ab demonstrated explicit holds, shared-reader exclusion and sealed-pin blockers | Strict-profile/import graph and INPUT-only fingerprint regressions passed; final 95982890 future-graph runtime passed |
 | T02 and P14c2 M04–M08/M15–M17: retirement authority and anchors | M62ab actual retirement publication/cleanup, explicit retired retrieval, append and source fingerprints | Final 95982890 passed strict graph/import/fingerprint regressions and all 44 runtime cases |
 | P14c2 I01–I06: completed P05 import/restore | Existing-source component cases and M62ab approved-original run: 7,046 records, 7,051 envelopes, eight segments, 33 exact files, original inspection/completed resume | Final 95982890 repeated approved-original import/restore, exact 33 files and unchanged originals; native original coverage remains unavailable |
-| Q01 and P14c2 Q07: privacy and logs | Fixed category/class summaries; original exceptions and source packets kept in ignored private locations; no recapture/upload | Locked source/hygiene checks passed 289 Python regressions; native artifact checks pending; private payloads are excluded from public CI |
+| Q01 and P14c2 Q07: privacy and logs | Fixed category/class summaries; original exceptions and source packets kept in ignored private locations; no recapture/upload | Locked source/hygiene checks passed 289 Python regressions; native artifact checks passed; private payloads are excluded from public CI |
 | Q02 and P14c2 Q01–Q05: controlled originals | Exact accepted catalogs/terms/source bindings reverified; old M62ab attempt reached historical/current execution | Fresh project 68401cb415 passed 49 admissions/160 exact wires, two historical runs, current replay, Q06, zero lag and default-build restore |
 | Q03 and P14c2 Q08: evidence discipline and milestone closure | Exact artifact/report attribution and retained failures in owning ledgers | Final packet, owner semantic/completeness acceptance, authorized merges and actual merged-commit qualification pending |
 
@@ -110,9 +121,13 @@ report hashes are in the [ledger](p14c2-ledger.md). These local results were run
 on 786ec14 plus the attributed implementation changes, not a future commit.
 
 - Locked source checks passed 289 Python regressions; maintenance build/components passed.
-- Remaining: exact native implementation CI and review.
-- Remaining: explicit owner semantic/completeness acceptance and authorized regular merges.
-- Remaining: actual merged-commit qualification for each outstanding stack layer.
+- Native implementation CI passed every applicable job in run 44449578701 on
+  7b9520c; actual checkout was PR test merge cbbc63c, not merged main.
+- Refreshed comments/reviews/threads were empty; explicit milestone semantic review remains.
+- Owner performed regular merge #55; #54/#52/#55 report one actual merge object f44c9f9.
+- Actual merged-main push run 44458422172 attempt 1 passed all applicable jobs and required-checks.
+- Owner explicitly accepted bounded P14 completion in this continuation session;
+  issue #14 and its project card are complete. M5 remains open for P15/P16; no release is authorized.
 
 Private recorded native AMD64 coverage is unavailable. Local Linux ARM64 private
 recordings and public synthetic native jobs remain separate evidence. Process kills,

@@ -113,6 +113,7 @@ class StackTests(unittest.TestCase):
                             "historical": "false",
                             "current": "false",
                             "maintenance": "false",
+                            "lifecycle": "false",
                         },
                     },
                     "repository-hygiene": {"result": "success"},
@@ -132,6 +133,7 @@ class StackTests(unittest.TestCase):
                     "historical-replay-verification": {"result": "skipped"},
                     "current-replay-verification": {"result": "skipped"},
                     "archive-maintenance-verification": {"result": "skipped"},
+                    "lifecycle-verification": {"result": "skipped"},
                     "local-stack-verification": {
                         "result": "success" if selected == "true" else "skipped"
                     },

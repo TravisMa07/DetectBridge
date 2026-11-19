@@ -4,7 +4,12 @@ P14c2 adds the explicit `archive-managed/1.0.0` profile. Its
 [design](p14c2-design.md), [expectations](p14c2-expectations.md) and
 [qualification ledger](p14c2-ledger.md) own the delivery gates. The implementation
 passed local ARM64 component, fault, approved-original P05 and controlled-recording
-qualification. Exact native CI and owner/milestone acceptance remain open.
+qualification. Native run 44449578701 passed on implementation head 7b9520c;
+the owner subsequently merged #54/#52/#55 as one merge object `f44c9f9`.
+Actual merged-main push run 44458422172 attempt 1 passed every applicable job
+and required-checks; [reconciliation](p14-merged-main-audit.md) records exact
+evidence. The owner subsequently explicitly accepted bounded P14 completion;
+issue #14 and its project card are complete. All documented coverage limits remain.
 Existing [archive v1](archive.md), [historical replay](historical-replay.md) and
 [current replay](current-replay.md) profiles retain their original artifacts.
 

@@ -70,9 +70,17 @@ remain separate; native run 44408227593 passed on head `8e4c832`. The final
 recorded qualification on that stack. Its [managed archive implementation](docs/archive-maintenance.md)
 and [milestone evidence map](docs/p14-acceptance.md) record passing local ARM64
 fault, approved-original P05 and controlled-recording qualification. Native CI
-and owner acceptance remain open.
-Management API and UI remain future work;
-P14 is not complete.
+passed on implementation head `7b9520c`. The owner merged #54/#52/#55 as the
+single merge object `f44c9f9`; its actual push run 44458422172 attempt 1 passed
+all applicable jobs and required-checks. [Merged-main reconciliation](docs/p14-merged-main-audit.md)
+records that technical gate and the owner’s subsequent explicit bounded P14
+semantic/completeness acceptance. Issue #14 is closed; P14 is complete within
+its documented limits. [P15a private candidate lifecycle](docs/rule-lifecycle.md)
+implements immutable import, compiler validation, actual Java sample tests, staging
+and control-request preparation after its separate design/expectation freeze.
+[Local qualification](docs/p15a-ledger.md) passed; native/owner/merged gates remain.
+Worker activation/convergence/rollback remain P15b; P15 and P16 are not complete.
+Management API and UI remain future work.
 P06 provides local Kafka/Flink infrastructure and optional authenticated OpenSearch.
 Repository hygiene tooling and
 contributor templates were introduced in P01; P02 adds reproducible build tools,

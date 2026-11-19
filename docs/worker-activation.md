@@ -94,6 +94,13 @@ scenarios explicit. Required CI permits only the full run. Results are never imp
 from earlier attempts. Larger reads use the existing bounded APIs; all signature,
 journal, exact checkpoint and immutable-output checks remain active.
 
+Qualification source delivery uses a separately pinned batch helper, preserving
+the original worker/compiler artifacts and fixed assembly deadlines. It forces
+each actual broker receipt before sending the next record. Partial operations
+retain their inputs and verified admission prefix; an uncertain operation blocks
+fresh admission for that worker. Abort that qualification deployment rather than
+automatically resend the suffix. See the [batch contract](p15b-batch-design.md).
+
 ## Finite storage and evidence
 
 The controller and each worker store are bounded at512 MiB, with128 MiB free-space

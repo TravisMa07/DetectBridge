@@ -120,7 +120,12 @@ def check(artifacts=False):
             assert not classes.intersection(original.namelist())
             assert not any(
                 p.rsplit("/", 1)[-1].startswith(
-                    ("LifecycleProbe", "LifecycleQualification", "LifecycleUidProbe")
+                    (
+                        "LifecycleProbe",
+                        "LifecycleQualification",
+                        "LifecycleUidProbe",
+                        "LifecycleBatchProducer",
+                    )
                 )
                 for p in classes
             )
@@ -132,6 +137,21 @@ def check(artifacts=False):
                     ROOT / "packages/lifecycle-job/src/main/resources/lifecycle-log4j.properties"
                 ).read_bytes()
             )
+            qualification = ROOT / "packages/lifecycle-job/build/libs/lifecycle-probe.jar"
+            with zipfile.ZipFile(qualification) as probes:
+                probe_classes = {p for p in probes.namelist() if p.endswith(".class")}
+                assert "io/detectbridge/integration/LifecycleBatchProducer.class" in probe_classes
+                assert not probe_classes.intersection(classes | set(original.namelist()))
+                assert all(
+                    p.startswith(
+                        (
+                            "io/detectbridge/integration/LifecycleQualificationJob",
+                            "io/detectbridge/integration/LifecycleUidProbe",
+                            "io/detectbridge/integration/LifecycleBatchProducer",
+                        )
+                    )
+                    for p in probe_classes
+                )
     return True
 
 

@@ -30,6 +30,8 @@ tasks.test { useJUnitPlatform(); systemProperty("repository.root", rootProject.p
 val qualification = sourceSets.create("qualification")
 configurations[qualification.implementationConfigurationName].extendsFrom(configurations.compileOnly.get())
 qualification.compileClasspath += sourceSets.main.get().output
+sourceSets.test { compileClasspath += qualification.output; runtimeClasspath += qualification.output }
+tasks.test { dependsOn(tasks.named(qualification.classesTaskName)) }
 val qualificationJar by tasks.registering(Jar::class) {
     dependsOn(tasks.named(qualification.classesTaskName))
     archiveFileName.set("lifecycle-probe.jar")

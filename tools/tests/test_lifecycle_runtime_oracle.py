@@ -1025,6 +1025,133 @@ class LifecycleRuntimeOracleTests(unittest.TestCase):
             classify_unexpected_failure(multiple)["category"],
         )
 
+    def test_source_case_uses_one_qualification_batch_with_unchanged_input(self):
+        from lifecycle_runtime_verify import Qualification
+
+        qualifier: Any = Qualification.__new__(Qualification)
+        qualifier.current = self.publication
+        qualifier.registration = Mock(return_value=self.registration)
+        qualifier.runtime = SimpleNamespace(
+            admit_qualification_batch=Mock(return_value=[self.receipt])
+        )
+        qualifier.oracle = Oracle(self.bundles)
+        original = copy.deepcopy(self.case)
+        with patch(
+            "lifecycle_runtime_verify.expected_bindings", return_value=("a" * 64, self.binding)
+        ):
+            result = qualifier.add_case(self.case, "A")
+        self.assertEqual([self.receipt], result)
+        qualifier.runtime.admit_qualification_batch.assert_called_once_with(
+            self.case["worker_id"], original["admissions"]
+        )
+        self.assertEqual(original, self.case)
+        self.assertEqual(1, len(qualifier.oracle.receipts))
+
+    def test_batch_reporting_distinguishes_requested_and_verified_admission_prefix(self):
+        from lifecycle_runtime_verify import Qualification
+
+        operation = "715b0000-0000-4000-8000-000000000210"
+        qualifier: Any = Qualification.__new__(Qualification)
+        qualifier.runtime = SimpleNamespace(
+            state=dict(
+                qualification_batches={
+                    operation: dict(
+                        status="failed",
+                        count=6,
+                        admitted=["a" * 64, "b" * 64],
+                        worker_id=self.registration["worker_id"],
+                        incarnation=self.registration["incarnation"],
+                        request_sha256="c" * 64,
+                        command_sha256="d" * 64,
+                        unknown_private_value="must-not-echo",
+                    )
+                }
+            )
+        )
+        summary = qualifier.batch_state_summary()
+        self.assertEqual(1, summary["count"])
+        self.assertEqual("failed", summary["batches"][0]["status"])
+        self.assertEqual(6, summary["batches"][0]["requested_record_count"])
+        self.assertEqual(2, summary["batches"][0]["admitted_index_count"])
+        self.assertNotIn("must-not-echo", encoded(summary).decode())
+
+    def test_unexpected_partial_timeout_output_is_retained_without_changing_oracle(self):
+        from lifecycle_runtime_verify import Qualification
+
+        case = Qualification.extra("audit-whoami", 205)
+        event = document(
+            ROOT
+            / "packages/linux-adapters/contracts/linux-audit-execution-p12a.contract-example.event.json"
+        )
+        event["event"]["id"] = identity(
+            [
+                case["admissions"][0]["raw"]["source"]["namespace"],
+                case["admissions"][0]["raw"]["source"]["instance"],
+                sorted(row["raw"]["record_id"] for row in case["admissions"][:2]),
+            ]
+        )
+        metadata = event["detectbridge"]
+        metadata["run_id"] = case["run_id"]
+        metadata["assembly"]["closure"] = "timeout"
+        metadata["evidence"] = case["admissions"][:2]
+        metadata["extensions"] = {"linux.context": dict(findings=["cwd_missing"])}
+        _, body = self.bodies()[0]
+        body["event"] = event
+        record = self.wire(self.envelope("tagged", body))
+        original_expected = copy.deepcopy(self.oracle.events)
+        with tempfile.TemporaryDirectory(dir=(ROOT / ".cache").resolve()) as folder:
+            qualifier: Any = Qualification.__new__(Qualification)
+            qualifier.runtime = SimpleNamespace(root=Path(folder) / "deployment")
+            qualifier.oracle = self.oracle
+            qualifier.oracle_failure_observations = []
+            with self.assertRaisesRegex(ValueError, "unexpected_event"):
+                qualifier.check_output_records([record])
+            observation = qualifier.oracle_failure_observations[0]
+            summary = observation["actual_output_summary"][0]
+            self.assertEqual("timeout", summary["closure"])
+            self.assertEqual(2, summary["member_count"])
+            self.assertEqual(["cwd_missing"], summary["findings"])
+            self.assertEqual(event["event"]["id"], summary["event_id"])
+            self.assertEqual(case["run_id"], summary["run_id"])
+            retained = list(
+                (Path(folder) / "qualification-private-evidence").glob("output-*/*.json")
+            )
+            self.assertEqual(1, len(retained))
+            self.assertEqual(encoded(record), retained[0].read_bytes())
+            self.assertEqual(0o600, retained[0].stat().st_mode & 0o777)
+        self.assertEqual(original_expected.keys(), self.oracle.events.keys())
+
+    def test_output_failure_summary_never_echoes_unknown_values_or_field_names(self):
+        from lifecycle_runtime_verify import Qualification
+
+        secret = "never-export-this-private-value"
+        record = dict(
+            wire_sha256=secret,
+            output=dict(
+                kind=secret,
+                document_sha256=secret,
+                output_id=secret,
+                document=dict(
+                    run_id=secret,
+                    event_id=secret,
+                    closure=secret,
+                    findings=["cwd_missing", secret],
+                    members=[{}, {}],
+                    **{secret: secret},
+                ),
+            ),
+        )
+        summary = Qualification.output_failure_summary([record])[0]
+        self.assertNotIn(secret, encoded(summary).decode())
+        self.assertEqual(2, summary["member_count"])
+        self.assertEqual(["cwd_missing"], summary["findings"])
+        self.assertEqual([digest(secret)], summary["unknown_finding_sha256"])
+        self.assertEqual(digest(secret), summary["run_id_value_sha256"])
+        malformed = dict(output=dict(kind=secret, document=dict(event=secret, key=secret)))
+        self.assertNotIn(
+            secret, encoded(Qualification.output_failure_summary([malformed])).decode()
+        )
+
     def test_missing_expected_source_outputs_cannot_pass(self):
         with self.assertRaisesRegex(ValueError, "incomplete_outputs"):
             self.oracle.check([], complete=True)

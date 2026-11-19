@@ -842,6 +842,539 @@ class ControllerTests(unittest.TestCase):
         self.assertEqual(1, len(self.runtime.state["acks"]))
         self.assertEqual(2, self.runtime.status()["ack_cursor"])
 
+    def enable_batch_artifact(self):
+        # Explicit executable/transport double, not a built qualification artifact.
+        artifact = b"first-party qualification helper test double"
+        lifecycle.write_exclusive(self.root / "artifacts/qualification.jar", artifact)
+        self.runtime.config = {**self.runtime.config, "qualification_sha256": control.sha(artifact)}
+        control.save(self.root / "config.json", self.runtime.config)
+        self.publish()
+
+    def batch_rows(self, count=3):
+        return [dict(kind="raw", context=dict(run_id=RUN), ordinal=index) for index in range(count)]
+
+    def batch_helper_double(self, batch, folder, *, prefix=None, uncertain=False, corrupt=None):
+        request = json.loads((folder / "request.json").read_bytes())
+        count = len(request["records"]) if prefix is None else prefix
+        hashes = []
+        for index, row in enumerate(request["records"][: count + int(uncertain)]):
+            attempt = dict(
+                version="1.0.0",
+                operation_id=batch["operation_id"],
+                request_sha256=batch["request_sha256"],
+                index=index,
+                cluster_id=batch["cluster_id"],
+                topic=batch["topic"],
+                topic_id=batch["topic_id"],
+                partition=0,
+                key_sha256=control.sha(row["run_id"].encode()),
+                value_sha256=row["value_sha256"],
+                value_bytes=row["value_bytes"],
+            )
+            name = f"{index:020d}.json"
+            lifecycle.write_exclusive(folder / "attempts" / name, control.encoded(attempt))
+            ack = {
+                key: attempt[key]
+                for key in (
+                    "version",
+                    "operation_id",
+                    "request_sha256",
+                    "index",
+                    "topic",
+                    "partition",
+                    "key_sha256",
+                    "value_sha256",
+                )
+            }
+            ack.update(offset=100 + index * 2, broker_timestamp=-1)
+            ack_bytes = control.encoded(ack)
+            lifecycle.write_exclusive(folder / "acknowledgments" / name, ack_bytes)
+            if index == count:
+                break
+            receipt = {
+                **attempt,
+                "offset": ack["offset"],
+                "broker_timestamp": -1,
+                "acknowledgment_sha256": control.sha(ack_bytes),
+            }
+            if corrupt == index:
+                receipt["offset"] = -1
+            data = control.encoded(receipt)
+            lifecycle.write_exclusive(folder / "receipts" / name, data)
+            hashes.append(control.sha(data))
+        return dict(
+            version="1.0.0",
+            operation_id=batch["operation_id"],
+            request_sha256=batch["request_sha256"],
+            completed=count,
+            receipt_sha256=hashes,
+        )
+
+    def test_qualification_batch_success_force_order_and_idempotent_reopen(self):
+        self.enable_batch_artifact()
+        original_append = self.runtime._append
+        observed = []
+
+        def append(kind, value, **kwargs):
+            if kind == "qualification_batch_intent":
+                folder = self.root / "qualification-batches" / value["operation_id"]
+                request = json.loads((folder / "request.json").read_bytes())
+                self.assertEqual(3, len(request["records"]))
+                for record in request["records"]:
+                    path = folder / "values" / record["value_file"]
+                    self.assertEqual(record["value_sha256"], control.sha(path.read_bytes()))
+                    self.assertEqual(path.stat().st_mode & 0o777, 0o600)
+                observed.append("intent")
+            elif kind == "admit":
+                marker = value["qualification_batch"]
+                path = (
+                    self.root
+                    / "qualification-batches"
+                    / marker["operation_id"]
+                    / "receipts"
+                    / f"{marker['index']:020d}.json"
+                )
+                self.assertEqual(marker["receipt_sha256"], control.sha(path.read_bytes()))
+                observed.append("admit")
+            return original_append(kind, value, **kwargs)
+
+        def helper(batch, folder):
+            self.assertEqual(["intent"], observed)
+            return self.batch_helper_double(batch, folder)
+
+        with (
+            patch.object(self.runtime, "_append", side_effect=append),
+            patch.object(self.runtime, "_qualification_batch_helper", side_effect=helper),
+            patch.object(self.runtime, "_fence_qualification_batch") as fence,
+        ):
+            receipts = self.runtime.admit_qualification_batch(WORKER, self.batch_rows())
+        self.assertEqual([100, 102, 104], [row["offset"] for row in receipts])
+        self.assertEqual(["intent", "admit", "admit", "admit"], observed)
+        fence.assert_called_once()
+        batch = next(iter(self.runtime.state["qualification_batches"].values()))
+        self.assertEqual("complete", batch["status"])
+        with patch.object(
+            self.runtime, "_qualification_batch_helper", side_effect=AssertionError("no resend")
+        ):
+            reopened = control.Runtime(self.root)
+        self.assertEqual(3, reopened.state["admissions"])
+        self.assertEqual(
+            3, len(next(iter(reopened.state["qualification_batches"].values()))["admitted"])
+        )
+
+    def test_qualification_batch_nonzero_recovers_only_certified_prefix_blocks_both_admission_apis(
+        self,
+    ):
+        self.enable_batch_artifact()
+
+        def helper(batch, folder):
+            self.batch_helper_double(batch, folder, prefix=1, uncertain=True)
+            raise control.RuntimeError("transport_double_lost_reply")
+
+        with (
+            patch.object(self.runtime, "_qualification_batch_helper", side_effect=helper),
+            patch.object(self.runtime, "_fence_qualification_batch"),
+        ):
+            with self.assertRaisesRegex(control.RuntimeError, "qualification_batch_incomplete"):
+                self.runtime.admit_qualification_batch(WORKER, self.batch_rows())
+        batch = next(iter(self.runtime.state["qualification_batches"].values()))
+        self.assertEqual(
+            (1, 1, "failed"),
+            (self.runtime.state["admissions"], batch["uncertain_index"], batch["status"]),
+        )
+        for admission in (self.runtime.admit, self.runtime.admit_qualification_batch):
+            with self.assertRaisesRegex(control.RuntimeError, "qualification_batch_worker_blocked"):
+                admission(WORKER, self.batch_rows(1))
+        self.assertEqual(1, control.Runtime(self.root).state["admissions"])
+
+    def test_qualification_batch_missing_stdout_does_not_manufacture_success(self):
+        self.enable_batch_artifact()
+
+        def helper(batch, folder):
+            self.batch_helper_double(batch, folder)
+            return None
+
+        with (
+            patch.object(self.runtime, "_qualification_batch_helper", side_effect=helper),
+            patch.object(self.runtime, "_fence_qualification_batch"),
+        ):
+            with self.assertRaisesRegex(control.RuntimeError, "qualification_batch_incomplete"):
+                self.runtime.admit_qualification_batch(WORKER, self.batch_rows())
+        self.assertEqual(3, self.runtime.state["admissions"])
+        self.assertEqual(
+            "failed", next(iter(self.runtime.state["qualification_batches"].values()))["status"]
+        )
+
+    def test_qualification_batch_later_corruption_preserves_earlier_journaled_receipt(self):
+        self.enable_batch_artifact()
+        with (
+            patch.object(
+                self.runtime,
+                "_qualification_batch_helper",
+                side_effect=lambda b, f: self.batch_helper_double(b, f, corrupt=1),
+            ),
+            patch.object(self.runtime, "_fence_qualification_batch"),
+        ):
+            with self.assertRaisesRegex(control.RuntimeError, "qualification_batch_receipt"):
+                self.runtime.admit_qualification_batch(WORKER, self.batch_rows())
+        self.assertEqual(1, self.runtime.state["admissions"])
+        journal = [lifecycle.checked(path) for path in sorted((self.root / "journal").iterdir())]
+        self.assertEqual(
+            [0],
+            [
+                row["value"]["qualification_batch"]["index"]
+                for row in journal
+                if row["kind"] == "admit"
+            ],
+        )
+        operation = next(iter(self.runtime.state["qualification_batches"]))
+        path = self.root / "qualification-batches" / operation / "receipts" / f"{1:020d}.json"
+        self.assertEqual(-1, json.loads(path.read_bytes())["offset"])
+
+    def test_qualification_batch_crash_after_admit_record_recovers_prefix_once_without_helper_relaunch(
+        self,
+    ):
+        self.enable_batch_artifact()
+
+        def crash(name):
+            if name == "after_record_publication":
+                entries = sorted((self.root / "journal").iterdir())
+                if lifecycle.checked(entries[-1])["kind"] == "admit":
+                    raise SystemExit("simulated process crash")
+
+        with (
+            patch.object(
+                self.runtime, "_qualification_batch_helper", side_effect=self.batch_helper_double
+            ),
+            patch.object(self.runtime, "_fence_qualification_batch"),
+            patch.object(control, "HOOK", side_effect=crash),
+        ):
+            with self.assertRaises(SystemExit):
+                self.runtime.admit_qualification_batch(WORKER, self.batch_rows())
+        with (
+            patch.object(control.Runtime, "_fence_qualification_batch") as fence,
+            patch.object(
+                control.Runtime,
+                "_qualification_batch_helper",
+                side_effect=AssertionError("no resend"),
+            ),
+        ):
+            reopened = control.Runtime(self.root)
+        fence.assert_called_once()
+        self.assertEqual(3, reopened.state["admissions"])
+        self.assertEqual(
+            "recovered", next(iter(reopened.state["qualification_batches"].values()))["status"]
+        )
+        self.assertEqual(3, control.Runtime(self.root).state["admissions"])
+        with self.assertRaisesRegex(control.RuntimeError, "qualification_batch_worker_blocked"):
+            reopened.admit(WORKER, self.batch_rows(1))
+
+    def test_qualification_batch_rejects_unregistered_and_invalid_inputs_before_helper(self):
+        with patch.object(self.runtime, "_qualification_batch_helper") as helper:
+            with self.assertRaisesRegex(control.RuntimeError, "probe_not_registered"):
+                self.runtime.admit_qualification_batch(WORKER, self.batch_rows(1))
+            helper.assert_not_called()
+        self.enable_batch_artifact()
+        invalid = [
+            [],
+            self.batch_rows(129),
+            [dict(context=dict(run_id=str(uuid.uuid4())))],
+            [b"not JSON"],
+            [dict(context=dict(run_id=RUN), padding="x" * (2 * control.MIB))],
+        ]
+        with patch.object(self.runtime, "_qualification_batch_helper") as helper:
+            for rows in invalid:
+                with self.subTest(rows_count=len(rows)), self.assertRaises(ValueError):
+                    self.runtime.admit_qualification_batch(WORKER, rows)
+            helper.assert_not_called()
+        self.assertEqual({}, self.runtime.state["qualification_batches"])
+
+    def test_qualification_batch_pins_new_artifact_and_fixed_helper_command_limits(self):
+        self.enable_batch_artifact()
+        captured = []
+
+        def command(arguments, timeout=120):
+            captured.append((arguments, timeout))
+            return "{}"
+
+        batch = dict(
+            operation_id=INCARNATION,
+            cluster_id="cluster",
+            topic="topic",
+            topic_id="topicid",
+            request_sha256="1" * 64,
+        )
+        folder = self.root / "qualification-batches" / INCARNATION
+        with patch.object(self.runtime, "_command", side_effect=command):
+            self.runtime._qualification_batch_helper(batch, folder)
+        arguments, timeout = captured[0]
+        self.assertEqual(120, timeout)
+        self.assertEqual("512m", arguments[arguments.index("--memory") + 1])
+        self.assertEqual("0.5", arguments[arguments.index("--cpus") + 1])
+        self.assertEqual("128", arguments[arguments.index("--pids-limit") + 1])
+        self.assertEqual(
+            "/io/artifacts/runtime.jar:/io/artifacts/producer.jar:/io/artifacts/qualification.jar:/opt/flink/lib/*",
+            arguments[arguments.index("-cp") + 1],
+        )
+        self.assertEqual(
+            8,
+            len(
+                arguments[
+                    arguments.index("io.detectbridge.integration.LifecycleBatchProducer") + 1 :
+                ]
+            ),
+        )
+        (self.root / "artifacts/qualification.jar").write_bytes(b"changed")
+        with self.assertRaises(control.IntegrityError):
+            self.runtime._qualification_batch_helper(batch, folder)
+
+    def test_helper_fence_rejects_daemon_errors_and_removes_exact_validated_container_id(self):
+        name = self.runtime.config["project"] + "-helper-" + "1" * 12
+        result = subprocess.CompletedProcess([], 1, b"", b"Cannot connect to the Docker daemon")
+        with patch.object(control.subprocess, "run", return_value=result):
+            with self.assertRaisesRegex(control.RuntimeError, "helper_fence_unconfirmed"):
+                self.runtime._cleanup_helper(name, "1" * 32)
+        labels = {
+            "io.detectbridge.p15b.owner": DEPLOYMENT,
+            "io.detectbridge.p15b.operation": "1" * 32,
+        }
+        result = subprocess.CompletedProcess(
+            [], 0, control.encoded([dict(Id="a" * 64, Config=dict(Labels=labels))]), b""
+        )
+        with (
+            patch.object(control.subprocess, "run", return_value=result),
+            patch.object(self.runtime, "_command", return_value="") as command,
+        ):
+            self.runtime._cleanup_helper(name, "1" * 32)
+        self.assertEqual(["docker", "rm", "-f", "a" * 64], command.call_args.args[0])
+
+    def test_qualification_batch_accepts_128_and_exact_byte_cap_rejects_boundary_plus_one(self):
+        self.enable_batch_artifact()
+        with (
+            patch.object(
+                self.runtime, "_qualification_batch_helper", side_effect=self.batch_helper_double
+            ),
+            patch.object(self.runtime, "_fence_qualification_batch"),
+        ):
+            self.assertEqual(
+                128, len(self.runtime.admit_qualification_batch(WORKER, self.batch_rows(128)))
+            )
+            prefix = ('{"context":{"run_id":"' + RUN + '"},"padding":"').encode()
+            suffix = b'"}'
+            wire = prefix + b"x" * (2 * control.MIB - len(prefix) - len(suffix)) + suffix
+            self.assertEqual(2 * control.MIB, len(wire))
+            self.assertEqual(4, len(self.runtime.admit_qualification_batch(WORKER, [wire] * 4)))
+            with self.assertRaisesRegex(control.RuntimeError, "qualification_batch_bytes"):
+                self.runtime.admit_qualification_batch(WORKER, [wire] * 5)
+            with self.assertRaisesRegex(control.RuntimeError, "raw_limit"):
+                self.runtime.admit_qualification_batch(WORKER, [wire + b" "])
+        self.assertEqual(132, self.runtime.state["admissions"])
+
+    def test_qualification_batch_requires_reserve_before_copy_and_counts_orphan_operations(self):
+        self.enable_batch_artifact()
+        original = self.runtime._reserve
+
+        def reserve(amount, recovery=False):
+            if amount == 16 * control.MIB:
+                self.assertFalse((self.root / "qualification-batches").exists())
+                raise control.RuntimeError("no_capacity")
+            return original(amount, recovery)
+
+        with (
+            patch.object(self.runtime, "_reserve", side_effect=reserve),
+            patch.object(self.runtime, "_qualification_batch_helper") as helper,
+        ):
+            with self.assertRaisesRegex(control.RuntimeError, "no_capacity"):
+                self.runtime.admit_qualification_batch(WORKER, self.batch_rows(1))
+            helper.assert_not_called()
+        root = self.root / "qualification-batches"
+        root.mkdir(mode=0o700)
+        for _ in range(64):
+            (root / str(uuid.uuid4())).mkdir(mode=0o700)
+        with patch.object(self.runtime, "_qualification_batch_helper") as helper:
+            with self.assertRaisesRegex(control.RuntimeError, "qualification_batch_count"):
+                self.runtime.admit_qualification_batch(WORKER, self.batch_rows(1))
+            helper.assert_not_called()
+        self.assertEqual(64, len(list(root.iterdir())))
+
+    def test_qualification_batch_surviving_receipts_force_before_journal_then_recover_after_sync_failure(
+        self,
+    ):
+        self.enable_batch_artifact()
+        original = lifecycle.sync_directory
+        seen = []
+
+        def sync(path):
+            if path.name == "receipts" and list(path.iterdir()):
+                seen.append(path)
+                raise OSError("receipt directory sync unavailable")
+            original(path)
+
+        with (
+            patch.object(
+                self.runtime, "_qualification_batch_helper", side_effect=self.batch_helper_double
+            ),
+            patch.object(self.runtime, "_fence_qualification_batch"),
+            patch.object(lifecycle, "sync_directory", side_effect=sync),
+        ):
+            with self.assertRaises(OSError):
+                self.runtime.admit_qualification_batch(WORKER, self.batch_rows())
+        self.assertTrue(seen)
+        self.assertEqual(0, self.runtime.state["admissions"])
+        with patch.object(
+            control.Runtime, "_qualification_batch_helper", side_effect=AssertionError("no resend")
+        ):
+            reopened = control.Runtime(self.root)
+        self.assertEqual(3, reopened.state["admissions"])
+        self.assertEqual(
+            "failed", next(iter(reopened.state["qualification_batches"].values()))["status"]
+        )
+        with self.assertRaisesRegex(control.RuntimeError, "qualification_batch_worker_blocked"):
+            reopened.admit(WORKER, self.batch_rows(1))
+
+    def test_qualification_batch_journal_anchors_exact_ack_timestamp_bytes(self):
+        self.enable_batch_artifact()
+        with (
+            patch.object(
+                self.runtime, "_qualification_batch_helper", side_effect=self.batch_helper_double
+            ),
+            patch.object(self.runtime, "_fence_qualification_batch"),
+        ):
+            self.runtime.admit_qualification_batch(WORKER, self.batch_rows(1))
+        operation = next(iter(self.runtime.state["qualification_batches"]))
+        folder = self.root / "qualification-batches" / operation
+        ack_path = folder / "acknowledgments" / f"{0:020d}.json"
+        receipt_path = folder / "receipts" / f"{0:020d}.json"
+        ack = json.loads(ack_path.read_bytes())
+        receipt = json.loads(receipt_path.read_bytes())
+        ack["broker_timestamp"] = 1000
+        ack_path.write_bytes(control.encoded(ack))
+        receipt.update(
+            broker_timestamp=1000, acknowledgment_sha256=control.sha(ack_path.read_bytes())
+        )
+        receipt_path.write_bytes(control.encoded(receipt))
+        with self.assertRaisesRegex(control.RuntimeError, "qualification_batch_admit_conflict"):
+            control.Runtime(self.root)
+
+    def test_qualification_batch_raw_ack_and_missing_receipt_never_admit_or_resend(self):
+        self.enable_batch_artifact()
+
+        def helper(batch, folder):
+            self.batch_helper_double(batch, folder, prefix=0, uncertain=True)
+            raise control.RuntimeError("post_send_namespace_unavailable")
+
+        with (
+            patch.object(self.runtime, "_qualification_batch_helper", side_effect=helper),
+            patch.object(self.runtime, "_fence_qualification_batch"),
+        ):
+            with self.assertRaisesRegex(control.RuntimeError, "qualification_batch_incomplete"):
+                self.runtime.admit_qualification_batch(WORKER, self.batch_rows())
+        self.assertEqual(0, self.runtime.state["admissions"])
+        batch = next(iter(self.runtime.state["qualification_batches"].values()))
+        self.assertEqual(0, batch["uncertain_index"])
+        with patch.object(
+            control.Runtime, "_qualification_batch_helper", side_effect=AssertionError("no resend")
+        ):
+            self.assertEqual(0, control.Runtime(self.root).state["admissions"])
+
+    def test_helper_fence_accepts_actual_docker29_lowercase_missing_message(self):
+        token = "1" * 32
+        name = self.runtime.config["project"] + "-helper-" + token[:12]
+        result = subprocess.CompletedProcess(
+            [], 1, b"", ("error: no such object: " + name + "\n").encode()
+        )
+        with (
+            patch.object(control.subprocess, "run", return_value=result),
+            patch.object(self.runtime, "_command") as remove,
+        ):
+            self.runtime._cleanup_helper(name, token)
+        remove.assert_not_called()
+
+    def check_bad_later_metadata_prefix(self, symlink):
+        self.enable_batch_artifact()
+        outside = self.folder / "outside-never-walk"
+        outside.mkdir(mode=0o700)
+        sentinel = outside / "foreign-file"
+        sentinel.write_bytes(b"unchanged external bytes")
+        before = sentinel.stat()
+
+        def helper(batch, folder):
+            result = self.batch_helper_double(batch, folder, prefix=1, uncertain=True)
+            path = folder / "receipts" / f"{1:020d}.json"
+            if symlink:
+                path.symlink_to(outside, target_is_directory=True)
+            else:
+                path.mkdir(mode=0o700)
+                # A nested foreign file must not be traversed before the earlier prefix is durable.
+                (path / "untrusted-child").write_bytes(b"invalid metadata namespace")
+            return result
+
+        with (
+            patch.object(self.runtime, "_qualification_batch_helper", side_effect=helper),
+            patch.object(self.runtime, "_fence_qualification_batch"),
+        ):
+            with self.assertRaises(ValueError):
+                self.runtime.admit_qualification_batch(WORKER, self.batch_rows(2))
+        self.assertEqual(1, self.runtime.state["admissions"])
+        admissions = [
+            lifecycle.checked(path)
+            for path in (self.root / "journal").iterdir()
+            if lifecycle.checked(path)["kind"] == "admit"
+        ]
+        self.assertEqual([0], [row["value"]["qualification_batch"]["index"] for row in admissions])
+        self.assertEqual(b"unchanged external bytes", sentinel.read_bytes())
+        self.assertEqual(
+            (before.st_mode, before.st_ino), (sentinel.stat().st_mode, sentinel.stat().st_ino)
+        )
+
+    def test_qualification_batch_later_metadata_directory_preserves_certified_prefix(self):
+        self.check_bad_later_metadata_prefix(False)
+
+    def test_qualification_batch_later_metadata_symlink_to_directory_preserves_certified_prefix(
+        self,
+    ):
+        self.check_bad_later_metadata_prefix(True)
+
+    def test_qualification_orphan_metadata_rejected_but_preintent_inputs_retained(self):
+        root = self.root / "qualification-batches"
+        root.mkdir(mode=0o700)
+        folder = root / str(uuid.uuid4())
+        folder.mkdir(mode=0o700)
+        for role in ("values", "attempts", "acknowledgments", "receipts"):
+            (folder / role).mkdir(mode=0o700)
+        partial = folder / (".partial-" + str(uuid.uuid4()))
+        lifecycle.write_exclusive(partial, b"unfinished pre-intent request")
+        source = folder / "values" / f"{0:020d}.value"
+        lifecycle.write_exclusive(source, b"pre-intent source bytes")
+        self.assertEqual({}, control.Runtime(self.root).state["qualification_batches"])
+        self.assertEqual(b"unfinished pre-intent request", partial.read_bytes())
+        target = self.folder / "external-marker"
+        target.write_bytes(b"external unchanged")
+        for role, kind in (
+            ("attempts", "wrong-mode"),
+            ("acknowledgments", "symlink"),
+            ("receipts", "directory"),
+        ):
+            with self.subTest(role=role, kind=kind):
+                marker = folder / role / f"{0:020d}.json"
+                if kind == "symlink":
+                    marker.symlink_to(target)
+                elif kind == "directory":
+                    marker.mkdir(mode=0o700)
+                else:
+                    marker.write_bytes(b"orphan effect metadata")
+                    marker.chmod(0o644)
+                with self.assertRaisesRegex(
+                    control.RuntimeError, "qualification_batch_orphan_metadata"
+                ):
+                    control.Runtime(self.root)
+                if kind == "directory":
+                    marker.rmdir()
+                else:
+                    marker.unlink()
+        self.assertEqual(b"pre-intent source bytes", source.read_bytes())
+        self.assertEqual(b"external unchanged", target.read_bytes())
+
     def test_private_clusters_retain_original_resource_bounds_and_no_host_ports(self):
         worker = self.runtime.state["workers"][WORKER]
         compose = self.runtime._worker_compose(worker)

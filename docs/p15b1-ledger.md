@@ -722,6 +722,111 @@ This correction is a fourth cohesive published-history CI commit under the SDLC
 exception; earlier commits and evidence are preserved without amending published
 history. Corrected full native CI and final review remain required.
 
+## Second native failure and separately frozen qualification batch transport
+
+Actual native run44609809010 on published head `ea89579` executed test-merge/source
+`95673d2fd0b6ba4fff1c85a003587d03d2e89c56`. Internal attempt
+`84bacc621b03453d8deae7bfa5154c4c` failed with
+`lifecycle_oracle_unexpected_event` during initial A accounting:14 admissions,
+10 logical and24 physical outputs, zero named scenario coverage, no unexpected job
+failure and no checkpoint query failure. The mixed-worker case had not begun.
+The exact offending decoded output batch was private on that runner and was not
+uploaded. Counts alone do not establish audit expiry, wire corruption or another
+specific cause. This native failure remains failed evidence.
+
+Retained `.cache/lifecycle-runtime-qualification/native-44609809010-activation/summary.json`
+SHA-256 is `51b0b6b12639f7fe261b4a4c0d55c41668e225c8d7cf96ad7102ec36040f1499`;
+the original adjacent artifact ZIP SHA-256 is
+`b2bacc5bc27edd5c6dd8af32ba99f65f5cfab16df6b9ad819d5c84e59230f35f`.
+The download metadata file `native-44609809010-artifacts.json` SHA-256 is
+`b36f194e92cc677dd76c5d3efc216c2a120291f5f3c739012cfbcba9b7aaf829`.
+The downloaded artifact's `build.log` SHA-256 is
+`cda85ca6168c25c6c29e2822bcb1dba1f9b1050c9e40930ddefd20f8b4b25d07`;
+its `validator-build.log` SHA-256 is
+`aa772c5adc0ac52b147c375ba6ddb6a9fb03832b3d3273eb97ba17fd01156543`.
+Those build logs do not reconstruct the missing offending runtime body.
+
+The new qualification-only batch artifact/recovery boundary and independent
+Q01–Q20 expectations were frozen before implementation in
+`9ba244176126998d773eff0e7bebe1001a877d7e`: see
+[batch design](p15b-batch-design.md) and [batch expectations](p15b-batch-expectations.md).
+The separately pinned qualification JAR is now
+`cdab56bd62476a2d5948011681d561cfb3757a0dc2c4a55c39cfc817e30d0a9b`.
+Production lifecycle055a, original producer51 and compiler packetf2 remain unchanged.
+The fixed qualification entrypoint reuses actual Admin/Producer clients, with the
+same per-record namespace checks/ACK timeouts. Limits remain128 records,2 MiB each,
+8 MiB aggregate and64 KiB request; unchanged process budgets apply. Attempts, raw
+ACKs and certified receipts are separately forced in order; only certified dense
+prefixes become normal controller admissions. Operation/request/index/receipt-hash
+markers make recovery idempotent. Incomplete/failed/recovered batches block further
+admissions for that worker, without suffix resend. The deployment caps64 permanent
+operations and reserves16 MiB before copying, within existing store/entry limits.
+
+The Java component suite passes46 cases (original29 plus17 batch mechanics), zero
+failures/errors/skips. Exact XML SHA-256 values are
+`adec9c0bd7db372d9f7461be673a711626f7070571f591c85af3c592046115c8`
+and `837469b0b899c5232385961c8aca5b9d47460a321c930ab0327ea717f3c3ae79`.
+The final offline `packages/lifecycle-job/build/batch-retained-partial-final-build.log`
+SHA-256 is `6825d05b2d8400a431639ca3540e6decc7ad34f194c13c5c38a080e4e63d3a7f`.
+These are component/transport-mechanics results, not actual Kafka/Flink acceptance.
+The qualification-local publisher retains uncommitted UUID partial files on write,
+force or rename failure; they are never promoted into receipts or silently retried.
+Earlier build/setup logs and failed tests remain retained separately.
+
+The controller48-case suite passes, including original mechanics and new dense
+prefix, raw-ACK uncertainty, immutable metadata, force/recovery, orphan and bounds
+cases. Its final retained log SHA-256 is
+`bd4dec79870e08e087ab4a16ea56f34779df46fde16e5226a8390c2152f36a17` at
+`.cache/p15b-prerequisites/batch-controller-orphan-final.log`.
+The separately owned oracle suite passes37 cases. The captured integrated
+Python run passed90 cases in7.915s, log
+`batch-controller-oracle-integrated.log` SHA-256
+`10f04e835c497541d090ba1e7c9ab5e9e7a2f02cd5feae0ce8154421758b1367`;
+that captured aggregate predates the final component state and is not relabeled
+with an inferred larger count. The final full repository check passed413 Python tests in39.689s,
+Ruff/static checks, formatting and mypy for115 source files. Its retained
+`.cache/lifecycle-runtime-qualification/static-check-batch-final.log` SHA-256 is
+`5d2b219354a845171b12994096b3abe898b45167a26d7129b8b14dff6fa5e095`.
+
+The first actual focused batch-core run `417aae87fbc44509bccf5b4f1c10b431` failed
+with `lifecycle_runtime_helper_fence_unconfirmed`. Its original summary reports
+zero admissions and no owned-stop result; SHA-256
+`67855b974496c0d70e9234acc7be635ca99af1fda936379622d7e3d5d1591220`.
+Original `batch-focused-core-1.log` SHA-256 is
+`dd124f84c5b7772411237cfc6368736af8083dfc4cdc70b76fd1b5849a7fbdd2`.
+Actual Docker29 stderr used lowercase `error: no such object:`, which the previous
+case-sensitive missing-container check rejected. The correction recognizes only
+the known missing-container grammar case-insensitively; daemon errors still fail
+closed and owned deletion uses the exact inspected container ID.
+
+On subsequent open, the exact surviving certified one-record prefix was forced
+and recovered into one normal admission without resending. The operation remains
+`recovered`, blocking further worker admission rather than manufacturing successful
+original execution. All owned runtime was then stopped. Retained
+`batch-core1-cleanup.log` SHA-256 is
+`a3477f349c52cee4d22618dae11c7d99e724ff4262d0ca2d15272a5ac59dcd2c`.
+The original zero-admission summary is not retroactively edited to report the later
+recovered admission.
+
+Genuine controller force/recovery and malformed-metadata reds remain retained.
+Metadata directories/symlinks are counted with bounded nontraversing lstat before
+ordered validation, so a corrupt later member cannot erase an earlier certified
+journal prefix. Orphan pre-intent operation effect directories must be empty;
+legitimate input/request partials remain preserved. No cleanup deletes those
+originals or repairs unsafe metadata silently. Unknown output diagnostics now
+retain original decoded records privately before the fixed oracle check, exporting
+only validated IDs, fixed enums/allowlisted finding codes, counts and hashes.
+This does not retroactively diagnose the second native failure.
+
+Actual focused batch-core run2 `9acc4cd3923749479f34ff02f26778b2` is **PENDING**
+at this commit, using the new cdab qualification artifact and recorded new source.
+`batch-focused-core-2.log` is the owned run log; no completed result or scenario pass
+is claimed. Corrected full native CI is also **PENDING**. Pushing verified component/
+static source allows that native job to run concurrently with local qualification;
+neither is represented as already passed. The batch implementation is intended as
+a sixth cohesive commit after its separate freeze, under the SDLC published-history
+exception, without amending earlier commits or failed evidence.
+
 Final-source full native AMD64 PR CI and review gates remain open. P15b2 must deliver
 its separately qualified archive/replay graph before complete P15 acceptance and
 dependent P16 implementation. Private recorded AMD64 remains unavailable. There

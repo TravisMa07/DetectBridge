@@ -405,6 +405,22 @@ class Runtime:
     def _usage(self):
         size, entries = 0, 0
         for directory, folders, files in os.walk(self.root, followlinks=False):
+            relative = Path(directory).relative_to(self.root).parts
+            if (
+                len(relative) == 3
+                and relative[0] == "qualification-batches"
+                and relative[2] in ("attempts", "acknowledgments", "receipts")
+            ):
+                # Count but never enter/resolve untrusted metadata members. Their private
+                # regular-file checks occur in prefix order before any API use, so a bad
+                # later directory or symlink cannot suppress an earlier certified fact.
+                for name in [*folders, *files]:
+                    info = (Path(directory) / name).lstat()
+                    size += info.st_size
+                    entries += 1
+                    require(size <= LIMITS["store_bytes"] and entries <= 65536, "store_limit")
+                folders[:] = []
+                continue
             for name in folders:
                 item = local.path_safe(Path(directory) / name)
                 info = item.lstat()
@@ -414,7 +430,8 @@ class Runtime:
                 )
                 entries += 1
             for name in files:
-                item = local.regular(Path(directory) / name)
+                item = Path(directory) / name
+                item = local.regular(item)
                 info = item.stat()
                 mode = 0o444 if item == self.root / "artifacts/worker-logging.properties" else 0o600
                 require(info.st_uid == os.getuid() and info.st_mode & 0o777 == mode, "private_file")
@@ -447,6 +464,7 @@ class Runtime:
             "journal",
             "acks",
             "temporary",
+            "qualification-batches",
             ".lock",
             "config.json",
             "head.json",
@@ -476,6 +494,7 @@ class Runtime:
             broker=None,
             jobs={},
             admissions=0,
+            qualification_batches={},
         )
         head = checked(self.root / "head.json")
         require(set(head) == {"sequence", "sha256"} and type(head["sequence"]) is int, "head")
@@ -516,6 +535,38 @@ class Runtime:
                 == descriptor["wire_sha256"],
                 "ack_integrity",
             )
+
+        for operation, batch in list(self.state["qualification_batches"].items()):
+            if batch["status"] == "pending":
+                self._fence_qualification_batch(operation)
+                try:
+                    self._qualification_batch_prefix(batch)
+                finally:
+                    self._append(
+                        "qualification_batch_result",
+                        dict(operation_id=operation, status="recovered"),
+                        recovery=True,
+                    )
+            else:
+                self._qualification_batch_prefix(batch, journal=batch["status"] != "complete")
+
+        batches_root = self.root / "qualification-batches"
+        if batches_root.exists():
+            folders = list(batches_root.iterdir())
+            require(len(folders) <= 64, "qualification_batch_count")
+            for folder in folders:
+                canonical_uuid(folder.name)
+                require(folder.is_dir(), "qualification_batch_layout")
+                if folder.name not in self.state["qualification_batches"]:
+                    # A pre-intent crash may leave source/request bytes, but no helper
+                    # may have run. Effect metadata without a journal intent is invalid.
+                    for role in ("attempts", "acknowledgments", "receipts"):
+                        metadata = folder / role
+                        if metadata.exists() or metadata.is_symlink():
+                            require(
+                                metadata.is_dir() and not any(metadata.iterdir()),
+                                "qualification_batch_orphan_metadata",
+                            )
 
     def _apply(self, kind, value):
         if kind == "broker":
@@ -578,7 +629,71 @@ class Runtime:
             self.state["jobs"][value["worker_id"]] = value
         elif kind == "injection":
             pass
+        elif kind == "qualification_batch_intent":
+            require(
+                set(value)
+                == {
+                    "operation_id",
+                    "worker_id",
+                    "incarnation",
+                    "command_sha256",
+                    "request_sha256",
+                    "cluster_id",
+                    "topic",
+                    "topic_id",
+                    "count",
+                }
+                and value["operation_id"] not in self.state["qualification_batches"]
+                and len(self.state["qualification_batches"]) < 64
+                and type(value["count"]) is int
+                and 1 <= value["count"] <= 128,
+                "qualification_batch_intent",
+            )
+            canonical_uuid(value["operation_id"])
+            self.state["qualification_batches"][value["operation_id"]] = {
+                **value,
+                "status": "pending",
+                "admitted": [],
+            }
+        elif kind == "qualification_batch_result":
+            require(
+                set(value) == {"operation_id", "status"}
+                and value["status"] in ("complete", "failed", "recovered"),
+                "qualification_batch_result",
+            )
+            batch = self.state["qualification_batches"][value["operation_id"]]
+            require(batch["status"] == "pending", "qualification_batch_terminal")
+            if value["status"] == "complete":
+                require(len(batch["admitted"]) == batch["count"], "qualification_batch_incomplete")
+            batch["status"] = value["status"]
         elif kind == "admit":
+            marker = value.get("qualification_batch")
+            if marker is not None:
+                require(
+                    set(marker) == {"operation_id", "index", "request_sha256", "receipt_sha256"}
+                    and type(marker["index"]) is int,
+                    "qualification_batch_admit",
+                )
+                batch = self.state["qualification_batches"][marker["operation_id"]]
+                require(
+                    batch["worker_id"] == value["worker_id"]
+                    and batch["request_sha256"] == marker["request_sha256"]
+                    and 0 <= marker["index"] < batch["count"],
+                    "qualification_batch_admit",
+                )
+                digest = identity(value)
+                if marker["index"] < len(batch["admitted"]):
+                    require(
+                        batch["admitted"][marker["index"]] == digest,
+                        "qualification_batch_admit_conflict",
+                    )
+                    return
+                require(
+                    marker["index"] == len(batch["admitted"])
+                    and batch["status"] in ("pending", "failed", "recovered"),
+                    "qualification_batch_admit_order",
+                )
+                batch["admitted"].append(digest)
             self.state["admissions"] += 1
         else:
             raise RuntimeError("lifecycle_runtime_unknown_record")
@@ -742,6 +857,12 @@ class Runtime:
             check=False,
         )
         if result.returncode:
+            require(
+                isinstance(result.stderr, bytes)
+                and len(result.stderr) <= 65536
+                and re.search(rb"(?:No such object|No such container):", result.stderr, re.I),
+                "helper_fence_unconfirmed",
+            )
             return
         require(len(result.stdout) <= 2 * MIB, "diagnostic_limit")
         items = local.document(result.stdout)
@@ -752,7 +873,12 @@ class Runtime:
             and labels.get("io.detectbridge.p15b.operation") == operation,
             "helper_owner",
         )
-        self._command(["docker", "rm", "-f", name], timeout=30)
+        container_id = items[0].get("Id")
+        require(
+            isinstance(container_id, str) and re.fullmatch(r"[a-f0-9]{64}", container_id),
+            "helper_owner",
+        )
+        self._command(["docker", "rm", "-f", container_id], timeout=30)
 
     def _path(self, path):
         path = local.path_safe(path)
@@ -2471,10 +2597,492 @@ class Runtime:
             status="replacement_registered_locally_requires_signed_membership_before_fresh_work",
         )
 
+    def _qualification_admission_allowed(self, worker_id):
+        require(
+            not any(
+                batch["worker_id"] == worker_id and batch["status"] != "complete"
+                for batch in self.state["qualification_batches"].values()
+            ),
+            "qualification_batch_worker_blocked",
+        )
+
+    @staticmethod
+    def _batch_document(path, maximum):
+        data = private_file(path, maximum)
+        value = local.document(data)
+        require(isinstance(value, dict) and encoded(value) == data, "qualification_batch_canonical")
+        return value, data
+
+    def _batch_request(self, batch):
+        operation = batch["operation_id"]
+        folder = self.root / "qualification-batches" / operation
+        request, wire = self._batch_document(folder / "request.json", 65536)
+        require(
+            sha(wire) == batch["request_sha256"]
+            and set(request)
+            == {
+                "version",
+                "operation_id",
+                "worker_id",
+                "incarnation",
+                "command_sha256",
+                "cluster_id",
+                "topic",
+                "topic_id",
+                "records",
+            },
+            "qualification_batch_request",
+        )
+        require(
+            request["version"] == "1.0.0"
+            and all(
+                request[key] == batch[key]
+                for key in (
+                    "operation_id",
+                    "worker_id",
+                    "incarnation",
+                    "command_sha256",
+                    "cluster_id",
+                    "topic",
+                    "topic_id",
+                )
+            ),
+            "qualification_batch_scope",
+        )
+        records = request["records"]
+        require(
+            isinstance(records, list) and len(records) == batch["count"],
+            "qualification_batch_records",
+        )
+        publication: Any = next(
+            (
+                item
+                for item in self.state["publications"]
+                if item["command_sha256"] == batch["command_sha256"]
+            ),
+            None,
+        )
+        require(
+            publication is not None and publication["receipt"], "qualification_batch_publication"
+        )
+        registration: Any = next(
+            (
+                item
+                for item in publication["registrations"]
+                if item["worker_id"] == batch["worker_id"]
+                and item["incarnation"] == batch["incarnation"]
+            ),
+            None,
+        )
+        require(
+            registration is not None
+            and batch["cluster_id"] == self.state["broker"]["cluster_id"]
+            and batch["topic"] == registration["input_topic"]
+            and batch["topic_id"] == registration["input_topic_id"],
+            "qualification_batch_scope",
+        )
+        total = 0
+        for index, record in enumerate(records):
+            require(
+                isinstance(record, dict)
+                and set(record)
+                == {"index", "run_id", "key_base64", "value_file", "value_bytes", "value_sha256"},
+                "qualification_batch_record",
+            )
+            canonical_uuid(record["run_id"])
+            require(
+                record["run_id"] in registration["assigned_runs"]
+                and self.state["run_owners"].get(record["run_id"]) == batch["worker_id"],
+                "qualification_batch_run_owner",
+            )
+            require(
+                type(record["index"]) is int
+                and record["index"] == index
+                and record["value_file"] == f"{index:020d}.value"
+                and type(record["value_bytes"]) is int
+                and 1 <= record["value_bytes"] <= 2 * MIB
+                and isinstance(record["value_sha256"], str)
+                and re.fullmatch(r"[a-f0-9]{64}", record["value_sha256"])
+                and record["key_base64"] == base64.b64encode(record["run_id"].encode()).decode(),
+                "qualification_batch_record",
+            )
+            total += record["value_bytes"]
+        require(total <= 8 * MIB, "qualification_batch_bytes")
+        return folder, request
+
+    def _batch_value(self, folder, record):
+        data = private_file(folder / "values" / record["value_file"], 2 * MIB)
+        require(
+            len(data) == record["value_bytes"] and sha(data) == record["value_sha256"],
+            "qualification_batch_value",
+        )
+        return data
+
+    def _qualification_batch_prefix(self, batch, journal=True):
+        """Certify in order; a corrupt later member cannot erase a forced earlier admission."""
+        folder, request = self._batch_request(batch)
+        receipts: list[dict[str, Any]] = []
+        hashes: list[str] = []
+        last_offset = -1
+        unreceipted = 0
+        batch["uncertain_index"] = None
+        for index, record in enumerate(request["records"]):
+            self._batch_value(folder, record)
+            name = f"{index:020d}.json"
+            paths = [folder / role / name for role in ("attempts", "acknowledgments", "receipts")]
+            present = [path.exists() or path.is_symlink() for path in paths]
+            if not any(present):
+                continue
+            require(unreceipted == 0 and len(receipts) == index, "qualification_batch_prefix")
+            require(present[0], "qualification_batch_missing_attempt")
+            attempt, attempt_wire = self._batch_document(paths[0], 4096)
+            expected = dict(
+                version="1.0.0",
+                operation_id=batch["operation_id"],
+                request_sha256=batch["request_sha256"],
+                index=index,
+                cluster_id=batch["cluster_id"],
+                topic=batch["topic"],
+                topic_id=batch["topic_id"],
+                partition=0,
+                key_sha256=sha(record["run_id"].encode()),
+                value_sha256=record["value_sha256"],
+                value_bytes=record["value_bytes"],
+            )
+            require(
+                attempt == expected
+                and type(attempt["index"]) is int
+                and type(attempt["partition"]) is int
+                and type(attempt["value_bytes"]) is int,
+                "qualification_batch_attempt",
+            )
+            acknowledgement: Any = None
+            ack_wire: Any = None
+            if present[1]:
+                acknowledgement, ack_wire = self._batch_document(paths[1], 4096)
+                require(
+                    set(acknowledgement)
+                    == {
+                        "version",
+                        "operation_id",
+                        "request_sha256",
+                        "index",
+                        "topic",
+                        "partition",
+                        "offset",
+                        "key_sha256",
+                        "value_sha256",
+                        "broker_timestamp",
+                    }
+                    and all(
+                        acknowledgement[key] == expected[key]
+                        for key in (
+                            "version",
+                            "operation_id",
+                            "request_sha256",
+                            "index",
+                            "topic",
+                            "partition",
+                            "key_sha256",
+                            "value_sha256",
+                        )
+                    )
+                    and type(acknowledgement["index"]) is int
+                    and type(acknowledgement["partition"]) is int
+                    and type(acknowledgement["offset"]) is int
+                    and last_offset < acknowledgement["offset"] <= 9223372036854775807
+                    and type(acknowledgement["broker_timestamp"]) is int
+                    and -1 <= acknowledgement["broker_timestamp"] <= 9223372036854775807,
+                    "qualification_batch_acknowledgment",
+                )
+            if not present[2]:
+                unreceipted = 1
+                batch["uncertain_index"] = index
+                continue  # A raw broker ACK never substitutes for post-send namespace proof.
+            require(acknowledgement is not None, "qualification_batch_missing_acknowledgment")
+            receipt, receipt_wire = self._batch_document(paths[2], 4096)
+            require(
+                receipt
+                == {
+                    **expected,
+                    "offset": acknowledgement["offset"],
+                    "broker_timestamp": acknowledgement["broker_timestamp"],
+                    "acknowledgment_sha256": sha(ack_wire),
+                }
+                and all(
+                    type(receipt[key]) is int
+                    for key in ("index", "partition", "value_bytes", "offset", "broker_timestamp")
+                ),
+                "qualification_batch_receipt",
+            )
+            require(
+                sha(private_file(folder / "request.json", 65536)) == batch["request_sha256"],
+                "qualification_batch_request_changed",
+            )
+            self._batch_value(folder, record)
+            # Force surviving files and namespace before any journal reference, including recovery.
+            for path, original in zip(paths, (attempt_wire, ack_wire, receipt_wire), strict=True):
+                require(private_file(path, 4096) == original, "qualification_batch_changed")
+                with path.open("rb") as stream:
+                    os.fsync(stream.fileno())
+                local.sync_directory(path.parent)
+            local.sync_directory(folder)
+            admitted_receipt = dict(
+                topic=batch["topic"],
+                topic_id=batch["topic_id"],
+                partition=0,
+                offset=receipt["offset"],
+                value_sha256=record["value_sha256"],
+                cluster_id=batch["cluster_id"],
+            )
+            admission = dict(
+                worker_id=batch["worker_id"],
+                run_id=record["run_id"],
+                receipt=admitted_receipt,
+                qualification_batch=dict(
+                    operation_id=batch["operation_id"],
+                    index=index,
+                    request_sha256=batch["request_sha256"],
+                    receipt_sha256=sha(receipt_wire),
+                ),
+            )
+            if index < len(batch["admitted"]):
+                require(
+                    batch["admitted"][index] == identity(admission),
+                    "qualification_batch_admit_conflict",
+                )
+            elif journal:
+                self._append("admit", admission, recovery=True)
+            else:
+                require(False, "qualification_batch_unjournaled_receipt")
+            last_offset = receipt["offset"]
+            receipts.append(admitted_receipt)
+            hashes.append(sha(receipt_wire))
+        # Closed layout is checked after the certifiable prefix has become durable facts.
+        require(
+            {item.name for item in folder.iterdir()}
+            <= {"request.json", "values", "attempts", "acknowledgments", "receipts"}
+            | {
+                item.name
+                for item in folder.iterdir()
+                if re.fullmatch(r"\.partial-[a-f0-9-]{36}", item.name)
+            },
+            "qualification_batch_layout",
+        )
+        require(
+            {item.name for item in (folder / "values").iterdir()}
+            == {record["value_file"] for record in request["records"]},
+            "qualification_batch_values",
+        )
+        for role in ("attempts", "acknowledgments", "receipts"):
+            for path in (folder / role).iterdir():
+                if re.fullmatch(r"\.partial-[a-f0-9-]{36}", path.name):
+                    private_file(path, 4096)
+                    continue
+                require(
+                    re.fullmatch(r"[0-9]{20}\.json", path.name) and int(path.stem) < batch["count"],
+                    "qualification_batch_layout",
+                )
+        require(len(batch["admitted"]) == len(receipts), "qualification_batch_receipt_missing")
+        return receipts, hashes
+
+    def _fence_qualification_batch(self, operation):
+        token = uuid.UUID(operation).hex
+        self._cleanup_helper(self.config["project"] + "-helper-" + token[:12], token)
+
+    def _qualification_batch_helper(self, batch, folder):
+        self._verify_immutable_inputs()
+        token = uuid.UUID(batch["operation_id"]).hex
+        command = [
+            "docker",
+            "run",
+            "--rm",
+            "--name",
+            self.config["project"] + "-helper-" + token[:12],
+            "--label",
+            "io.detectbridge.p15b.operation=" + token,
+            "--label",
+            "io.detectbridge.p15b.owner=" + self.config["deployment_id"],
+            "--network",
+            self.config["project"] + "_internal",
+            "--user",
+            f"{os.getuid()}:{os.getgid()}",
+            "--memory",
+            "512m",
+            "--cpus",
+            "0.5",
+            "--pids-limit",
+            "128",
+            "--cap-drop",
+            "ALL",
+            "--security-opt",
+            "no-new-privileges:true",
+            "--mount",
+            f"type=bind,src={self.root},dst=/io",
+            "--entrypoint",
+            "java",
+            IMAGE,
+            "-Xmx256m",
+            "-cp",
+            "/io/artifacts/runtime.jar:/io/artifacts/producer.jar:/io/artifacts/qualification.jar:/opt/flink/lib/*",
+            "io.detectbridge.integration.LifecycleBatchProducer",
+            self.config["qualification_sha256"],
+            self.config["runtime_sha256"],
+            "kafka:9092",
+            batch["cluster_id"],
+            batch["topic"],
+            batch["topic_id"],
+            self._path(folder),
+            batch["request_sha256"],
+        ]
+        return local.document(self._command(command, timeout=120).encode())
+
+    def admit_qualification_batch(self, worker_id, rows):
+        require(isinstance(rows, list) and 1 <= len(rows) <= 128, "admission_count")
+        with self._locked():
+            self._load()
+            self._qualification_admission_allowed(worker_id)
+            require(self.config.get("qualification_sha256") is not None, "probe_not_registered")
+            worker = self.state["workers"].get(worker_id)
+            require(
+                worker is not None
+                and self.state["publications"]
+                and self.state["publications"][-1]["receipt"],
+                "no_published_policy",
+            )
+            publication = self.state["publications"][-1]
+            registration: Any = next(
+                (r for r in publication["registrations"] if r["worker_id"] == worker_id), None
+            )
+            require(
+                registration is not None and registration["incarnation"] == worker["incarnation"],
+                "not_current_member",
+            )
+            records, wires = [], []
+            for index, row in enumerate(rows):
+                wire = row if isinstance(row, bytes) else encoded(row)
+                require(1 <= len(wire) <= 2 * MIB, "raw_limit")
+                value = local.document(wire)
+                run = (
+                    value.get("run_id")
+                    if value.get("kind") in ("run_end", "source_boundary")
+                    else value.get("context", {}).get("run_id")
+                )
+                canonical_uuid(run)
+                require(
+                    run in registration["assigned_runs"]
+                    and self.state["run_owners"].get(run) == worker_id,
+                    "unassigned_run",
+                )
+                records.append(
+                    dict(
+                        index=index,
+                        run_id=run,
+                        key_base64=base64.b64encode(run.encode()).decode(),
+                        value_file=f"{index:020d}.value",
+                        value_bytes=len(wire),
+                        value_sha256=sha(wire),
+                    )
+                )
+                wires.append(wire)
+            require(sum(map(len, wires)) <= 8 * MIB, "qualification_batch_bytes")
+            self._reserve(16 * MIB)
+            require(self._entry_count + 16 + len(rows) * 5 <= 65536, "store_limit")
+            root = self.root / "qualification-batches"
+            if not root.exists():
+                root.mkdir(mode=0o700)
+                local.sync_directory(self.root)
+            require(len(list(root.iterdir())) < 64, "qualification_batch_count")
+            operation = str(uuid.uuid4())
+            folder = root / operation
+            request = dict(
+                version="1.0.0",
+                operation_id=operation,
+                worker_id=worker_id,
+                incarnation=worker["incarnation"],
+                command_sha256=publication["command_sha256"],
+                cluster_id=self.state["broker"]["cluster_id"],
+                topic=worker["input_topic"],
+                topic_id=worker["input_topic_id"],
+                records=records,
+            )
+            request_wire = encoded(request)
+            require(len(request_wire) <= 65536, "qualification_batch_request_limit")
+            folder.mkdir(mode=0o700)
+            for name in ("values", "attempts", "acknowledgments", "receipts"):
+                (folder / name).mkdir(mode=0o700)
+            for record, wire in zip(records, wires, strict=True):
+                local.write_exclusive(folder / "values" / record["value_file"], wire)
+            local.sync_directory(folder / "values")
+            local.write_exclusive(folder / "request.json", request_wire)
+            for directory in (
+                folder / "attempts",
+                folder / "acknowledgments",
+                folder / "receipts",
+                folder,
+                root,
+            ):
+                local.sync_directory(directory)
+            batch = {
+                key: request[key]
+                for key in (
+                    "operation_id",
+                    "worker_id",
+                    "incarnation",
+                    "command_sha256",
+                    "cluster_id",
+                    "topic",
+                    "topic_id",
+                )
+            }
+            batch.update(request_sha256=sha(request_wire), count=len(records))
+            self._append("qualification_batch_intent", batch)
+            batch = self.state["qualification_batches"][operation]
+            error = None
+            result = None
+            try:
+                result = self._qualification_batch_helper(batch, folder)
+            except (OSError, ValueError, subprocess.TimeoutExpired) as failure:
+                self._retain_failure(failure)
+                error = failure
+            # Fencing must finish before recovery can trust a stable receipt prefix.
+            self._fence_qualification_batch(operation)
+            try:
+                receipts, hashes = self._qualification_batch_prefix(batch)
+                require(
+                    error is None
+                    and result
+                    == dict(
+                        version="1.0.0",
+                        operation_id=operation,
+                        request_sha256=batch["request_sha256"],
+                        completed=len(records),
+                        receipt_sha256=hashes,
+                    )
+                    and len(receipts) == len(records)
+                    and type(result["completed"]) is int
+                    and not any(path.name.startswith(".partial-") for path in folder.rglob("*")),
+                    "qualification_batch_incomplete",
+                )
+            except (OSError, ValueError, KeyError, TypeError):
+                self._append(
+                    "qualification_batch_result",
+                    dict(operation_id=operation, status="failed"),
+                    recovery=True,
+                )
+                raise
+            self._append(
+                "qualification_batch_result",
+                dict(operation_id=operation, status="complete"),
+                recovery=True,
+            )
+            return receipts
+
     def admit(self, worker_id, rows):
         require(isinstance(rows, list) and 1 <= len(rows) <= 128, "admission_count")
         with self._locked():
             self._load()
+            self._qualification_admission_allowed(worker_id)
             worker = self.state["workers"].get(worker_id)
             require(
                 worker is not None

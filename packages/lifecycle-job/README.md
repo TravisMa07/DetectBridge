@@ -29,11 +29,15 @@ pinned validator packet/image. No Python runs per event. Private controller/work
 files, keys, evidence, generated plans, runtime reports and builds stay outside Git.
 
 A separate `lifecycle-probe.jar` contains the first-party
-`LifecycleQualificationJob` entry point and a bounded UID diagnostic. Its explicit private operation modes hold
+`LifecycleQualificationJob` entry point, a bounded UID diagnostic and the fixed
+`LifecycleBatchProducer` qualification transport. Its explicit private operation modes hold
 data release, target a ready current-incarnation checkpoint timeout, or fail after
 an actual Kafka-acknowledged output write. Normal job configuration cannot choose
 these hooks. A probe alone is not proof of broker failure or global checkpoint
 completion; qualification verifies actual Kafka and Flink evidence separately.
+The batch entry reuses Kafka clients while preserving per-record namespace checks,
+forced attempts/ACKs/receipts and exact input bytes; it is absent from the production
+JAR. Its [frozen contract](../../docs/p15b-batch-design.md) defines prefix recovery.
 
 Run locked component tests with:
 

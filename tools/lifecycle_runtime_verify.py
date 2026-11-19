@@ -195,6 +195,7 @@ class Qualification:
         self.unexpected_job_failures: list[dict[str, Any]] = []
         self.mixed_pause_observations: list[dict[str, Any]] = []
         self.query_failures: list[dict[str, Any]] = []
+        self.oracle_failure_observations: list[dict[str, Any]] = []
         self.confirmed_ack_checkpoints: dict[tuple[str, str, str, str], dict[str, Any]] = {}
 
     def record(self, name, mode, requirements, **evidence):
@@ -634,6 +635,193 @@ class Qualification:
         path = cp["external_path"]
         return "file:///state/" + path.split("/state/", 1)[1]
 
+    @staticmethod
+    def output_failure_summary(records):
+        """Fixed value-free diagnostics; unknown source values are represented only by hashes."""
+        kinds = {
+            "tagged",
+            "detection",
+            "manifest",
+            "receipt",
+            "preservation",
+            "quarantine",
+            "diagnostic",
+        }
+        closures = {"source_boundary", "timeout", "dataset_end", "resource_limit", "not_required"}
+        findings = {
+            "cwd_missing",
+            "cwd_conflict",
+            "syscall_missing",
+            "syscall_conflict",
+            "execution_not_proven",
+            "executable_missing",
+            "path_count",
+            "path_hole",
+            "path_conflict",
+            "argc_missing",
+            "argc_conflict",
+            "argument_count",
+            "argument_hole",
+            "eoe_conflict",
+            "context_conflict",
+            "resource_limit",
+            "output_limit",
+            "unsupported_type",
+            "unsupported_abi_syscall",
+        }
+        require(len(records) <= 128, "diagnostic_record_limit")
+        summaries = []
+
+        def mapping(value):
+            return value if isinstance(value, dict) else {}
+
+        for index, record in enumerate(records):
+            envelope = mapping(record.get("output"))
+            body = mapping(envelope.get("document"))
+            event = mapping(body.get("event"))
+            metadata = mapping(event.get("detectbridge"))
+            summary = dict(index=index, record_sha256=digest(record))
+            kind = envelope.get("kind")
+            if isinstance(kind, str) and kind in kinds:
+                summary["kind"] = kind
+            else:
+                summary["unknown_kind_sha256"] = digest(kind)
+            for name, value in (
+                ("wire_sha256", record.get("wire_sha256")),
+                ("document_sha256", envelope.get("document_sha256")),
+            ):
+                if isinstance(value, str) and re.fullmatch(r"[a-f0-9]{64}", value):
+                    summary[name] = value
+                else:
+                    summary[name + "_value_sha256"] = digest(value)
+            for name, value in (
+                (
+                    "run_id",
+                    body.get(
+                        "run_id", mapping(body.get("key")).get("run_id", metadata.get("run_id"))
+                    ),
+                ),
+                ("event_id", body.get("event_id", mapping(event.get("event")).get("id"))),
+                ("manifest_id", body.get("manifest_id")),
+                ("record_id", body.get("record_id")),
+                ("output_id", envelope.get("output_id")),
+                ("inner_key", envelope.get("inner_key")),
+            ):
+                if value is None:
+                    continue
+                valid = isinstance(value, str) and bool(
+                    re.fullmatch(
+                        r"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"
+                        if name == "run_id"
+                        else r"sha256:[a-f0-9]{64}",
+                        value,
+                    )
+                )
+                summary[name if valid else name + "_value_sha256"] = (
+                    value if valid else digest(value)
+                )
+            closure = body.get("closure", mapping(metadata.get("assembly")).get("closure"))
+            if closure is not None:
+                if isinstance(closure, str) and closure in closures:
+                    summary["closure"] = closure
+                else:
+                    summary["closure_value_sha256"] = digest(closure)
+            members = body.get("members", metadata.get("evidence"))
+            if isinstance(members, list):
+                summary["member_count"] = len(members)
+            context_extension = mapping(mapping(metadata.get("extensions")).get("linux.context"))
+            values = body.get("findings", context_extension.get("findings", []))
+            if isinstance(values, list):
+                summary["finding_count"] = len(values)
+                summary["findings"] = [
+                    value for value in values[:32] if isinstance(value, str) and value in findings
+                ]
+                summary["unknown_finding_sha256"] = [
+                    digest(value)
+                    for value in values[:32]
+                    if not isinstance(value, str) or value not in findings
+                ]
+            if type(body.get("eligible")) is bool:
+                summary["eligible"] = body["eligible"]
+            summaries.append(summary)
+        return summaries
+
+    def check_output_records(self, records, complete=False):
+        # Retain exact decoded record bytes before an oracle exception can abort the attempt.
+        retained = []
+        require(len(records) <= 128, "diagnostic_record_limit")
+        if records:
+            base = self.runtime.root.parent / "qualification-private-evidence"
+            base.mkdir(mode=0o700, exist_ok=True)
+            folder = base / ("output-" + uuid.uuid4().hex)
+            folder.mkdir(mode=0o700)
+            for index, record in enumerate(records):
+                data = encoded(record)
+                require(len(data) <= 4 * 1024 * 1024 + 65536, "diagnostic_record_bytes")
+                target = folder / (str(index).zfill(3) + ".json")
+                with os.fdopen(
+                    os.open(target, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), "wb"
+                ) as stream:
+                    stream.write(data)
+                    stream.flush()
+                    os.fsync(stream.fileno())
+                retained.append(dict(index=index, record_sha256=sha(data), bytes=len(data)))
+        try:
+            return self.oracle.check(records, complete=complete)
+        except Exception:
+            if not hasattr(self, "oracle_failure_observations"):
+                self.oracle_failure_observations = []
+            self.oracle_failure_observations.append(
+                dict(
+                    raw_records_retained_privately=bool(records),
+                    raw_batch_sha256=digest(retained),
+                    actual_output_summary=self.output_failure_summary(records),
+                    interpretation="actual observed output only; independent expectations unchanged; no inferred failure cause",
+                )
+            )
+            raise
+
+    def batch_state_summary(self):
+        batches = self.runtime.state.get("qualification_batches", {})
+        require(isinstance(batches, dict), "diagnostic_batch_states")
+        values = []
+        for operation, batch in batches.items():
+            value = dict(state_sha256=digest(batch))
+            if isinstance(operation, str) and re.fullmatch(
+                r"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}", operation
+            ):
+                value["operation_id"] = operation
+            else:
+                value["operation_id_sha256"] = digest(operation)
+            status = batch.get("status")
+            if isinstance(status, str) and status in {"pending", "complete", "failed", "recovered"}:
+                value["status"] = status
+            else:
+                value["status_sha256"] = digest(status)
+            for name in ("worker_id", "incarnation"):
+                item = batch.get(name)
+                if isinstance(item, str) and re.fullmatch(
+                    r"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}", item
+                ):
+                    value[name] = item
+                elif item is not None:
+                    value[name + "_sha256"] = digest(item)
+            for name in ("request_sha256", "command_sha256"):
+                item = batch.get(name)
+                if isinstance(item, str) and re.fullmatch(r"[a-f0-9]{64}", item):
+                    value[name] = item
+                elif item is not None:
+                    value[name + "_value_sha256"] = digest(item)
+            count = batch.get("count")
+            if type(count) is int and 1 <= count <= 128:
+                value["requested_record_count"] = count
+            admitted = batch.get("admitted", {})
+            value["admitted_index_count"] = (
+                len(admitted) if isinstance(admitted, (dict, list)) else None
+            )
+            values.append(value)
+        return dict(count=len(batches), batches=values)
+
     def collect(self, complete=True, timeout=120):
         def progress():
             for worker in WORKERS:
@@ -641,11 +829,11 @@ class Qualification:
             batch = self.runtime.outputs(self.output_cursor, limit=64)
             self.output_cursor = batch["next_offset"]
             self.physical_outputs += len(batch["records"])
-            return self.oracle.check(batch["records"])
+            return self.check_output_records(batch["records"])
 
         if complete:
             self.wait(progress, "source_accounting", timeout)
-            self.oracle.check([], complete=True)
+            self.check_output_records([], complete=True)
         else:
             progress()
 
@@ -662,7 +850,9 @@ class Qualification:
         registration = registration or self.registration(worker)
         publication = publication or self.current
         receipts = (
-            receipts if receipts is not None else self.runtime.admit(worker, case["admissions"])
+            receipts
+            if receipts is not None
+            else self.runtime.admit_qualification_batch(worker, case["admissions"])
         )
         _, binding = expected_bindings(self.runtime, registration)
         self.oracle.add(
@@ -879,7 +1069,7 @@ class Qualification:
         self.runtime.fault("worker_pause", worker)
         broker_paused = False
         try:
-            receipts = self.runtime.admit(worker, case["admissions"])
+            receipts = self.runtime.admit_qualification_batch(worker, case["admissions"])
             self.add_case(case, "A", receipts=receipts)
             self.runtime.fault("broker_pause")
             broker_paused = True
@@ -899,7 +1089,7 @@ class Qualification:
         )
         case = self.extra("security-alice", 106)
         self.runtime.fault("worker_pause", worker)
-        receipts = self.runtime.admit(worker, case["admissions"])
+        receipts = self.runtime.admit_qualification_batch(worker, case["admissions"])
         self.add_case(case, "A", receipts=receipts)
         self.runtime.fault("output_reject")
         try:
@@ -1034,7 +1224,9 @@ class Qualification:
                 [scope["namespace"], scope["instance"], [raw["record_id"]]]
             )
             pressure.append(case)
-        physical = self.runtime.admit(worker, [case["admissions"][0] for case in pressure])
+        physical = self.runtime.admit_qualification_batch(
+            worker, [case["admissions"][0] for case in pressure]
+        )
         # Original queue bound128: 42 matching A proposals×3outputs=126; the next
         # 3-output proposal cannot commit. This is independent finite arithmetic.
         self.wait(
@@ -1094,7 +1286,7 @@ class Qualification:
         setup_barrier = self.drain_checked_acks(self.ack_barrier(), "pre_group_ack_barrier")
         case = self.extra("audit-whoami", 205)
         before = self.current
-        first = self.runtime.admit(worker, case["admissions"][:-1])
+        first = self.runtime.admit_qualification_batch(worker, case["admissions"][:-1])
 
         opened_proof = self.wait(
             lambda: self.completed_open_group(worker, case, before),
@@ -1103,7 +1295,7 @@ class Qualification:
         )
         opened_group = opened_proof["group"]
         self.publish("A", "rollback", prepared=rollback_proposal)
-        last = self.runtime.admit(worker, case["admissions"][-1:])
+        last = self.runtime.admit_qualification_batch(worker, case["admissions"][-1:])
         self.converge()
         states = [("B", before, old_registration)] * 5 + [("A", self.current, old_registration)]
         self.add_case(case, "A", receipts=first + last, receipt_states=states)
@@ -1190,7 +1382,7 @@ class Qualification:
             "partial_marker_broker_proof",
         )
         self.require_atomic_case_output(actual[0]["output"], partial_case, partial_receipts)
-        self.oracle.check(actual)
+        self.check_output_records(actual)
         self.runtime.evidence(worker)
         self.replacement(worker)
         self.converge()
@@ -1210,7 +1402,7 @@ class Qualification:
             raise ValueError("lifecycle_qualification_partial_accepted_prefix_not_replayed")
         # This evidence reread is separate from the forward accounting cursor.
         self.require_atomic_case_output(retry["output"], partial_case, partial_receipts)
-        self.oracle.check([retry])
+        self.check_output_records([retry])
         self.record(
             "partial_ack_recovery",
             "first-party-probe",
@@ -1932,6 +2124,10 @@ def main(argv=None):
                 logical_outputs=len(qualification.oracle.seen),
                 physical_outputs=qualification.physical_outputs,
                 admitted_locations=len(qualification.oracle.receipts),
+                oracle_accounted_admissions=len(qualification.oracle.receipts),
+                actual_journal_admissions=runtime.state.get("admissions") if runtime else None,
+                qualification_batch_states=qualification.batch_state_summary(),
+                oracle_failure_observations=qualification.oracle_failure_observations,
                 checkpoints=qualification.checkpoint_evidence,
                 approved_fault_proofs=qualification.approved_fault_proofs,
                 unexpected_job_failures=qualification.unexpected_job_failures,

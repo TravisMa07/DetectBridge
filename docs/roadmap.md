@@ -286,7 +286,11 @@ is recorded in the acceptance map; P13 acceptance is not implied.
   precede production code. P15a owns candidate lifecycle/control preparation;
   P15b owns actual worker activation/convergence/rollback after P15a merged gates.
   P15a [candidate lifecycle](rule-lifecycle.md) is implemented with passing
-  [local qualification](p15a-ledger.md); actual native/review/owner/merged gates remain.
+  [local and native PR qualification](p15a-ledger.md). Owner-authorized regular
+  merge #57 is f44403e; actual merged-main push run 44472864062 attempt 1 passed all nineteen applicable jobs and required-checks.
+  [P15b design draft](p15b-design.md) and [independent cases](p15b-expectations.md)
+  scope the runtime/control and new archive/replay artifact boundaries; no
+  P15b production code or qualification is claimed.
   P15 is not complete; P16 implementation remains dependent.
 - Depends on: P10, P13, P14.
 - Deliver: immutable bundles, staging, worker acknowledgments, convergence state,

@@ -1,5 +1,16 @@
 # P10–P15 implementation ledger
 
+P15b discovery checkpoint: owner-authorized merge #57 is f44403e; actual
+merged-main push run 44472864062 attempt 1 passed all nineteen applicable jobs and required-checks. Primary owns integration/contracts/CI
+on `feat/p15b-worker-activation` from that merge, with production code gated on
+its exact successful CI and the P15b freeze. Interface, independent expectations
+and compatibility audit agents own three disjoint discovery drafts. The
+[design](p15b-design.md), [matrix](p15b-expectations.md) and
+[prerequisites](p15b-prerequisites.md) are drafts, not implementation claims.
+Native P15a completion edits are preserved in the original stash and local copy;
+all older handoffs remain uncommitted. P15b1 runtime/control and P15b2 archive/replay
+must both pass before complete P15 acceptance/P16 dependent implementation.
+
 Current P15 coordination (2026-11-19): the owner explicitly accepted bounded P14
 completion after exact merged-main audit on f44c9f9. Issue #14/project are Done;
 M5 remains open. Primary owns integration/contracts/CI/status on

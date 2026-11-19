@@ -1,0 +1,82 @@
+{
+  "version": "1.0.0",
+  "base_revision": "f44403e2975db46554c9c5033f87886d880c4087",
+  "rules": {
+    "rules/a-windows.yml": {
+      "version": "1.0.0",
+      "rule_id": "71500000-0000-4000-8000-000000000001",
+      "revision": "80b56d4d28e6ec60510c989b34ac4e3f708e42c14d9e5270f463dcb7afa3fc6a",
+      "kind": "synthetic",
+      "repository": "https://github.com/TravisMa07/DetectBridge",
+      "repository_revision": "f44403e2975db46554c9c5033f87886d880c4087",
+      "path": "contracts/lifecycle/v1/fixtures/rule.yml",
+      "original_sha256": "80b56d4d28e6ec60510c989b34ac4e3f708e42c14d9e5270f463dcb7afa3fc6a",
+      "authors": [
+        "DetectBridge contributors"
+      ],
+      "license": "Apache-2.0",
+      "notices": [],
+      "modifications": []
+    },
+    "rules/b-windows.yml": {
+      "version": "1.0.0",
+      "rule_id": "71500000-0000-4000-8000-000000000001",
+      "revision": "62e160bea372e420a38b81e560b529f628074e5693e4275329245598efd7dfa4",
+      "kind": "synthetic",
+      "repository": "https://github.com/TravisMa07/DetectBridge",
+      "repository_revision": "f44403e2975db46554c9c5033f87886d880c4087",
+      "path": "contracts/lifecycle/v1/fixtures/rule.yml",
+      "original_sha256": "80b56d4d28e6ec60510c989b34ac4e3f708e42c14d9e5270f463dcb7afa3fc6a",
+      "authors": [
+        "DetectBridge contributors"
+      ],
+      "license": "Apache-2.0",
+      "notices": [],
+      "modifications": [
+        {
+          "input_sha256": "80b56d4d28e6ec60510c989b34ac4e3f708e42c14d9e5270f463dcb7afa3fc6a",
+          "output_sha256": "62e160bea372e420a38b81e560b529f628074e5693e4275329245598efd7dfa4",
+          "description": "Original synthetic P15b rule modification: User Alice to Bob"
+        }
+      ]
+    },
+    "rules/a-linux.yml": {
+      "version": "1.0.0",
+      "rule_id": "72000000-0000-4000-8000-000000000001",
+      "revision": "6374bd348d60b359818b81c97fdaf269935a035d4e59386b2d7d55d7d8c6e15c",
+      "kind": "synthetic",
+      "repository": "https://github.com/TravisMa07/DetectBridge",
+      "repository_revision": "f44403e2975db46554c9c5033f87886d880c4087",
+      "path": "packages/linux-adapters/fixtures/rules/image-match.yml",
+      "original_sha256": "6374bd348d60b359818b81c97fdaf269935a035d4e59386b2d7d55d7d8c6e15c",
+      "authors": [
+        "DetectBridge contributors"
+      ],
+      "license": "Apache-2.0",
+      "notices": [],
+      "modifications": []
+    },
+    "rules/b-linux.yml": {
+      "version": "1.0.0",
+      "rule_id": "72000000-0000-4000-8000-000000000001",
+      "revision": "d20e34e80686615514b4ab587ad9d202b91040f6f16099beb39e3fd55d1887b6",
+      "kind": "synthetic",
+      "repository": "https://github.com/TravisMa07/DetectBridge",
+      "repository_revision": "f44403e2975db46554c9c5033f87886d880c4087",
+      "path": "packages/linux-adapters/fixtures/rules/image-match.yml",
+      "original_sha256": "6374bd348d60b359818b81c97fdaf269935a035d4e59386b2d7d55d7d8c6e15c",
+      "authors": [
+        "DetectBridge contributors"
+      ],
+      "license": "Apache-2.0",
+      "notices": [],
+      "modifications": [
+        {
+          "input_sha256": "6374bd348d60b359818b81c97fdaf269935a035d4e59386b2d7d55d7d8c6e15c",
+          "output_sha256": "d20e34e80686615514b4ab587ad9d202b91040f6f16099beb39e3fd55d1887b6",
+          "description": "Original synthetic P15b rule modification: Image /usr/bin/whoami to /bin/false"
+        }
+      ]
+    }
+  }
+}

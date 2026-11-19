@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:lifecycle-runtime:1.0.0:worker-config",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": "1.0.0"
+    },
+    "deployment_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "authority_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "authority_public_key": {
+      "type": "string",
+      "minLength": 4,
+      "maxLength": 88,
+      "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+    },
+    "authority_key_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "worker_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "incarnation": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "worker_public_key": {
+      "type": "string",
+      "minLength": 4,
+      "maxLength": 88,
+      "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+    },
+    "worker_key_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "private_key_path": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "bootstrap": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024
+    },
+    "cluster_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "topics": {
+      "type": "object",
+      "properties": {
+        "control": {
+          "$ref": "urn:detectbridge:lifecycle-runtime:1.0.0:common#/$defs/topic"
+        },
+        "artifact": {
+          "$ref": "urn:detectbridge:lifecycle-runtime:1.0.0:common#/$defs/topic"
+        },
+        "ack": {
+          "$ref": "urn:detectbridge:lifecycle-runtime:1.0.0:common#/$defs/topic"
+        },
+        "output": {
+          "$ref": "urn:detectbridge:lifecycle-runtime:1.0.0:common#/$defs/topic"
+        },
+        "input": {
+          "$ref": "urn:detectbridge:lifecycle-runtime:1.0.0:common#/$defs/topic"
+        }
+      },
+      "required": [
+        "control",
+        "artifact",
+        "ack",
+        "output",
+        "input"
+      ],
+      "additionalProperties": false
+    },
+    "producer_sha256": {
+      "const": "51a984dedc04af7b368fea63a9cec88d2127c6ddf5aa019352f491a3481bad6d"
+    },
+    "runtime_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "runtime_binding_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "image": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^.+@sha256:[a-f0-9]{64}$"
+    },
+    "compatibility_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "evidence_registry_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "store_root": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "state_root": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "limits": {
+      "$ref": "urn:detectbridge:lifecycle-runtime:1.0.0:common#/$defs/limits"
+    },
+    "worker_checkpoint_binding_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "flink_project": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^detectbridge-p15b-[a-z0-9-]+$"
+    },
+    "consumer_group": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 192,
+      "pattern": "^[A-Za-z0-9._-]+$"
+    }
+  },
+  "required": [
+    "version",
+    "deployment_id",
+    "authority_id",
+    "authority_public_key",
+    "authority_key_sha256",
+    "worker_id",
+    "incarnation",
+    "worker_public_key",
+    "worker_key_sha256",
+    "private_key_path",
+    "bootstrap",
+    "cluster_id",
+    "topics",
+    "consumer_group",
+    "producer_sha256",
+    "runtime_sha256",
+    "runtime_binding_sha256",
+    "image",
+    "compatibility_sha256",
+    "evidence_registry_sha256",
+    "store_root",
+    "state_root",
+    "limits",
+    "worker_checkpoint_binding_sha256",
+    "flink_project"
+  ],
+  "additionalProperties": false
+}

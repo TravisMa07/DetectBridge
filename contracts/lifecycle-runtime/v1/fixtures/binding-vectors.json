@@ -1,0 +1,299 @@
+{
+  "version": "1.0.0",
+  "algorithm": "SHA-256 of exact canonical closed JSON object using sorted keys, compact separators, unescaped UTF-8, no terminal LF; no sha256: prefix for binding hashes",
+  "synthetic_inputs": [
+    "authority_key_sha256=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "runtime_sha256=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "compatibility_sha256=cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "evidence_registry_sha256=dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "cluster IDs and topic names/IDs are synthetic strings, not observed broker objects"
+  ],
+  "actual_reference_inputs": [
+    "producer_sha256 is retained original51a984de artifact pin",
+    "image is the existing pinned Flink image index reference"
+  ],
+  "limits_basis": "Exact literal common.schema.json $defs.limits.const at pre-implementation expectation freeze",
+  "vectors": [
+    {
+      "name": "deployment-base",
+      "binding_kind": "runtime",
+      "changed_fields": [],
+      "preimage": {
+        "version": "1.0.0",
+        "deployment_id": "71500000-0000-4000-8000-000000000011",
+        "authority_id": "71500000-0000-4000-8000-000000000010",
+        "authority_key_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "cluster_id": "synthetic-cluster-A",
+        "runtime_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "producer_sha256": "51a984dedc04af7b368fea63a9cec88d2127c6ddf5aa019352f491a3481bad6d",
+        "image": "flink:2.2.1-scala_2.12-java17@sha256:55ccb2ad4b98362c3f3503c5a6d7cd00b92eb25e38815ddaf0be5903ade54ffe",
+        "topics": {
+          "control": {
+            "name": "detectbridge.lifecycle.synthetic.control.v1",
+            "id": "synthetic-control-id",
+            "partition": 0
+          },
+          "artifact": {
+            "name": "detectbridge.lifecycle.synthetic.artifact.v1",
+            "id": "synthetic-artifact-id",
+            "partition": 0
+          },
+          "ack": {
+            "name": "detectbridge.lifecycle.synthetic.ack.v1",
+            "id": "synthetic-ack-id",
+            "partition": 0
+          },
+          "output": {
+            "name": "detectbridge.lifecycle.synthetic.output.v1",
+            "id": "synthetic-output-id",
+            "partition": 0
+          }
+        },
+        "compatibility_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "limits": {
+          "store_bytes": 536870912,
+          "reserve_bytes": 134217728,
+          "bundles": 64,
+          "controls": 4096,
+          "incarnations": 256,
+          "ack_observations": 262144,
+          "ack_observation_bytes": 134217728,
+          "chunk_bytes": 262144,
+          "artifact_record_bytes": 524288,
+          "control_record_bytes": 65536,
+          "ack_record_bytes": 65536,
+          "manifest_bytes": 65536,
+          "plan_bytes": 4194304,
+          "transfer_bytes": 8388608,
+          "workers": 16,
+          "runs_per_worker": 16,
+          "assigned_runs": 256,
+          "queue_count": 128,
+          "queue_bytes": 33554432,
+          "state_bytes": 170000384,
+          "output_metadata_bytes": 65536,
+          "output_body_bytes": 2097152,
+          "controller_publications": 4096,
+          "controller_recovery_headroom_bytes": 33554432,
+          "journal_record_bytes": 65536,
+          "control_rejections": 4096,
+          "checkpoint_root_bytes": 1073741824,
+          "checkpoint_reservation_bytes": 201326592,
+          "retained_checkpoints": 3,
+          "concurrent_checkpoints": 1
+        }
+      },
+      "canonical_utf8": "{\"authority_id\":\"71500000-0000-4000-8000-000000000010\",\"authority_key_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"cluster_id\":\"synthetic-cluster-A\",\"compatibility_sha256\":\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\",\"deployment_id\":\"71500000-0000-4000-8000-000000000011\",\"image\":\"flink:2.2.1-scala_2.12-java17@sha256:55ccb2ad4b98362c3f3503c5a6d7cd00b92eb25e38815ddaf0be5903ade54ffe\",\"limits\":{\"ack_observation_bytes\":134217728,\"ack_observations\":262144,\"ack_record_bytes\":65536,\"artifact_record_bytes\":524288,\"assigned_runs\":256,\"bundles\":64,\"checkpoint_reservation_bytes\":201326592,\"checkpoint_root_bytes\":1073741824,\"chunk_bytes\":262144,\"concurrent_checkpoints\":1,\"control_record_bytes\":65536,\"control_rejections\":4096,\"controller_publications\":4096,\"controller_recovery_headroom_bytes\":33554432,\"controls\":4096,\"incarnations\":256,\"journal_record_bytes\":65536,\"manifest_bytes\":65536,\"output_body_bytes\":2097152,\"output_metadata_bytes\":65536,\"plan_bytes\":4194304,\"queue_bytes\":33554432,\"queue_count\":128,\"reserve_bytes\":134217728,\"retained_checkpoints\":3,\"runs_per_worker\":16,\"state_bytes\":170000384,\"store_bytes\":536870912,\"transfer_bytes\":8388608,\"workers\":16},\"producer_sha256\":\"51a984dedc04af7b368fea63a9cec88d2127c6ddf5aa019352f491a3481bad6d\",\"runtime_sha256\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"topics\":{\"ack\":{\"id\":\"synthetic-ack-id\",\"name\":\"detectbridge.lifecycle.synthetic.ack.v1\",\"partition\":0},\"artifact\":{\"id\":\"synthetic-artifact-id\",\"name\":\"detectbridge.lifecycle.synthetic.artifact.v1\",\"partition\":0},\"control\":{\"id\":\"synthetic-control-id\",\"name\":\"detectbridge.lifecycle.synthetic.control.v1\",\"partition\":0},\"output\":{\"id\":\"synthetic-output-id\",\"name\":\"detectbridge.lifecycle.synthetic.output.v1\",\"partition\":0}},\"version\":\"1.0.0\"}",
+      "sha256": "2017f54d3ce7bbb3c1944bc4382e0075195b323cee81a26622c1f2f254b396b3"
+    },
+    {
+      "name": "deployment-cloned-topics-other-cluster",
+      "binding_kind": "runtime",
+      "changed_fields": [
+        "cluster_id"
+      ],
+      "preimage": {
+        "version": "1.0.0",
+        "deployment_id": "71500000-0000-4000-8000-000000000011",
+        "authority_id": "71500000-0000-4000-8000-000000000010",
+        "authority_key_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "cluster_id": "synthetic-cluster-B",
+        "runtime_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "producer_sha256": "51a984dedc04af7b368fea63a9cec88d2127c6ddf5aa019352f491a3481bad6d",
+        "image": "flink:2.2.1-scala_2.12-java17@sha256:55ccb2ad4b98362c3f3503c5a6d7cd00b92eb25e38815ddaf0be5903ade54ffe",
+        "topics": {
+          "control": {
+            "name": "detectbridge.lifecycle.synthetic.control.v1",
+            "id": "synthetic-control-id",
+            "partition": 0
+          },
+          "artifact": {
+            "name": "detectbridge.lifecycle.synthetic.artifact.v1",
+            "id": "synthetic-artifact-id",
+            "partition": 0
+          },
+          "ack": {
+            "name": "detectbridge.lifecycle.synthetic.ack.v1",
+            "id": "synthetic-ack-id",
+            "partition": 0
+          },
+          "output": {
+            "name": "detectbridge.lifecycle.synthetic.output.v1",
+            "id": "synthetic-output-id",
+            "partition": 0
+          }
+        },
+        "compatibility_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "limits": {
+          "store_bytes": 536870912,
+          "reserve_bytes": 134217728,
+          "bundles": 64,
+          "controls": 4096,
+          "incarnations": 256,
+          "ack_observations": 262144,
+          "ack_observation_bytes": 134217728,
+          "chunk_bytes": 262144,
+          "artifact_record_bytes": 524288,
+          "control_record_bytes": 65536,
+          "ack_record_bytes": 65536,
+          "manifest_bytes": 65536,
+          "plan_bytes": 4194304,
+          "transfer_bytes": 8388608,
+          "workers": 16,
+          "runs_per_worker": 16,
+          "assigned_runs": 256,
+          "queue_count": 128,
+          "queue_bytes": 33554432,
+          "state_bytes": 170000384,
+          "output_metadata_bytes": 65536,
+          "output_body_bytes": 2097152,
+          "controller_publications": 4096,
+          "controller_recovery_headroom_bytes": 33554432,
+          "journal_record_bytes": 65536,
+          "control_rejections": 4096,
+          "checkpoint_root_bytes": 1073741824,
+          "checkpoint_reservation_bytes": 201326592,
+          "retained_checkpoints": 3,
+          "concurrent_checkpoints": 1
+        }
+      },
+      "canonical_utf8": "{\"authority_id\":\"71500000-0000-4000-8000-000000000010\",\"authority_key_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"cluster_id\":\"synthetic-cluster-B\",\"compatibility_sha256\":\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\",\"deployment_id\":\"71500000-0000-4000-8000-000000000011\",\"image\":\"flink:2.2.1-scala_2.12-java17@sha256:55ccb2ad4b98362c3f3503c5a6d7cd00b92eb25e38815ddaf0be5903ade54ffe\",\"limits\":{\"ack_observation_bytes\":134217728,\"ack_observations\":262144,\"ack_record_bytes\":65536,\"artifact_record_bytes\":524288,\"assigned_runs\":256,\"bundles\":64,\"checkpoint_reservation_bytes\":201326592,\"checkpoint_root_bytes\":1073741824,\"chunk_bytes\":262144,\"concurrent_checkpoints\":1,\"control_record_bytes\":65536,\"control_rejections\":4096,\"controller_publications\":4096,\"controller_recovery_headroom_bytes\":33554432,\"controls\":4096,\"incarnations\":256,\"journal_record_bytes\":65536,\"manifest_bytes\":65536,\"output_body_bytes\":2097152,\"output_metadata_bytes\":65536,\"plan_bytes\":4194304,\"queue_bytes\":33554432,\"queue_count\":128,\"reserve_bytes\":134217728,\"retained_checkpoints\":3,\"runs_per_worker\":16,\"state_bytes\":170000384,\"store_bytes\":536870912,\"transfer_bytes\":8388608,\"workers\":16},\"producer_sha256\":\"51a984dedc04af7b368fea63a9cec88d2127c6ddf5aa019352f491a3481bad6d\",\"runtime_sha256\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"topics\":{\"ack\":{\"id\":\"synthetic-ack-id\",\"name\":\"detectbridge.lifecycle.synthetic.ack.v1\",\"partition\":0},\"artifact\":{\"id\":\"synthetic-artifact-id\",\"name\":\"detectbridge.lifecycle.synthetic.artifact.v1\",\"partition\":0},\"control\":{\"id\":\"synthetic-control-id\",\"name\":\"detectbridge.lifecycle.synthetic.control.v1\",\"partition\":0},\"output\":{\"id\":\"synthetic-output-id\",\"name\":\"detectbridge.lifecycle.synthetic.output.v1\",\"partition\":0}},\"version\":\"1.0.0\"}",
+      "sha256": "291b510ca021e728840de2dd03767a300c84e4682bcd22baeb1b98467ebbb57f"
+    },
+    {
+      "name": "worker-base",
+      "binding_kind": "checkpoint",
+      "changed_fields": [],
+      "preimage": {
+        "version": "1.0.0",
+        "runtime_binding_sha256": "2017f54d3ce7bbb3c1944bc4382e0075195b323cee81a26622c1f2f254b396b3",
+        "worker_id": "71500000-0000-4000-8000-000000000020",
+        "input_topic": {
+          "name": "detectbridge.lifecycle.synthetic.worker20.input.v1",
+          "id": "synthetic-worker20-input-id",
+          "partition": 0
+        },
+        "evidence_registry_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "state_codec": "lifecycle-worker/1.0.0"
+      },
+      "canonical_utf8": "{\"evidence_registry_sha256\":\"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\",\"input_topic\":{\"id\":\"synthetic-worker20-input-id\",\"name\":\"detectbridge.lifecycle.synthetic.worker20.input.v1\",\"partition\":0},\"runtime_binding_sha256\":\"2017f54d3ce7bbb3c1944bc4382e0075195b323cee81a26622c1f2f254b396b3\",\"state_codec\":\"lifecycle-worker/1.0.0\",\"version\":\"1.0.0\",\"worker_id\":\"71500000-0000-4000-8000-000000000020\"}",
+      "sha256": "47387e4220305524fc3e8edbcfb4e3d99ba2ba772c08b9417c75543bb825f367"
+    },
+    {
+      "name": "worker-other-stable-worker",
+      "binding_kind": "checkpoint",
+      "changed_fields": [
+        "worker_id"
+      ],
+      "preimage": {
+        "version": "1.0.0",
+        "runtime_binding_sha256": "2017f54d3ce7bbb3c1944bc4382e0075195b323cee81a26622c1f2f254b396b3",
+        "worker_id": "71500000-0000-4000-8000-000000000021",
+        "input_topic": {
+          "name": "detectbridge.lifecycle.synthetic.worker20.input.v1",
+          "id": "synthetic-worker20-input-id",
+          "partition": 0
+        },
+        "evidence_registry_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "state_codec": "lifecycle-worker/1.0.0"
+      },
+      "canonical_utf8": "{\"evidence_registry_sha256\":\"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\",\"input_topic\":{\"id\":\"synthetic-worker20-input-id\",\"name\":\"detectbridge.lifecycle.synthetic.worker20.input.v1\",\"partition\":0},\"runtime_binding_sha256\":\"2017f54d3ce7bbb3c1944bc4382e0075195b323cee81a26622c1f2f254b396b3\",\"state_codec\":\"lifecycle-worker/1.0.0\",\"version\":\"1.0.0\",\"worker_id\":\"71500000-0000-4000-8000-000000000021\"}",
+      "sha256": "26e0f51fd7fccfcb0635077215f31e590537876fd05d943767fa52d0e197cfe1"
+    },
+    {
+      "name": "worker-other-input-id",
+      "binding_kind": "checkpoint",
+      "changed_fields": [
+        "input_topic.id"
+      ],
+      "preimage": {
+        "version": "1.0.0",
+        "runtime_binding_sha256": "2017f54d3ce7bbb3c1944bc4382e0075195b323cee81a26622c1f2f254b396b3",
+        "worker_id": "71500000-0000-4000-8000-000000000020",
+        "input_topic": {
+          "name": "detectbridge.lifecycle.synthetic.worker20.input.v1",
+          "id": "synthetic-worker20-input-clone-id",
+          "partition": 0
+        },
+        "evidence_registry_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "state_codec": "lifecycle-worker/1.0.0"
+      },
+      "canonical_utf8": "{\"evidence_registry_sha256\":\"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\",\"input_topic\":{\"id\":\"synthetic-worker20-input-clone-id\",\"name\":\"detectbridge.lifecycle.synthetic.worker20.input.v1\",\"partition\":0},\"runtime_binding_sha256\":\"2017f54d3ce7bbb3c1944bc4382e0075195b323cee81a26622c1f2f254b396b3\",\"state_codec\":\"lifecycle-worker/1.0.0\",\"version\":\"1.0.0\",\"worker_id\":\"71500000-0000-4000-8000-000000000020\"}",
+      "sha256": "0a862a0167e8a0845ab9b05c0b24b9f757a6d68ded4b66a0a42ad3fb1ef6c5af"
+    },
+    {
+      "name": "worker-other-input-name",
+      "binding_kind": "checkpoint",
+      "changed_fields": [
+        "input_topic.name"
+      ],
+      "preimage": {
+        "version": "1.0.0",
+        "runtime_binding_sha256": "2017f54d3ce7bbb3c1944bc4382e0075195b323cee81a26622c1f2f254b396b3",
+        "worker_id": "71500000-0000-4000-8000-000000000020",
+        "input_topic": {
+          "name": "detectbridge.lifecycle.synthetic.worker20.other-input.v1",
+          "id": "synthetic-worker20-input-id",
+          "partition": 0
+        },
+        "evidence_registry_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "state_codec": "lifecycle-worker/1.0.0"
+      },
+      "canonical_utf8": "{\"evidence_registry_sha256\":\"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\",\"input_topic\":{\"id\":\"synthetic-worker20-input-id\",\"name\":\"detectbridge.lifecycle.synthetic.worker20.other-input.v1\",\"partition\":0},\"runtime_binding_sha256\":\"2017f54d3ce7bbb3c1944bc4382e0075195b323cee81a26622c1f2f254b396b3\",\"state_codec\":\"lifecycle-worker/1.0.0\",\"version\":\"1.0.0\",\"worker_id\":\"71500000-0000-4000-8000-000000000020\"}",
+      "sha256": "69c76c5cdfec1bf26ac2603466269be57094d2d99d0be763dbb64aab66264b31"
+    },
+    {
+      "name": "worker-other-cluster-runtime",
+      "binding_kind": "checkpoint",
+      "changed_fields": [
+        "runtime_binding_sha256"
+      ],
+      "preimage": {
+        "version": "1.0.0",
+        "runtime_binding_sha256": "291b510ca021e728840de2dd03767a300c84e4682bcd22baeb1b98467ebbb57f",
+        "worker_id": "71500000-0000-4000-8000-000000000020",
+        "input_topic": {
+          "name": "detectbridge.lifecycle.synthetic.worker20.input.v1",
+          "id": "synthetic-worker20-input-id",
+          "partition": 0
+        },
+        "evidence_registry_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "state_codec": "lifecycle-worker/1.0.0"
+      },
+      "canonical_utf8": "{\"evidence_registry_sha256\":\"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\",\"input_topic\":{\"id\":\"synthetic-worker20-input-id\",\"name\":\"detectbridge.lifecycle.synthetic.worker20.input.v1\",\"partition\":0},\"runtime_binding_sha256\":\"291b510ca021e728840de2dd03767a300c84e4682bcd22baeb1b98467ebbb57f\",\"state_codec\":\"lifecycle-worker/1.0.0\",\"version\":\"1.0.0\",\"worker_id\":\"71500000-0000-4000-8000-000000000020\"}",
+      "sha256": "a0fb88aeb3926ea496b9608032250bab48cabedde24f2a95f914bb9d16858c03"
+    }
+  ],
+  "required_comparisons": [
+    {
+      "left": "deployment-base",
+      "right": "deployment-cloned-topics-other-cluster",
+      "equal": false,
+      "reason": "Broker cluster identity changes while all shared topic descriptors remain identical"
+    },
+    {
+      "left": "worker-base",
+      "right": "worker-other-stable-worker",
+      "equal": false,
+      "reason": "Stable checkpoint restore binding changes with worker_id"
+    },
+    {
+      "left": "worker-base",
+      "right": "worker-other-input-id",
+      "equal": false,
+      "reason": "Stable checkpoint restore binding changes with input_topic.id"
+    },
+    {
+      "left": "worker-base",
+      "right": "worker-other-input-name",
+      "equal": false,
+      "reason": "Stable checkpoint restore binding changes with input_topic.name"
+    },
+    {
+      "left": "worker-base",
+      "right": "worker-other-cluster-runtime",
+      "equal": false,
+      "reason": "Stable checkpoint restore binding changes with runtime_binding_sha256"
+    }
+  ]
+}

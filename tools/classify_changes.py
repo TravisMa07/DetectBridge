@@ -443,6 +443,85 @@ def needs_historical(paths):
     return any(p in shared or p.startswith(prefixes) for p in paths if not p.endswith(".md"))
 
 
+def needs_current(paths):
+    shared = {
+        "settings.gradle.kts",
+        "settings-gradle.lockfile",
+        "build.gradle.kts",
+        "gradlew",
+        "gradlew.bat",
+        "gradle.properties",
+        "tools/dev.py",
+        "tools/stack.py",
+        "tools/integration.py",
+        "tools/archive.py",
+        "tools/check_contracts.py",
+        "tools/check_integration.py",
+        "tools/transport.py",
+        "tools/toolchains.json",
+        "pyproject.toml",
+        "uv.lock",
+        "tools/classify_changes.py",
+        "tools/check_gate.py",
+        "tools/dependency_inventory.py",
+        "docs/transport-dependencies.json",
+    }
+    prefixes = (
+        "packages/current-replay/",
+        "packages/historical-replay/",
+        "packages/archive-writer/",
+        "packages/integration-job/",
+        "packages/linux-adapters/",
+        "packages/windows-adapters/",
+        "packages/detection-evaluator/",
+        "packages/transport-contracts/",
+        "contracts/",
+        "tools/detection",
+        "tools/check_detection",
+        "tools/check_mapping",
+        "tools/current_replay",
+        "tools/check_current_replay",
+        "tools/tests/test_current",
+        "tools/historical",
+        "tools/check_historical",
+        "tools/tests/test_historical",
+        "tools/integration_oracle",
+        "tools/integration_cases",
+        "tools/linux_assembly",
+        "gradle/",
+        "deploy/local/",
+        ".github/workflows/",
+    )
+    return any(p in shared or p.startswith(prefixes) for p in paths if not p.endswith(".md"))
+
+
+def needs_maintenance(paths):
+    direct = {
+        "tools/archive_profiles.py",
+        "tools/replay.py",
+        "tools/replay_time.py",
+        "tools/check_replay.py",
+        "tools/datasets.py",
+        "tools/check_datasets.py",
+        "tools/contract_identity.py",
+    }
+    prefixes = (
+        "packages/archive-maintenance/",
+        "catalog/datasets/",
+        "tools/archive_maintenance",
+        "tools/check_archive_maintenance",
+        "tools/managed_replay",
+        "tools/p05_archive",
+        "tools/tests/test_maintenance",
+        "tools/tests/test_archive_maintenance",
+        "tools/tests/test_managed_replay",
+        "tools/tests/test_p05_archive",
+    )
+    return needs_current(paths) or any(
+        p in direct or p.startswith(prefixes) for p in paths if not p.endswith(".md")
+    )
+
+
 if __name__ == "__main__":
     base = os.environ.get("CHANGE_BASE", "")
     head = os.environ.get("CHANGE_HEAD", "HEAD")
@@ -463,6 +542,8 @@ if __name__ == "__main__":
         output.write(f"writer={str(needs_writer([p for p in paths if p])).lower()}\n")
         output.write(f"integration={str(needs_integration([p for p in paths if p])).lower()}\n")
         output.write(f"historical={str(needs_historical([p for p in paths if p])).lower()}\n")
+        output.write(f"maintenance={str(needs_maintenance([p for p in paths if p])).lower()}\n")
+        output.write(f"current={str(needs_current([p for p in paths if p])).lower()}\n")
         output.write(f"archive={str(needs_archive([p for p in paths if p])).lower()}\n")
         output.write(f"search={str(needs_search([p for p in paths if p])).lower()}\n")
         output.write(f"assembly={str(needs_assembly([p for p in paths if p])).lower()}\n")

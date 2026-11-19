@@ -1,0 +1,120 @@
+{
+  "version": "1.0.0",
+  "rationale": "Independent source text: Alice does not equal Bob; whoami equals the Image predicate. EOE 5 closes the selected audit serial before timeout; admission at deadline follows timeout in original Machine.",
+  "counts": {
+    "auth": {
+      "matched": 0,
+      "unmatched": 1,
+      "inapplicable": 1,
+      "configuration_blocked": 0,
+      "quality_skipped": 0,
+      "evaluation_error": 0
+    },
+    "audit": {
+      "matched": 1,
+      "unmatched": 0,
+      "inapplicable": 1,
+      "configuration_blocked": 0,
+      "quality_skipped": 0,
+      "evaluation_error": 0
+    }
+  },
+  "cases": [
+    {
+      "id": "regroup",
+      "inputs": [
+        "audit_0",
+        "audit_1",
+        "audit_2",
+        "audit_3",
+        "audit_4",
+        "audit_5",
+        "auth"
+      ],
+      "milliseconds": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        2
+      ],
+      "closure": "source_boundary",
+      "audit_members": 6,
+      "late": 0
+    },
+    {
+      "id": "timeout",
+      "inputs": [
+        "audit_0",
+        "audit_1",
+        "audit_2",
+        "audit_3",
+        "audit_4",
+        "audit_5",
+        "auth"
+      ],
+      "milliseconds": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        30001,
+        30002
+      ],
+      "tick_before_eoe": 30000,
+      "closure": "timeout",
+      "audit_members": 5,
+      "late": 1
+    },
+    {
+      "id": "deadline",
+      "inputs": [
+        "audit_0",
+        "audit_1",
+        "audit_2",
+        "audit_3",
+        "audit_4",
+        "audit_5",
+        "auth"
+      ],
+      "milliseconds": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        30000,
+        30001
+      ],
+      "closure": "timeout",
+      "audit_members": 5,
+      "late": 1
+    }
+  ],
+  "identity": {
+    "preimage": [
+      "detectbridge.current.transition/1",
+      "00000000-0000-4000-8000-000000000042",
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      0
+    ],
+    "sha256": "10085fc25a399d9b7388960c7895a1f79fc215e86c2c0491d82a83e948cebf18"
+  },
+  "sources": [
+    {
+      "path": "contracts/historical-replay/v1/fixtures/expectations.json",
+      "sha256": "3fb529115718c08a49e59b43c3c0a778f23de5e490b20667189575b1ce71e733"
+    },
+    {
+      "path": "contracts/current-replay/v1/fixtures/auth-bob.yml",
+      "sha256": "64990b6c0a03014f9b316347ab7c2f88b2be5aaeb3c2464a07e80b0988b61bc3"
+    },
+    {
+      "path": "contracts/current-replay/v1/fixtures/image-match.yml",
+      "sha256": "6374bd348d60b359818b81c97fdaf269935a035d4e59386b2d7d55d7d8c6e15c"
+    }
+  ]
+}

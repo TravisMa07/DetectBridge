@@ -103,3 +103,36 @@ metadata and all dependency locks remain unchanged. Exact source/log hashes and
 base 943d143 are retained in `.cache/ci-bootstrap-qualified-source.json`.
 This is local tooling/build evidence, not a new runtime or performance claim.
 Native CI and actual merged-main verification of this correction remain open.
+
+## Native PR qualification complete
+
+Run 44334111500 attempt 1 completed successfully at 2026-11-18 15:42:27 UTC
+for exact head `221dc7a8330f3062dce0932ba4ddc1898b600e10`. Every applicable
+job and required aggregate 134922344780 passed; five explicit acquisition/private
+recorded opt-in jobs were skipped. Actual checkout was GitHub test merge
+`32149f93ce4546031e64931c4ad4dbdd77a28188`, parents 943d143 and 221dc7a.
+This is PR qualification, not an actual owner-merged-main pass for the correction.
+Run/job/test-merge metadata and full toolchain/OpenSearch writer logs are retained
+under `.cache/ci-bootstrap-pr-44334111500/`. Reviews and inline review threads
+were empty when refreshed after CI success. Owner review/merge authorization and
+qualification on the correction's actual merged commit remain open.
+
+Separately, the unchanged P14b actual merged-main run 44326278636 attempt 2
+passed on exact `943d143eb4e5dc6d07871513f993efbddf1ab230`, completed
+2026-11-18 15:24:07 UTC. Every applicable job and aggregate 134909773433
+passed. Attempt 1 remains failed. Metadata is retained in
+`.cache/p14b-merge-ci-44326278636/attempt-2-completed.json`. This unchanged retry
+qualifies P14b's merge; it does not substitute for qualifying this CI correction.
+These completion notes remain local to preserve the qualified PR head.
+
+## Owner merge and actual merged qualification
+
+The owner regularly merged #53 as
+`b495c2bc706d4ac7f2515fe7b1240c5b8ae70904`. Actual main run 44339557684
+attempt 1 exhausted the bounded HTTP 429 setup retries; attempt 2 reported a
+missing Shadow POM without an HTTP status. Both remain failed. Unchanged attempt
+3 passed every applicable job and aggregate on exact b495c2b, completing
+2026-11-18 16:27:17 UTC. Evidence is retained under
+`.cache/ci-bootstrap-merge-44339557684/`. This independently qualifies the merged
+base for P14c1. Shared-cache optimization and recovery diagnostic improvements
+continue separately in #54; they are not a circular prerequisite for new replay.

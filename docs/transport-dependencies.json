@@ -43,6 +43,12 @@
       "coordinate": "at.yawk.lz4:lz4-java:1.11.4",
       "uses": [
         {
+          "lockfile": "packages/archive-maintenance/gradle.lockfile",
+          "configurations": [
+            "runtimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/archive-writer/gradle.lockfile",
           "configurations": [
             "runtimeClasspath"
@@ -197,6 +203,13 @@
       "coordinate": "com.ethlo.time:itu:1.17.0",
       "uses": [
         {
+          "lockfile": "packages/archive-maintenance/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/archive-writer/gradle.lockfile",
           "configurations": [
             "compileClasspath",
@@ -283,10 +296,23 @@
       "coordinate": "com.fasterxml.jackson.core:jackson-annotations:2.21",
       "uses": [
         {
+          "lockfile": "packages/archive-maintenance/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/archive-writer/gradle.lockfile",
           "configurations": [
             "compileClasspath",
             "runtimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/current-replay/gradle.lockfile",
+          "configurations": [
+            "compileClasspath"
           ]
         },
         {
@@ -540,6 +566,12 @@
       "coordinate": "com.github.luben:zstd-jni:1.5.6-10",
       "uses": [
         {
+          "lockfile": "packages/archive-maintenance/gradle.lockfile",
+          "configurations": [
+            "runtimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/archive-writer/gradle.lockfile",
           "configurations": [
             "runtimeClasspath"
@@ -633,6 +665,13 @@
     {
       "coordinate": "com.networknt:json-schema-validator:3.0.9",
       "uses": [
+        {
+          "lockfile": "packages/archive-maintenance/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath"
+          ]
+        },
         {
           "lockfile": "packages/archive-writer/gradle.lockfile",
           "configurations": [
@@ -1510,10 +1549,23 @@
       "coordinate": "org.apache.kafka:kafka-clients:4.2.0",
       "uses": [
         {
+          "lockfile": "packages/archive-maintenance/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/archive-writer/gradle.lockfile",
           "configurations": [
             "compileClasspath",
             "runtimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/current-replay/gradle.lockfile",
+          "configurations": [
+            "compileClasspath"
           ]
         },
         {
@@ -2118,6 +2170,13 @@
       "coordinate": "org.slf4j:slf4j-api:2.0.20",
       "uses": [
         {
+          "lockfile": "packages/archive-maintenance/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/archive-writer/gradle.lockfile",
           "configurations": [
             "compileClasspath",
@@ -2201,6 +2260,12 @@
       "coordinate": "org.slf4j:slf4j-nop:2.0.20",
       "uses": [
         {
+          "lockfile": "packages/archive-maintenance/gradle.lockfile",
+          "configurations": [
+            "runtimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/archive-writer/gradle.lockfile",
           "configurations": [
             "runtimeClasspath"
@@ -2236,6 +2301,13 @@
     {
       "coordinate": "org.snakeyaml:snakeyaml-engine:3.0.1",
       "uses": [
+        {
+          "lockfile": "packages/archive-maintenance/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath"
+          ]
+        },
         {
           "lockfile": "packages/archive-writer/gradle.lockfile",
           "configurations": [
@@ -2323,6 +2395,12 @@
       "coordinate": "org.xerial.snappy:snappy-java:1.1.10.9",
       "uses": [
         {
+          "lockfile": "packages/archive-maintenance/gradle.lockfile",
+          "configurations": [
+            "runtimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/archive-writer/gradle.lockfile",
           "configurations": [
             "runtimeClasspath"
@@ -2396,10 +2474,23 @@
       "coordinate": "tools.jackson.core:jackson-core:3.1.8",
       "uses": [
         {
+          "lockfile": "packages/archive-maintenance/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/archive-writer/gradle.lockfile",
           "configurations": [
             "compileClasspath",
             "runtimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/current-replay/gradle.lockfile",
+          "configurations": [
+            "compileClasspath"
           ]
         },
         {
@@ -2493,10 +2584,23 @@
       "coordinate": "tools.jackson.core:jackson-databind:3.1.8",
       "uses": [
         {
+          "lockfile": "packages/archive-maintenance/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/archive-writer/gradle.lockfile",
           "configurations": [
             "compileClasspath",
             "runtimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/current-replay/gradle.lockfile",
+          "configurations": [
+            "compileClasspath"
           ]
         },
         {
@@ -2590,6 +2694,13 @@
       "coordinate": "tools.jackson.dataformat:jackson-dataformat-yaml:3.1.8",
       "uses": [
         {
+          "lockfile": "packages/archive-maintenance/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/archive-writer/gradle.lockfile",
           "configurations": [
             "compileClasspath",
@@ -2676,10 +2787,23 @@
       "coordinate": "tools.jackson:jackson-bom:3.1.8",
       "uses": [
         {
+          "lockfile": "packages/archive-maintenance/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/archive-writer/gradle.lockfile",
           "configurations": [
             "compileClasspath",
             "runtimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/current-replay/gradle.lockfile",
+          "configurations": [
+            "compileClasspath"
           ]
         },
         {

@@ -130,6 +130,8 @@ class HygieneTests(unittest.TestCase):
                             "search": "false",
                             "archive": "false",
                             "historical": "false",
+                            "current": "false",
+                            "maintenance": "false",
                         },
                     },
                     "repository-hygiene": {"result": "success"},
@@ -146,6 +148,8 @@ class HygieneTests(unittest.TestCase):
                     "search-verification": {"result": "skipped"},
                     "archive-verification": {"result": "skipped"},
                     "historical-replay-verification": {"result": "skipped"},
+                    "current-replay-verification": {"result": "skipped"},
+                    "archive-maintenance-verification": {"result": "skipped"},
                 }
                 self.assertEqual(
                     gate_passes(needs), status == ("success" if applicable == "true" else "skipped")

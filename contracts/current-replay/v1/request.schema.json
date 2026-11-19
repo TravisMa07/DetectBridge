@@ -1,0 +1,160 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:current-replay:1.0.0:request",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": "1.0.0"
+    },
+    "mode": {
+      "const": "current"
+    },
+    "selection_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "plan_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "engine_profile": {
+      "const": "p13-runtime-51a984de/1.0.0"
+    },
+    "source_policy": {
+      "const": "preserve-original-context/1.0.0"
+    },
+    "schedule_policy": {
+      "const": "explicit-offline-clock/1.0.0"
+    },
+    "enrichment": {
+      "const": []
+    },
+    "assembler_limits": {
+      "type": "object",
+      "properties": {
+        "members": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        },
+        "group_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1048576
+        },
+        "open_groups": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "pending_bytes": {
+          "type": "integer",
+          "minimum": 13,
+          "maximum": 33554432
+        },
+        "age_ms": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 30000
+        },
+        "runs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16
+        },
+        "closed_keys": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        },
+        "closed_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 33554432
+        }
+      },
+      "required": [
+        "members",
+        "group_bytes",
+        "open_groups",
+        "pending_bytes",
+        "age_ms",
+        "runs",
+        "closed_keys",
+        "closed_bytes"
+      ],
+      "additionalProperties": false
+    },
+    "schedule": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 512,
+      "items": {
+        "type": "object",
+        "properties": {
+          "at_ms": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 86400000
+          },
+          "action": {
+            "enum": [
+              "input",
+              "tick",
+              "end"
+            ]
+          },
+          "input": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "topic": {
+                    "const": "detectbridge.integration.input.v1"
+                  },
+                  "offset": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9223372036854775807
+                  },
+                  "value_sha256": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                  }
+                },
+                "required": [
+                  "topic",
+                  "offset",
+                  "value_sha256"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "at_ms",
+          "action",
+          "input"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "version",
+    "mode",
+    "selection_sha256",
+    "plan_sha256",
+    "engine_profile",
+    "source_policy",
+    "schedule_policy",
+    "enrichment",
+    "assembler_limits",
+    "schedule"
+  ],
+  "additionalProperties": false
+}

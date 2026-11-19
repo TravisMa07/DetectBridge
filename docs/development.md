@@ -24,6 +24,10 @@ Gradle setup retries explicit dependency HTTP 429/502/503/504 failures at most
 three times, retaining every attempt under `.cache/bootstrap/gradle-help-*`.
 Missing coordinates, integrity/compiler errors and runtime checks still fail.
 See [bootstrap recovery and evidence](ci-bootstrap-recovery.md).
+CI's existing toolchain job prepares a verified public Gradle module cache with
+`python3 tools/dev.py dependencies`; downstream bootstrap jobs restore the exact
+cache before qualification. Cache misses fail visibly. The prefetch command does
+not run source compilation or tests; see [cache fan-out repair](ci-cache-fanout.md).
 
 `doctor` reports effective versions and pin drift; `check` runs repository hygiene,
 Ruff lint/format checks, mypy, offline contracts/catalog checks and Python regressions.
@@ -204,3 +208,46 @@ interruptions, helper recovery and an isolated original-source Kafka/Flink/archi
 flow. Serialize this with other heavy suites. Synthetic qualification does not
 establish private recorded or throughput coverage; exact evidence belongs in the
 [P14b ledger](p14b-ledger.md).
+
+## P14c1 current-policy replay checks
+
+```sh
+uv run --locked python tools/dev.py current
+uv run --locked python tools/current_replay_verify.py
+```
+
+The first builds the thin current executor and original-profile helpers, checks
+closed contracts and installed resources, and runs current component/gate tests.
+The second executes actual archive/current JVM replay against independent source,
+count, membership and attribution expectations, with isolated runs and publication
+faults. Serialize heavy qualification with historical and other runtime suites.
+The fail-closed `current-replay-verification` job runs both commands when applicable;
+component checks alone do not establish runtime recovery. Private originals remain
+outside public CI. See the [operator guide](current-replay.md),
+[owning design](p14c1-design.md) and [qualification ledger](p14c1-ledger.md) for exact
+bounds and separate acceptance gates.
+
+## P14c2 managed archive checks
+
+```sh
+uv run --locked python tools/dev.py maintenance
+uv run --locked python tools/archive_maintenance_verify.py
+```
+
+The first builds the separate managed/probe artifacts, verifies exact legacy and
+controller/schema resources, and runs Java/Python component checks. The second
+executes synthetic retention, corruption, publication/recovery, Kafka, pressure
+and isolated replay cases. The applicable `archive-maintenance-verification` job
+requires both and the exact prepared dependency cache; its aggregate fails closed.
+Serialize heavy suites and keep every project and physical data/control root
+isolated. Source fingerprints and retirement records are finite preservation
+metadata, with visible exhaustion rather than eviction.
+
+Accepted controlled originals remain local. The separate opt-in command is
+`uv run --locked python tools/archive_recorded.py --recorded`; pass the original
+physical paths explicitly when using a worktree, as described in the
+[managed operator guide](archive-maintenance.md). It rechecks catalog/terms/source
+bindings, performs actual source-to-archive/historical/current qualification,
+keeps private diagnostics local and restores the default integration build.
+Actual platforms/artifacts, failures and remaining gates belong in the
+[ledger](p14c2-ledger.md) and [milestone map](p14-acceptance.md).

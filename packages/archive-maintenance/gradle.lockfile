@@ -1,0 +1,19 @@
+# This is a Gradle generated file for dependency locking.
+# Manual edits can break the build and are not advised.
+# This file is expected to be part of source control.
+# To regenerate this file, run: ./gradlew :archive-writer:dependencies --write-locks
+at.yawk.lz4:lz4-java:1.11.4=runtimeClasspath
+com.ethlo.time:itu:1.17.0=compileClasspath,runtimeClasspath
+com.fasterxml.jackson.core:jackson-annotations:2.21=compileClasspath,runtimeClasspath
+com.github.luben:zstd-jni:1.5.6-10=runtimeClasspath
+com.networknt:json-schema-validator:3.0.9=compileClasspath,runtimeClasspath
+org.apache.kafka:kafka-clients:4.2.0=compileClasspath,runtimeClasspath
+org.slf4j:slf4j-api:2.0.20=compileClasspath,runtimeClasspath
+org.slf4j:slf4j-nop:2.0.20=runtimeClasspath
+org.snakeyaml:snakeyaml-engine:3.0.1=compileClasspath,runtimeClasspath
+org.xerial.snappy:snappy-java:1.1.10.9=runtimeClasspath
+tools.jackson.core:jackson-core:3.1.8=compileClasspath,runtimeClasspath
+tools.jackson.core:jackson-databind:3.1.8=compileClasspath,runtimeClasspath
+tools.jackson.dataformat:jackson-dataformat-yaml:3.1.8=compileClasspath,runtimeClasspath
+tools.jackson:jackson-bom:3.1.8=compileClasspath,runtimeClasspath
+empty=annotationProcessor,shadow

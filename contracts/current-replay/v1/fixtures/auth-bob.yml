@@ -1,0 +1,11 @@
+title: Synthetic current-policy Bob authentication
+id: 72000000-0000-4000-8000-000000000004
+status: test
+license: Apache-2.0
+logsource:
+  product: linux
+  service: auth
+detection:
+  selection:
+    User: bob
+  condition: selection

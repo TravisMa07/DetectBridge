@@ -111,6 +111,8 @@ class StackTests(unittest.TestCase):
                             "search": "false",
                             "archive": "false",
                             "historical": "false",
+                            "current": "false",
+                            "maintenance": "false",
                         },
                     },
                     "repository-hygiene": {"result": "success"},
@@ -128,6 +130,8 @@ class StackTests(unittest.TestCase):
                     "search-verification": {"result": "skipped"},
                     "archive-verification": {"result": "skipped"},
                     "historical-replay-verification": {"result": "skipped"},
+                    "current-replay-verification": {"result": "skipped"},
+                    "archive-maintenance-verification": {"result": "skipped"},
                     "local-stack-verification": {
                         "result": "success" if selected == "true" else "skipped"
                     },

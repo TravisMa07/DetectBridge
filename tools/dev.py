@@ -169,6 +169,8 @@ def doctor():
     consistency()
     run(["uv", "run", "--locked", "python", "tools/check_archive.py"])
     run(["uv", "run", "--locked", "python", "tools/check_historical.py"])
+    run(["uv", "run", "--locked", "python", "tools/check_current_replay.py"])
+    run(["uv", "run", "--locked", "python", "tools/check_archive_maintenance.py"])
     run(["uv", "run", "--locked", "python", "tools/check_detection.py"])
 
 
@@ -218,12 +220,14 @@ def transient_dependency_failure(output):
     )
 
 
-def bootstrap_gradle():
+def bootstrap_gradle(task="help"):
     """Retry only explicit transient dependency HTTP errors during Gradle setup."""
+    if task not in {"help", "ciDependencies"}:
+        raise RuntimeError("Only dependency setup tasks may use bootstrap retries")
     parent = ROOT / ".cache/bootstrap"
     parent.mkdir(parents=True, exist_ok=True)
-    logs = Path(tempfile.mkdtemp(prefix="gradle-help-", dir=parent))
-    args = [str(ROOT / "gradlew"), "--console=plain", "help"]
+    logs = Path(tempfile.mkdtemp(prefix="gradle-" + task + "-", dir=parent))
+    args = [str(ROOT / "gradlew"), "--console=plain", task]
     stagger = (
         int(hashlib.sha256(os.environ.get("GITHUB_JOB", "local").encode()).hexdigest(), 16) % 7
     )
@@ -247,6 +251,58 @@ def bootstrap_gradle():
             flush=True,
         )
         time.sleep(delay)
+
+
+def maintenance():
+    run(["uv", "run", "--locked", "python", "tools/archive_maintenance.py", "build"])
+    run(["uv", "run", "--locked", "python", "tools/check_archive_maintenance.py", "--artifacts"])
+    for pattern in (
+        "test_maintenance*.py",
+        "test_p05_archive.py",
+        "test_managed_replay.py",
+        "test_archive_maintenance*.py",
+    ):
+        run(
+            [
+                "uv",
+                "run",
+                "--locked",
+                "python",
+                "-m",
+                "unittest",
+                "discover",
+                "-s",
+                "tools/tests",
+                "-p",
+                pattern,
+                "-v",
+            ]
+        )
+
+
+def current():
+    run(["uv", "run", "--locked", "python", "tools/current_replay.py", "build"])
+    run(["uv", "run", "--locked", "python", "tools/check_current_replay.py", "--artifacts"])
+    run(
+        [
+            "uv",
+            "run",
+            "--locked",
+            "python",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "tools/tests",
+            "-p",
+            "test_current*.py",
+            "-v",
+        ]
+    )
+
+
+def dependencies():
+    bootstrap_gradle("ciDependencies")
 
 
 def historical():
@@ -303,6 +359,8 @@ def check():
     consistency()
     run(["uv", "run", "--locked", "python", "tools/check_archive.py"])
     run(["uv", "run", "--locked", "python", "tools/check_historical.py"])
+    run(["uv", "run", "--locked", "python", "tools/check_current_replay.py"])
+    run(["uv", "run", "--locked", "python", "tools/check_archive_maintenance.py"])
     run(["uv", "run", "--locked", "python", "tools/check_detection.py"])
     run(["uv", "run", "--locked", "python", "tools/check_datasets.py"])
     run(["uv", "run", "--locked", "python", "tools/check_contracts.py"])
@@ -577,6 +635,7 @@ def main():
         choices=[
             "doctor",
             "bootstrap",
+            "dependencies",
             "check",
             "smoke",
             "java",
@@ -587,6 +646,8 @@ def main():
             "search",
             "archive",
             "historical",
+            "current",
+            "maintenance",
             "verify",
         ],
     )

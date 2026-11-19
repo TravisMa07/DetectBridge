@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:archive-maintenance:1.0.0:holds",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": "1.0.0"
+    },
+    "managed_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9223372036854775807
+    },
+    "previous_sha256": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "holds": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "scope": {
+            "enum": [
+              "all",
+              "range",
+              "run",
+              "import",
+              "object"
+            ]
+          },
+          "topic": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "detectbridge.integration.input.v1",
+                  "detectbridge.tagged-events.v1",
+                  "detectbridge.detections.v1",
+                  "detectbridge.processing-diagnostics.v1",
+                  "detectbridge.integration.manifests.v1",
+                  "detectbridge.integration.preservation.v1",
+                  "detectbridge.integration.quarantine.v1",
+                  "detectbridge.integration.receipts.v1",
+                  "detectbridge.integration.writer-failures.v1"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "first": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9223372036854775807
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "next": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9223372036854775807
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "scope",
+          "topic",
+          "first",
+          "next",
+          "subject"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0,
+      "maxItems": 256
+    }
+  },
+  "required": [
+    "version",
+    "managed_id",
+    "revision",
+    "previous_sha256",
+    "reason",
+    "holds"
+  ],
+  "additionalProperties": false
+}

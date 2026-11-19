@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:archive-maintenance:1.0.0:import",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": "1.0.0"
+    },
+    "managed_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "run_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "manifest_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "p05_manifest_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "reviewed_catalog_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "record_count": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000
+    },
+    "envelope_count": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100005
+    },
+    "segment_count": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 512
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "enum": [
+              "original",
+              "derived"
+            ]
+          },
+          "role": {
+            "enum": [
+              "manifest",
+              "manifest_checksum",
+              "timing_index",
+              "checkpoint",
+              "segment_payload",
+              "segment_commit",
+              "payload",
+              "license",
+              "scenario_metadata",
+              "lfs_pointer",
+              "framing_index",
+              "capture_projection"
+            ]
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "pattern": "^(run|cache|index)/[A-Za-z0-9._/-]+$"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "length": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 33554432
+          }
+        },
+        "required": [
+          "kind",
+          "role",
+          "path",
+          "sha256",
+          "length"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "maxItems": 1024
+    }
+  },
+  "required": [
+    "version",
+    "managed_id",
+    "id",
+    "run_id",
+    "manifest_sha256",
+    "p05_manifest_sha256",
+    "reviewed_catalog_sha256",
+    "record_count",
+    "envelope_count",
+    "segment_count",
+    "files"
+  ],
+  "additionalProperties": false
+}

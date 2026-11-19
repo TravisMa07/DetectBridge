@@ -1,0 +1,468 @@
+{
+  "version": "1.0.0",
+  "origin": "Original synthetic DetectBridge fixture, Apache-2.0. Canonical UTF-8, RFC1952 deflate and SHA-256 computed before managed implementation; accepted archive v1 supplies framing semantics.",
+  "sources": [
+    {
+      "path": "packages/archive-writer/src/main/java/io/detectbridge/archive/Format.java",
+      "sha256": "0231c43a9dc558ea1c0653a0df2e99d391a589b1cecf4a2b1b45c0ce96fc1cfc"
+    },
+    {
+      "path": "packages/archive-writer/src/main/java/io/detectbridge/archive/Store.java",
+      "sha256": "ae023adce1472b3a8ea5be92b26dde56f315b94db35e8b9e586134ae1b70f48b"
+    },
+    {
+      "path": "packages/archive-writer/src/main/java/io/detectbridge/archive/Main.java",
+      "sha256": "7646708fcfa4f45654412ac26c2ecf8b0d773b2f744256747e9d30a40ea86725"
+    },
+    {
+      "path": "tools/historical.py",
+      "sha256": "3903446fab11597e9b0e7c6dc79f0c35dfddbe6d134ebef45d5e5237c8e140b7"
+    },
+    {
+      "path": "tools/current_replay.py",
+      "sha256": "194e1269f42408277de502c36719287f62ed20d5ddfdd1abdad5e79a0c61404d"
+    },
+    {
+      "path": "contracts/search-writer/v1/fixtures/recorded-expectations.json",
+      "sha256": "9e5c3e3711dea7835a363828e45a25f58c4785bbfb38d682e2894d9f069644c2"
+    },
+    {
+      "path": "contracts/current-replay/v1/fixtures/expectations.json",
+      "sha256": "0ff7a0ee071a4865be8768d59f95f13f11c773b99d38130c48c2c4751bbe9bae"
+    }
+  ],
+  "identities": [
+    {
+      "preimage": [
+        "detectbridge.archive.retirement/1",
+        "00000000-0000-4000-8000-000000000051",
+        "00000000-0000-4000-8000-000000000052",
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ],
+      "sha256": "87da1f8a9eaa61c6f03a940ef2270b4007bcdaa8891ba167691c286b18e339b2"
+    },
+    {
+      "preimage": [
+        "detectbridge.archive.p05-import/1",
+        "00000000-0000-4000-8000-000000000051",
+        "00000000-0000-4000-8000-000000000053",
+        "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        []
+      ],
+      "sha256": "f3b43337492b546ee36d9f23eede6216a7d4c079c4247f23bb1d4593d89954b7"
+    },
+    {
+      "preimage": [
+        "detectbridge.archive.link/1",
+        "00000000-0000-4000-8000-000000000101"
+      ],
+      "sha256": "9566ce83507ca7c2fefe6d113f7682a199e9110e398010f9703fb5724a048604"
+    }
+  ],
+  "legacy": {
+    "configuration": {
+      "version": "1.0.0",
+      "archive_id": "00000000-0000-4000-8000-000000000041",
+      "cluster": "cluster-A",
+      "bootstrap": "kafka:9092",
+      "group": "detectbridge-archive-v1-00000000-0000-4000-8000-000000000041",
+      "implementation_sha256": "e5eaea3560d150e176cb0f68e941ca22efb25fb6f16b2a1d1d76465a94ef02d0",
+      "limits": {
+        "archive_bytes": 2147483648,
+        "reserve_bytes": 134217728,
+        "object_bytes": 33554432,
+        "segment_bytes": 16777216,
+        "segment_rows": 256
+      },
+      "topics": [
+        {
+          "name": "detectbridge.integration.input.v1",
+          "id": "topic-0",
+          "partition": 0,
+          "start": 0
+        },
+        {
+          "name": "detectbridge.tagged-events.v1",
+          "id": "topic-1",
+          "partition": 0,
+          "start": 0
+        },
+        {
+          "name": "detectbridge.detections.v1",
+          "id": "topic-2",
+          "partition": 0,
+          "start": 0
+        },
+        {
+          "name": "detectbridge.processing-diagnostics.v1",
+          "id": "topic-3",
+          "partition": 0,
+          "start": 0
+        },
+        {
+          "name": "detectbridge.integration.manifests.v1",
+          "id": "topic-4",
+          "partition": 0,
+          "start": 0
+        },
+        {
+          "name": "detectbridge.integration.preservation.v1",
+          "id": "topic-5",
+          "partition": 0,
+          "start": 0
+        },
+        {
+          "name": "detectbridge.integration.quarantine.v1",
+          "id": "topic-6",
+          "partition": 0,
+          "start": 0
+        },
+        {
+          "name": "detectbridge.integration.receipts.v1",
+          "id": "topic-7",
+          "partition": 0,
+          "start": 0
+        },
+        {
+          "name": "detectbridge.integration.writer-failures.v1",
+          "id": "topic-8",
+          "partition": 0,
+          "start": 0
+        }
+      ],
+      "objects": [
+        "7fd00bc5aff71e505699ae16069b5578c19eb18b34d7f5542bd56d120404e572",
+        "c73f90d45ef5087ff2f46f137556c00fa171e350190656f4a7df9129a57b48bb"
+      ],
+      "provenance": [
+        "c73f90d45ef5087ff2f46f137556c00fa171e350190656f4a7df9129a57b48bb"
+      ]
+    },
+    "objects": [
+      {
+        "metadata": {
+          "version": "1.0.0",
+          "codec": "gzip-ndjson/1.0.0",
+          "sha256": "7fd00bc5aff71e505699ae16069b5578c19eb18b34d7f5542bd56d120404e572",
+          "length": 8,
+          "payload": {
+            "compressed_sha256": "96bef7bd8872b64a97aa13021cbd95030589d74fa06a0321e80acabca200160a",
+            "compressed_bytes": 56,
+            "uncompressed_sha256": "ceaa4eeccc6be6907bfc272f7aba4eb97c3c6b6d7114f9020b2a2c9506d6d476",
+            "uncompressed_bytes": 36,
+            "rows": 1
+          }
+        },
+        "gzip_hex": "1f8b08000000000000ffab564aaa2c492d56b2520a0c34f0762ef62f70cec9b755d251ca4f4b2b4e2d51b232a8e5020034965c0c24000000",
+        "original_hex": "410d0a0ac3a90a5a"
+      },
+      {
+        "metadata": {
+          "version": "1.0.0",
+          "codec": "gzip-ndjson/1.0.0",
+          "sha256": "c73f90d45ef5087ff2f46f137556c00fa171e350190656f4a7df9129a57b48bb",
+          "length": 61,
+          "payload": {
+            "compressed_sha256": "740bc6835e91f252cac96ef8c8e4893f49a541d3e7cb203fd74edcabe02d9858",
+            "compressed_bytes": 127,
+            "uncompressed_sha256": "b429fccacf71a7c64cd3a54f6ff6f13a9c7255fd817685a74fc9968720312ee2",
+            "uncompressed_bytes": 108,
+            "rows": 1
+          }
+        },
+        "gzip_hex": "1f8b08000000000000ffab564aaa2c492d56b2520a720f33880af73308ccf32a88724fc9f174b7ac4c0c4f2948ca752bf6f4f0334dca0bca8f8a082a88ac74ca48cef5cb4f8c8802aa892a48f508324cce0d2df674752b8f0cf7cb8f0a36a8f4c9722c754eb7b555d251ca4f4b2b4e2d51b232a8e50200b62fc3d66c000000",
+        "original_hex": "446574656374427269646765206f726967696e616c2073796e746865746963206172636869766520666978747572652c204170616368652d322e302e0a"
+      }
+    ],
+    "segments": [
+      {
+        "metadata": {
+          "version": "1.0.0",
+          "codec": "gzip-ndjson/1.0.0",
+          "binding_sha256": "461a328d43e8426f705ac30a8925444df53c14588ab896375ccb1f0f49fc9fbd",
+          "topic_id": "topic-0",
+          "partition": 0,
+          "first": 0,
+          "next": 2,
+          "previous": null,
+          "dependencies": [
+            "7fd00bc5aff71e505699ae16069b5578c19eb18b34d7f5542bd56d120404e572",
+            "c73f90d45ef5087ff2f46f137556c00fa171e350190656f4a7df9129a57b48bb"
+          ],
+          "payload": {
+            "compressed_sha256": "6366ef0e8a052f3ab1a2d8d0bc682bdebed6db3cb51e7d59994ae5525887e9fd",
+            "compressed_bytes": 571,
+            "uncompressed_sha256": "59886bbea63050531b766cb91b207c181e0d74313553123e7879b6442d37614b",
+            "uncompressed_bytes": 1428,
+            "rows": 2
+          }
+        },
+        "metadata_sha256": "31a0fa99ce5395332175e6f9aff3c5abbee791d6ca6a09e099338983c2b7884a",
+        "gzip_hex": "1f8b08000000000000ffdd52cb4e1b3114ddf733bc4e23dbe3672416105a3151000550135255c88febc4615e4a268429eabfd7998260d12f607175ef39b28f8eafcf0b72a68555bdedd008b9ba6ab7758106c843039587ca45d8a1d14f2483c7d83a6e42900438e6426b034460a12de75239a2c1126533e665e09c51ebb9f084628619704993a49359d0d8330e81632543a081894032c9b9701807439272c631d158701198913e6842b5e1d232652dfa35406b301eb6474709449f2cefd6867231529a29cd8d51c44aeb7ce6d30d10527be702a6de1ac53c769a072241b334108f3305da61e79d642af97b84b4826a5f14035487b083168df0003566dbc636d6558fda58c2ae35658346047fc40f6dd740b233de425ae75da293625b37d125d2430baeb5dbe857308c555af7d61c25d3dcecdbe113793bfbd03fa91fbfe2443e99627f54856eb2b1946357eadd82168ff9a68e97e7a787d76afb3ec6f8d8a777ab77eead36a7cf793c44438bfd729c8bbc9a105be8c296b3381d4f0e49972ee77c6dcbab22df34362f7567e6beb1e5f75d7e71c56d75532f1737cd7d77d6a55e24dc58ca56cbb260fee247b7bc3dac668bb3f53d5d17d3bb7c7f399ef8a4dbf9390f663e8bd7317ff732c6877f3e67bdcfeb0fdc6b3d5f9e7f3bfaa2cbc5e4b799eb7dffde5b76986e4e63989d9c1c579362d0ff0a22433cc4e8cf9797cf916429410699fc8136ca39a5c0689159ea69b090224e895026d3d831814d903a639470ab1930c232c1e4ff934c3e4f92bb4f9fe4bfe42d42b294050000",
+        "rows": [
+          {
+            "version": "1.0.0",
+            "id": "sha256:894895aa81b7bcd3d48be679dccf02dba84d0c95f17e94c951d038e9c0cdc748",
+            "topic": "detectbridge.integration.input.v1",
+            "topic_id": "topic-0",
+            "partition": 0,
+            "offset": 0,
+            "timestamp": 100,
+            "timestamp_type": "CreateTime",
+            "key": null,
+            "value": "eyJjb250cm9sX2lkIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMjAxIiwia2luZCI6InJ1bl9lbmQiLCJwcm92ZW5hbmNlIjpbIm9yaWdpbmFsIHN5bnRoZXRpYyByZXRlbnRpb24gZml4dHVyZSwgQXBhY2hlLTIuMCJdLCJydW5faWQiOiIwMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAxMDEiLCJ2ZXJzaW9uIjoiMS4wLjAifQ==",
+            "headers": [],
+            "dependencies": [
+              "7fd00bc5aff71e505699ae16069b5578c19eb18b34d7f5542bd56d120404e572",
+              "c73f90d45ef5087ff2f46f137556c00fa171e350190656f4a7df9129a57b48bb"
+            ],
+            "category": "control"
+          },
+          {
+            "version": "1.0.0",
+            "id": "sha256:77e7f7c5ae9a8cc88ea963b2d2fbe95a2168a390c460af7934215b94e4143647",
+            "topic": "detectbridge.integration.input.v1",
+            "topic_id": "topic-0",
+            "partition": 0,
+            "offset": 1,
+            "timestamp": 100,
+            "timestamp_type": "CreateTime",
+            "key": null,
+            "value": "eyJjb250cm9sX2lkIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMjAyIiwia2luZCI6InJ1bl9lbmQiLCJwcm92ZW5hbmNlIjpbIm9yaWdpbmFsIHN5bnRoZXRpYyByZXRlbnRpb24gZml4dHVyZSwgQXBhY2hlLTIuMCJdLCJydW5faWQiOiIwMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAxMDEiLCJ2ZXJzaW9uIjoiMS4wLjAifQ==",
+            "headers": [],
+            "dependencies": [
+              "7fd00bc5aff71e505699ae16069b5578c19eb18b34d7f5542bd56d120404e572",
+              "c73f90d45ef5087ff2f46f137556c00fa171e350190656f4a7df9129a57b48bb"
+            ],
+            "category": "control"
+          }
+        ]
+      },
+      {
+        "metadata": {
+          "version": "1.0.0",
+          "codec": "gzip-ndjson/1.0.0",
+          "binding_sha256": "461a328d43e8426f705ac30a8925444df53c14588ab896375ccb1f0f49fc9fbd",
+          "topic_id": "topic-0",
+          "partition": 0,
+          "first": 2,
+          "next": 4,
+          "previous": "31a0fa99ce5395332175e6f9aff3c5abbee791d6ca6a09e099338983c2b7884a",
+          "dependencies": [
+            "7fd00bc5aff71e505699ae16069b5578c19eb18b34d7f5542bd56d120404e572",
+            "c73f90d45ef5087ff2f46f137556c00fa171e350190656f4a7df9129a57b48bb"
+          ],
+          "payload": {
+            "compressed_sha256": "b9b9531c10749afc8dc2bac25ddadb0edb52f4e515e095b84e05383496ad55ed",
+            "compressed_bytes": 575,
+            "uncompressed_sha256": "d3a5f218402cebfdf959e2e56025f77655b6db4197b673ac2748ea31f23030ff",
+            "uncompressed_bytes": 1428,
+            "rows": 2
+          }
+        },
+        "metadata_sha256": "2c91f7e64a0774c6013e1103e5eb407983e5df03db7696f92072ea8c5590a7d8",
+        "gzip_hex": "1f8b08000000000000ffdd525d4f1b31107cefcff0731aad7d5efb1c890708adb8288002a809a92a649fedc4e1be74b9901ea8ffbd4e0a8287fe021e56eb1dad46b3e37921b9eedcaa6e7b3222795d756d5d9001b1ae719575551edc968c7e12e92d80c9517b2fa94340a194765480500651a63955ced0d424dc4a8fc899b1282c65c0813b942c52e632f10a2c47e71152e93df35c789a48449103784d237382401508149e6b69bda24c699486a7c6905f03b276dabaf6a0280ec146c9dbb56628469427a9a14ea602342a9e50e519f72649ad60e8add75e2729d83ce5983a0500523a21f3d41a0f423819f53dba6841b52b8a01a9bddfba8e8cd88034baed4217ea8a8c6040ba50ba6da7cb868c287c9c1fbabe7151ceb875d1cebb0847c6ae6e421e41eb3a9777a60d76e586a18a76b7fa4019dfcdae1b3ed1b7dd87e349c7e75788e0932e760756d74f368621e4a5da2e58f1986dea70797eba7fadeed8c700873ebd5bbd636fb5397dcec23e6856ec96e34c64d5849a4215a69c85e978b28fbc6c39c7b529af8a6cd398ac54bd9edbc694dfb7d9c5159aeaa65e2e6e9afbfeac8fbd887363185f2dcb82db8b1ffdf276bf9a2dced6f76c5d4cefb2dde57862236f6fe7e8f57c16ae43f6ae650cfb7f3a67479dd71fb0d7fa7d79feeda08b2d1793673d57bbe3bdb77c3fdd9c063f3b393958136370fc1542873004f2e7cbcbe74872aa124a41a21354a0d19e8ac4c6604b63544e1d60a4e234e52cee5827b4070a5a2439c568b5569eff3fc9c9e749327cfa24ff0510b614a894050000",
+        "rows": [
+          {
+            "version": "1.0.0",
+            "id": "sha256:1438b1e7860a594319f24fb38d625fdfafa380dc8458e900077e67c8dbf066e7",
+            "topic": "detectbridge.integration.input.v1",
+            "topic_id": "topic-0",
+            "partition": 0,
+            "offset": 2,
+            "timestamp": 100,
+            "timestamp_type": "CreateTime",
+            "key": null,
+            "value": "eyJjb250cm9sX2lkIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMjAzIiwia2luZCI6InJ1bl9lbmQiLCJwcm92ZW5hbmNlIjpbIm9yaWdpbmFsIHN5bnRoZXRpYyByZXRlbnRpb24gZml4dHVyZSwgQXBhY2hlLTIuMCJdLCJydW5faWQiOiIwMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAxMDEiLCJ2ZXJzaW9uIjoiMS4wLjAifQ==",
+            "headers": [],
+            "dependencies": [
+              "7fd00bc5aff71e505699ae16069b5578c19eb18b34d7f5542bd56d120404e572",
+              "c73f90d45ef5087ff2f46f137556c00fa171e350190656f4a7df9129a57b48bb"
+            ],
+            "category": "control"
+          },
+          {
+            "version": "1.0.0",
+            "id": "sha256:89311075e6165baf163d1e77bb9c1e05df941842107de6af010a63c155faa9f4",
+            "topic": "detectbridge.integration.input.v1",
+            "topic_id": "topic-0",
+            "partition": 0,
+            "offset": 3,
+            "timestamp": 100,
+            "timestamp_type": "CreateTime",
+            "key": null,
+            "value": "eyJjb250cm9sX2lkIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMjA0Iiwia2luZCI6InJ1bl9lbmQiLCJwcm92ZW5hbmNlIjpbIm9yaWdpbmFsIHN5bnRoZXRpYyByZXRlbnRpb24gZml4dHVyZSwgQXBhY2hlLTIuMCJdLCJydW5faWQiOiIwMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAxMDEiLCJ2ZXJzaW9uIjoiMS4wLjAifQ==",
+            "headers": [],
+            "dependencies": [
+              "7fd00bc5aff71e505699ae16069b5578c19eb18b34d7f5542bd56d120404e572",
+              "c73f90d45ef5087ff2f46f137556c00fa171e350190656f4a7df9129a57b48bb"
+            ],
+            "category": "control"
+          }
+        ]
+      },
+      {
+        "metadata": {
+          "version": "1.0.0",
+          "codec": "gzip-ndjson/1.0.0",
+          "binding_sha256": "461a328d43e8426f705ac30a8925444df53c14588ab896375ccb1f0f49fc9fbd",
+          "topic_id": "topic-0",
+          "partition": 0,
+          "first": 4,
+          "next": 6,
+          "previous": "2c91f7e64a0774c6013e1103e5eb407983e5df03db7696f92072ea8c5590a7d8",
+          "dependencies": [
+            "7fd00bc5aff71e505699ae16069b5578c19eb18b34d7f5542bd56d120404e572",
+            "c73f90d45ef5087ff2f46f137556c00fa171e350190656f4a7df9129a57b48bb"
+          ],
+          "payload": {
+            "compressed_sha256": "e3748d9ef094ff8c5f739e93c1c51cf93cb1f8f73757771d91b3474a70c95656",
+            "compressed_bytes": 575,
+            "uncompressed_sha256": "ad786674af4625c6c10677ba9689800786ef170f46f237f6a6e0fde15da53592",
+            "uncompressed_bytes": 1428,
+            "rows": 2
+          }
+        },
+        "metadata_sha256": "1b2f2dd3ac45df60bcaa4733948d2a37b1a531d394e4602d73028c8a1e4609f0",
+        "gzip_hex": "1f8b08000000000000ffdd92db4e1b311086effb18be4e23dbebc33a12171054b1510005a226a4aa900fe3c4614fda38a45bd477af9382e0a24fc0c5683cbf76fffd3cfbbf20ab23ac9bae4723649b3a764d8906c8410bb583da06d8a1d10f24bdc3d858aebd970438e642290d4460a10ce732b7448121b9c998939e73468de3c2118a1966c0254d9656665e61c738788e73e93df54c789249ce85c5d86b929c338e89c2820bcfb4745e11aa349786e5c6a09f03b401eda03b12a521b884bcdb68cac5c86a4540522114a7407321193847729ebeee21d3d6399129eb732d8cd30663492895c4256fa6719eb1c4f7046905f5be2c07a8f17e07118dd800b5ba8b2186a646233c403154b08bba6ad188e28ff363ec5b4838e30ed23ae7494e8eb169834da28308369a2eb8350c439dd6dde9a3653ab7fb387c266fcf3e9eae743a7ec5497cd6e5fee80afd646b28c7b652bb252d9f8a6d13ae2fcf0faf154f7d8cf1b14fe7eb77edadb6e7a40887a069b95f8d0b51d413624a559a6a16a6e3c921f9d2d5826f4c755316dbd61495eaf5c2b5a6fab62bae6eb8a9ef9ad5f2ae7de82ffad4cb34b786b2f5aa2a99bbfadeafee0febd9f262f34037e5745eecafc713977c7bb7e05e2f66e13614ef2c637cf8c7393b71de7ed05eebd7f56571e4a2abe5e4b75ea8fde9bef7ec30dd9e073f3b3b3bae26c5e0f4571019e221467fbebc7c8e242bcf12812629ad9a422e04f6e9b59c1beb053392f28c66c2709a1bec24382c7270d20a9769c8ac90faff49e69f27c9f4d327f92f9ccef4e094050000",
+        "rows": [
+          {
+            "version": "1.0.0",
+            "id": "sha256:ca91e7266952e28674edd18504efe3acdd639cf8a6bdab00712271da574a0834",
+            "topic": "detectbridge.integration.input.v1",
+            "topic_id": "topic-0",
+            "partition": 0,
+            "offset": 4,
+            "timestamp": 200,
+            "timestamp_type": "CreateTime",
+            "key": null,
+            "value": "eyJjb250cm9sX2lkIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMjA1Iiwia2luZCI6InJ1bl9lbmQiLCJwcm92ZW5hbmNlIjpbIm9yaWdpbmFsIHN5bnRoZXRpYyByZXRlbnRpb24gZml4dHVyZSwgQXBhY2hlLTIuMCJdLCJydW5faWQiOiIwMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAxMDIiLCJ2ZXJzaW9uIjoiMS4wLjAifQ==",
+            "headers": [],
+            "dependencies": [
+              "7fd00bc5aff71e505699ae16069b5578c19eb18b34d7f5542bd56d120404e572",
+              "c73f90d45ef5087ff2f46f137556c00fa171e350190656f4a7df9129a57b48bb"
+            ],
+            "category": "control"
+          },
+          {
+            "version": "1.0.0",
+            "id": "sha256:9f419ea19cfa2e8660f57b85bcf64b7253236b528b0d7ed068ed7c6d3ae3c67a",
+            "topic": "detectbridge.integration.input.v1",
+            "topic_id": "topic-0",
+            "partition": 0,
+            "offset": 5,
+            "timestamp": 200,
+            "timestamp_type": "CreateTime",
+            "key": null,
+            "value": "eyJjb250cm9sX2lkIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMjA2Iiwia2luZCI6InJ1bl9lbmQiLCJwcm92ZW5hbmNlIjpbIm9yaWdpbmFsIHN5bnRoZXRpYyByZXRlbnRpb24gZml4dHVyZSwgQXBhY2hlLTIuMCJdLCJydW5faWQiOiIwMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAxMDIiLCJ2ZXJzaW9uIjoiMS4wLjAifQ==",
+            "headers": [],
+            "dependencies": [
+              "7fd00bc5aff71e505699ae16069b5578c19eb18b34d7f5542bd56d120404e572",
+              "c73f90d45ef5087ff2f46f137556c00fa171e350190656f4a7df9129a57b48bb"
+            ],
+            "category": "control"
+          }
+        ]
+      }
+    ]
+  },
+  "retirement_expected": {
+    "floor": 4,
+    "head": 6,
+    "previous_sha256": "2c91f7e64a0774c6013e1103e5eb407983e5df03db7696f92072ea8c5590a7d8",
+    "retained_segment_sha256": "1b2f2dd3ac45df60bcaa4733948d2a37b1a531d394e4602d73028c8a1e4609f0",
+    "original_hex": "410d0a0ac3a90a5a",
+    "ranges": [
+      [
+        0,
+        3
+      ],
+      [
+        3,
+        1
+      ],
+      [
+        4,
+        3
+      ],
+      [
+        7,
+        1
+      ]
+    ]
+  },
+  "recorded": {
+    "catalogs": [
+      {
+        "kind": "windows",
+        "sha256": "ec277d352417bb0a99443a6fa22d3990da9ae4046f8fab480993e2a58eb570a1"
+      },
+      {
+        "kind": "audit",
+        "sha256": "1fcdddf89e572bed765327ac21b10019683e467706850e6045fc78ed4608ae6d"
+      },
+      {
+        "kind": "auth",
+        "sha256": "97ae15e085dfe40c5e5687ecc6a69a34be9af899089259489bb8575d60d168f7"
+      }
+    ],
+    "source_records": {
+      "windows": 5,
+      "audit": 30,
+      "auth": 11
+    },
+    "admissions": {
+      "originals": 46,
+      "exact_redelivery": 1,
+      "controlled_late_cursor": 1,
+      "run_end": 1,
+      "total": 49
+    },
+    "historical": {
+      "tagged": 16,
+      "manifest": 10,
+      "preservation": 14,
+      "detection": 3
+    },
+    "current": {
+      "tagged": 16,
+      "manifest": 10,
+      "preservation": 14,
+      "processing": 9,
+      "detection": 0
+    },
+    "current_counts": {
+      "eligible_linux": {
+        "matched": 0,
+        "unmatched": 1,
+        "inapplicable": 1,
+        "configuration_blocked": 0,
+        "quality_skipped": 0,
+        "evaluation_error": 0
+      },
+      "skipped_audit": {
+        "matched": 0,
+        "unmatched": 0,
+        "inapplicable": 1,
+        "configuration_blocked": 0,
+        "quality_skipped": 1,
+        "evaluation_error": 0
+      },
+      "windows": {
+        "matched": 0,
+        "unmatched": 0,
+        "inapplicable": 2,
+        "configuration_blocked": 0,
+        "quality_skipped": 0,
+        "evaluation_error": 0
+      }
+    }
+  },
+  "legacy_artifacts": {
+    "reader": "e5eaea3560d150e176cb0f68e941ca22efb25fb6f16b2a1d1d76465a94ef02d0",
+    "historical": "32bad6f526e3208bf4b2684979a4d600c82b35070e39cbeb3a5fce6d5fccfcc4",
+    "current": "ea9d47406651a686546a2514f83fe59689fa38902e76b0c2c6aa129c37a511e2",
+    "producer": "51a984dedc04af7b368fea63a9cec88d2127c6ddf5aa019352f491a3481bad6d",
+    "image": "flink:2.2.1-scala_2.12-java17@sha256:55ccb2ad4b98362c3f3503c5a6d7cd00b92eb25e38815ddaf0be5903ade54ffe"
+  }
+}

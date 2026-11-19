@@ -3,7 +3,9 @@
   "on": {
     "pull_request": {
       "branches": [
-        "main"
+        "main",
+        "fix/ci-gradle-cache-fanout",
+        "feat/p14c1-current-replay"
       ]
     },
     "push": {
@@ -86,7 +88,9 @@
         "integration": "${{ steps.paths.outputs.integration }}",
         "search": "${{ steps.paths.outputs.search }}",
         "archive": "${{ steps.paths.outputs.archive }}",
-        "historical": "${{ steps.paths.outputs.historical }}"
+        "historical": "${{ steps.paths.outputs.historical }}",
+        "current": "${{ steps.paths.outputs.current }}",
+        "maintenance": "${{ steps.paths.outputs.maintenance }}"
       }
     },
     "repository-hygiene": {
@@ -168,7 +172,16 @@
           "run": "python3 -m pip install uv==0.13.6"
         },
         {
-          "run": "python3 tools/dev.py bootstrap\npython3 tools/dev.py smoke"
+          "name": "Restore and publish verified dependency cache",
+          "id": "gradle-dependencies",
+          "uses": "actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830",
+          "with": {
+            "path": ".cache/gradle/caches/modules-2/files-2.1\n.cache/gradle/caches/modules-2/metadata-*",
+            "key": "${{ runner.os }}-${{ runner.arch }}-gradle-modules-v1-${{ hashFiles('settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'packages/**/*.gradle.kts', 'packages/**/gradle.lockfile', 'settings-gradle.lockfile', 'gradle/verification-metadata.xml', 'gradle/libs.versions.toml', 'gradle/wrapper/**', 'tools/toolchains.json') }}"
+          }
+        },
+        {
+          "run": "python3 tools/dev.py bootstrap\npython3 tools/dev.py smoke\npython3 tools/dev.py dependencies"
         },
         {
           "name": "Retain bootstrap dependency diagnostics",
@@ -176,7 +189,7 @@
           "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
           "with": {
             "name": "bootstrap-toolchain-verification",
-            "path": ".cache/bootstrap/gradle-help-*/attempt-*.log",
+            "path": ".cache/bootstrap/gradle-*/attempt-*.log",
             "include-hidden-files": true,
             "if-no-files-found": "ignore",
             "retention-days": 7
@@ -222,7 +235,9 @@
         "integration-verification",
         "search-verification",
         "archive-verification",
-        "historical-replay-verification"
+        "historical-replay-verification",
+        "current-replay-verification",
+        "archive-maintenance-verification"
       ]
     },
     "dataset-acquisition": {
@@ -313,7 +328,8 @@
       "runs-on": "ubuntu-24.04",
       "timeout-minutes": 35,
       "needs": [
-        "classify-changes"
+        "classify-changes",
+        "toolchain-verification"
       ],
       "if": "${{ needs.classify-changes.outputs.transport == 'true' }}",
       "steps": [
@@ -330,6 +346,25 @@
           }
         },
         {
+          "name": "Restore prepared dependency cache",
+          "uses": "actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830",
+          "with": {
+            "path": ".cache/gradle/caches/modules-2/files-2.1\n.cache/gradle/caches/modules-2/metadata-*",
+            "key": "${{ runner.os }}-${{ runner.arch }}-gradle-modules-v1-${{ hashFiles('settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'packages/**/*.gradle.kts', 'packages/**/gradle.lockfile', 'settings-gradle.lockfile', 'gradle/verification-metadata.xml', 'gradle/libs.versions.toml', 'gradle/wrapper/**', 'tools/toolchains.json') }}",
+            "fail-on-cache-miss": true
+          },
+          "id": "prepared-gradle-cache"
+        },
+        {
+          "name": "Require exact prepared dependency cache hit",
+          "id": "require-prepared-gradle-cache",
+          "shell": "bash",
+          "env": {
+            "CACHE_HIT": "${{ steps.prepared-gradle-cache.outputs.cache-hit }}"
+          },
+          "run": "if [ \"${CACHE_HIT:-}\" != \"true\" ]; then\n  echo \"Prepared Gradle dependency cache was not restored exactly.\" >&2\n  exit 1\nfi"
+        },
+        {
           "name": "Install pinned development tools",
           "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
         },
@@ -339,7 +374,7 @@
           "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
           "with": {
             "name": "bootstrap-transport-verification",
-            "path": ".cache/bootstrap/gradle-help-*/attempt-*.log",
+            "path": ".cache/bootstrap/gradle-*/attempt-*.log",
             "include-hidden-files": true,
             "if-no-files-found": "ignore",
             "retention-days": 7
@@ -369,6 +404,25 @@
           }
         },
         {
+          "name": "Restore prepared dependency cache",
+          "uses": "actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830",
+          "with": {
+            "path": ".cache/gradle/caches/modules-2/files-2.1\n.cache/gradle/caches/modules-2/metadata-*",
+            "key": "${{ runner.os }}-${{ runner.arch }}-gradle-modules-v1-${{ hashFiles('settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'packages/**/*.gradle.kts', 'packages/**/gradle.lockfile', 'settings-gradle.lockfile', 'gradle/verification-metadata.xml', 'gradle/libs.versions.toml', 'gradle/wrapper/**', 'tools/toolchains.json') }}",
+            "fail-on-cache-miss": true
+          },
+          "id": "prepared-gradle-cache"
+        },
+        {
+          "name": "Require exact prepared dependency cache hit",
+          "id": "require-prepared-gradle-cache",
+          "shell": "bash",
+          "env": {
+            "CACHE_HIT": "${{ steps.prepared-gradle-cache.outputs.cache-hit }}"
+          },
+          "run": "if [ \"${CACHE_HIT:-}\" != \"true\" ]; then\n  echo \"Prepared Gradle dependency cache was not restored exactly.\" >&2\n  exit 1\nfi"
+        },
+        {
           "name": "Install pinned development tools",
           "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
         },
@@ -378,7 +432,7 @@
           "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
           "with": {
             "name": "bootstrap-recorded-transport-qualification",
-            "path": ".cache/bootstrap/gradle-help-*/attempt-*.log",
+            "path": ".cache/bootstrap/gradle-*/attempt-*.log",
             "include-hidden-files": true,
             "if-no-files-found": "ignore",
             "retention-days": 7
@@ -388,13 +442,17 @@
           "name": "Build and qualify checkpointed transport",
           "run": "uv run --locked python tools/transport.py build\nuv run --locked python tools/datasets.py fetch --all\nuv run --locked python tools/transport.py verify --recorded"
         }
+      ],
+      "needs": [
+        "toolchain-verification"
       ]
     },
     "detection-verification": {
       "runs-on": "ubuntu-24.04",
       "timeout-minutes": 45,
       "needs": [
-        "classify-changes"
+        "classify-changes",
+        "toolchain-verification"
       ],
       "if": "${{ needs.classify-changes.outputs.detection == 'true' }}",
       "steps": [
@@ -411,6 +469,25 @@
           }
         },
         {
+          "name": "Restore prepared dependency cache",
+          "uses": "actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830",
+          "with": {
+            "path": ".cache/gradle/caches/modules-2/files-2.1\n.cache/gradle/caches/modules-2/metadata-*",
+            "key": "${{ runner.os }}-${{ runner.arch }}-gradle-modules-v1-${{ hashFiles('settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'packages/**/*.gradle.kts', 'packages/**/gradle.lockfile', 'settings-gradle.lockfile', 'gradle/verification-metadata.xml', 'gradle/libs.versions.toml', 'gradle/wrapper/**', 'tools/toolchains.json') }}",
+            "fail-on-cache-miss": true
+          },
+          "id": "prepared-gradle-cache"
+        },
+        {
+          "name": "Require exact prepared dependency cache hit",
+          "id": "require-prepared-gradle-cache",
+          "shell": "bash",
+          "env": {
+            "CACHE_HIT": "${{ steps.prepared-gradle-cache.outputs.cache-hit }}"
+          },
+          "run": "if [ \"${CACHE_HIT:-}\" != \"true\" ]; then\n  echo \"Prepared Gradle dependency cache was not restored exactly.\" >&2\n  exit 1\nfi"
+        },
+        {
           "name": "Install pinned development tools",
           "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
         },
@@ -420,7 +497,7 @@
           "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
           "with": {
             "name": "bootstrap-detection-verification",
-            "path": ".cache/bootstrap/gradle-help-*/attempt-*.log",
+            "path": ".cache/bootstrap/gradle-*/attempt-*.log",
             "include-hidden-files": true,
             "if-no-files-found": "ignore",
             "retention-days": 7
@@ -448,7 +525,8 @@
       "runs-on": "ubuntu-24.04",
       "timeout-minutes": 45,
       "needs": [
-        "classify-changes"
+        "classify-changes",
+        "toolchain-verification"
       ],
       "if": "${{ needs.classify-changes.outputs.writer == 'true' }}",
       "steps": [
@@ -465,6 +543,25 @@
           }
         },
         {
+          "name": "Restore prepared dependency cache",
+          "uses": "actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830",
+          "with": {
+            "path": ".cache/gradle/caches/modules-2/files-2.1\n.cache/gradle/caches/modules-2/metadata-*",
+            "key": "${{ runner.os }}-${{ runner.arch }}-gradle-modules-v1-${{ hashFiles('settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'packages/**/*.gradle.kts', 'packages/**/gradle.lockfile', 'settings-gradle.lockfile', 'gradle/verification-metadata.xml', 'gradle/libs.versions.toml', 'gradle/wrapper/**', 'tools/toolchains.json') }}",
+            "fail-on-cache-miss": true
+          },
+          "id": "prepared-gradle-cache"
+        },
+        {
+          "name": "Require exact prepared dependency cache hit",
+          "id": "require-prepared-gradle-cache",
+          "shell": "bash",
+          "env": {
+            "CACHE_HIT": "${{ steps.prepared-gradle-cache.outputs.cache-hit }}"
+          },
+          "run": "if [ \"${CACHE_HIT:-}\" != \"true\" ]; then\n  echo \"Prepared Gradle dependency cache was not restored exactly.\" >&2\n  exit 1\nfi"
+        },
+        {
           "name": "Install pinned development tools",
           "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
         },
@@ -474,7 +571,7 @@
           "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
           "with": {
             "name": "bootstrap-opensearch-writer-verification",
-            "path": ".cache/bootstrap/gradle-help-*/attempt-*.log",
+            "path": ".cache/bootstrap/gradle-*/attempt-*.log",
             "include-hidden-files": true,
             "if-no-files-found": "ignore",
             "retention-days": 7
@@ -504,6 +601,25 @@
           }
         },
         {
+          "name": "Restore prepared dependency cache",
+          "uses": "actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830",
+          "with": {
+            "path": ".cache/gradle/caches/modules-2/files-2.1\n.cache/gradle/caches/modules-2/metadata-*",
+            "key": "${{ runner.os }}-${{ runner.arch }}-gradle-modules-v1-${{ hashFiles('settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'packages/**/*.gradle.kts', 'packages/**/gradle.lockfile', 'settings-gradle.lockfile', 'gradle/verification-metadata.xml', 'gradle/libs.versions.toml', 'gradle/wrapper/**', 'tools/toolchains.json') }}",
+            "fail-on-cache-miss": true
+          },
+          "id": "prepared-gradle-cache"
+        },
+        {
+          "name": "Require exact prepared dependency cache hit",
+          "id": "require-prepared-gradle-cache",
+          "shell": "bash",
+          "env": {
+            "CACHE_HIT": "${{ steps.prepared-gradle-cache.outputs.cache-hit }}"
+          },
+          "run": "if [ \"${CACHE_HIT:-}\" != \"true\" ]; then\n  echo \"Prepared Gradle dependency cache was not restored exactly.\" >&2\n  exit 1\nfi"
+        },
+        {
           "name": "Install pinned development tools",
           "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
         },
@@ -513,7 +629,7 @@
           "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
           "with": {
             "name": "bootstrap-recorded-writer-qualification",
-            "path": ".cache/bootstrap/gradle-help-*/attempt-*.log",
+            "path": ".cache/bootstrap/gradle-*/attempt-*.log",
             "include-hidden-files": true,
             "if-no-files-found": "ignore",
             "retention-days": 7
@@ -523,13 +639,17 @@
           "name": "Build and qualify idempotent OpenSearch writer",
           "run": "uv run --locked python tools/transport.py build\nuv run --locked python tools/writer.py build\nuv run --locked python tools/datasets.py fetch --all\nuv run --locked python tools/writer.py verify --recorded"
         }
+      ],
+      "needs": [
+        "toolchain-verification"
       ]
     },
     "windows-verification": {
       "runs-on": "ubuntu-24.04",
       "timeout-minutes": 20,
       "needs": [
-        "classify-changes"
+        "classify-changes",
+        "toolchain-verification"
       ],
       "if": "${{ needs.classify-changes.outputs.windows == 'true' }}",
       "steps": [
@@ -546,6 +666,25 @@
           }
         },
         {
+          "name": "Restore prepared dependency cache",
+          "uses": "actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830",
+          "with": {
+            "path": ".cache/gradle/caches/modules-2/files-2.1\n.cache/gradle/caches/modules-2/metadata-*",
+            "key": "${{ runner.os }}-${{ runner.arch }}-gradle-modules-v1-${{ hashFiles('settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'packages/**/*.gradle.kts', 'packages/**/gradle.lockfile', 'settings-gradle.lockfile', 'gradle/verification-metadata.xml', 'gradle/libs.versions.toml', 'gradle/wrapper/**', 'tools/toolchains.json') }}",
+            "fail-on-cache-miss": true
+          },
+          "id": "prepared-gradle-cache"
+        },
+        {
+          "name": "Require exact prepared dependency cache hit",
+          "id": "require-prepared-gradle-cache",
+          "shell": "bash",
+          "env": {
+            "CACHE_HIT": "${{ steps.prepared-gradle-cache.outputs.cache-hit }}"
+          },
+          "run": "if [ \"${CACHE_HIT:-}\" != \"true\" ]; then\n  echo \"Prepared Gradle dependency cache was not restored exactly.\" >&2\n  exit 1\nfi"
+        },
+        {
           "name": "Install pinned development tools",
           "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
         },
@@ -555,7 +694,7 @@
           "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
           "with": {
             "name": "bootstrap-windows-verification",
-            "path": ".cache/bootstrap/gradle-help-*/attempt-*.log",
+            "path": ".cache/bootstrap/gradle-*/attempt-*.log",
             "include-hidden-files": true,
             "if-no-files-found": "ignore",
             "retention-days": 7
@@ -571,7 +710,8 @@
       "runs-on": "ubuntu-24.04",
       "timeout-minutes": 20,
       "needs": [
-        "classify-changes"
+        "classify-changes",
+        "toolchain-verification"
       ],
       "if": "${{ needs.classify-changes.outputs.linux == 'true' }}",
       "steps": [
@@ -588,6 +728,25 @@
           }
         },
         {
+          "name": "Restore prepared dependency cache",
+          "uses": "actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830",
+          "with": {
+            "path": ".cache/gradle/caches/modules-2/files-2.1\n.cache/gradle/caches/modules-2/metadata-*",
+            "key": "${{ runner.os }}-${{ runner.arch }}-gradle-modules-v1-${{ hashFiles('settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'packages/**/*.gradle.kts', 'packages/**/gradle.lockfile', 'settings-gradle.lockfile', 'gradle/verification-metadata.xml', 'gradle/libs.versions.toml', 'gradle/wrapper/**', 'tools/toolchains.json') }}",
+            "fail-on-cache-miss": true
+          },
+          "id": "prepared-gradle-cache"
+        },
+        {
+          "name": "Require exact prepared dependency cache hit",
+          "id": "require-prepared-gradle-cache",
+          "shell": "bash",
+          "env": {
+            "CACHE_HIT": "${{ steps.prepared-gradle-cache.outputs.cache-hit }}"
+          },
+          "run": "if [ \"${CACHE_HIT:-}\" != \"true\" ]; then\n  echo \"Prepared Gradle dependency cache was not restored exactly.\" >&2\n  exit 1\nfi"
+        },
+        {
           "name": "Install pinned development tools",
           "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
         },
@@ -597,7 +756,7 @@
           "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
           "with": {
             "name": "bootstrap-linux-verification",
-            "path": ".cache/bootstrap/gradle-help-*/attempt-*.log",
+            "path": ".cache/bootstrap/gradle-*/attempt-*.log",
             "include-hidden-files": true,
             "if-no-files-found": "ignore",
             "retention-days": 7
@@ -613,7 +772,8 @@
       "runs-on": "ubuntu-24.04",
       "timeout-minutes": 45,
       "needs": [
-        "classify-changes"
+        "classify-changes",
+        "toolchain-verification"
       ],
       "if": "${{ needs.classify-changes.outputs.assembly == 'true' }}",
       "steps": [
@@ -630,6 +790,25 @@
           }
         },
         {
+          "name": "Restore prepared dependency cache",
+          "uses": "actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830",
+          "with": {
+            "path": ".cache/gradle/caches/modules-2/files-2.1\n.cache/gradle/caches/modules-2/metadata-*",
+            "key": "${{ runner.os }}-${{ runner.arch }}-gradle-modules-v1-${{ hashFiles('settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'packages/**/*.gradle.kts', 'packages/**/gradle.lockfile', 'settings-gradle.lockfile', 'gradle/verification-metadata.xml', 'gradle/libs.versions.toml', 'gradle/wrapper/**', 'tools/toolchains.json') }}",
+            "fail-on-cache-miss": true
+          },
+          "id": "prepared-gradle-cache"
+        },
+        {
+          "name": "Require exact prepared dependency cache hit",
+          "id": "require-prepared-gradle-cache",
+          "shell": "bash",
+          "env": {
+            "CACHE_HIT": "${{ steps.prepared-gradle-cache.outputs.cache-hit }}"
+          },
+          "run": "if [ \"${CACHE_HIT:-}\" != \"true\" ]; then\n  echo \"Prepared Gradle dependency cache was not restored exactly.\" >&2\n  exit 1\nfi"
+        },
+        {
           "name": "Install pinned development tools",
           "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
         },
@@ -639,7 +818,7 @@
           "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
           "with": {
             "name": "bootstrap-linux-assembly-verification",
-            "path": ".cache/bootstrap/gradle-help-*/attempt-*.log",
+            "path": ".cache/bootstrap/gradle-*/attempt-*.log",
             "include-hidden-files": true,
             "if-no-files-found": "ignore",
             "retention-days": 7
@@ -648,6 +827,18 @@
         {
           "name": "Qualify checkpointed Linux assembly and real recovery",
           "run": "uv run --locked python tools/dev.py assembly\nuv run --locked python tools/linux_assembly.py build\nuv run --locked python tools/linux_assembly.py verify"
+        },
+        {
+          "name": "Retain synthetic assembly failure diagnostics",
+          "if": "${{ failure() }}",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "assembly-failure-diagnostics",
+            "path": ".cache/linux-assembly-reports/detectbridge-p12-test-*.json",
+            "include-hidden-files": true,
+            "if-no-files-found": "warn",
+            "retention-days": 7
+          }
         }
       ]
     },
@@ -687,7 +878,8 @@
       "runs-on": "ubuntu-24.04",
       "timeout-minutes": 45,
       "needs": [
-        "classify-changes"
+        "classify-changes",
+        "toolchain-verification"
       ],
       "if": "${{ needs.classify-changes.outputs.integration == 'true' }}",
       "steps": [
@@ -704,6 +896,25 @@
           }
         },
         {
+          "name": "Restore prepared dependency cache",
+          "uses": "actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830",
+          "with": {
+            "path": ".cache/gradle/caches/modules-2/files-2.1\n.cache/gradle/caches/modules-2/metadata-*",
+            "key": "${{ runner.os }}-${{ runner.arch }}-gradle-modules-v1-${{ hashFiles('settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'packages/**/*.gradle.kts', 'packages/**/gradle.lockfile', 'settings-gradle.lockfile', 'gradle/verification-metadata.xml', 'gradle/libs.versions.toml', 'gradle/wrapper/**', 'tools/toolchains.json') }}",
+            "fail-on-cache-miss": true
+          },
+          "id": "prepared-gradle-cache"
+        },
+        {
+          "name": "Require exact prepared dependency cache hit",
+          "id": "require-prepared-gradle-cache",
+          "shell": "bash",
+          "env": {
+            "CACHE_HIT": "${{ steps.prepared-gradle-cache.outputs.cache-hit }}"
+          },
+          "run": "if [ \"${CACHE_HIT:-}\" != \"true\" ]; then\n  echo \"Prepared Gradle dependency cache was not restored exactly.\" >&2\n  exit 1\nfi"
+        },
+        {
           "name": "Install pinned development tools",
           "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
         },
@@ -713,7 +924,7 @@
           "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
           "with": {
             "name": "bootstrap-integration-verification",
-            "path": ".cache/bootstrap/gradle-help-*/attempt-*.log",
+            "path": ".cache/bootstrap/gradle-*/attempt-*.log",
             "include-hidden-files": true,
             "if-no-files-found": "ignore",
             "retention-days": 7
@@ -741,7 +952,8 @@
       "runs-on": "ubuntu-24.04",
       "timeout-minutes": 45,
       "needs": [
-        "classify-changes"
+        "classify-changes",
+        "toolchain-verification"
       ],
       "if": "${{ needs.classify-changes.outputs.search == 'true' }}",
       "steps": [
@@ -758,6 +970,25 @@
           }
         },
         {
+          "name": "Restore prepared dependency cache",
+          "uses": "actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830",
+          "with": {
+            "path": ".cache/gradle/caches/modules-2/files-2.1\n.cache/gradle/caches/modules-2/metadata-*",
+            "key": "${{ runner.os }}-${{ runner.arch }}-gradle-modules-v1-${{ hashFiles('settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'packages/**/*.gradle.kts', 'packages/**/gradle.lockfile', 'settings-gradle.lockfile', 'gradle/verification-metadata.xml', 'gradle/libs.versions.toml', 'gradle/wrapper/**', 'tools/toolchains.json') }}",
+            "fail-on-cache-miss": true
+          },
+          "id": "prepared-gradle-cache"
+        },
+        {
+          "name": "Require exact prepared dependency cache hit",
+          "id": "require-prepared-gradle-cache",
+          "shell": "bash",
+          "env": {
+            "CACHE_HIT": "${{ steps.prepared-gradle-cache.outputs.cache-hit }}"
+          },
+          "run": "if [ \"${CACHE_HIT:-}\" != \"true\" ]; then\n  echo \"Prepared Gradle dependency cache was not restored exactly.\" >&2\n  exit 1\nfi"
+        },
+        {
           "name": "Install pinned development tools",
           "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
         },
@@ -767,7 +998,7 @@
           "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
           "with": {
             "name": "bootstrap-search-verification",
-            "path": ".cache/bootstrap/gradle-help-*/attempt-*.log",
+            "path": ".cache/bootstrap/gradle-*/attempt-*.log",
             "include-hidden-files": true,
             "if-no-files-found": "ignore",
             "retention-days": 7
@@ -795,7 +1026,8 @@
       "runs-on": "ubuntu-24.04",
       "timeout-minutes": 25,
       "needs": [
-        "classify-changes"
+        "classify-changes",
+        "toolchain-verification"
       ],
       "if": "${{ needs.classify-changes.outputs.archive == 'true' }}",
       "steps": [
@@ -812,6 +1044,25 @@
           }
         },
         {
+          "name": "Restore prepared dependency cache",
+          "uses": "actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830",
+          "with": {
+            "path": ".cache/gradle/caches/modules-2/files-2.1\n.cache/gradle/caches/modules-2/metadata-*",
+            "key": "${{ runner.os }}-${{ runner.arch }}-gradle-modules-v1-${{ hashFiles('settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'packages/**/*.gradle.kts', 'packages/**/gradle.lockfile', 'settings-gradle.lockfile', 'gradle/verification-metadata.xml', 'gradle/libs.versions.toml', 'gradle/wrapper/**', 'tools/toolchains.json') }}",
+            "fail-on-cache-miss": true
+          },
+          "id": "prepared-gradle-cache"
+        },
+        {
+          "name": "Require exact prepared dependency cache hit",
+          "id": "require-prepared-gradle-cache",
+          "shell": "bash",
+          "env": {
+            "CACHE_HIT": "${{ steps.prepared-gradle-cache.outputs.cache-hit }}"
+          },
+          "run": "if [ \"${CACHE_HIT:-}\" != \"true\" ]; then\n  echo \"Prepared Gradle dependency cache was not restored exactly.\" >&2\n  exit 1\nfi"
+        },
+        {
           "name": "Install pinned development tools",
           "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
         },
@@ -821,7 +1072,7 @@
           "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
           "with": {
             "name": "bootstrap-archive-verification",
-            "path": ".cache/bootstrap/gradle-help-*/attempt-*.log",
+            "path": ".cache/bootstrap/gradle-*/attempt-*.log",
             "include-hidden-files": true,
             "if-no-files-found": "ignore",
             "retention-days": 7
@@ -849,7 +1100,8 @@
       "runs-on": "ubuntu-24.04",
       "timeout-minutes": 45,
       "needs": [
-        "classify-changes"
+        "classify-changes",
+        "toolchain-verification"
       ],
       "if": "${{ needs.classify-changes.outputs.historical == 'true' }}",
       "steps": [
@@ -866,6 +1118,25 @@
           }
         },
         {
+          "name": "Restore prepared dependency cache",
+          "uses": "actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830",
+          "with": {
+            "path": ".cache/gradle/caches/modules-2/files-2.1\n.cache/gradle/caches/modules-2/metadata-*",
+            "key": "${{ runner.os }}-${{ runner.arch }}-gradle-modules-v1-${{ hashFiles('settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'packages/**/*.gradle.kts', 'packages/**/gradle.lockfile', 'settings-gradle.lockfile', 'gradle/verification-metadata.xml', 'gradle/libs.versions.toml', 'gradle/wrapper/**', 'tools/toolchains.json') }}",
+            "fail-on-cache-miss": true
+          },
+          "id": "prepared-gradle-cache"
+        },
+        {
+          "name": "Require exact prepared dependency cache hit",
+          "id": "require-prepared-gradle-cache",
+          "shell": "bash",
+          "env": {
+            "CACHE_HIT": "${{ steps.prepared-gradle-cache.outputs.cache-hit }}"
+          },
+          "run": "if [ \"${CACHE_HIT:-}\" != \"true\" ]; then\n  echo \"Prepared Gradle dependency cache was not restored exactly.\" >&2\n  exit 1\nfi"
+        },
+        {
           "name": "Install pinned development tools",
           "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
         },
@@ -875,7 +1146,7 @@
           "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
           "with": {
             "name": "bootstrap-historical-replay-verification",
-            "path": ".cache/bootstrap/gradle-help-*/attempt-*.log",
+            "path": ".cache/bootstrap/gradle-*/attempt-*.log",
             "include-hidden-files": true,
             "if-no-files-found": "ignore",
             "retention-days": 7
@@ -894,6 +1165,166 @@
             "path": ".cache/historical-qualification-*/report.json\n.cache/historical-qualification-*/failure-*.json\n.cache/historical-qualification-*/**/failures/*.json",
             "include-hidden-files": true,
             "if-no-files-found": "warn",
+            "retention-days": 7
+          }
+        }
+      ]
+    },
+    "current-replay-verification": {
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 45,
+      "needs": [
+        "classify-changes",
+        "toolchain-verification"
+      ],
+      "if": "${{ needs.classify-changes.outputs.current == 'true' }}",
+      "steps": [
+        {
+          "uses": "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "with": {
+            "persist-credentials": false
+          }
+        },
+        {
+          "uses": "actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0",
+          "with": {
+            "python-version": "3.12.12"
+          }
+        },
+        {
+          "name": "Restore prepared dependency cache",
+          "uses": "actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830",
+          "with": {
+            "path": ".cache/gradle/caches/modules-2/files-2.1\n.cache/gradle/caches/modules-2/metadata-*",
+            "key": "${{ runner.os }}-${{ runner.arch }}-gradle-modules-v1-${{ hashFiles('settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'packages/**/*.gradle.kts', 'packages/**/gradle.lockfile', 'settings-gradle.lockfile', 'gradle/verification-metadata.xml', 'gradle/libs.versions.toml', 'gradle/wrapper/**', 'tools/toolchains.json') }}",
+            "fail-on-cache-miss": true
+          },
+          "id": "prepared-gradle-cache"
+        },
+        {
+          "name": "Require exact prepared dependency cache hit",
+          "id": "require-prepared-gradle-cache",
+          "shell": "bash",
+          "env": {
+            "CACHE_HIT": "${{ steps.prepared-gradle-cache.outputs.cache-hit }}"
+          },
+          "run": "if [ \"${CACHE_HIT:-}\" != \"true\" ]; then\n  echo \"Prepared Gradle dependency cache was not restored exactly.\" >&2\n  exit 1\nfi"
+        },
+        {
+          "name": "Install pinned development tools",
+          "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
+        },
+        {
+          "name": "Retain bootstrap dependency diagnostics",
+          "if": "${{ failure() }}",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "bootstrap-current-replay-verification",
+            "path": ".cache/bootstrap/gradle-*/attempt-*.log",
+            "include-hidden-files": true,
+            "if-no-files-found": "ignore",
+            "retention-days": 7
+          }
+        },
+        {
+          "name": "Qualify explicit current policies, regrouping and isolated recovery",
+          "run": "uv run --locked python tools/dev.py current\nuv run --locked python tools/current_replay_verify.py"
+        },
+        {
+          "name": "Retain synthetic current replay summary",
+          "if": "${{ failure() }}",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "p14c1-current-replay-failure-summary",
+            "path": ".cache/current-replay-qualification-*/report.json",
+            "include-hidden-files": true,
+            "if-no-files-found": "warn",
+            "retention-days": 7
+          }
+        }
+      ]
+    },
+    "archive-maintenance-verification": {
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 45,
+      "needs": [
+        "classify-changes",
+        "toolchain-verification"
+      ],
+      "if": "${{ needs.classify-changes.outputs.maintenance == 'true' }}",
+      "steps": [
+        {
+          "uses": "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "with": {
+            "persist-credentials": false
+          }
+        },
+        {
+          "uses": "actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0",
+          "with": {
+            "python-version": "3.12.12"
+          }
+        },
+        {
+          "name": "Restore prepared dependency cache",
+          "uses": "actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830",
+          "with": {
+            "path": ".cache/gradle/caches/modules-2/files-2.1\n.cache/gradle/caches/modules-2/metadata-*",
+            "key": "${{ runner.os }}-${{ runner.arch }}-gradle-modules-v1-${{ hashFiles('settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'packages/**/*.gradle.kts', 'packages/**/gradle.lockfile', 'settings-gradle.lockfile', 'gradle/verification-metadata.xml', 'gradle/libs.versions.toml', 'gradle/wrapper/**', 'tools/toolchains.json') }}",
+            "fail-on-cache-miss": true
+          },
+          "id": "prepared-gradle-cache"
+        },
+        {
+          "name": "Require exact prepared dependency cache hit",
+          "id": "require-prepared-gradle-cache",
+          "shell": "bash",
+          "env": {
+            "CACHE_HIT": "${{ steps.prepared-gradle-cache.outputs.cache-hit }}"
+          },
+          "run": "if [ \"${CACHE_HIT:-}\" != \"true\" ]; then\n  echo \"Prepared Gradle dependency cache was not restored exactly.\" >&2\n  exit 1\nfi"
+        },
+        {
+          "name": "Install pinned development tools",
+          "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
+        },
+        {
+          "name": "Retain bootstrap dependency diagnostics",
+          "if": "${{ failure() }}",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "bootstrap-archive-maintenance-verification",
+            "path": ".cache/bootstrap/gradle-*/attempt-*.log",
+            "include-hidden-files": true,
+            "if-no-files-found": "ignore",
+            "retention-days": 7
+          }
+        },
+        {
+          "name": "Qualify managed archive retention, import and replay faults",
+          "run": "uv run --locked python tools/dev.py maintenance\nuv run --locked python tools/archive_maintenance_verify.py"
+        },
+        {
+          "name": "Retain synthetic maintenance summary",
+          "if": "${{ failure() }}",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "p14c2-maintenance-failure-summary",
+            "path": ".cache/archive-maintenance-reports/*.json",
+            "include-hidden-files": true,
+            "if-no-files-found": "warn",
+            "retention-days": 7
+          }
+        },
+        {
+          "name": "Retain maintenance build and pinned-image diagnostics",
+          "if": "${{ failure() }}",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "p14c2-maintenance-setup-diagnostics",
+            "path": ".cache/archive-maintenance-build/build-*.json\n.cache/archive-maintenance-bootstrap/*/*.json",
+            "include-hidden-files": true,
+            "if-no-files-found": "ignore",
             "retention-days": 7
           }
         }

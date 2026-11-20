@@ -25,6 +25,8 @@ class ActivationGateTests(unittest.TestCase):
             "tools/lifecycle_runtime.py",
             "tools/lifecycle_diagnostics.py",
             "tools/lifecycle_ack_backlog.py",
+            "tools/lifecycle_artifact_preparation.py",
+            "tools/tests/test_lifecycle_artifact_preparation.py",
             "tools/tests/test_lifecycle_diagnostics.py",
             "tools/lifecycle_runtime_verify.py",
             "tools/check_lifecycle_runtime.py",
@@ -92,6 +94,12 @@ class ActivationGateTests(unittest.TestCase):
         self.assertIn("--ack-backlog-mechanics valid", mechanics["run"])
         self.assertIn("--ack-backlog-mechanics invalid-signature", mechanics["run"])
         self.assertNotIn("DETECTBRIDGE_ACTIVATION_REQUIRED", mechanics.get("env", {}))
+        self.assertTrue(
+            any(
+                s.get("run", "").endswith("--scenario-group open-group")
+                for s in diagnostic["steps"]
+            )
+        )
         self.assertNotIn("activation-diagnostic", jobs["required-checks"]["needs"])
         self.assertIn("activation-verification", jobs["required-checks"]["needs"])
 

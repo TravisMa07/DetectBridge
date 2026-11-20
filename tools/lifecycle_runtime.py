@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any
 
 import lifecycle as local
+import lifecycle_artifact_preparation as artifact_preparation
 import lifecycle_diagnostics as diagnostic
 import lifecycle_validation as candidate
 from check_contracts import StrictValidator, load_json
@@ -306,6 +307,7 @@ class Runtime:
 
     def __init__(self, root):
         self.root = local.path_safe(root)
+        self._qualification_artifact_preparation: dict[str, Any] | None = None
         self._qualification_ack_proofs: dict[tuple[str, str], dict[str, Any]] | None = None
         self._private()
         self.config = checked(self.root / "config.json")
@@ -391,19 +393,24 @@ class Runtime:
 
     @contextlib.contextmanager
     def _locked(self):
-        self._private()
-        descriptor = os.open(
-            local.regular(self.root / ".lock"), os.O_RDWR | getattr(os, "O_NOFOLLOW", 0)
-        )
+        descriptor = None
         try:
+            self._private()
+            descriptor = os.open(
+                local.regular(self.root / ".lock"), os.O_RDWR | getattr(os, "O_NOFOLLOW", 0)
+            )
             try:
                 fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
             except BlockingIOError:
                 raise RuntimeError("lifecycle_runtime_locked") from None
             yield
+        except BaseException:
+            artifact_preparation.invalidate(self)
+            raise
         finally:
-            fcntl.flock(descriptor, fcntl.LOCK_UN)
-            os.close(descriptor)
+            if descriptor is not None:
+                fcntl.flock(descriptor, fcntl.LOCK_UN)
+                os.close(descriptor)
 
     def _usage(self):
         size, entries = 0, 0
@@ -722,6 +729,7 @@ class Runtime:
         self.state.update(sequence=record["sequence"], sha256=identity(record))
 
     def _retain_failure(self, failure):
+        artifact_preparation.invalidate(self)
         """Best effort exact original helper output; never replace the underlying failure."""
         try:
             stdout = getattr(failure, "stdout", b"") or b""
@@ -947,6 +955,8 @@ class Runtime:
             networks={"internal": {"internal": True}},
         )
 
+    @artifact_preparation.invalidate_on_error
+    @artifact_preparation.invalidate_after_change
     def up(self):
         with self._locked():
             self._load()
@@ -1092,6 +1102,8 @@ class Runtime:
         )
         return {**self.config, "cluster_id": broker["cluster_id"], "topics": broker["topics"]}
 
+    @artifact_preparation.invalidate_on_error
+    @artifact_preparation.invalidate_after_change
     def worker(self, worker_id, assigned_runs=None, replacement=False):
         canonical_uuid(worker_id)
         runs = sorted(canonical_uuid(run) for run in (assigned_runs or []))
@@ -1210,6 +1222,8 @@ class Runtime:
         require([r["worker_id"] for r in result] == sorted(workers), "membership_order")
         return result
 
+    @diagnostic.measured("publication")
+    @artifact_preparation.invalidate_on_error
     def publish(self, store, proposal, registrations, expected_revision, expected_hash):
         require(isinstance(store, local.Store), "candidate_store_required")
         # Hold P15a's real operation exclusion through adoption to prevent a readiness race.
@@ -1224,7 +1238,16 @@ class Runtime:
                 expected_hash,
             )
 
-    def _publish_locked(self, store, proposal, registrations, expected_revision, expected_hash):
+    def _publish_locked(
+        self,
+        store,
+        proposal,
+        registrations,
+        expected_revision,
+        expected_hash,
+        *,
+        _qualification_prepare=False,
+    ):
         candidate.require(
             "request",
             dict(
@@ -1252,6 +1275,11 @@ class Runtime:
             registrations=registrations,
             runtime_binding_sha256=runtime_binding(common),
         )
+        if self._qualification_artifact_preparation is not None and not _qualification_prepare:
+            artifact_preparation.capability(self)
+            require(existing is None, "qualification_preparation_used")
+        if _qualification_prepare:
+            require(existing is None, "qualification_preparation_existing")
         if existing:
             require(existing["adoption_sha256"] == identity(adoption), "adoption_conflict")
             return self._finish_publication(existing)
@@ -1327,6 +1355,11 @@ class Runtime:
         local.sync_directory(destination)
         local.sync_directory(destination.parent)
         candidate.verify_bundle(self.root / "bundles" / target)
+        if _qualification_prepare:
+            artifact_preparation.prepared_transfer(self, adoption, destination)
+            return None
+        if self._qualification_artifact_preparation is not None:
+            artifact_preparation.before_adoption(self, store, proposal, adoption, destination)
         revision = len(prior) + 1
         payload = dict(
             version="1.0.0",
@@ -1373,6 +1406,8 @@ class Runtime:
             bundle_sha256=target,
             registrations=registrations,
         )
+        if self._qualification_artifact_preparation is not None:
+            artifact_preparation.bind_intent(self, intent)
         self._append("adopt", event)
         HOOK("after_adoption")
         return self._finish_publication(self.state["publications"][-1])
@@ -1381,35 +1416,14 @@ class Runtime:
         if entry["receipt"] is not None:
             return copy.deepcopy(entry)
         intent = checked(self.root / "publications" / (str(entry["revision"]) + ".json"))
-        common = self._common()
+        self._common()
         target = self.root / "bundles" / entry["bundle_sha256"]
         manifest, _ = candidate.verify_bundle(target)
         require(
             manifest["compatibility_sha256"] == self.config["compatibility_sha256"], "compatibility"
         )
-        # Artifact sends may be physically repeated after uncertainty; every signature is deterministic.
-        for name in ("manifest.json", "plan.json"):
-            content = local.read(target / name, 4 * MIB)
-            count = (len(content) + 262143) // 262144
-            for index in range(count):
-                block = content[index * 262144 : (index + 1) * 262144]
-                payload = dict(
-                    version="1.0.0",
-                    deployment_id=self.config["deployment_id"],
-                    authority_id=self.config["authority_id"],
-                    runtime_binding_sha256=runtime_binding(common),
-                    bundle_sha256=entry["bundle_sha256"],
-                    member=name,
-                    member_sha256=sha(content),
-                    member_bytes=len(content),
-                    chunk_index=index,
-                    chunk_count=count,
-                    chunk_sha256=sha(block),
-                    data_base64=base64.b64encode(block).decode(),
-                )
-                with self._temporary(recovery=True) as temporary:
-                    wire = self._sign("artifact", payload, temporary)
-                    self._send_bytes("artifact", entry["bundle_sha256"], wire, temporary)
+        if not artifact_preparation.consume(self, entry, intent, target):
+            self._send_artifacts(target, entry["bundle_sha256"])
         with self._temporary(recovery=True) as temporary:
             wire = base64.b64decode(intent["wire_base64"], validate=True)
             require(local.document(wire) == intent["control"], "intent_wire")
@@ -1424,6 +1438,87 @@ class Runtime:
             recovery=True,
         )
         return copy.deepcopy(self.state["publications"][entry["revision"] - 1])
+
+    @diagnostic.measured("artifact_transfer")
+    def _send_artifacts(self, target, bundle_sha256, preparation=None):
+        common = self._common()
+        # Artifact sends may be physically repeated after uncertainty; every signature is deterministic.
+        for name in ("manifest.json", "plan.json"):
+            content = local.read(target / name, 4 * MIB)
+            count = (len(content) + 262143) // 262144
+            for index in range(count):
+                block = content[index * 262144 : (index + 1) * 262144]
+                payload = dict(
+                    version="1.0.0",
+                    deployment_id=self.config["deployment_id"],
+                    authority_id=self.config["authority_id"],
+                    runtime_binding_sha256=runtime_binding(common),
+                    bundle_sha256=bundle_sha256,
+                    member=name,
+                    member_sha256=sha(content),
+                    member_bytes=len(content),
+                    chunk_index=index,
+                    chunk_count=count,
+                    chunk_sha256=sha(block),
+                    data_base64=base64.b64encode(block).decode(),
+                )
+                with self._temporary(recovery=True) as temporary:
+                    wire = self._sign("artifact", payload, temporary)
+                    if preparation is not None:
+                        require(len(preparation["receipts"]) < 17, "qualification_artifact_chunks")
+                        preparation["wire_bytes"] = preparation.get("wire_bytes", 0) + len(wire)
+                        require(
+                            preparation["wire_bytes"] <= 8 * MIB, "qualification_artifact_bytes"
+                        )
+                        sequence = str(len(preparation["receipts"]))
+                        local.write_exclusive(preparation["evidence"] / (sequence + ".wire"), wire)
+                        artifact_preparation.evidence(
+                            preparation,
+                            sequence + ".attempt.json",
+                            dict(
+                                wire_sha256=sha(wire),
+                                bundle_sha256=bundle_sha256,
+                                cluster_id=self.state["broker"]["cluster_id"],
+                                topic=self.state["broker"]["topics"]["artifact"],
+                            ),
+                        )
+                    receipt = self._send_bytes("artifact", bundle_sha256, wire, temporary)
+                    if preparation is not None:
+                        if preparation["receipts"]:
+                            require(
+                                receipt["offset"] > preparation["receipts"][-1]["offset"],
+                                "qualification_artifact_offsets",
+                            )
+                        artifact_preparation.evidence(
+                            preparation, sequence + ".receipt.json", receipt
+                        )
+                        preparation["receipts"].append(copy.deepcopy(receipt))
+
+    @artifact_preparation.invalidate_on_error
+    @contextlib.contextmanager
+    def qualification_artifact_preparation(self, *args, **kwargs):
+        try:
+            with artifact_preparation.scope(self, *args, **kwargs) as token:
+                yield token
+        except BaseException:
+            artifact_preparation.invalidate(self)
+            raise
+
+    @artifact_preparation.invalidate_on_error
+    def qualification_artifact_readiness(self, token):
+        try:
+            return artifact_preparation.readiness(self, token)
+        except BaseException:
+            artifact_preparation.invalidate(self)
+            raise
+
+    @artifact_preparation.invalidate_on_error
+    def qualification_authorize_artifacts(self, token, worker, checkpoint_id):
+        try:
+            return artifact_preparation.authorize(self, token, worker, checkpoint_id)
+        except BaseException:
+            artifact_preparation.invalidate(self)
+            raise
 
     def _send_bytes(self, role, key, wire, temporary, topic=None):
         descriptor = topic or self.state["broker"]["topics"][role]
@@ -1630,6 +1725,7 @@ class Runtime:
             self._qualification_ack_proofs = None
 
     @diagnostic.measured("observe")
+    @artifact_preparation.invalidate_on_error
     def observe(self, limit=64, *, qualification_batch=False):
         require(type(limit) is int and 1 <= limit <= 128, "read_limit")
         diagnostic.note(
@@ -1809,6 +1905,7 @@ class Runtime:
             "batch_topic_identity",
         )
 
+    @artifact_preparation.invalidate_on_error
     def status_locked(self):
         publications = self.state["publications"]
         current: Any = publications[-1] if publications else None
@@ -1858,11 +1955,13 @@ class Runtime:
             journal_sequence=self.state["sequence"],
         )
 
+    @artifact_preparation.invalidate_on_error
     def status(self):
         with self._locked():
             self._load()
             return copy.deepcopy(self.status_locked())
 
+    @artifact_preparation.invalidate_on_error
     def topic_status(self, role, worker=None):
         """Actual pinned broker watermarks; inspection is not processing completion."""
         require(role in ("control", "artifact", "ack", "output", "input"), "topic_role")
@@ -1898,12 +1997,16 @@ class Runtime:
                 **info,
             )
 
+    @artifact_preparation.invalidate_on_error
+    @artifact_preparation.invalidate_after_change
     def tool(self, *args, timeout=120):
         """Trusted low-level qualifier/admin helper; never invoked from imported content."""
         with self._locked():
             self._load()
             return self._network(*args, timeout=timeout)
 
+    @artifact_preparation.invalidate_on_error
+    @artifact_preparation.invalidate_after_change
     def inject(self, role, wire, key="qualification"):
         """Explicit owned-topic fault admission, retaining its real Kafka receipt."""
         require(role in ("control", "artifact", "ack"), "injection_role")
@@ -1940,6 +2043,8 @@ class Runtime:
             )
         return containers
 
+    @artifact_preparation.invalidate_on_error
+    @artifact_preparation.invalidate_after_change
     def fault(self, action, worker=None):
         """Explicit operator fault controls, scoped to this registered deployment only."""
         with self._locked():
@@ -1998,6 +2103,7 @@ class Runtime:
             raise RuntimeError("lifecycle_runtime_unknown_fault")
         return dict(action=action, worker_id=worker, status="executed")
 
+    @artifact_preparation.invalidate_on_error
     def evidence(self, worker_id):
         """Retain original owned container state/logs privately before destructive recovery."""
         with self._locked():
@@ -2350,6 +2456,8 @@ class Runtime:
             local.write_exclusive(compose_file, encoded(compose))
         return compose_file
 
+    @artifact_preparation.invalidate_on_error
+    @artifact_preparation.invalidate_after_change
     def start(self, worker_id, restore=None, *, _probe=None):
         with self._locked():
             self._load()
@@ -2500,6 +2608,7 @@ class Runtime:
         )
         return payload
 
+    @artifact_preparation.invalidate_on_error
     def verify_ack_wire(self, wire, registration):
         """Read-only signature/identity proof, independent of publisher adoption history."""
         require(isinstance(wire, bytes) and len(wire) <= 65536, "ack_limit")
@@ -2509,6 +2618,7 @@ class Runtime:
                 return self._verify_ack_wire(wire, registration, temporary)
 
     @diagnostic.measured("inspect")
+    @artifact_preparation.invalidate_on_error
     def inspect_acks(self, start=0, limit=16, *, qualification_batch=False):
         diagnostic.note(requested=limit, fetched=0, processed=0)
         require(
@@ -2582,6 +2692,8 @@ class Runtime:
                         diagnostic.note(processed=len(records))
                 return dict(records=records, next_offset=batch["next_offset"])
 
+    @artifact_preparation.invalidate_on_error
+    @artifact_preparation.invalidate_after_change
     def sign_injection(self, kind, payload):
         """Explicit trusted qualifier operation, never a candidate-selected signing endpoint."""
         require(kind in ("control", "artifact"), "signing_role")
@@ -2590,6 +2702,7 @@ class Runtime:
             with self._temporary() as temporary:
                 return self._sign(kind, payload, temporary)
 
+    @artifact_preparation.invalidate_on_error
     def start_probe(self, worker_id, restore, probe_jar, mode, operation_root):
         require(mode in ("hold-release", "checkpoint-timeout", "partial-sink"), "probe_mode")
         operation_id = canonical_uuid(str(operation_root))
@@ -2634,6 +2747,7 @@ class Runtime:
         require(len(text.encode()) <= maximum, "worker_file_limit")
         return local.document(text.encode())
 
+    @artifact_preparation.invalidate_on_error
     def advisory_inventory(self, worker_id, checkpoint_id):
         """Observe owned snapshot metadata only; never establish completion or recovery authority."""
         require(type(checkpoint_id) is int and 0 <= checkpoint_id <= 2**63 - 1, "checkpoint_id")
@@ -2654,6 +2768,7 @@ class Runtime:
             )
             return dict(inventory=value)
 
+    @artifact_preparation.invalidate_on_error
     def worker_inventory(self, worker_id, checkpoint_id):
         require(type(checkpoint_id) is int and 0 <= checkpoint_id <= 2**63 - 1, "checkpoint_id")
         with self._locked():
@@ -2674,8 +2789,10 @@ class Runtime:
                 value is not None and value.get("checkpoint_id") == checkpoint_id,
                 "inventory_missing",
             )
+            artifact_preparation.observation(self, worker_id, observed, value)
             return dict(checkpoint=observed, inventory=value)
 
+    @artifact_preparation.invalidate_on_error
     def read_probe_marker(self, worker_id, operation_root, marker):
         operation = canonical_uuid(str(operation_root))
         require(marker in ("snapshot-start.json", "sink-ack.json"), "probe_marker")
@@ -2683,6 +2800,7 @@ class Runtime:
             self._load()
             return self._worker_file(worker_id, "/store/probes/" + operation + "/" + marker)
 
+    @artifact_preparation.invalidate_on_error
     def release_probe(self, worker_id, operation_root):
         operation = canonical_uuid(str(operation_root))
         with self._locked():
@@ -2707,6 +2825,7 @@ class Runtime:
                 "/store/probes/" + operation + "/release",
             )
 
+    @artifact_preparation.invalidate_on_error
     def rest(self, worker_id, path, method="GET", data=None):
         require(isinstance(path, str) and re.fullmatch(r"/[A-Za-z0-9/_?=&.-]*", path), "rest_path")
         require(method in ("GET", "POST", "PATCH"), "rest_method")
@@ -2731,6 +2850,7 @@ class Runtime:
         args += ["http://localhost:8081" + path]
         return local.document(self._compose(worker["flink_project"], compose, *args).encode())
 
+    @artifact_preparation.invalidate_on_error
     def checkpoints(self, worker_id):
         with self._locked():
             self._load()
@@ -2757,6 +2877,7 @@ class Runtime:
                     self._append("start", updated)
             return result
 
+    @artifact_preparation.invalidate_on_error
     def checkpoint(self, worker_id):
         with self._locked():
             self._load()
@@ -2764,6 +2885,8 @@ class Runtime:
             require(job is not None, "job_missing")
             return self.rest(worker_id, "/jobs/" + job["job_id"] + "/checkpoints", "POST", {})
 
+    @artifact_preparation.invalidate_on_error
+    @artifact_preparation.invalidate_after_change
     def stop(self, worker_id=None):
         with self._locked():
             self._load()
@@ -2795,6 +2918,8 @@ class Runtime:
                 self._compose(self.config["project"], self.root / "broker.compose.json", "stop")
             return dict(status="stopped", workers=[w["worker_id"] for w in workers])
 
+    @artifact_preparation.invalidate_on_error
+    @artifact_preparation.invalidate_after_change
     def replace(self, worker_id, restore):
         # Stops only the proven owned cluster; a replacement never races an unfenced predecessor.
         self.stop(worker_id)
@@ -3145,6 +3270,8 @@ class Runtime:
         ]
         return local.document(self._command(command, timeout=120).encode())
 
+    @diagnostic.measured("qualification_admission")
+    @artifact_preparation.invalidate_on_error
     def admit_qualification_batch(self, worker_id, rows):
         require(isinstance(rows, list) and 1 <= len(rows) <= 128, "admission_count")
         with self._locked():
@@ -3286,6 +3413,7 @@ class Runtime:
             )
             return receipts
 
+    @artifact_preparation.invalidate_on_error
     def admit(self, worker_id, rows):
         require(isinstance(rows, list) and 1 <= len(rows) <= 128, "admission_count")
         with self._locked():
@@ -3342,6 +3470,7 @@ class Runtime:
                 receipts.append(receipt)
             return receipts
 
+    @artifact_preparation.invalidate_on_error
     def outputs(self, start=0, limit=16):
         require(
             type(start) is int and start >= 0 and type(limit) is int and 1 <= limit <= 128,

@@ -2,7 +2,8 @@
 
 Current status: native mechanics and recovery support the bounded128 ACK-read
 correction. A same-source dispatch exposed a distinct open-group30s scheduling
-failure and separate search failure. CI remains blocked; PR63 stays Draft. Earlier diagnostic-only gates below are historical.
+failure and separate search failure. Owner-approved A is implemented with local
+focused proof; fresh native/repeatability remain open. CI stays gated; PR63 is Draft. Earlier diagnostic-only gates below are historical.
 
 See [owning RCA design and independent expectations](ci-01-design.md).
 
@@ -357,3 +358,107 @@ artifact-cursor/rejection readiness outside the30s window, retained-availability
 negative coverage, and request-bound (not cryptographic) QA result wording. No
 option has been implemented or treated as accepted. All local heavy tools remain
 idle while the owner chooses the boundary.
+
+## Owner-approved A implementation
+
+The owner explicitly selected A after local freeze4339ff4; the stale pending-choice
+notice is not the current authorization. [ADR 0015](decisions/0015-qualification-artifact-preparation.md)
+records the accepted CI-only boundary. Approval does not authorize merge/release,
+P15 resumption, alternative B or P13 search changes.
+
+The scope validates staged closure/proposal/member/broker/context/CAS under normal
+locks, signs/transfers the exact existing artifact packets, then releases locks
+between completed operations. It creates no A adoption/control. Every worker must
+supply actual COMPLETED artifact-cursor/rejection/B-selection readiness before
+five-record admission. Actual existing worker_inventory results alone feed the
+internal proof observations. The later exact-five-B proof authorizes only the
+opaque instance token; publication rechecks context/CAS/bytes and binds the exact
+new A intent/revision/command before durable adoption. Only duplicate artifact
+transfers are omitted. Normal control signing/send/receipt and guarded EOE
+admission remain ordinary; the six-member literal A/source_boundary oracle stays.
+
+Single-use/failure/finally invalidation includes early API errors and successful
+context-mutating operations. Default publication without a scope still sends
+artifacts then control. No persistent controller format, worker wire/state, QA JAR,
+clock or resource ceiling changes. Private original wires and attempt metadata
+are durable before any preparation send; actual receipts follow acknowledgments.
+Original baseline/readiness proofs are retained privately with bounded64-proof/
+32MiB evidence storage, below existing finite storage bounds. No new private
+preparation directory is included in uploaded artifact globs. Fixed monotonic
+preparation/readiness/authorization/publication/admission/proof spans add no
+logging queries; readiness queries establish the newly required correctness fact.
+
+Independent guard implementation/review found and corrected None-token omission,
+missing explicit resulting-intent binding and early-error invalidation gaps.
+The three early-error regressions actually failed by permitting later reuse, then
+passed after complete API-boundary invalidation. Explicit intent replacement,
+partial-send uncertainty and unavailable/truncated-prefix transport doubles remain
+negative cases, not real Kafka truncation qualification. Twenty-seven guard cases
+pass with real controller proof plumbing and explicit transport/crypto doubles;
+they do not claim real worker execution. No missing-API/setup error is called red.
+
+First actual focused attempt3c3d31116024412a98cf2ef11f115924 stopped fail-closed
+at artifact readiness, before any case admission/output:0 admissions/0 outputs,
+owned runtime stopped. Summary hash:
+`5749a362690eb74792281023fb4327c5dbfa3790ad82925b7013aeae0b4d86c9`.
+The existing checkpoints() API journals rolling completed_restore_paths via start
+records during ordinary observation. Comparing the entire job record incorrectly
+classified that metadata progress as a job change. A genuine focused unit red
+captured it; identity now excludes only completed_restore_paths while retaining
+all other job fields, including actual job/incarnation/state. Changed-job guards
+still fail. The next fresh attempt uses that demonstrated correction; this is not
+an unchanged rerun-to-green. All failed evidence and private prepared wires remain.
+
+Complete inspections preceded retirement of only the three verified empty,
+stopped-owned networks from prior local attempt39207 and then the failed3c3d
+attempt to free exhausted Docker pools. No container, volume, original deployment,
+raw evidence or original-root document/stash was deleted or changed.
+
+## A focused actual qualification and final local checks
+
+Fresh corrected ARM64 attempta86ebb18120e4c918232bb5b5807c460 passed the selected
+actual `open-group` case:6 admissions,9 logical/physical outputs,
+`partial_passed`, `full_gate:false`, no unexpected job/oracle failures, all owned
+runtime stopped. Both workers supplied actual COMPLETED artifact readiness
+(worker20 CP13, worker21 CP9) before the first-five admission. Worker21 CP11 then
+proved exactly five B members and the original30000ms deadline. Final strict
+oracle checks required all six exact members, eligible source_boundary, tagged/
+detection output and literal A closure. Neither readiness nor publication ACK was
+substituted for actual application/closure evidence.
+
+The final publication contained one network helper (control); local publication
+was2.879586584s and completed-proof-to-EOE-return5.533703041s. Preparation6.241389917s
+and readiness polling occurred before the30s group. These are local ARM64 timing
+observations, not a native speedup comparison or capacity claim. Original20s proof
+wait and120s convergence guard remained. Runtime, qualifier and preparation module
+hashes in this report match the final implementation files. Source was4339ff4 plus
+the tracked implementation; no pass is transferred to a different commit by fiat.
+Runtime055a, producer51a, QA7b677 and validator packetf2 remain unchanged; explicit
+`--skip-build` hashes were verified. No Gradle/JAR build was run locally.
+
+Summary SHA-256:
+`faa5fe2e9638856f352cdf35b60978f881bdbcbebfef882bd6bed49c25f7dbc6`;
+run log `2b28efdc27004d6ecb101bc823e99cd24d1eee3d8e9dc7777f84bd0e289fc5eb`.
+Final `tools/dev.py check` passed469 Python tests with no skips, contract/hygiene/
+secret/workflow checks, Ruff/formatting and mypy for121 source files, plus adapter
+checks. Full log hash:
+`3d3e580f560855b476b6ffb2898315a078ec623c647b848dc4e472b2f1768f80`.
+The27 preparation guard cases include simulated truncation/unavailability,
+per-worker readiness, member/context/CAS/intent changes, private token misuse,
+partial/uncertain send retention, ordinary metadata progression and cleanup.
+An intermediate retention assertion incorrectly expected no first receipt when
+the injected uncertainty occurred on the second send; it was corrected to require
+first receipt plus second original wire/attempt and no fabricated second receipt.
+It is not a runtime red. Guard suite hash:
+`b21a7f7eaa43f4b76f6261a15fc56e13321e13229ef30dd344121eafb89ec491`.
+Early-error red hash:
+`0b66a1e7e18ecd491ef059a93992795512620679bfe55eec62d55ff86ce2b122`;
+checkpoint-metadata red:
+`9d35400cbab6aa88c6be649cfa0ab090e552efdd92dcd1aece7571a574fb5156`.
+
+The next exact-head native all14 and repeat optional diagnostic are mandatory.
+The latter now additionally runs fresh actual open-group qualification after both
+signed-backlog cases and production faults; default all14/aggregate are unchanged.
+PR63 remains Draft; same-head historical activation/search failures are retained,
+search diagnostics remain separate, and CI stability/review readiness are unclaimed.
+Parent owns native evidence collection/watch after push; the child never watches.

@@ -354,3 +354,11 @@ The optional native diagnostic job serializes both mechanics cases and actual
 production faults; default all14 and strict120s/exact-checkpoint proofs remain.
 Local mechanics and review are attributed in the owning ledger; native improvement
 is unclaimed until the corrected exact source is qualified.
+
+The owner approved CI-01 option A after freeze4339ff4; ADR 0015 owns the accepted
+qualification preparation boundary. Integration owns runtime/helper/qualifier/CI
+edits. A separate agent authored independent guard tests; read-only implementation
+review found token/intent/early-error gaps that were fixed. Heavy actual worker
+qualification remains serialized and private evidence stays outside upload globs.
+The same-head search failure remains a separate diagnostic concern, not a P13
+semantic change in this PR. CI-01/PR63 stay gated on fresh native/repeatability.

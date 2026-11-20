@@ -1558,6 +1558,10 @@
           "run": "uv run --locked python tools/lifecycle_runtime_verify.py --scenario-group production-faults"
         },
         {
+          "name": "Qualify actual open-group closure within the original deadline",
+          "run": "uv run --locked python tools/lifecycle_runtime_verify.py --scenario-group open-group"
+        },
+        {
           "name": "Retain public synthetic activation qualification evidence",
           "if": "${{ always() }}",
           "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",

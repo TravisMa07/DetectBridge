@@ -294,7 +294,9 @@ is recorded in the acceptance map; P13 acceptance is not implied.
   qualification remains pending. P15b stays parked.
 - c42 native PR all14 passed, but the same-source dispatch failed the real30s
   open-group closure schedule. A new publication-preparation boundary is proposed
-  for owner decision; PR63 remains Draft, with no CI stability/readiness claim.
+  and owner-approved in ADR 0015. Its scoped A preparation is implemented, with
+  guard/focused qualification and fresh native repeatability gates tracked in the
+  ledger. PR63 remains Draft, with no CI stability/readiness claim.
   Independent search failure needs a separate CI diagnostic item.
 
 ### P15 — Rule lifecycle, activation and rollback

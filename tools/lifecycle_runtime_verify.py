@@ -308,6 +308,24 @@ class Qualification:
             or selection.get("revision") != publication["revision"]
         ):
             return None
+        expectation = Qualification.expected_open_group(case)
+        key = expectation["key"]
+        expected = {row["record_id"]: row for row in expectation["members"]}
+        for group in inventory.get("machine", {}).get("groups", []):
+            if group.get("key") != key:
+                continue
+            members = group.get("members", [])
+            if len(members) != 5 or {row.get("record_id") for row in members} != set(expected):
+                return None
+            require(
+                all(row == expected[row["record_id"]] for row in members), "group_member_integrity"
+            )
+            require(group["deadline"] - group["opened"] == 30000, "group_original_deadline")
+            return group
+        return None
+
+    @staticmethod
+    def expected_open_group(case):
         rows = case["admissions"][:-1]
         require(len(rows) == 5, "group_five_source_members")
         context = rows[0]["context"]
@@ -331,18 +349,7 @@ class Qualification:
             )
             for row in rows
         }
-        for group in inventory.get("machine", {}).get("groups", []):
-            if group.get("key") != key:
-                continue
-            members = group.get("members", [])
-            if len(members) != 5 or {row.get("record_id") for row in members} != set(expected):
-                return None
-            require(
-                all(row == expected[row["record_id"]] for row in members), "group_member_integrity"
-            )
-            require(group["deadline"] - group["opened"] == 30000, "group_original_deadline")
-            return group
-        return None
+        return dict(worker_id=case["worker_id"], key=key, members=list(expected.values()))
 
     def registration(self, worker):
         return next(row for row in self.registrations if row["worker_id"] == worker)
@@ -730,6 +737,7 @@ class Qualification:
         )
         return proof
 
+    @diagnostic.measured("completed_open_group")
     def completed_open_group(self, worker, case, publication):
         """Scheduling evidence from an exact globally completed owned snapshot, not an ACK."""
         self.fail_on_failed_job(worker)
@@ -1429,16 +1437,31 @@ class Qualification:
         setup_barrier = self.drain_checked_acks(self.ack_barrier(), "pre_group_ack_barrier")
         case = self.extra("audit-whoami", 205)
         before = self.current
-        first = self.runtime.admit_qualification_batch(worker, case["admissions"][:-1])
-
-        opened_proof = self.wait(
-            lambda: self.completed_open_group(worker, case, before),
-            "open_audit_group",
-            timeout=20,
-        )
-        opened_group = opened_proof["group"]
-        self.publish("A", "rollback", prepared=rollback_proposal)
-        last = self.runtime.admit_qualification_batch(worker, case["admissions"][-1:])
+        with self.runtime.qualification_artifact_preparation(
+            self.store,
+            rollback_proposal,
+            self.registrations,
+            self.current["revision"],
+            self.current["command_sha256"],
+            expected_open_group=self.expected_open_group(case),
+            evidence_root=self.runtime.root.parent / ("artifact-preparation-" + uuid.uuid4().hex),
+        ) as preparation:
+            readiness = self.wait(
+                lambda: self.runtime.qualification_artifact_readiness(preparation),
+                "artifact_preparation_readiness",
+            )
+            first = self.runtime.admit_qualification_batch(worker, case["admissions"][:-1])
+            opened_proof = self.wait(
+                lambda: self.completed_open_group(worker, case, before),
+                "open_audit_group",
+                timeout=20,
+            )
+            opened_group = opened_proof["group"]
+            preparation_authority = self.runtime.qualification_authorize_artifacts(
+                preparation, worker, opened_proof["checkpoint_id"]
+            )
+            self.publish("A", "rollback", prepared=rollback_proposal)
+            last = self.runtime.admit_qualification_batch(worker, case["admissions"][-1:])
         self.converge()
         states = [("B", before, old_registration)] * 5 + [("A", self.current, old_registration)]
         self.add_case(case, "A", receipts=first + last, receipt_states=states)
@@ -1451,6 +1474,8 @@ class Qualification:
             closure_revision=self.current["revision"],
             membership=case["expected"]["member_ids"],
             pre_admission_ack_barrier=setup_barrier,
+            pre_admission_artifact_readiness=readiness,
+            prepared_artifact_authority=preparation_authority,
             open_group_observation=opened_group,
             initial_completed_group_proof=opened_proof,
             closure_application_proof="actual immutable EOE receipt, six-member eligible source_boundary manifest, tagged result and detection all require A selection; publication receipt is not application proof",
@@ -2128,6 +2153,7 @@ def main(argv=None):
     )
     source_paths = {
         ROOT / "tools/lifecycle_diagnostics.py",
+        ROOT / "tools/lifecycle_artifact_preparation.py",
         ROOT / "tools/lifecycle_ack_backlog.py",
         ROOT / "tools/lifecycle_runtime_cases.py",
         ROOT / "tools/lifecycle_runtime_verify.py",

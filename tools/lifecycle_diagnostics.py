@@ -28,6 +28,13 @@ STAGES = frozenset(
         "predicate",
         "network_other",
         "job_health",
+        "publication",
+        "artifact_transfer",
+        "artifact_readiness",
+        "artifact_authorization",
+        "artifact_preparation",
+        "qualification_admission",
+        "completed_open_group",
     }
 )
 COUNTS = frozenset({"requested", "fetched", "processed", "accepted", "rejected", "duplicates"})

@@ -539,6 +539,8 @@ def needs_activation(paths):
                 "tools/lifecycle_runtime",
                 "tools/lifecycle_diagnostics",
                 "tools/lifecycle_ack_backlog",
+                "tools/lifecycle_artifact_preparation",
+                "tools/tests/test_lifecycle_artifact_preparation",
                 "tools/tests/test_lifecycle_ack_backlog",
                 "tools/tests/test_lifecycle_diagnostics",
                 "tools/check_lifecycle_runtime",

@@ -311,3 +311,9 @@ Unix socket before bundle installation. Its packet and actual image identities
 join the runtime/checkpoint binding; it performs no event-time Python evaluation.
 This records the design and owner decision, not runtime qualification. P15b2 still
 owns the new archive/replay graph before full P15 acceptance or dependent P16 work.
+
+[ADR 0015](decisions/0015-qualification-artifact-preparation.md) records the owner's
+CI-01-only artifact preparation boundary: an ephemeral qualification capability
+and actual worker readiness before the30s case, with normal effective publication
+and worker semantics unchanged. Implementation/qualification remain separate
+from accepted direction and P15/merge/release gates.

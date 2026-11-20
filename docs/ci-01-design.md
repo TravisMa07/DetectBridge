@@ -127,7 +127,10 @@ it is never a qualification timeout waiver. Native benefit still requires result
 
 ## Open-group deadline decision packet
 
-Status: proposals only, not accepted or implemented. Same-source c42 has a full
+Owner decision: A is explicitly accepted for CI-01 implementation, per
+[ADR 0015](decisions/0015-qualification-artifact-preparation.md). Prior freeze4339ff4
+and alternative B remain retained; implementation/qualification are separate.
+Same-source c42 has a full
 native PR pass and a dispatch semantic failure; neither is discarded. The dispatch
 proves the harness spent22.461s publishing rollback after the actual five-B proof,
 then7.154s admitting EOE. Those29.615s are an observed lower bound (unspanned store/caller work is omitted)
@@ -180,9 +183,9 @@ resulting A intent/revision. Invalidate on any other adoption/context change and
 on every failure/finally path. Any changed context rejects reuse. No fake helper receipt, skipped signature,
 publication-as-application assertion or pending-A admission bypass is allowed.
 
-This would add a new opt-in controller preparation/reuse boundary. It does not
+The owner approved this new opt-in controller preparation/reuse boundary. It does not
 change worker wire/state semantics, but changes the qualification publication
-sequence and therefore needs explicit owner agreement before implementation.
+sequence; that explicit agreement covers A only, not merge/release or P15 resume.
 The measured two artifact transfers identify work to move before the timer; no
 claim of enough remaining margin is made until actual focused/native validation.
 
@@ -236,3 +239,21 @@ Actual same-source native timeout is the behavioral red. Focused unit/fault test
 actual open-group qualification, exact native all14 and repeat native diagnostic
 results are required after an accepted correction. Keep the separate search-CI
 failure visible; activation work cannot silently modify P13 semantics.
+
+### Accepted A implementation refinements
+
+Owner approval is recorded in ADR 0015; freeze4339ff4 remains intact. Readiness
+and authorization use only internally observed actual COMPLETED inventories. The
+capability has a distinct private omission sentinel, so explicit None cannot bypass
+token identity. B CAS is checked before adoption; the exact constructed A intent,
+revision and command are bound before the adopt record and checked at consumption.
+Any relevant error, successful context mutation or scope exit invalidates reuse.
+
+Job context binds all fields except completed_restore_paths: normal checkpoints()
+queries journal that rolling recovery-path registry without changing execution
+identity. The initial focused fail-closed attempt exposed this distinction, and a
+regression preserves it while changed job/incarnation/state still reject reuse.
+Signed wires and attempt facts persist before sends; original completed baseline/
+readiness documents are bounded private evidence (64 proofs/32MiB), not public
+values or a persistent preparation format. The existing default publish path,
+resource ceilings and all deadlines remain.

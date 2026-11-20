@@ -336,3 +336,29 @@ literal vectors preceded implementation. The separate writer mode preserves P08
 and P13b state/contracts; [design](p13c-design.md) and [ledger](p13c-ledger.md) record
 actual projection, permission, delivery/failure and qualification boundaries.
 Recorded source-to-search/full P13 acceptance and owner merge remain separate.
+
+## CI-01 activation qualification diagnosis
+
+CI-01 owns only the separate [RCA diagnostic delivery](ci-01-design.md), based on
+frozen P15b6e1ed1c with PR base `feat/p15b-worker-activation`. The CI-01
+implementation agent owns controller instrumentation, qualifier, CI/cache wiring
+and status integration; a read-only independent agent reviewed expectations and
+the actual diagnostic diff. Heavy runtime qualification remains serialized.
+[Evidence and pending gates](ci-01-ledger.md) are separate from P15/#15/#61,
+which remain parked/dependent. No production contracts, artifacts or architecture
+decisions are changed and no owner acceptance, merge or release is inferred.
+
+CI-01 continuation uses native44641731135 stage evidence and independently
+checked101-wire ACK-only mechanics to select the existing128 qualification bound.
+The optional native diagnostic job serializes both mechanics cases and actual
+production faults; default all14 and strict120s/exact-checkpoint proofs remain.
+Local mechanics and review are attributed in the owning ledger; native improvement
+is unclaimed until the corrected exact source is qualified.
+
+The owner approved CI-01 option A after freeze4339ff4; ADR 0015 owns the accepted
+qualification preparation boundary. Integration owns runtime/helper/qualifier/CI
+edits. A separate agent authored independent guard tests; read-only implementation
+review found token/intent/early-error gaps that were fixed. Heavy actual worker
+qualification remains serialized and private evidence stays outside upload globs.
+The same-head search failure remains a separate diagnostic concern, not a P13
+semantic change in this PR. CI-01/PR63 stay gated on fresh native/repeatability.

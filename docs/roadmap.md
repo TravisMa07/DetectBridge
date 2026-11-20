@@ -279,6 +279,26 @@ is recorded in the acceptance map; P13 acceptance is not implied.
   archives; historical pinned results reproduce on qualified fixtures; current
   replay remains isolated. Document unsupported reproduction limits explicitly.
 
+### CI-01 — Native activation CI diagnosis and stabilization
+
+- [Issue #62](https://github.com/TravisMa07/DetectBridge/issues/62), In progress,
+  blocks P15b #61 (Draft/parked) and dependent P15/P16 continuation.
+- Owns native stage measurements, controlled authenticated finite-backlog mechanics
+  and only a demonstrated CI correction. [RCA design](ci-01-design.md) and
+  [evidence ledger](ci-01-ledger.md) preserve the unchanged120s/all14 gate.
+- Separate PR targets frozen P15b branch `feat/p15b-worker-activation` at6e1ed1c;
+  native qualification, owner acceptance/merge and merged-main remain open.
+- Native diagnostic run44641731135 measured repeated drain/commit round trips
+  dominating small-prefix observation. Frozen signed-backlog mechanics support
+  amortizing those calls at the existing128 bound; exact native correction
+  qualification remains pending. P15b stays parked.
+- c42 native PR all14 passed, but the same-source dispatch failed the real30s
+  open-group closure schedule. A new publication-preparation boundary is proposed
+  and owner-approved in ADR 0015. Its scoped A preparation is implemented, with
+  guard/focused qualification and fresh native repeatability gates tracked in the
+  ledger. PR63 remains Draft, with no CI stability/readiness claim.
+  Independent search failure needs a separate CI diagnostic item.
+
 ### P15 — Rule lifecycle, activation and rollback
 
 - Readiness: P10/P13 and bounded owner-accepted P14 are complete.

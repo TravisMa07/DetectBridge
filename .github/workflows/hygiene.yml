@@ -5,7 +5,8 @@
       "branches": [
         "main",
         "fix/ci-gradle-cache-fanout",
-        "feat/p14c1-current-replay"
+        "feat/p14c1-current-replay",
+        "feat/p15b-worker-activation"
       ]
     },
     "push": {
@@ -44,6 +45,12 @@
           "type": "string",
           "required": false,
           "default": ""
+        },
+        "activation-diagnostic": {
+          "description": "Additional CI-01 production-faults timing diagnosis; never replaces required all14",
+          "type": "boolean",
+          "required": false,
+          "default": false
         }
       }
     }
@@ -1477,6 +1484,89 @@
           "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
           "with": {
             "name": "p15b1-activation-qualification",
+            "path": ".cache/lifecycle-runtime-qualification/summary.json\n.cache/lifecycle-runtime-qualification/attempts/*/*.json\n.cache/lifecycle-runtime-qualification/*.log\n.cache/lifecycle-runtime-qualification/attempts/*/approved-fault-proofs/*.json",
+            "include-hidden-files": true,
+            "if-no-files-found": "error",
+            "retention-days": 7
+          }
+        }
+      ]
+    },
+    "activation-diagnostic": {
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 45,
+      "needs": [
+        "classify-changes",
+        "toolchain-verification"
+      ],
+      "if": "${{ github.event_name == 'workflow_dispatch' && inputs.activation-diagnostic }}",
+      "steps": [
+        {
+          "uses": "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "with": {
+            "persist-credentials": false
+          }
+        },
+        {
+          "uses": "actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0",
+          "with": {
+            "python-version": "3.12.12"
+          }
+        },
+        {
+          "name": "Restore prepared dependency cache",
+          "uses": "actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830",
+          "with": {
+            "path": ".cache/gradle/caches/modules-2/files-2.1\n.cache/gradle/caches/modules-2/metadata-*",
+            "key": "${{ runner.os }}-${{ runner.arch }}-gradle-modules-v1-${{ hashFiles('settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'packages/**/*.gradle.kts', 'packages/**/gradle.lockfile', 'settings-gradle.lockfile', 'gradle/verification-metadata.xml', 'gradle/libs.versions.toml', 'gradle/wrapper/**', 'tools/toolchains.json') }}",
+            "fail-on-cache-miss": true
+          },
+          "id": "prepared-gradle-cache"
+        },
+        {
+          "name": "Require exact prepared dependency cache hit",
+          "id": "require-prepared-gradle-cache",
+          "shell": "bash",
+          "env": {
+            "CACHE_HIT": "${{ steps.prepared-gradle-cache.outputs.cache-hit }}"
+          },
+          "run": "if [ \"${CACHE_HIT:-}\" != \"true\" ]; then\n  echo \"Prepared Gradle dependency cache was not restored exactly.\" >&2\n  exit 1\nfi"
+        },
+        {
+          "name": "Install pinned development tools",
+          "run": "python3 -m pip install uv==0.13.6\npython3 tools/dev.py bootstrap"
+        },
+        {
+          "name": "Retain bootstrap dependency diagnostics",
+          "if": "${{ failure() }}",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "bootstrap-ci-01-diagnostic",
+            "path": ".cache/bootstrap/gradle-*/attempt-*.log",
+            "include-hidden-files": true,
+            "if-no-files-found": "ignore",
+            "retention-days": 7
+          }
+        },
+        {
+          "name": "Compare frozen real signed ACK prefixes on fresh equivalent stores (mechanics only)",
+          "id": "ack-mechanics",
+          "run": "uv run --locked python tools/lifecycle_runtime_verify.py --ack-backlog-mechanics valid\nuv run --locked python tools/lifecycle_runtime_verify.py --ack-backlog-mechanics invalid-signature"
+        },
+        {
+          "name": "Diagnose actual production faults with fresh isolated workers (partial scope)",
+          "run": "uv run --locked python tools/lifecycle_runtime_verify.py --scenario-group production-faults"
+        },
+        {
+          "name": "Qualify actual open-group closure within the original deadline",
+          "run": "uv run --locked python tools/lifecycle_runtime_verify.py --scenario-group open-group"
+        },
+        {
+          "name": "Retain public synthetic activation qualification evidence",
+          "if": "${{ always() }}",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "ci-01-production-faults-diagnostic",
             "path": ".cache/lifecycle-runtime-qualification/summary.json\n.cache/lifecycle-runtime-qualification/attempts/*/*.json\n.cache/lifecycle-runtime-qualification/*.log\n.cache/lifecycle-runtime-qualification/attempts/*/approved-fault-proofs/*.json",
             "include-hidden-files": true,
             "if-no-files-found": "error",

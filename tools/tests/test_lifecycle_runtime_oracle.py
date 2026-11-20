@@ -329,7 +329,7 @@ class LifecycleRuntimeOracleTests(unittest.TestCase):
             with self.assertRaises(RuntimeError) as caught:
                 qualifier.converge([worker])
             self.assertIs(failure, caught.exception)
-            runtime.observe.assert_called_once_with(limit=8, qualification_batch=True)
+            runtime.observe.assert_called_once_with(limit=128, qualification_batch=True)
             runtime.worker_inventory.assert_called_once_with(worker, 12)
             proof = qualifier.query_failures[0]
             self.assertEqual(404, proof["http_status"])
@@ -407,7 +407,7 @@ class LifecycleRuntimeOracleTests(unittest.TestCase):
             qualifier.registrations = [self.registration]
             with patch("lifecycle_runtime_verify.time.sleep"):
                 qualifier.converge([worker])
-            self.assertEqual([8, 8], observed)
+            self.assertEqual([128, 128], observed)
             self.assertEqual(
                 [(worker, 12), (worker, 15)],
                 [call.args for call in runtime.worker_inventory.call_args_list],
@@ -431,74 +431,55 @@ class LifecycleRuntimeOracleTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "durable_proof_missing"):
                 qualifier.converge([worker])
 
-    def test_eight_ack_poll_keeps_exact_checkpoint_proof_within_original_deadline(self):
-        from lifecycle_runtime_verify import Qualification
-
+    def test_finite_historical_prefix_reaches_current_ack_beyond_eight_and_exact_join(self):
+        # A finite prefix request contract, not a timing model or worker durability run.
         with tempfile.TemporaryDirectory(dir=(ROOT / ".cache").resolve()) as folder:
-            root = Path(folder)
-            worker, job, command = self.registration["worker_id"], "a" * 32, "2" * 64
-            ack = dict(
-                worker_id=worker,
-                incarnation=self.registration["incarnation"],
-                command_sha256=command,
-                phase="durable",
-                category="ok",
-                checkpoint_id=15,
+            qualifier, runtime, worker, _job, ack, _proof, _evicted, status = (
+                self.completed_candidate_fixture(Path(folder))
             )
-            proof = dict(
-                checkpoint=dict(id=15, status="COMPLETED"),
-                inventory=dict(
-                    selection=dict(
-                        revision=2,
-                        command_sha256=command,
-                        origin_incarnation=self.registration["incarnation"],
-                    ),
-                    snapshot_sha256="f" * 64,
-                ),
-            )
-            clock = [0.0]
-            status = dict(participants=[dict(worker_id=worker, durable=True, rejected=False)])
+            historical = [
+                {**ack, "command_sha256": "1" * 64, "checkpoint_id": index + 1}
+                for index in range(100)
+            ]
+            backlog = [*historical, ack]
+            consumed = []
 
-            def proportional_observe(limit, *, qualification_batch=False):
+            def observe(limit, *, qualification_batch=False):
                 self.assertTrue(qualification_batch)
-                # Deterministic cost model, not a measured throughput/runtime assertion.
-                clock[0] += 4 * limit
-                return status
-
-            runtime = SimpleNamespace(
-                root=root / "deployment",
-                state=dict(
-                    jobs={worker: dict(job_id=job)}, acks={"authenticated": dict(payload=ack)}
-                ),
-                rest=Mock(return_value=dict(state="RUNNING")),
-                observe=Mock(side_effect=proportional_observe),
-                checkpoints=Mock(return_value={}),
-                worker_inventory=Mock(return_value=proof),
-            )
-            qualifier = Qualification(root, runtime, self.bundles, None, root / "probe.jar")
-            qualifier.current = dict(revision=2, command_sha256=command)
-            qualifier.registrations = [self.registration]
-            with patch("lifecycle_runtime_verify.time.monotonic", side_effect=lambda: clock[0]):
-                self.assertIs(status, qualifier.converge([worker], timeout=120))
-            runtime.observe.assert_called_once_with(limit=8, qualification_batch=True)
-            runtime.worker_inventory.assert_called_once_with(worker, 15)
-            self.assertEqual(32, clock[0])
-            self.assertEqual(15, qualifier.checkpoint_evidence[0]["checkpoint_id"])
-            self.assertEqual(digest(proof), qualifier.checkpoint_evidence[0]["confirmation_sha256"])
-            self.assertTrue(qualifier.confirmed_ack_checkpoints)
-            # The same modeled per-record cost for a32-record poll crosses the original
-            # deadline; even a truthy complete predicate may not turn that into success.
-            clock[0] = 0
-            with (
-                patch("lifecycle_runtime_verify.time.monotonic", side_effect=lambda: clock[0]),
-                self.assertRaisesRegex(ValueError, "timeout_counterfactual_large_poll"),
-            ):
-                qualifier.wait(
-                    lambda: proportional_observe(32, qualification_batch=True),
-                    "counterfactual_large_poll",
-                    timeout=120,
+                rows = backlog[:limit]
+                consumed.extend(rows)
+                runtime.state["acks"] = {str(i): dict(payload=row) for i, row in enumerate(rows)}
+                current_seen = any(row["command_sha256"] == ack["command_sha256"] for row in rows)
+                return (
+                    status
+                    if current_seen
+                    else dict(participants=[dict(worker_id=worker, durable=False, rejected=False)])
                 )
-            self.assertEqual(128, clock[0])
+
+            runtime.observe.side_effect = observe
+            self.assertIs(status, qualifier.converge([worker], timeout=120))
+            runtime.observe.assert_called_once_with(limit=128, qualification_batch=True)
+            self.assertEqual(101, len(consumed))
+            self.assertEqual(12, qualifier.checkpoint_evidence[0]["checkpoint_id"])
+            self.assertEqual(
+                ack["command_sha256"], qualifier.checkpoint_evidence[0]["command_sha256"]
+            )
+            self.assertEqual(1, runtime.worker_inventory.call_count)
+
+    def test_full_historical_prefix_cannot_discharge_current_command(self):
+        with tempfile.TemporaryDirectory(dir=(ROOT / ".cache").resolve()) as folder:
+            qualifier, runtime, worker, _job, ack, _proof, _evicted, status = (
+                self.completed_candidate_fixture(Path(folder))
+            )
+            runtime.state["acks"] = {
+                str(i): dict(payload={**ack, "command_sha256": "1" * 64, "checkpoint_id": i + 1})
+                for i in range(101)
+            }
+            runtime.observe.return_value = status
+            with self.assertRaisesRegex(ValueError, "durable_proof_missing"):
+                qualifier.converge([worker])
+            self.assertFalse(qualifier.checkpoint_evidence)
+            self.assertFalse(qualifier.confirmed_ack_checkpoints)
 
     def completed_candidate_fixture(self, root):
         """Independent exact-join mechanics; mocked ACK state is never runtime qualification."""
@@ -587,7 +568,7 @@ class LifecycleRuntimeOracleTests(unittest.TestCase):
             runtime.worker_inventory.side_effect = inventory
             runtime.observe.side_effect = observe
             self.assertIs(status, qualifier.converge([worker]))
-            self.assertEqual([("exact_completed_proof", 12), ("authenticated_observe", 8)], order)
+            self.assertEqual([("exact_completed_proof", 12), ("authenticated_observe", 128)], order)
             self.assertEqual(12, qualifier.checkpoint_evidence[0]["checkpoint_id"])
             self.assertTrue(qualifier.confirmed_ack_checkpoints)
             self.assertEqual(1, runtime.worker_inventory.call_count)
@@ -872,7 +853,7 @@ class LifecycleRuntimeOracleTests(unittest.TestCase):
 
         def observe(limit, *, qualification_batch=False):
             self.assertTrue(qualification_batch)
-            self.assertEqual(8, limit)
+            self.assertEqual(128, limit)
             order.append("checked_observe")
             return dict(ack_cursor=next(positions))
 

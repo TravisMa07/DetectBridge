@@ -23,6 +23,11 @@ class ActivationGateTests(unittest.TestCase):
             "contracts/lifecycle-runtime/v1/fixtures/expectations.json",
             "contracts/lifecycle/v1/manifest.schema.json",
             "tools/lifecycle_runtime.py",
+            "tools/lifecycle_diagnostics.py",
+            "tools/lifecycle_ack_backlog.py",
+            "tools/lifecycle_artifact_preparation.py",
+            "tools/tests/test_lifecycle_artifact_preparation.py",
+            "tools/tests/test_lifecycle_diagnostics.py",
             "tools/lifecycle_runtime_verify.py",
             "tools/check_lifecycle_runtime.py",
             "tools/build_worker_validator.py",
@@ -63,6 +68,51 @@ class ActivationGateTests(unittest.TestCase):
         value = copy.deepcopy(baseline)
         del value["classify-changes"]["outputs"]["activation"]
         self.assertFalse(gate_passes(value))
+
+    def test_ci01_diagnostic_job_is_additional_and_feature_base_runs_required_gate(self):
+        workflow = json.loads((ROOT / ".github/workflows/hygiene.yml").read_bytes())
+        self.assertIn("feat/p15b-worker-activation", workflow["on"]["pull_request"]["branches"])
+        self.assertFalse(
+            workflow["on"]["workflow_dispatch"]["inputs"]["activation-diagnostic"]["default"]
+        )
+        jobs = workflow["jobs"]
+        diagnostic = jobs["activation-diagnostic"]
+        self.assertIn("workflow_dispatch", diagnostic["if"])
+        self.assertIn("inputs.activation-diagnostic", diagnostic["if"])
+        self.assertEqual(jobs["activation-verification"]["runs-on"], diagnostic["runs-on"])
+        self.assertEqual(
+            jobs["activation-verification"]["timeout-minutes"], diagnostic["timeout-minutes"]
+        )
+        step = next(
+            s
+            for s in diagnostic["steps"]
+            if "--scenario-group production-faults" in s.get("run", "")
+        )
+        self.assertTrue(step["run"].endswith("--scenario-group production-faults"))
+        self.assertNotIn("DETECTBRIDGE_ACTIVATION_REQUIRED", step.get("env", {}))
+        mechanics = next(s for s in diagnostic["steps"] if s.get("id") == "ack-mechanics")
+        self.assertIn("--ack-backlog-mechanics valid", mechanics["run"])
+        self.assertIn("--ack-backlog-mechanics invalid-signature", mechanics["run"])
+        self.assertNotIn("DETECTBRIDGE_ACTIVATION_REQUIRED", mechanics.get("env", {}))
+        self.assertTrue(
+            any(
+                s.get("run", "").endswith("--scenario-group open-group")
+                for s in diagnostic["steps"]
+            )
+        )
+        self.assertNotIn("activation-diagnostic", jobs["required-checks"]["needs"])
+        self.assertIn("activation-verification", jobs["required-checks"]["needs"])
+
+    def test_required_native_gate_rejects_generated_ack_mechanics(self):
+        from unittest.mock import patch
+
+        from lifecycle_runtime_verify import main
+
+        with patch.dict("os.environ", {"DETECTBRIDGE_ACTIVATION_REQUIRED": "1"}):
+            for case in ("valid", "invalid-signature"):
+                with self.subTest(case=case), self.assertRaises(SystemExit) as caught:
+                    main(["--ack-backlog-mechanics", case])
+                self.assertEqual(2, caught.exception.code)
 
     def test_runtime_job_uses_exact_seed_cache_before_real_qualification(self):
         jobs = json.loads((ROOT / ".github/workflows/hygiene.yml").read_bytes())["jobs"]

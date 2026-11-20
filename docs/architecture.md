@@ -317,3 +317,9 @@ CI-01-only artifact preparation boundary: an ephemeral qualification capability
 and actual worker readiness before the30s case, with normal effective publication
 and worker semantics unchanged. Implementation/qualification remain separate
 from accepted direction and P15/merge/release gates.
+
+CI-02 adds only bounded first-party failure-policy observability under the existing
+independent consumer/acknowledged-failure boundary. Its [owning design](ci-02-design.md)
+preserves Admin operations, waits, exceptions and source commit/accounting rules;
+[qualification](ci-02-ledger.md) does not establish the old native cause or a
+behavioral correction. No architecture decision is changed.

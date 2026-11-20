@@ -1,5 +1,19 @@
 # P10–P15 implementation ledger
 
+Current CI integration: owner-merged CI-01 #63 is exact e2bec696; native44667068167
+passed all14/103 admissions/232 logical/233 physical, owned stopped. Issue62 is
+closed/Done only in approved feature-integration scope. CI-02 implementation agent
+owns search helper diagnostics/tests and status on `t3/ci02-failure-diagnostics`,
+base e2 and target `feat/p15b-worker-activation`; read-only native agents own
+independent expectations/review. [Design](ci-02-design.md) and
+[ledger](ci-02-ledger.md) retain separate open gates. Heavy qualification is
+serialized. Bounded diagnostics/component checks are implemented; the single local
+runtime attempt failed initialization before policy calls. Native/D12 and actual
+cause/stabilization remain open. #61 remains Draft/parked/unmerged; no P15/P16
+feature continuation.
+
+Earlier entries below retain historical checkpoint claims.
+
 P15b implementation checkpoint: owner-authorized merge #57 is f44403e; actual
 merged-main push run 44472864062 attempt 1 passed all nineteen applicable jobs and required-checks. Primary owns integration/contracts/CI
 on `feat/p15b-worker-activation` from that merge. The exact merged-main CI and

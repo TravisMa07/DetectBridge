@@ -84,6 +84,141 @@ def build():
     return {"status": "built", "bundle": bundle}
 
 
+# Fixed first-party protocol, not a generic exception/log sanitizer.
+POLICY_ENUMS = {
+    "version": {"1.0.0"},
+    "operation": {"failure_policy"},
+    "intent": {"block", "healthy", "unavailable"},
+    "phase": {
+        "parse_intent",
+        "admin_create",
+        "alter_submit",
+        "alter_wait",
+        "describe_submit",
+        "describe_wait",
+        "readback_compare",
+        "admin_close",
+        "completed",
+    },
+    "alter_state": {"not_started", "submitted", "acknowledged"},
+    "readback_state": {"not_started", "submitted", "received"},
+    "observed_policy": {
+        "not_observed",
+        "missing_resource",
+        "missing_entry",
+        "null_value",
+        "block",
+        "healthy",
+        "other",
+    },
+    "known_throw": {"fault_scope", "fault_readback", "none", "unclassified"},
+    "failure_type": {"none", "illegal_state", "execution", "timeout", "illegal_argument", "other"},
+    "close_state": {"not_started", "entered", "closed", "failed"},
+}
+POLICY_CATEGORIES = {
+    "writer_failed",
+    "membership_assignment_timeout",
+    "writer_role_drift",
+    "writer_user_drift",
+    "writer_role_mapping_drift",
+    "template_drift",
+    "index_mapping_drift",
+    "alias_drift",
+    "topic_topology_changed",
+    "topic_policy_changed",
+    "topic_recreated",
+    "kafka_cluster_changed",
+    "writer_group_active",
+    "partial_group_offsets_require_review",
+    "writer_role_missing",
+    "writer_user_missing",
+    "writer_mapping_missing",
+    "template_missing",
+    "index_missing",
+    "alias_read_failed",
+}
+POLICY_REASON_TYPES = {
+    "IllegalStateException",
+    "IllegalArgumentException",
+    "NullPointerException",
+    "ExecutionException",
+    "TimeoutException",
+    "InterruptedException",
+    "KafkaException",
+    "ConfigException",
+    "IOException",
+    "UncheckedIOException",
+}
+
+
+def validate_policy_diagnostic(value):
+    """Return a copied closed trace or None; no coercion or unknown text survives."""
+    if type(value) is not dict or set(value) != set(POLICY_ENUMS) | {"readback_matches_intent"}:
+        return None
+    for key, allowed in POLICY_ENUMS.items():
+        if type(value[key]) is not str or value[key] not in allowed:
+            return None
+    match = value["readback_matches_intent"]
+    if match is not None and type(match) is not bool:
+        return None
+    if len(json.dumps(value, separators=(",", ":")).encode("utf-8")) > 4096:
+        return None
+    return dict(value)
+
+
+def _unique_policy_object(pairs):
+    value = {}
+    for key, item in pairs:
+        if key in value:
+            raise ValueError("duplicate_policy_field")
+        value[key] = item
+    return value
+
+
+def policy_helper_detail(stderr, *, success=False):
+    """Bound scanning and accept at most one closed first-party envelope."""
+    if len(stderr) > 65536 or len(stderr.encode("utf-8")) > 65536:
+        return "unknown", "unknown", None
+    lines = stderr.splitlines()
+    if len(lines) > 128:
+        return "unknown", "unknown", None
+    envelopes = []
+    for line in lines:
+        try:
+            detail = json.loads(line, object_pairs_hook=_unique_policy_object)
+        except (ValueError, RecursionError):
+            if line.lstrip().startswith(("{", "[")):
+                return "unknown", "unknown", None
+            continue
+        if line.lstrip().startswith(("{", "[")):
+            if type(detail) is not dict:
+                return "unknown", "unknown", None
+            envelopes.append(detail)
+    if len(envelopes) != 1:
+        return "unknown", "unknown", None
+    detail = envelopes[0]
+    keys = set(detail)
+    if success:
+        if keys != {"status", "failure_policy"} or detail["status"] != "diagnostic":
+            return "unknown", "unknown", None
+    elif (
+        keys
+        not in (
+            {"status", "category", "reason_type"},
+            {"status", "category", "reason_type", "failure_policy"},
+        )
+        or detail["status"] != "failed"
+    ):
+        return "unknown", "unknown", None
+    category = detail.get("category")
+    reason = detail.get("reason_type")
+    # Legacy known categories remain byte-compatible; unknown strings are suppressed.
+    category = category if type(category) is str and category in POLICY_CATEGORIES else "unknown"
+    reason = reason if type(reason) is str and reason in POLICY_REASON_TYPES else "unknown"
+    diagnostic = validate_policy_diagnostic(detail.get("failure_policy"))
+    return category, reason, diagnostic
+
+
 class SearchWriter:
     def __init__(self, project="detectbridge-p13-dev"):
         self.stack = Stack(project)
@@ -497,6 +632,12 @@ class SearchWriter:
                     raise StackError("docker_setup_failure")
                 category = "unknown"
                 reason = "unknown"
+                if command == "failure-policy":
+                    category, reason, diagnostic = policy_helper_detail(result.stderr)
+                    error = StackError("writer_helper_" + command + "_" + category + "_" + reason)
+                    if diagnostic is not None:
+                        setattr(error, "failure_policy", diagnostic)
+                    raise error
                 for line in result.stderr.splitlines():
                     try:
                         detail = json.loads(line)
@@ -507,7 +648,12 @@ class SearchWriter:
                     except (ValueError, AttributeError):
                         pass
                 raise StackError("writer_helper_" + command + "_" + category + "_" + reason)
-            return json.loads(result.stdout)
+            response = json.loads(result.stdout)
+            if command == "failure-policy":
+                _, _, diagnostic = policy_helper_detail(result.stderr, success=True)
+                if diagnostic is not None:
+                    response["failure_policy"] = diagnostic
+            return response
         finally:
             self.transport.remove_helper(args)
 

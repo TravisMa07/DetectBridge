@@ -7,7 +7,10 @@ owns search helper diagnostics/tests and status on `t3/ci02-failure-diagnostics`
 base e2 and target `feat/p15b-worker-activation`; read-only native agents own
 independent expectations/review. [Design](ci-02-design.md) and
 [ledger](ci-02-ledger.md) retain separate open gates. Heavy qualification is
-serialized. #61 remains Draft/parked/unmerged; no P15/P16 feature continuation.
+serialized. Bounded diagnostics/component checks are implemented; the single local
+runtime attempt failed initialization before policy calls. Native/D12 and actual
+cause/stabilization remain open. #61 remains Draft/parked/unmerged; no P15/P16
+feature continuation.
 
 Earlier entries below retain historical checkpoint claims.
 

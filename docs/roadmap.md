@@ -291,7 +291,9 @@ In progress, owns separate search-policy diagnostics on e2, targeting
 `feat/p15b-worker-activation`. [Design](ci-02-design.md),
 [expectations](ci-02-expectations.md) and [ledger](ci-02-ledger.md) separate
 observability from an unproved behavioral fix. #61 remains Draft/parked;
-P15/P16 feature work is not resumed.
+P15/P16 feature work is not resumed. Bounded diagnostics and component checks are
+implemented; one local runtime attempt failed initialization before policy calls.
+Final-artifact native/D12 qualification and cause/stabilization remain open.
 
 Historical CI-01 snapshot (superseded by integration status above):
 

@@ -1,8 +1,11 @@
 # CI-02 independent diagnostic expectations (pre-implementation freeze)
 
-Scope: issue64, separate from CI-01/PR63. Read-only discovery; no implementation,
-behavioral correction, rerun or cause acceptance. This ignored draft changes no
-tracked file, branch, stash, worktree, source policy, deadline or retry behavior.
+Scope: issue64, separate from CI-01/PR63. Derived from the read-only ignored
+independent draft prepared before CI-02 implementation. This owning copy froze
+D01–D12 in 8551088 before source edits; it establishes expected outcomes, not
+implementation, qualification or cause acceptance. Original evidence and the
+ignored draft remain unchanged. This provenance wording correction does not
+change any frozen outcome.
 
 ## Evidence and unknowns
 

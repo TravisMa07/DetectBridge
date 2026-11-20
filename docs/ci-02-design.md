@@ -58,3 +58,13 @@ No repeated/toggle reproduction is planned. One fresh native PR qualification is
 required; parent collects exact checkout/source/JAR/image hashes, search report,
 all job results and any first failing diagnostic. Stop on failure; retain it.
 A diagnostic-only Draft PR does not complete CI-02 or prove the old cause.
+
+## Reviewed diagnostic refinements
+
+Independent review required exact envelope/status-to-exit binding and preservation
+of all existing safe legacy category literals. JSON-looking malformed/duplicate
+lines invalidate the stream rather than being hidden by a later valid envelope.
+The existing error handler also dereferenced a null IllegalStateException message
+inside its literal allowlist; a focused regression demonstrated loss of the trace.
+Guard that null before the exact allowlist check. This corrects diagnostic
+publication only, with unchanged nonzero failure and no inferred broker outcome.

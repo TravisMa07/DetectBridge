@@ -805,6 +805,9 @@ def qualify(recorded=False, windows_directory=None, audit_directory=None, auth_d
             save(report, result)
             return result
         except Exception as exc:
+            from search_writer import validate_policy_diagnostic
+
+            diagnostic = validate_policy_diagnostic(getattr(exc, "failure_policy", None))
             save(
                 report,
                 dict(
@@ -817,6 +820,7 @@ def qualify(recorded=False, windows_directory=None, audit_directory=None, auth_d
                         for f in traceback.extract_tb(exc.__traceback__)[-6:]
                     ],
                     category=str(exc) if isinstance(exc, StackError) else "qualification_failed",
+                    **({"failure_policy": diagnostic} if diagnostic is not None else {}),
                 ),
             )
             raise

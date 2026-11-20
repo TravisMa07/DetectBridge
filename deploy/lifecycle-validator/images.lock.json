@@ -1,0 +1,12 @@
+{
+  "version": "1.0.0",
+  "base_image": "python:3.12.12-slim-bookworm@sha256:593bd06efe90efa80dc4eee3948be7c0fde4134606dd40d8dd8dbcade98e669c",
+  "platform_manifests": {
+    "linux/amd64": "sha256:2986c55feb36e6cae00fa1fefb454283e4b33f35e75ff8bdd123b134130be301",
+    "linux/arm64": "sha256:228390eced221ad2986a3dd77e10b1accca6ba8ceb36f1572de1b346a337cc1a"
+  },
+  "python": "3.12.12",
+  "upstream_source": "https://github.com/docker-library/python/tree/90e9ca41dc404ee7d22c09b894823e8925227c17/3.12/slim-bookworm",
+  "observed": "2026-11-19",
+  "qualification": "Pending actual per-platform builds and worker execution; registry identity only"
+}

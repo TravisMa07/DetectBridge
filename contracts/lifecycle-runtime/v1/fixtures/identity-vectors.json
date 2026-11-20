@@ -1,0 +1,76 @@
+{
+  "version": "1.0.0",
+  "algorithm": "SHA-256 of exact canonical compact UTF-8 JSON array; no terminal LF; sha256: prefix",
+  "vectors": [
+    {
+      "name": "A1",
+      "preimage": [
+        "detectbridge.p15b.output/1",
+        "71500000-0000-4000-8000-000000000011",
+        "71500000-0000-4000-8000-000000000020",
+        1,
+        "1111111111111111111111111111111111111111111111111111111111111111",
+        "tagged",
+        "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ],
+      "canonical_utf8": "[\"detectbridge.p15b.output/1\",\"71500000-0000-4000-8000-000000000011\",\"71500000-0000-4000-8000-000000000020\",1,\"1111111111111111111111111111111111111111111111111111111111111111\",\"tagged\",\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"]",
+      "output_id": "sha256:a615b238db8a85da67f39445986b7c8db8337ce3826f16fc2236027185e65ead"
+    },
+    {
+      "name": "B2",
+      "preimage": [
+        "detectbridge.p15b.output/1",
+        "71500000-0000-4000-8000-000000000011",
+        "71500000-0000-4000-8000-000000000020",
+        2,
+        "2222222222222222222222222222222222222222222222222222222222222222",
+        "tagged",
+        "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      ],
+      "canonical_utf8": "[\"detectbridge.p15b.output/1\",\"71500000-0000-4000-8000-000000000011\",\"71500000-0000-4000-8000-000000000020\",2,\"2222222222222222222222222222222222222222222222222222222222222222\",\"tagged\",\"sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"]",
+      "output_id": "sha256:5107b90153695657b498c99915aa0c29d6e651acaf43dd51176ec471ea373b6f"
+    },
+    {
+      "name": "A3",
+      "preimage": [
+        "detectbridge.p15b.output/1",
+        "71500000-0000-4000-8000-000000000011",
+        "71500000-0000-4000-8000-000000000020",
+        3,
+        "3333333333333333333333333333333333333333333333333333333333333333",
+        "tagged",
+        "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ],
+      "canonical_utf8": "[\"detectbridge.p15b.output/1\",\"71500000-0000-4000-8000-000000000011\",\"71500000-0000-4000-8000-000000000020\",3,\"3333333333333333333333333333333333333333333333333333333333333333\",\"tagged\",\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"]",
+      "output_id": "sha256:0869dd875df447d7fc6c1bc88b76c0fe37179fb478b2bb2c1a7349553d1a22f7"
+    },
+    {
+      "name": "other-worker",
+      "preimage": [
+        "detectbridge.p15b.output/1",
+        "71500000-0000-4000-8000-000000000011",
+        "71500000-0000-4000-8000-000000000021",
+        1,
+        "1111111111111111111111111111111111111111111111111111111111111111",
+        "tagged",
+        "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ],
+      "canonical_utf8": "[\"detectbridge.p15b.output/1\",\"71500000-0000-4000-8000-000000000011\",\"71500000-0000-4000-8000-000000000021\",1,\"1111111111111111111111111111111111111111111111111111111111111111\",\"tagged\",\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"]",
+      "output_id": "sha256:8497bc6119c8e85c42a5d9ab8e12e73058ac7902b58042a582ef4aa91d931850"
+    },
+    {
+      "name": "other-deployment",
+      "preimage": [
+        "detectbridge.p15b.output/1",
+        "71500000-0000-4000-8000-000000000012",
+        "71500000-0000-4000-8000-000000000020",
+        1,
+        "1111111111111111111111111111111111111111111111111111111111111111",
+        "tagged",
+        "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ],
+      "canonical_utf8": "[\"detectbridge.p15b.output/1\",\"71500000-0000-4000-8000-000000000012\",\"71500000-0000-4000-8000-000000000020\",1,\"1111111111111111111111111111111111111111111111111111111111111111\",\"tagged\",\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"]",
+      "output_id": "sha256:3fa7f4d98db55244d256f6a6b41d162938654ebc74476fa5527ada0a72fde9ac"
+    }
+  ]
+}

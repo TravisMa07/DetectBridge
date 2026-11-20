@@ -1,0 +1,423 @@
+{
+  "version": "1.0.0",
+  "rule_order": [
+    "71500000-0000-4000-8000-000000000001",
+    "72000000-0000-4000-8000-000000000001"
+  ],
+  "cases": [
+    {
+      "case_id": "security-alice",
+      "bundles": {
+        "A": {
+          "version": "1.0.0",
+          "counts": {
+            "matched": 1,
+            "unmatched": 0,
+            "inapplicable": 1,
+            "configuration_blocked": 0,
+            "quality_skipped": 0,
+            "evaluation_error": 0
+          },
+          "matched": [
+            {
+              "id": "71500000-0000-4000-8000-000000000001",
+              "revision": "80b56d4d28e6ec60510c989b34ac4e3f708e42c14d9e5270f463dcb7afa3fc6a"
+            }
+          ],
+          "diagnostics": []
+        },
+        "B": {
+          "version": "1.0.0",
+          "counts": {
+            "matched": 0,
+            "unmatched": 1,
+            "inapplicable": 1,
+            "configuration_blocked": 0,
+            "quality_skipped": 0,
+            "evaluation_error": 0
+          },
+          "matched": [],
+          "diagnostics": []
+        }
+      }
+    },
+    {
+      "case_id": "security-bob",
+      "bundles": {
+        "A": {
+          "version": "1.0.0",
+          "counts": {
+            "matched": 0,
+            "unmatched": 1,
+            "inapplicable": 1,
+            "configuration_blocked": 0,
+            "quality_skipped": 0,
+            "evaluation_error": 0
+          },
+          "matched": [],
+          "diagnostics": []
+        },
+        "B": {
+          "version": "1.0.0",
+          "counts": {
+            "matched": 1,
+            "unmatched": 0,
+            "inapplicable": 1,
+            "configuration_blocked": 0,
+            "quality_skipped": 0,
+            "evaluation_error": 0
+          },
+          "matched": [
+            {
+              "id": "71500000-0000-4000-8000-000000000001",
+              "revision": "62e160bea372e420a38b81e560b529f628074e5693e4275329245598efd7dfa4"
+            }
+          ],
+          "diagnostics": []
+        }
+      }
+    },
+    {
+      "case_id": "audit-whoami",
+      "bundles": {
+        "A": {
+          "version": "1.0.0",
+          "counts": {
+            "matched": 1,
+            "unmatched": 0,
+            "inapplicable": 1,
+            "configuration_blocked": 0,
+            "quality_skipped": 0,
+            "evaluation_error": 0
+          },
+          "matched": [
+            {
+              "id": "72000000-0000-4000-8000-000000000001",
+              "revision": "6374bd348d60b359818b81c97fdaf269935a035d4e59386b2d7d55d7d8c6e15c"
+            }
+          ],
+          "diagnostics": []
+        },
+        "B": {
+          "version": "1.0.0",
+          "counts": {
+            "matched": 0,
+            "unmatched": 1,
+            "inapplicable": 1,
+            "configuration_blocked": 0,
+            "quality_skipped": 0,
+            "evaluation_error": 0
+          },
+          "matched": [],
+          "diagnostics": []
+        }
+      }
+    },
+    {
+      "case_id": "audit-false",
+      "bundles": {
+        "A": {
+          "version": "1.0.0",
+          "counts": {
+            "matched": 0,
+            "unmatched": 1,
+            "inapplicable": 1,
+            "configuration_blocked": 0,
+            "quality_skipped": 0,
+            "evaluation_error": 0
+          },
+          "matched": [],
+          "diagnostics": []
+        },
+        "B": {
+          "version": "1.0.0",
+          "counts": {
+            "matched": 1,
+            "unmatched": 0,
+            "inapplicable": 1,
+            "configuration_blocked": 0,
+            "quality_skipped": 0,
+            "evaluation_error": 0
+          },
+          "matched": [
+            {
+              "id": "72000000-0000-4000-8000-000000000001",
+              "revision": "d20e34e80686615514b4ab587ad9d202b91040f6f16099beb39e3fd55d1887b6"
+            }
+          ],
+          "diagnostics": []
+        }
+      }
+    }
+  ],
+  "rollback": {
+    "effective_revisions": [
+      1,
+      2,
+      3
+    ],
+    "selected_bundles": [
+      "A",
+      "B",
+      "A"
+    ],
+    "source_case": "security-alice",
+    "matched_counts": [
+      1,
+      0,
+      1
+    ],
+    "preserve_original_bytes": true,
+    "phases": [
+      {
+        "effective_revision": 1,
+        "selected_bundle": "A",
+        "worker_runs": [
+          {
+            "worker_id": "71500000-0000-4000-8000-000000000020",
+            "run_id": "715b0000-0000-4000-8000-000000000101",
+            "case_ids": [
+              "security-alice",
+              "security-bob"
+            ]
+          },
+          {
+            "worker_id": "71500000-0000-4000-8000-000000000021",
+            "run_id": "715b0000-0000-4000-8000-000000000201",
+            "case_ids": [
+              "audit-whoami",
+              "audit-false"
+            ]
+          }
+        ],
+        "cases": [
+          {
+            "case_id": "security-alice",
+            "worker_id": "71500000-0000-4000-8000-000000000020",
+            "run_id": "715b0000-0000-4000-8000-000000000101",
+            "context_sha256": "9062b9b51c5049c23f963d88a531e7eb1789e15c0b20911d74b57ffab21b2522",
+            "event_id": "sha256:e71956dcadd561f4805c39154a6bb4717677e84c7eb5f40b262dbb5061bfaf30",
+            "member_ids": [
+              "sha256:88049e46bdde52aeb9452aeba0908da47366143eefcb7004abafeb65befa4426"
+            ]
+          },
+          {
+            "case_id": "security-bob",
+            "worker_id": "71500000-0000-4000-8000-000000000020",
+            "run_id": "715b0000-0000-4000-8000-000000000101",
+            "context_sha256": "9062b9b51c5049c23f963d88a531e7eb1789e15c0b20911d74b57ffab21b2522",
+            "event_id": "sha256:b83097a4ca34933784fb2679198435e1a64b5a94912481ade19833827bcaee15",
+            "member_ids": [
+              "sha256:e6600bdb5f16472e10eee0d606b7ae05204b544e166ce2cc10e991771559abf5"
+            ]
+          },
+          {
+            "case_id": "audit-whoami",
+            "worker_id": "71500000-0000-4000-8000-000000000021",
+            "run_id": "715b0000-0000-4000-8000-000000000201",
+            "context_sha256": "834d14ebb3dfe5acfa419c389a438deb4db7fd14eed1e39d471ee5d69809b00c",
+            "event_id": "sha256:4461669b568b6bcb62155b2165b0bfe00a75b2203ef3c2a8912ecf8ecb8ac68c",
+            "member_ids": [
+              "sha256:08faeea1f6c39c6df282d6443dd52e701dc10f26263a386041e95ccfbbf9576c",
+              "sha256:3ad5dcf64ca8f4897ddb8b28a5136a2bbcb5a8e3df93b37196a9f4a4cbd3401f",
+              "sha256:7d0d11479adccd5f3dfb88f7c438a96c5f4aac215580f5e1372b501b5758b092",
+              "sha256:7d6487562dd127107a6e5e9db646572e7b075b4673bfca56d34101c3ec292582",
+              "sha256:8ac881847e32560f57629deaeb5bfc668e121f49fe29e88f1020f0a7e68c9726",
+              "sha256:e09e70c1cfdc5fe7cd5e317ab3696e3db3991a2924bae6c513f8b552984a6168"
+            ]
+          },
+          {
+            "case_id": "audit-false",
+            "worker_id": "71500000-0000-4000-8000-000000000021",
+            "run_id": "715b0000-0000-4000-8000-000000000201",
+            "context_sha256": "834d14ebb3dfe5acfa419c389a438deb4db7fd14eed1e39d471ee5d69809b00c",
+            "event_id": "sha256:0cea10f8d1cf66ff49def818762b7d989ab259c9ca5fed781e357ad96068cc49",
+            "member_ids": [
+              "sha256:010c5c1984c1cfba4c3e9da3e5a024418a8ebde7110a9aa97d51ee50aded851a",
+              "sha256:4c13961258ab92563d801fe36c4ec81b0c7aab157a347928cd97f91d25ebcf72",
+              "sha256:8f000d60145dec56e39bbe55344cc80911cef802f57f763a66220ad6d71d9de9",
+              "sha256:ada1ae04a05fa565560047260ed8c602a6bbc4bf9e8b2de1ab526dc65608a1a5",
+              "sha256:ba278608fd3b5cb918b424f1095efba106e36fede5e88adab655065ead8c019b",
+              "sha256:c9bd476c2fb36cb6b3a750f8f1f8176a97726172bcff12598c73d9ec305401e8"
+            ]
+          }
+        ]
+      },
+      {
+        "effective_revision": 2,
+        "selected_bundle": "B",
+        "worker_runs": [
+          {
+            "worker_id": "71500000-0000-4000-8000-000000000020",
+            "run_id": "715b0000-0000-4000-8000-000000000102",
+            "case_ids": [
+              "security-alice",
+              "security-bob"
+            ]
+          },
+          {
+            "worker_id": "71500000-0000-4000-8000-000000000021",
+            "run_id": "715b0000-0000-4000-8000-000000000202",
+            "case_ids": [
+              "audit-whoami",
+              "audit-false"
+            ]
+          }
+        ],
+        "cases": [
+          {
+            "case_id": "security-alice",
+            "worker_id": "71500000-0000-4000-8000-000000000020",
+            "run_id": "715b0000-0000-4000-8000-000000000102",
+            "context_sha256": "3a95800bc74e93da89df88aa45a4d6eeb76c60b48002609e6911fba33b75e703",
+            "event_id": "sha256:e71956dcadd561f4805c39154a6bb4717677e84c7eb5f40b262dbb5061bfaf30",
+            "member_ids": [
+              "sha256:88049e46bdde52aeb9452aeba0908da47366143eefcb7004abafeb65befa4426"
+            ]
+          },
+          {
+            "case_id": "security-bob",
+            "worker_id": "71500000-0000-4000-8000-000000000020",
+            "run_id": "715b0000-0000-4000-8000-000000000102",
+            "context_sha256": "3a95800bc74e93da89df88aa45a4d6eeb76c60b48002609e6911fba33b75e703",
+            "event_id": "sha256:b83097a4ca34933784fb2679198435e1a64b5a94912481ade19833827bcaee15",
+            "member_ids": [
+              "sha256:e6600bdb5f16472e10eee0d606b7ae05204b544e166ce2cc10e991771559abf5"
+            ]
+          },
+          {
+            "case_id": "audit-whoami",
+            "worker_id": "71500000-0000-4000-8000-000000000021",
+            "run_id": "715b0000-0000-4000-8000-000000000202",
+            "context_sha256": "0c22e2290b18e52f2366b331bfe5f0536d3ee7b66b33df0c4f5168155a0e150e",
+            "event_id": "sha256:4461669b568b6bcb62155b2165b0bfe00a75b2203ef3c2a8912ecf8ecb8ac68c",
+            "member_ids": [
+              "sha256:08faeea1f6c39c6df282d6443dd52e701dc10f26263a386041e95ccfbbf9576c",
+              "sha256:3ad5dcf64ca8f4897ddb8b28a5136a2bbcb5a8e3df93b37196a9f4a4cbd3401f",
+              "sha256:7d0d11479adccd5f3dfb88f7c438a96c5f4aac215580f5e1372b501b5758b092",
+              "sha256:7d6487562dd127107a6e5e9db646572e7b075b4673bfca56d34101c3ec292582",
+              "sha256:8ac881847e32560f57629deaeb5bfc668e121f49fe29e88f1020f0a7e68c9726",
+              "sha256:e09e70c1cfdc5fe7cd5e317ab3696e3db3991a2924bae6c513f8b552984a6168"
+            ]
+          },
+          {
+            "case_id": "audit-false",
+            "worker_id": "71500000-0000-4000-8000-000000000021",
+            "run_id": "715b0000-0000-4000-8000-000000000202",
+            "context_sha256": "0c22e2290b18e52f2366b331bfe5f0536d3ee7b66b33df0c4f5168155a0e150e",
+            "event_id": "sha256:0cea10f8d1cf66ff49def818762b7d989ab259c9ca5fed781e357ad96068cc49",
+            "member_ids": [
+              "sha256:010c5c1984c1cfba4c3e9da3e5a024418a8ebde7110a9aa97d51ee50aded851a",
+              "sha256:4c13961258ab92563d801fe36c4ec81b0c7aab157a347928cd97f91d25ebcf72",
+              "sha256:8f000d60145dec56e39bbe55344cc80911cef802f57f763a66220ad6d71d9de9",
+              "sha256:ada1ae04a05fa565560047260ed8c602a6bbc4bf9e8b2de1ab526dc65608a1a5",
+              "sha256:ba278608fd3b5cb918b424f1095efba106e36fede5e88adab655065ead8c019b",
+              "sha256:c9bd476c2fb36cb6b3a750f8f1f8176a97726172bcff12598c73d9ec305401e8"
+            ]
+          }
+        ]
+      },
+      {
+        "effective_revision": 3,
+        "selected_bundle": "A",
+        "worker_runs": [
+          {
+            "worker_id": "71500000-0000-4000-8000-000000000020",
+            "run_id": "715b0000-0000-4000-8000-000000000103",
+            "case_ids": [
+              "security-alice",
+              "security-bob"
+            ]
+          },
+          {
+            "worker_id": "71500000-0000-4000-8000-000000000021",
+            "run_id": "715b0000-0000-4000-8000-000000000203",
+            "case_ids": [
+              "audit-whoami",
+              "audit-false"
+            ]
+          }
+        ],
+        "cases": [
+          {
+            "case_id": "security-alice",
+            "worker_id": "71500000-0000-4000-8000-000000000020",
+            "run_id": "715b0000-0000-4000-8000-000000000103",
+            "context_sha256": "2b19e0911c81cadacf1a165c5594650db63410c559ac9ba3839807d2c5575db9",
+            "event_id": "sha256:e71956dcadd561f4805c39154a6bb4717677e84c7eb5f40b262dbb5061bfaf30",
+            "member_ids": [
+              "sha256:88049e46bdde52aeb9452aeba0908da47366143eefcb7004abafeb65befa4426"
+            ]
+          },
+          {
+            "case_id": "security-bob",
+            "worker_id": "71500000-0000-4000-8000-000000000020",
+            "run_id": "715b0000-0000-4000-8000-000000000103",
+            "context_sha256": "2b19e0911c81cadacf1a165c5594650db63410c559ac9ba3839807d2c5575db9",
+            "event_id": "sha256:b83097a4ca34933784fb2679198435e1a64b5a94912481ade19833827bcaee15",
+            "member_ids": [
+              "sha256:e6600bdb5f16472e10eee0d606b7ae05204b544e166ce2cc10e991771559abf5"
+            ]
+          },
+          {
+            "case_id": "audit-whoami",
+            "worker_id": "71500000-0000-4000-8000-000000000021",
+            "run_id": "715b0000-0000-4000-8000-000000000203",
+            "context_sha256": "c29031fef1d02b2c4c0845abab704d5ae50526d40a9782e5b89305433caa51e0",
+            "event_id": "sha256:4461669b568b6bcb62155b2165b0bfe00a75b2203ef3c2a8912ecf8ecb8ac68c",
+            "member_ids": [
+              "sha256:08faeea1f6c39c6df282d6443dd52e701dc10f26263a386041e95ccfbbf9576c",
+              "sha256:3ad5dcf64ca8f4897ddb8b28a5136a2bbcb5a8e3df93b37196a9f4a4cbd3401f",
+              "sha256:7d0d11479adccd5f3dfb88f7c438a96c5f4aac215580f5e1372b501b5758b092",
+              "sha256:7d6487562dd127107a6e5e9db646572e7b075b4673bfca56d34101c3ec292582",
+              "sha256:8ac881847e32560f57629deaeb5bfc668e121f49fe29e88f1020f0a7e68c9726",
+              "sha256:e09e70c1cfdc5fe7cd5e317ab3696e3db3991a2924bae6c513f8b552984a6168"
+            ]
+          },
+          {
+            "case_id": "audit-false",
+            "worker_id": "71500000-0000-4000-8000-000000000021",
+            "run_id": "715b0000-0000-4000-8000-000000000203",
+            "context_sha256": "c29031fef1d02b2c4c0845abab704d5ae50526d40a9782e5b89305433caa51e0",
+            "event_id": "sha256:0cea10f8d1cf66ff49def818762b7d989ab259c9ca5fed781e357ad96068cc49",
+            "member_ids": [
+              "sha256:010c5c1984c1cfba4c3e9da3e5a024418a8ebde7110a9aa97d51ee50aded851a",
+              "sha256:4c13961258ab92563d801fe36c4ec81b0c7aab157a347928cd97f91d25ebcf72",
+              "sha256:8f000d60145dec56e39bbe55344cc80911cef802f57f763a66220ad6d71d9de9",
+              "sha256:ada1ae04a05fa565560047260ed8c602a6bbc4bf9e8b2de1ab526dc65608a1a5",
+              "sha256:ba278608fd3b5cb918b424f1095efba106e36fede5e88adab655065ead8c019b",
+              "sha256:c9bd476c2fb36cb6b3a750f8f1f8176a97726172bcff12598c73d9ec305401e8"
+            ]
+          }
+        ]
+      }
+    ],
+    "run_policy": "Six explicit worker/phase runs: Windows stable worker20 uses run suffix101/102/103; audit stable worker21 uses201/202/203. Override only context.run_id per routed case/phase. Raw evidence/cursors/record IDs/event IDs remain frozen; permanent run ownership and run-scoped dedup are preserved."
+  },
+  "core_schedule_totals": {
+    "scope": "Four eligible source-cases exactly once in each of three phase runs; no added run_end/source_boundary/admission faults; control/artifact/ack records counted separately.",
+    "per_phase": {
+      "admissions": 14,
+      "receipts": 14,
+      "tagged": 4,
+      "detections": 2,
+      "manifests": 2,
+      "processing_diagnostics": 0,
+      "preservation": 0,
+      "quarantine": 0,
+      "source_output_envelopes": 22
+    },
+    "all_three_phases": {
+      "admissions": 42,
+      "receipts": 42,
+      "tagged": 12,
+      "detections": 6,
+      "manifests": 6,
+      "processing_diagnostics": 0,
+      "preservation": 0,
+      "quarantine": 0,
+      "source_output_envelopes": 66
+    },
+    "rationale": "Two Windows standalone admissions plus two six-member audit groups =14 receipts; four eligible events =4 tagged; two selected literal predicates match per bundle =2 detections; two audit groups =2 manifests. No output per inapplicable rule. Duplicated physical delivery must be separately accounted without inventing new logical source outputs."
+  }
+}

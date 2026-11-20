@@ -136,3 +136,12 @@ missing Shadow POM without an HTTP status. Both remain failed. Unchanged attempt
 `.cache/ci-bootstrap-merge-44339557684/`. This independently qualifies the merged
 base for P14c1. Shared-cache optimization and recovery diagnostic improvements
 continue separately in #54; they are not a circular prerequisite for new replay.
+
+## P15b scoped metadata discovery correction
+
+P15b native run 44617619871 again reported a missing Shadow implementation POM.
+The owning [P15b1 ledger](p15b1-ledger.md#focused-batch-completion-and-cold-bootstrap-correction)
+records the failed lookup, scoped module-first repository correction and actual
+empty-cache Gradle 9.9.1 qualification. Only Shadow's implementation opts into
+explicit module metadata discovery; the verified marker stays Portal-only.
+Versions, checksum verification, locks and bounded retry policy remain unchanged.

@@ -1,0 +1,51 @@
+package io.detectbridge.integration;
+
+import static io.detectbridge.integration.LifecycleSupport.*;
+import static org.junit.jupiter.api.Assertions.*;
+import io.detectbridge.transport.Json;
+import java.nio.file.*;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.security.*;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.junit.jupiter.api.*;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
+
+/** Real JDK signatures over a literal payload; no Kafka or checkpoint-completion claim. */
+class LifecycleAckVerifierTest {
+  Path root,path;KeyPair key,other;ObjectNode payload,request;byte[] signed;String expectedRequestHash;
+  @BeforeEach void setup()throws Exception {
+    root=Files.createTempDirectory(Path.of("build"),"ack-batch-");path=root.resolve("request.json");key=KeyPairGenerator.getInstance("Ed25519").generateKeyPair();other=KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+    payload=object();payload.put("version","1.0.0");payload.put("deployment_id","715b0000-0000-4000-8000-000000000011");payload.put("authority_id","715b0000-0000-4000-8000-000000000010");payload.put("worker_id","715b0000-0000-4000-8000-000000000020");payload.put("incarnation","715b0000-0000-4000-8000-000000000030");payload.put("revision",1);payload.put("command_sha256","a".repeat(64));payload.put("bundle_sha256","b".repeat(64));payload.put("compatibility_sha256","c".repeat(64));payload.put("phase","durable");payload.put("checkpoint_id",7);payload.put("category","ok");payload.put("ack_id","sha256:"+"d".repeat(64));
+    signed=sign("ack",payload,key);request=object();request.put("version","1.0.0");request.putArray("records");add(signed,key.getPublic().getEncoded());save();
+  }
+  byte[] sign(String domain,JsonNode body,KeyPair pair)throws Exception {
+    Signature signature=Signature.getInstance("Ed25519");signature.initSign(pair.getPrivate());signature.update(("detectbridge.p15b."+domain+"/1\0").getBytes(java.nio.charset.StandardCharsets.UTF_8));signature.update(bytes(body));return bytes(value(Map.of("version","1.0.0","key_sha256",Json.sha(pair.getPublic().getEncoded()),"payload",body,"signature",Base64.getEncoder().encodeToString(signature.sign()))));
+  }
+  void add(byte[] wire,byte[] publicKey){var rows=(tools.jackson.databind.node.ArrayNode)request.get("records");rows.add(value(Map.of("index",rows.size(),"public_key",Base64.getEncoder().encodeToString(publicKey),"wire_base64",Base64.getEncoder().encodeToString(wire),"wire_sha256",Json.sha(wire),"key_sha256",Json.sha(publicKey))));}
+  String save()throws Exception {Files.deleteIfExists(path);write(path,bytes(request));expectedRequestHash=Json.sha(read(path,16*MIB));return expectedRequestHash;}
+  JsonNode run()throws Exception {return LifecycleAckVerifier.run(path,expectedRequestHash);}
+  @AfterEach void cleanup()throws Exception {try(var files=Files.walk(root)){for(Path p:files.sorted(Comparator.reverseOrder()).toList())Files.delete(p);}}
+  @Test void validSignatureReturnsOnlyExactBoundedProof()throws Exception {
+    JsonNode response=run(),result=response.at("/results/0");assertEquals(Set.of("version","request_sha256","results"),new HashSet<>(response.propertyNames()));assertEquals(Set.of("index","wire_sha256","key_sha256","verified","payload_sha256"),new HashSet<>(result.propertyNames()));assertTrue(result.get("verified").asBoolean());assertEquals("3bbc2612753e9c28c40f8e81f6ef3533a8cfb1894f6382ffda9a86b457d643e1",result.get("payload_sha256").asString());assertEquals(Json.sha(signed),result.get("wire_sha256").asString());assertEquals(Json.sha(key.getPublic().getEncoded()),result.get("key_sha256").asString());assertEquals(Json.sha(read(path,16*MIB)),response.get("request_sha256").asString());assertFalse(new String(bytes(response)).contains("checkpoint_id"));
+  }
+  @Test void changedPayloadWrongKeyAndWrongDomainAreFixedNegativesInOrder()throws Exception {
+    ObjectNode altered=(ObjectNode)parse(signed,65536);((ObjectNode)altered.get("payload")).put("checkpoint_id",8);add(bytes(altered),key.getPublic().getEncoded());add(signed,other.getPublic().getEncoded());add(sign("control",payload,key),key.getPublic().getEncoded());save();JsonNode results=run().get("results");assertTrue(results.get(0).get("verified").asBoolean());for(int i=1;i<4;i++){JsonNode result=results.get(i);assertEquals(i,result.get("index").asInt());assertFalse(result.get("verified").asBoolean());assertEquals("signature_invalid",result.get("category").asString());assertFalse(result.has("payload_sha256"));}
+  }
+  @Test void duplicateWireUnderSameKeyAndDifferentKeyNeverSharesAuthority()throws Exception {add(signed,key.getPublic().getEncoded());add(signed,other.getPublic().getEncoded());save();JsonNode results=run().get("results");assertTrue(results.get(0).get("verified").asBoolean());assertTrue(results.get(1).get("verified").asBoolean());assertFalse(results.get(2).get("verified").asBoolean());assertNotEquals(results.get(1).get("key_sha256"),results.get(2).get("key_sha256"));}
+  @Test void maximum128WiresAnd8MiBAreBoundedProtocolMechanics()throws Exception {((tools.jackson.databind.node.ArrayNode)request.get("records")).removeAll();byte[] invalid=new byte[65536];for(int i=0;i<128;i++)add(invalid,key.getPublic().getEncoded());save();JsonNode response=run();assertEquals(128,response.get("results").size());assertTrue(bytes(response).length<=65536);for(JsonNode row:response.get("results"))assertFalse(row.get("verified").asBoolean());}
+  @Test void invalidLaterKeyFailsWholePreparationBeforeAnyVerification()throws Exception {add(signed,new byte[]{1,2,3});save();AtomicInteger calls=new AtomicInteger();assertThrows(Exception.class,()->LifecycleAckVerifier.run(path,Json.sha(read(path,16*MIB)),(wire,key)->{calls.incrementAndGet();return LifecycleAckVerifier.verify(wire,key);}));assertEquals(0,calls.get());}
+  @Test void rsaAndNoncanonicalDerKeysAreInfrastructureFailures()throws Exception {byte[] encoded=key.getPublic().getEncoded();byte[] trailing=Arrays.copyOf(encoded,encoded.length+1);((tools.jackson.databind.node.ArrayNode)request.get("records")).removeAll();add(signed,trailing);save();assertThrows(Exception.class,()->run());((tools.jackson.databind.node.ArrayNode)request.get("records")).removeAll();add(signed,KeyPairGenerator.getInstance("RSA").generateKeyPair().getPublic().getEncoded());save();assertThrows(Exception.class,()->run());}
+  @Test void emptyAnd129RowsRejectBeforeVerification()throws Exception {((tools.jackson.databind.node.ArrayNode)request.get("records")).removeAll();save();assertThrows(Exception.class,()->run());for(int i=0;i<129;i++)add(signed,key.getPublic().getEncoded());save();assertThrows(Exception.class,()->run());}
+  @Test void booleanFractionOverflowGapAndUnknownIndexFieldsReject()throws Exception {
+    for(JsonNode bad:List.of(value(true),value(0.25),parse("9223372036854775808".getBytes(),64),value(1),value(-1))){((ObjectNode)request.at("/records/0")).set("index",bad);Files.delete(path);write(path,Json.bytes(request));expectedRequestHash=Json.sha(Files.readAllBytes(path));assertThrows(Exception.class,()->run());}((ObjectNode)request.at("/records/0")).put("index",0).put("extra",1);save();assertThrows(Exception.class,()->run());
+  }
+  @Test void oversizedAndZeroWireAndRequestReject()throws Exception {for(int size:new int[]{0,65537}){((tools.jackson.databind.node.ArrayNode)request.get("records")).removeAll();add(new byte[size],key.getPublic().getEncoded());save();assertThrows(Exception.class,()->run());}Files.write(path,new byte[16*MIB+1],StandardOpenOption.TRUNCATE_EXISTING);assertThrows(Exception.class,()->run());}
+  @Test void changedHashesAndNoncanonicalBase64RejectWholeBatch()throws Exception {ObjectNode row=(ObjectNode)request.at("/records/0");row.put("wire_sha256","0".repeat(64));save();assertThrows(Exception.class,()->run());row.put("wire_sha256",Json.sha(signed));row.put("key_sha256","0".repeat(64));save();assertThrows(Exception.class,()->run());row.put("key_sha256",Json.sha(key.getPublic().getEncoded()));row.put("public_key",row.get("public_key").asString()+"\n");save();assertThrows(Exception.class,()->run());}
+  @Test void wrongRequestHashUnsupportedVersionAndWhitespaceReject()throws Exception {assertThrows(Exception.class,()->LifecycleAckVerifier.run(path,"0".repeat(64)));request.put("version","2.0.0");save();assertThrows(Exception.class,()->run());request.put("version","1.0.0");save();Files.writeString(path,"\n",StandardOpenOption.APPEND);expectedRequestHash=Json.sha(Files.readAllBytes(path));assertThrows(Exception.class,()->run());}
+  @Test void wrongModesHardlinksAndSymlinkComponentsReject()throws Exception {Files.setPosixFilePermissions(path,PosixFilePermissions.fromString("rw-r--r--"));assertThrows(Exception.class,()->run());Files.setPosixFilePermissions(path,PosixFilePermissions.fromString("rw-------"));Path link=root.resolve("hard");Files.createLink(link,path);assertThrows(Exception.class,()->run());Files.delete(link);Files.setPosixFilePermissions(root,PosixFilePermissions.fromString("rwxr-xr-x"));assertThrows(Exception.class,()->run());Files.setPosixFilePermissions(root,PosixFilePermissions.fromString("rwx------"));Files.move(path,root.resolve("original"));Files.createSymbolicLink(path,root.resolve("original").toAbsolutePath());assertThrows(Exception.class,()->run());}
+  @Test void unknownInfrastructureExceptionIsNeverNegativeSignature()throws Exception {assertThrows(java.io.IOException.class,()->LifecycleAckVerifier.run(path,Json.sha(read(path,16*MIB)),(wire,key)->{throw new java.io.IOException("private-untrusted-message");}));}
+  @Test void codeSourceFailureStopsBeforeRequestProcessing() {assertThrows(Exception.class,()->LifecycleAckVerifier.origins("0".repeat(64),"0".repeat(64)));}
+  @Test void unknownWireTextNeverAppearsInNegativeProof()throws Exception {((tools.jackson.databind.node.ArrayNode)request.get("records")).removeAll();add("private-source-text-never-echo".getBytes(java.nio.charset.StandardCharsets.UTF_8),key.getPublic().getEncoded());save();JsonNode result=run();assertFalse(result.at("/results/0/verified").asBoolean());assertFalse(new String(bytes(result)).contains("private-source"));}
+}

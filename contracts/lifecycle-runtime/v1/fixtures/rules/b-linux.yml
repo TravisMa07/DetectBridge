@@ -1,0 +1,11 @@
+title: Synthetic P12 whoami image
+id: 72000000-0000-4000-8000-000000000001
+status: test
+license: Apache-2.0
+logsource:
+  product: linux
+  category: process_creation
+detection:
+  selection:
+    Image: /bin/false
+  condition: selection

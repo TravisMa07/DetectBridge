@@ -60,7 +60,7 @@ class CacheTests(unittest.TestCase):
                     for s in steps
                 )
             )
-        self.assertEqual(count, 15)
+        self.assertEqual(count, 17)  # Sixteen consumers plus optional CI-01 diagnosis.
 
     def test_every_consumer_requires_an_exact_cache_hit_before_bootstrap(self):
         workflow = json.loads((ROOT / ".github/workflows/hygiene.yml").read_text())
@@ -95,7 +95,7 @@ class CacheTests(unittest.TestCase):
                     "${{ steps.prepared-gradle-cache.outputs.cache-hit }}",
                 )
             guarded += 1
-        self.assertEqual(guarded, 15)
+        self.assertEqual(guarded, 17)
 
     def test_exact_hit_guard_shell_rejects_absent_false_and_empty_outputs(self):
         workflow = json.loads((ROOT / ".github/workflows/hygiene.yml").read_text())
@@ -105,7 +105,7 @@ class CacheTests(unittest.TestCase):
             for s in job.get("steps", [])
             if s.get("id") == "require-prepared-gradle-cache"
         ]
-        self.assertEqual(len(guards), 15)
+        self.assertEqual(len(guards), 17)
         for guard in guards:
             for value, passed in (
                 (None, False),

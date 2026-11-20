@@ -538,6 +538,8 @@ def needs_activation(paths):
                 "contracts/lifecycle-runtime/",
                 "tools/lifecycle_runtime",
                 "tools/lifecycle_diagnostics",
+                "tools/lifecycle_ack_backlog",
+                "tools/tests/test_lifecycle_ack_backlog",
                 "tools/tests/test_lifecycle_diagnostics",
                 "tools/check_lifecycle_runtime",
                 "tools/tests/test_lifecycle_runtime",

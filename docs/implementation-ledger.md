@@ -347,3 +347,10 @@ the actual diagnostic diff. Heavy runtime qualification remains serialized.
 [Evidence and pending gates](ci-01-ledger.md) are separate from P15/#15/#61,
 which remain parked/dependent. No production contracts, artifacts or architecture
 decisions are changed and no owner acceptance, merge or release is inferred.
+
+CI-01 continuation uses native44641731135 stage evidence and independently
+checked101-wire ACK-only mechanics to select the existing128 qualification bound.
+The optional native diagnostic job serializes both mechanics cases and actual
+production faults; default all14 and strict120s/exact-checkpoint proofs remain.
+Local mechanics and review are attributed in the owning ledger; native improvement
+is unclaimed until the corrected exact source is qualified.

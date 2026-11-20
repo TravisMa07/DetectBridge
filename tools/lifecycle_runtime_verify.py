@@ -33,6 +33,8 @@ from lifecycle_runtime_cases import (
     sha,
 )
 
+QUALIFICATION_ACK_READ_LIMIT = 128
+
 REQUIRED = (
     "core_two_worker_a_b_a",
     "mixed_workers",
@@ -286,7 +288,9 @@ class Qualification:
         """Observe/verify a complete frozen broker prefix without inferring CP completion."""
 
         def drained():
-            status = self.runtime.observe(limit=8, qualification_batch=True)
+            status = self.runtime.observe(
+                limit=QUALIFICATION_ACK_READ_LIMIT, qualification_batch=True
+            )
             return status if status["ack_cursor"] >= barrier["end"] else None
 
         status = self.wait(drained, category, timeout)
@@ -508,9 +512,11 @@ class Qualification:
             for worker in wanted:
                 self.fail_on_failed_job(worker)
                 self.capture_completed_candidate(worker)
-            # Check exact checkpoint proofs between small authenticated prefixes.
-            # A large prefix can finish after the deadline or outlive REST history.
-            status = self.runtime.observe(limit=8, qualification_batch=True)
+            # Capture exact completion evidence before the bounded authenticated prefix.
+            # Amortize measured helper round trips; late truth still fails wait().
+            status = self.runtime.observe(
+                limit=QUALIFICATION_ACK_READ_LIMIT, qualification_batch=True
+            )
             with diagnostic.span("evidence_join", self.runtime):
                 for worker in wanted:
                     if not any(
@@ -1757,7 +1763,9 @@ class Qualification:
 
         def rejected_acks():
             nonlocal cursor
-            batch = self.runtime.inspect_acks(cursor, limit=16, qualification_batch=True)
+            batch = self.runtime.inspect_acks(
+                cursor, limit=QUALIFICATION_ACK_READ_LIMIT, qualification_batch=True
+            )
             cursor = batch["next_offset"]
             for row in batch["records"]:
                 payload = row.get("payload")
@@ -2076,10 +2084,17 @@ def main(argv=None):
         default="all",
         help="Fresh real setup for a bounded group; only default all qualifies the full gate",
     )
+    parser.add_argument(
+        "--ack-backlog-mechanics",
+        choices=("valid", "invalid-signature"),
+        help="Frozen signed-ACK mechanics only; never a worker/full gate",
+    )
     parser.add_argument("--runtime-sha256")
     parser.add_argument("--probe-sha256")
     args = parser.parse_args(argv)
-    if os.environ.get("DETECTBRIDGE_ACTIVATION_REQUIRED") == "1" and args.scenario_group != "all":
+    if os.environ.get("DETECTBRIDGE_ACTIVATION_REQUIRED") == "1" and (
+        args.scenario_group != "all" or args.ack_backlog_mechanics
+    ):
         parser.error("required activation qualification must execute --scenario-group all")
     attempt = uuid.uuid4().hex
     reports = ROOT / ".cache/lifecycle-runtime-qualification"
@@ -2091,8 +2106,12 @@ def main(argv=None):
         version="1.0.0",
         status="failed",
         full_gate=False,
-        scenario_group=args.scenario_group,
-        selected_required_scenarios=list(SCENARIO_GROUPS[args.scenario_group]),
+        scenario_group="ack-backlog-mechanics"
+        if args.ack_backlog_mechanics
+        else args.scenario_group,
+        selected_required_scenarios=[]
+        if args.ack_backlog_mechanics
+        else list(SCENARIO_GROUPS[args.scenario_group]),
         result_interpretation="Focused partial_passed qualifies only selected bounded cases; default all14 remains mandatory for the full gate",
         scope="P15b1 synthetic local worker runtime; no P15b2 archive/replay, recorded completeness, throughput or HA claim",
         platform=platform.platform(),
@@ -2109,6 +2128,7 @@ def main(argv=None):
     )
     source_paths = {
         ROOT / "tools/lifecycle_diagnostics.py",
+        ROOT / "tools/lifecycle_ack_backlog.py",
         ROOT / "tools/lifecycle_runtime_cases.py",
         ROOT / "tools/lifecycle_runtime_verify.py",
         ROOT / "tools/lifecycle_runtime.py",
@@ -2245,10 +2265,24 @@ def main(argv=None):
             }
         qualification = Qualification(folder, runtime, bundles, store, args.probe_jar)
         report["phase"] = "runtime_cases"
-        qualification.run(args.scenario_group)
-        report.update(
-            scenario_outcome(args.scenario_group, qualification.coverage), phase="complete"
-        )
+        if args.ack_backlog_mechanics:
+            from lifecycle_ack_backlog import run as run_mechanics
+
+            report["ack_backlog_mechanics"] = run_mechanics(
+                qualification, args.ack_backlog_mechanics
+            )
+            report.update(
+                status="mechanics_passed",
+                full_gate=False,
+                phase="complete",
+                scope="Generated signed ACK transport mechanics; no worker durability",
+                result_interpretation="Finite checked-prefix mechanics only; never required scenario coverage",
+            )
+        else:
+            qualification.run(args.scenario_group)
+            report.update(
+                scenario_outcome(args.scenario_group, qualification.coverage), phase="complete"
+            )
     except Exception as error:
         report["exception_class"] = type(error).__name__
         category = str(error)
@@ -2262,6 +2296,8 @@ def main(argv=None):
         report["diagnostics"] = timings.report()
         timing_scope.__exit__(None, None, None)
         if qualification is not None:
+            if hasattr(qualification, "mechanics_report"):
+                report["ack_backlog_mechanics"] = qualification.mechanics_report
             report.update(
                 coverage=qualification.coverage,
                 logical_outputs=len(qualification.oracle.seen),
@@ -2371,7 +2407,14 @@ def main(argv=None):
         (folder / "summary.json").write_bytes(data)
         (reports / "summary.json").write_bytes(data)
     print(json.dumps(report, sort_keys=True))
-    return 0 if report["status"] in ("passed", "partial_passed") else 1
+    return (
+        0
+        if (
+            report["status"] in ("passed", "partial_passed")
+            or (args.ack_backlog_mechanics and report["status"] == "mechanics_passed")
+        )
+        else 1
+    )
 
 
 if __name__ == "__main__":

@@ -1,5 +1,9 @@
 # CI-01 qualification ledger
 
+Current status: native diagnosis supports a bounded128 qualification-read correction;
+local signed mechanics and independent review support it. Native correction
+qualification remains open. Earlier diagnostic-only gates below are historical.
+
 See [owning RCA design and independent expectations](ci-01-design.md).
 
 ## Baseline and protected evidence
@@ -99,3 +103,152 @@ saturation regression red
 `621e297b168a76874fcf30af784f6b3ff294cbeb9cce928ec1b2e0b06539f849`.
 A subsequent documentation-only check found one missing table-cell space; it was
 corrected, with failed log retained as `ci01-doc-final.log` in this checkout's cache.
+
+## Native diagnostic run44641731135 — measured failure
+
+PR head079e969f16ec0cce39ac2668400fc9669cef3128, actual test-merge source
+9737e8ac7ab13667c636156e784ead629bc4770d, activation135975023394,
+attempt4d02c87ba0f340ad8eb3e9a7504ab62f. Summary SHA-256
+`047a50a6000e18ea0e55c43869f1c440db70892cfce84aac21b220931072616e`;
+original artifact ZIP
+`4e0b38d6c2e22efcbd476a1312495cf10da280a890e96fc8ee6698dcc8f8a114`.
+Private original report, logs, ZIP and parent's window analysis remain read-only.
+Both implementation analysis and independent read-only reviewer reproduced every
+window count/duration from the actual samples; no samples were dropped.
+
+Core, mixed, uncertainty, replacement, broker outage and required-sink failure
+passed. Pressure B convergence failed after95 admissions/75 outputs. Original
+window start1,002,551,306,180ns, deadline1,122,551,306,180ns,
+last end1,129,076,592,095ns:126.525285915s elapsed,6.525285915s overrun.
+All eight predicates were false, consuming cursor262→326. Only worker20 current
+CP145 joined; worker21 still awaited its authenticated current prefix, with
+completion candidates171/174 retained. This is not a claim about arrival rate.
+
+| Measured stage | Calls | Seconds | Attribution |
+| --- | --- | --- | --- |
+| Observe | 8 | 96.640740600 | Direct predicate child |
+| Candidate capture | 16 | 24.153400716 | Direct predicate child |
+| Job health | 16 | 1.380357525 | Direct predicate child |
+| Evidence join | 8 | 0.847009391 | Direct predicate child |
+| Kafka drain | 8 | 32.048344314 | Nested in observe |
+| Kafka commit | 8 | 30.377200105 | Nested in observe |
+| Signature batch | 8 | 4.144503252 | Nested in observe |
+| ACK journal | 64 | 7.518903076 | Nested in observe |
+| Cursor journal | 64 | 7.529660034 | Nested in observe |
+| Load/replay | 41 | 22.893987030 | Overlaps inclusive parents; never add to them |
+
+Direct children sum123.021508232s versus123.024304321s total predicates; sleeps
+account for most remaining window time. Repeated drain/commit helper round trips
+are the dominant measured combined category. Their internal startup/connection
+shares remain unseparated. The correction amortizes these calls using an existing
+bound, rather than changing resource ceilings, timeouts or accepted proofs.
+
+## Controlled mechanics and implementation continuation
+
+The experiment uses unchanged hash-verified production055a, producer51a,
+QA7b677 and validatorf2 artifacts copied into this checkout's ignored cache. No
+JAR was rebuilt or changed. Fresh Kafka-only fixtures register an actual owned
+worker key, publish A then B through the normal candidate/controller path, and
+sign100 old distinct-CP ACKs plus one current ACK using the existing Java signer.
+A pinned Kafka console producer publishes the frozen prefix and exits before any
+timed trial. Both sizes start from byte-identical private controller snapshots,
+explicit offset0 and the same immutable topic/end101; no live worker producer.
+One separate fixture corrupts only historical signature50. Every normal schema,
+registration, signature, ACK identity, durable prefix and commit rule executes.
+Generated ACKs never populate completed-checkpoint evidence.
+
+Initial valid attempt2f701f75831c4cd4b2a238b1e029173c checked101 signatures and
+records in both trials, accepted101/rejected0 and ended cursor101 with matching
+semantic hashes. Bound8 took68.795265333s in13 rounds;128 took12.192873666s in
+one. This first harness version verified prefix state on commit and reopened at
+completion. The final harness additionally replays durable journal/ACK files in
+an independent state object before every commit, under the already-held store
+lock, and reruns the valid pair below. Do not transfer the first timings to it.
+
+Invalid-signature attemptb93155e2316e47bb876fb589437331b6 used that stronger
+precommit replay guard:8 took69.816809334s/13 rounds;128 took12.903929083s/one.
+Both checked101 signatures/records, accepted100, rejected exactly historical
+position50, ended cursor101 and reopened to identical semantic results. Both met
+120s locally; neither run is a manufactured deadline red or native improvement.
+The fixed order leaves order/warm-cache effects uncontrolled.
+
+The finite-prefix regression was captured red on8: the current ACK beyond the
+historical prefix was absent and convergence could not discharge. It passes at128
+with the exact pre-drain current CP proof; an all-historical prefix remains unable
+to discharge it. Existing changed-context/eviction/private-file/signature-failure
+and strict late-truth tests remain mandatory. Independent correction review found
+secondary-metrics-write exception masking and stale failure counters after durable
+cursor advancement; both are corrected, with the original exception preserved and
+final actual state captured even if commit fails.
+
+Setup failures are retained separately:064551d1747e4733996fbc847f39d4bd lacked
+the local logging dependency before setup;477e0f2caaf7465fbf2cabb2c03fb491 hit
+Docker's fully subnetted address pools before deployment. The initial descriptor
+copy script encountered the existing wrapped-config format and was corrected.
+These are setup errors, not behavioral reds. Complete network/stopped-container
+inspections were retained before retiring exactly three verified empty networks
+from stopped attempt9c04211de14a4e66. No container, volume or source evidence was
+deleted. Original root files, deployments, dirty docs/tests and handoffs stay intact.
+
+The final valid-pair replay used byte-identical frozen wires/initial stores from
+attempt2f701f75831c4cd4b2a238b1e029173c, fresh clone roots and the stronger
+precommit replay guard. Bound8 took69.872175291s/13 rounds;128 took12.602132834s/
+one. Both checked101 records/signatures, accepted101/rejected0, ended cursor101
+and had identical semantic hashes. Report source hashes for the runtime,
+qualifier and mechanics module match the current correction files. Final valid
+report SHA-256 is
+`6a5c2b40d120684ffc0f8293a756eb8bc21d59dc10dc4900e67acaade0ea6d1a`.
+Negative attempt summary SHA-256 is
+`92babc1975d1a017c248d7281f052b92a00619b9e7ee579a0e4ae537ee2f75c5`;
+its executable checks precede the failure-reporting-only refinements, and retain
+their actual source hashes. Both cases remain local ARM64 mechanics, with fixed
+trial order, no live worker and no native performance claim.
+
+Final applicable `tools/dev.py check` passed442 Python tests with no skips,
+all contract/repository/secret/workflow checks, Ruff/formatting and mypy for119
+files plus adapter checks. The copied hash-verified original evaluator allowed
+the previously unavailable lifecycle class to run. The first correction check
+passed442 tests then failed one formatting check; formatting was corrected and
+the full command rerun successfully. The prior focused run also found three old
+8-record/mock-step assumptions requiring explicit128/additional-step expectations;
+the corrected52-case focused suite passed. No behavioral expectation was derived
+from evaluator output. No Gradle/JAR build or native AMD64 qualification ran here.
+
+Complete metadata was preserved before retiring the two new, stopped, empty
+mechanics networks to make room for focused real worker qualification. Their
+containers, volumes, private wires/keys and original snapshots remain retained.
+Protected root dirty docs/tests and eight handoff/doc hashes remain unchanged.
+The optional native mechanics report preserves failure-stage state and counts,
+and secondary report persistence cannot replace an original experiment error.
+
+## Focused actual recovery on corrected source
+
+Local ARM64 attempt39207cdc6840416f9e42d759f64dc003 passed all four selected
+`production-faults` scenarios: publisher uncertainty, registered replacement,
+broker outage and required-sink failure. Its result is `partial_passed`,
+`full_gate:false`:3 actual journal admissions,9 logical/physical outputs, no
+unexpected job/oracle failures, no diagnostic drops and all owned runtime stopped.
+At least one real observe consumed27 ACKs through the new128 bound. This is
+actual selected worker recovery, separate from generated101-wire mechanics; the
+ten remaining mandatory scenarios and native AMD64 benefit are not established.
+
+Command used the existing qualifier with `--scenario-group production-faults`,
+`--skip-build`, explicit verified runtime/probe hashes and copied producer/
+validator artifacts. No JAR test/build is claimed for this attempt. Runtime055a,
+producer51a, QA7b677 and validator packetf2 were unchanged; local validator image
+was `sha256:a1dc0587e767d537d8488ff20ce1b50c47ae160fa34a4eb1f319bea011cfc827`.
+Working source was079e969 plus this tracked correction; runtime, qualifier and
+mechanics module source hashes in its report match the final correction files.
+Summary SHA-256 is
+`9d545a2c8e13cdd743d78590c1598383cffed91b702be2fdd0f5166350fec586`.
+Full static-check log SHA-256 is
+`7f26f1eee6ef53211f98f262a86a517fd5a541b94e7f971cec21b36ab1bf6e8f`.
+Finite-prefix behavioral red log SHA-256 is
+`91eb078e5700b40a75d22a8efff18bb57e6f54ffe8c9c7e4c9ec700368e472e2`.
+
+The next pushed CI-only correction must receive exact native all14 qualification.
+Dispatch optional `activation-diagnostic=true` on the same branch/head to collect
+native signed-backlog pairs and focused production faults; default all14 still
+runs. Preserve both old failed runs and any new failure with source/artifact
+identities. Do not claim native benefit or complete CI-01 from local passes or
+composed partial cases. Parent owns the existing PR watch; the child never watches.

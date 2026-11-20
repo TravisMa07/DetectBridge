@@ -24,6 +24,7 @@ class ActivationGateTests(unittest.TestCase):
             "contracts/lifecycle/v1/manifest.schema.json",
             "tools/lifecycle_runtime.py",
             "tools/lifecycle_diagnostics.py",
+            "tools/lifecycle_ack_backlog.py",
             "tools/tests/test_lifecycle_diagnostics.py",
             "tools/lifecycle_runtime_verify.py",
             "tools/check_lifecycle_runtime.py",
@@ -81,12 +82,29 @@ class ActivationGateTests(unittest.TestCase):
             jobs["activation-verification"]["timeout-minutes"], diagnostic["timeout-minutes"]
         )
         step = next(
-            s for s in diagnostic["steps"] if "lifecycle_runtime_verify.py" in s.get("run", "")
+            s
+            for s in diagnostic["steps"]
+            if "--scenario-group production-faults" in s.get("run", "")
         )
         self.assertTrue(step["run"].endswith("--scenario-group production-faults"))
         self.assertNotIn("DETECTBRIDGE_ACTIVATION_REQUIRED", step.get("env", {}))
+        mechanics = next(s for s in diagnostic["steps"] if s.get("id") == "ack-mechanics")
+        self.assertIn("--ack-backlog-mechanics valid", mechanics["run"])
+        self.assertIn("--ack-backlog-mechanics invalid-signature", mechanics["run"])
+        self.assertNotIn("DETECTBRIDGE_ACTIVATION_REQUIRED", mechanics.get("env", {}))
         self.assertNotIn("activation-diagnostic", jobs["required-checks"]["needs"])
         self.assertIn("activation-verification", jobs["required-checks"]["needs"])
+
+    def test_required_native_gate_rejects_generated_ack_mechanics(self):
+        from unittest.mock import patch
+
+        from lifecycle_runtime_verify import main
+
+        with patch.dict("os.environ", {"DETECTBRIDGE_ACTIVATION_REQUIRED": "1"}):
+            for case in ("valid", "invalid-signature"):
+                with self.subTest(case=case), self.assertRaises(SystemExit) as caught:
+                    main(["--ack-backlog-mechanics", case])
+                self.assertEqual(2, caught.exception.code)
 
     def test_runtime_job_uses_exact_seed_cache_before_real_qualification(self):
         jobs = json.loads((ROOT / ".github/workflows/hygiene.yml").read_bytes())["jobs"]

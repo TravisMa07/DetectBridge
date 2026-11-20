@@ -1549,6 +1549,11 @@
           }
         },
         {
+          "name": "Compare frozen real signed ACK prefixes on fresh equivalent stores (mechanics only)",
+          "id": "ack-mechanics",
+          "run": "uv run --locked python tools/lifecycle_runtime_verify.py --ack-backlog-mechanics valid\nuv run --locked python tools/lifecycle_runtime_verify.py --ack-backlog-mechanics invalid-signature"
+        },
+        {
           "name": "Diagnose actual production faults with fresh isolated workers (partial scope)",
           "run": "uv run --locked python tools/lifecycle_runtime_verify.py --scenario-group production-faults"
         },

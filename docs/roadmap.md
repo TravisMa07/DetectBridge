@@ -288,6 +288,10 @@ is recorded in the acceptance map; P13 acceptance is not implied.
   [evidence ledger](ci-01-ledger.md) preserve the unchanged120s/all14 gate.
 - Separate PR targets frozen P15b branch `feat/p15b-worker-activation` at6e1ed1c;
   native qualification, owner acceptance/merge and merged-main remain open.
+- Native diagnostic run44641731135 measured repeated drain/commit round trips
+  dominating small-prefix observation. Frozen signed-backlog mechanics support
+  amortizing those calls at the existing128 bound; exact native correction
+  qualification remains pending. P15b stays parked.
 
 ### P15 — Rule lifecycle, activation and rollback
 

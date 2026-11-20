@@ -4,6 +4,8 @@ Owner: [issue #62](https://github.com/TravisMa07/DetectBridge/issues/62).
 Baseline: `6e1ed1c0771711eb42faef0f9e4556999762830c`.
 PR base: `feat/p15b-worker-activation`, explicitly confirmed by the owner.
 P15b #61 remains Draft and parked; P15/P16 acceptance, merge and release are excluded.
+The initial diagnostic freeze below is retained historically; the measured
+correction section supersedes its small-prefix assumption.
 
 ## Scope and present evidence
 
@@ -79,3 +81,46 @@ Measure dominant costs before choosing any correction. If backlog dominates,
 justify a change with paired native results and focused negative/boundary tests;
 otherwise fix the demonstrated cost. Requalify all14 on exact final source.
 Owner review/merge authorization and actual merged-main acceptance remain separate.
+
+## Measured correction after native diagnostic run
+
+Run44641731135 at PR head079e969 executed test-merge source
+`9737e8ac7ab13667c636156e784ead629bc4770d`. Its pressure B convergence consumed
+64 old ACKs in eight predicates before the original120s deadline expired. Direct,
+disjoint predicate children were observe96.640740600s, candidate24.153400716s,
+health1.380357525s and join0.847009391s. Within observe, eight Kafka drains took
+32.048344314s and eight commits30.377200105s; signature batches took4.144503252s.
+This identifies repeated helper round trips as the largest measured combined
+cost in that window. It does not isolate container/JVM startup, broker inspection,
+connection-close shares or producer arrival rate. Nested load/replay is not added.
+
+The frozen local101-wire experiment corroborates the call-count mechanism with
+actual signatures, Kafka transport, normal controller adoption and durable writes.
+Paired trials share one frozen prefix and identical initial store bytes; no worker
+is started. The invalid-signature fixture has its own fresh owned topic and changes
+only one historical signature at offset50. Every trial verifies/replays the entire
+durable prefix before Kafka commit and reopens it at the end. Fixed order8 then128
+leaves warm-cache/order effects uncontrolled. These are mechanics, not real worker
+checkpoint, throughput or native AMD64 improvement evidence.
+
+Select the existing supported128 bound only in first-party qualification observe,
+fenced-prefix drain and inspect calls. Runtime defaults and every helper/message/
+heap/store ceiling stay unchanged. Larger prefixes can still finish late, so retain
+original wait cutoff and exact pre-drain completion cache and ACK-named join. A
+historical prefix cannot discharge the current command. The generated mechanics
+mode is explicitly rejected when the required activation environment is set and
+cannot report a real scenario/full-gate pass.
+
+This supersedes the small-quantum timing assumption in the historical ACK-batch
+design and the old unit test's arbitrary4s-per-record model. That model is retained
+in published history, not treated as a native cost measurement. Its replacement
+checks a finite historical prefix plus current exact proof without inventing a
+runtime duration; separate tests retain exactly-at-deadline and late-truth rules.
+Native all14 failure is the integration red; no local120s failure is invented when
+both measured mechanics trials complete within that bound.
+
+The optional diagnostic invocation now runs both generated101-wire pairs followed
+by actual `production-faults`, serially on the same native settings. Default required
+all14 invocation and aggregate are unchanged. A mechanics continuation beyond its
+budget may complete the finite diagnostic prefix but records `deadline_met:false`;
+it is never a qualification timeout waiver. Native benefit still requires results.

@@ -1,8 +1,8 @@
 # CI-01 qualification ledger
 
-Current status: native diagnosis supports a bounded128 qualification-read correction;
-local signed mechanics and independent review support it. Native correction
-qualification remains open. Earlier diagnostic-only gates below are historical.
+Current status: native mechanics and recovery support the bounded128 ACK-read
+correction. A same-source dispatch exposed a distinct open-group30s scheduling
+failure and separate search failure. CI remains blocked; PR63 stays Draft. Earlier diagnostic-only gates below are historical.
 
 See [owning RCA design and independent expectations](ci-01-design.md).
 
@@ -252,3 +252,108 @@ native signed-backlog pairs and focused production faults; default all14 still
 runs. Preserve both old failed runs and any new failure with source/artifact
 identities. Do not claim native benefit or complete CI-01 from local passes or
 composed partial cases. Parent owns the existing PR watch; the child never watches.
+
+## c42 native outcomes — ACK correction supported, CI still blocked
+
+PR run44648419237 passed every applicable job and aggregate, with six deliberate
+opt-in skips. Activation used test-merge15332998e208bab606be2c93e59563147bf4f100,
+attempt5fd3de26f01e4c96b3d80848b09e8dff: all14 actual cases passed,
+103 admissions,232 logical/233 physical outputs and owned runtime stopped.
+Summary SHA-256:
+`cd7fa04bc2b7124837b8633d3e38f207370ba254887052b87d91b862b5eb7fad`;
+ZIP `c26df09d00c2c7b1cd3ca6b3fa73950a991facb631644035e60fbe3ef6c3b14b`.
+
+Same-head dispatch44648665426 used direct sourcec42ac20525fa31bda6fe2d4d6bc3ea3877712ed9.
+All recorded source hashes, runtime055a and QA7b matched the PR pass. Activation
+job135998510608 failed `lifecycle_oracle_unexpected_event`, attempt
+643375091b0a485381bed03e1c82e286:101 admissions,222 logical/226 physical outputs,
+eight cases passed through pressure, then open-group closure failed. Owned runtime
+stopped; no prior unexpected job/query/oracle-helper failure explains the strict
+semantic failure. Summary SHA-256:
+`1f0b44480518bb8087a429bd7a316c04ee24c8600ee83e8813efa7dcfa6a2018`;
+ZIP `3a47af368c58725f9fafb5203aff296de3d83144d745d0ef857fabb2f958477f`.
+Both outcomes remain retained; one green run does not establish CI stability.
+
+The same dispatch's dedicated diagnostic passed both native101-wire pairs. Each
+size checked every signature/record and durable prefix through101. Valid had
+101 accepted/0 rejected; invalid had100 accepted/1 rejected. Bound8 elapsed
+119.889s valid and117.461s invalid;128 elapsed19.614s and19.655s. Fixed order and
+warm-cache caveats remain; these are generated transport mechanics. Dedicated
+actual production-faults attempt900f8ca5565a474facffb7bb3677ff2c passed all four
+selected cases,3 admissions/9 outputs, owned runtime stopped. Its summary hash:
+`1724de1b9c4a900a4e91d522679d42be0cd7d6470c7eaaf74a6852c6542f7139`;
+ZIP `524303ba611ee24ae928aa43ca766687438e80f6252445d2770592606e06ed82`.
+The bounded ACK startup/call-count correction is now supported by native evidence;
+these results do not discharge the distinct open-group or search failures.
+
+## Open-group scheduling failure — observed critical path
+
+The retained safe actual-output summary identifies controlled run
+715b0000-0000-4000-8000-000000000205: five-member tagged output plus eligible
+manifest closed by `timeout`, followed by the sixth EOE receipt. The frozen expected
+six-member `source_boundary` and literal A closure remain mandatory. Actual
+COMPLETED worker21 CP149 has exactly five B members, opened1795136928063 and
+deadline1795136958063 (original30000ms). No raw decoded records are copied into
+this ledger. Mixed-worker proof passed28.858s; that does not qualify this case.
+
+An independent read-only agent reproduced these regions from native diagnostics
+and source ordering (seconds relative to the report's monotonic origin):
+
+| Region | Start | End | Duration |
+| --- | --- | --- | --- |
+| Five-member admission | 1056.231601 | 1064.035414 | 7.803813 |
+| Completed open-group proof wait | 1064.035513 | 1071.756574 | 7.721061 |
+| Rollback publication | 1071.845166 | 1094.306234 | 22.461068 |
+| Last/EOE admission | 1094.306638 | 1101.460877 | 7.154239 |
+
+Three publication network spans consumed5.553641s,5.974037s and5.524490s,
+17.052168s total, corresponding by source order to manifest, plan and control.
+Publication plus last admission alone consume at least29.615306431s (unspanned
+store/caller work is omitted); proof collection already
+aged the real30s group. The monotonic trace does not precisely map worker wall
+`opened` to controller origin, so no invented exact remaining-age value is given.
+This is a harness scheduling race, not renewed ACK convergence. Existing locks
+and adopted-pending A prevent callback admission; no unlock/guard bypass is allowed.
+A reviewed decision packet is in [the design](ci-01-design.md#open-group-deadline-decision-packet).
+
+## Separate search-CI triage — unresolved raw cause
+
+Dispatch search job135998510906 failed at phase`blocked_failure_publication`,
+category`writer_helper_failure-policy_writer_failed_IllegalStateException`.
+Read-only independent triage locates the failure at healthy-policy restoration
+in search_writer_qualification.py581, after block, BACKPRESSURED and uncommitted
+position assertions completed. Subsequent accounting and later cases did not run.
+The source has an explicit `IllegalStateException("fault_readback")` for an immediate
+Kafka policy-readback mismatch, but that fixed category is not allowlisted and the
+retained report lacks the requested/observed pair and throw location. It remains
+a hypothesis, not a proven raw cause. No retry, waiver or P13 semantic change is made.
+
+Only a321-byte sanitized report was uploaded; helper stderr was reduced to a
+category/class, helper logging disabled and runtime teardown removed the original
+cause. A separate search-CI diagnostic item/PR is recommended to retain bounded
+policy intent/alter/readback/throw-phase evidence. This CI-01 PR remains activation
+only; no separate issue/PR has been created without parent scope coordination.
+Summary hash `87db825f50426d6f626bec686d21b51f75e09e9478334023ff40556e6d19a3ef`;
+job log `60809ce3483106a4dcb7bc2b9f49a9b2f8d5e0fbe61085a497dd0a8da46bdc43`;
+ZIP `3205474aec799d3c8f644a8ef7afe112033dff4035b56484fa800e2f0ce7d4a6`.
+PR63 remains Draft and CI-01 blocked despite the first native pass.
+
+A single final-state read of dispatch44648665426 found it completed with failure:
+integration-verification succeeded; activation and search failed; the dedicated
+diagnostic succeeded; required-checks failed. No PR wait/poll loop or unchanged
+rerun was used. Retained final run metadata SHA-256:
+`c7b4ee20c5ccb7fe2aba53d89b8b9180b6396ca1b75b2fdc32746c331538fcf2`.
+
+The next local freeze records the newly observed deadline case and concrete
+publication-boundary options before implementation. This additional commit is
+required after published c42 native evidence; existing published commits are not
+rewritten to meet the normal1–3-commit target. No option is accepted merely by
+recording it. No runtime/capability claim follows from this documentation update.
+
+Independent read-only review of the concrete options confirmed A changes an opt-in
+controller boundary and needs owner agreement. The packet now specifies opaque
+capability lifecycle, prior-B CAS/resulting-A-intent binding, actual worker
+artifact-cursor/rejection readiness outside the30s window, retained-availability
+negative coverage, and request-bound (not cryptographic) QA result wording. No
+option has been implemented or treated as accepted. All local heavy tools remain
+idle while the owner chooses the boundary.

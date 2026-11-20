@@ -292,6 +292,10 @@ is recorded in the acceptance map; P13 acceptance is not implied.
   dominating small-prefix observation. Frozen signed-backlog mechanics support
   amortizing those calls at the existing128 bound; exact native correction
   qualification remains pending. P15b stays parked.
+- c42 native PR all14 passed, but the same-source dispatch failed the real30s
+  open-group closure schedule. A new publication-preparation boundary is proposed
+  for owner decision; PR63 remains Draft, with no CI stability/readiness claim.
+  Independent search failure needs a separate CI diagnostic item.
 
 ### P15 — Rule lifecycle, activation and rollback
 

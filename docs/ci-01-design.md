@@ -124,3 +124,115 @@ by actual `production-faults`, serially on the same native settings. Default req
 all14 invocation and aggregate are unchanged. A mechanics continuation beyond its
 budget may complete the finite diagnostic prefix but records `deadline_met:false`;
 it is never a qualification timeout waiver. Native benefit still requires results.
+
+## Open-group deadline decision packet
+
+Status: proposals only, not accepted or implemented. Same-source c42 has a full
+native PR pass and a dispatch semantic failure; neither is discarded. The dispatch
+proves the harness spent22.461s publishing rollback after the actual five-B proof,
+then7.154s admitting EOE. Those29.615s are an observed lower bound (unspanned store/caller work is omitted)
+and exclude the group's age during proof
+collection. Two signed artifact transfers and control use17.052s of that path.
+The worker truthfully timed out at its original30s deadline. Full timing evidence
+and the separate search failure are retained in [the ledger](ci-01-ledger.md).
+
+### A — Qualification-only artifact preparation (recommended)
+
+Before admitting five B records, enter an explicit, bounded qualification artifact
+preparation scope. Under normal store/deployment exclusion, validate the already
+staged A closure, exact prepared proposal, current B revision/hash, authority,
+member/incarnation registrations and runtime/broker/artifact-topic bindings. Sign
+and transfer the exact A artifact chunks using existing production helpers and
+real checked Kafka acknowledgments. Retain private original wire/receipt evidence.
+Release those ordinary preparation locks before yielding; no A adoption, effective
+control publication or pending-A state exists. B remains current and normal guarded
+admission remains legal. This is a separate preparation operation, never an unsafe
+unlock inside a publication transaction.
+
+Keep a single ephemeral instance-owned preparation capability, not a deserializable
+receipt claim or persistent controller-journal extension. Bind it to all context,
+proposal/closure/wire hashes and real transfer results; cap it by existing member,
+chunk/message/store limits and clear it in finally. Partial/uncertain preparation
+creates no usable capability. Lost process/scope state falls back to ordinary
+publication on a later explicit operation; no restart/success claim is inferred.
+
+Before starting the30s group, additionally establish readiness using actual
+COMPLETED inventories from every current worker: the artifact cursor must
+cover all preparation acknowledgments, current selection remains B, and no new
+artifact rejection is present. These are explicit setup correctness queries, not
+extra logging queries. Source processing validates chunks before advancing their
+successful cursor; rejected records must not be mistaken for installation. Kafka
+ACKs alone establish only transport. Installed bundles are not automatically
+evicted in this profile. The later five-B proof must retain the same job/incarnation
+and cover the readiness watermark. Same-topic-ID truncation before consumption
+must fail readiness; restart/context changes invalidate reuse, and missing material
+can never be discharged by publication alone because actual A convergence and
+literal closure remain mandatory. Include a negative availability/truncation case.
+Do not infer retained bytes solely from an unchanged topic UUID.
+
+After actual COMPLETED exact-five-B proof, normal publication reacquires both
+locks and repeats every readiness, membership, CAS, immutable-byte and binding
+check. Only the exact already-transferred artifact wires may avoid a second send;
+control signing, durable adoption and actual effective control send/receipt remain
+ordinary. Then release publication locks and admit EOE through normal guards.
+Validate B CAS before adoption, then bind/consume the capability against the exact
+resulting A intent/revision. Invalidate on any other adoption/context change and
+on every failure/finally path. Any changed context rejects reuse. No fake helper receipt, skipped signature,
+publication-as-application assertion or pending-A admission bypass is allowed.
+
+This would add a new opt-in controller preparation/reuse boundary. It does not
+change worker wire/state semantics, but changes the qualification publication
+sequence and therefore needs explicit owner agreement before implementation.
+The measured two artifact transfers identify work to move before the timer; no
+claim of enough remaining margin is made until actual focused/native validation.
+
+### B — Qualification-only multi-message publication helper
+
+Preserve current adoption-before-artifact/control sequencing and batch the exact
+artifact/control sends in a new bounded hash-pinned QA helper. Reuse one JVM,
+producer/admin setup while retaining actual per-message namespace checks and
+ordered durable intent/acknowledgment/receipt evidence. Normal controller may mark
+published only from a validated request-bound complete result from the pinned
+helper covering the exact
+control wire; partial/uncertain results remain pending and cannot admit EOE.
+
+This avoids artifact preparation before adoption, but needs a new QA artifact,
+closed multi-topic request/result protocol, origin/classloader/size checks and
+partial-send/recovery tests. Existing single-message helpers remain the default.
+It is more implementation and qualification work than A, and its native time
+saving is unmeasured. This is a concrete alternative, not an accepted design.
+
+### Excluded shortcuts
+
+A before-control callback cannot safely admit under the nonreentrant locks and
+adopted-pending A. Pausing/restarting does not suspend the absolute deadline.
+Publishing A while paused creates nondeterministic cross-source ordering. Existing
+probes do not establish the required control/EOE sequence. Image warming alone
+does not eliminate the observed helper calls; its startup share is unmeasured.
+Do not virtualize clocks, enlarge30s/20s/120s, accept timeout, narrow the six-member
+case or skip the completed proof. No guess-only correction will be pushed.
+
+### Independent timing and safety expectations
+
+These expectations were derived from the frozen case, actual failure and a
+read-only independent agent, before implementing either proposal.
+
+| ID | Requirement |
+| --- | --- |
+| O01 | Pre-window preparation leaves B current and normal five-record admission legal |
+| O02 | No effective A control or application claim exists before the actual completed-five-B proof |
+| O03 | Changed revision/hash, member/incarnation, authority, artifact bytes or broker/topic binding rejects reuse |
+| O04 | Exact COMPLETED five-member B inventory and original30000ms deadline remain mandatory |
+| O05 | Normal pending-A admission guards and both existing lock exclusions remain intact |
+| O06 | Final output has all six exact members, eligible source_boundary and literal A closure |
+| O07 | Original30s assembly deadline,20s proof wait and120s convergence late-truth guard remain unchanged |
+| O08 | Partial/uncertain preparation/send cannot manufacture success; original errors/evidence survive |
+| O09 | Preparation/proof/control/EOE monotonic costs use existing calls, without extra logging network queries |
+| O10 | No local focused pass or single native green discharges known same-source failures |
+| O11 | Prepared Kafka ACKs alone cannot authorize reuse; actual worker readiness, cursor/rejection checks and retained availability are required |
+| O12 | Capability validates B CAS, binds only the resulting A intent, is consumed once and invalidates on adoption/context changes or failure |
+
+Actual same-source native timeout is the behavioral red. Focused unit/fault tests,
+actual open-group qualification, exact native all14 and repeat native diagnostic
+results are required after an accepted correction. Keep the separate search-CI
+failure visible; activation work cannot silently modify P13 semantics.

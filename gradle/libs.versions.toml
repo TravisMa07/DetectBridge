@@ -7,7 +7,7 @@ shadow = "9.6.1"
 junit = "5.13.4"
 kafkaClients = "4.2.0"
 lz4 = "1.11.4"
-snappy = "1.1.10.9"
+snappy = "1.1.10.12"
 jacksonLegacy = "2.18.11"
 slf4j = "2.0.20"
 

@@ -279,7 +279,15 @@ is recorded in the acceptance map; P13 acceptance is not implied.
   archives; historical pinned results reproduce on qualified fixtures; current
   replay remains isolated. Document unsupported reproduction limits explicitly.
 
-### CI integration status — 2026-11-20
+### Merged activation and search diagnostics
+
+On 2026-11-27, #61 and #65 were merged at `3fe77bbf570e59521633a218288f2144e2159113`.
+The [main push run 46098720010](https://github.com/TravisMa07/DetectBridge/actions/runs/46098720010) passed all 20 applicable jobs on that commit,
+including activation, search, archive, both replay modes, maintenance and required-checks.
+CI-02 #64 remains open for the original search failure. Preserve the first sanitized
+failure artifact on recurrence. Its cause remains unknown.
+
+### Historical CI integration status — 2026-11-20
 
 CI-01 [#62](https://github.com/TravisMa07/DetectBridge/issues/62) is closed/Done
 in its approved feature-integration scope. Owner-merged #63 is e2bec696; direct
@@ -329,10 +337,11 @@ Historical CI-01 snapshot (superseded by integration status above):
   [P15b design](p15b-design.md), closed contracts and
   [independent cases](p15b-expectations.md) were frozen in `0a41ee4` before
   production code. P15b1 is implemented with fourteen bounded synthetic ARM64
-  runtime scenarios passed; [native PR qualification and review](p15b1-ledger.md)
-  remain open.
-  P15b2 owns the dependent new archive/replay artifact boundary.
-  P15 is not complete; P16 implementation remains dependent.
+  runtime scenarios passed; [merged-main qualification](p15b1-ledger.md) passed on 3fe77bb.
+  The [P15b2 design](p15b2-design.md) owns the lifecycle archive and replay boundary.
+  The [P15b2 qualification ledger](p15b2-ledger.md) records passing ARM64 and
+  native AMD64 public synthetic archive and replay runs. The [P15 acceptance
+  map](p15-acceptance.md) is ready for owner reconciliation before P16 implementation.
 - Depends on: P10, P13, P14.
 - Deliver: immutable bundles, staging, worker acknowledgments, convergence state,
   rollback and version attribution. No exposed unauthenticated management endpoint.

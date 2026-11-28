@@ -58,3 +58,6 @@ project(":archive-maintenance").projectDir = file("packages/archive-maintenance"
 
 include("lifecycle-job")
 project(":lifecycle-job").projectDir = file("packages/lifecycle-job")
+
+include("lifecycle-archive")
+project(":lifecycle-archive").projectDir = file("packages/lifecycle-archive")

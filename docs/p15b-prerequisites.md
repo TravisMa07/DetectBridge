@@ -1,5 +1,15 @@
 # P15b prerequisite and compatibility discovery
 
+## Merged-main reconciliation
+
+On 2026-11-27, #61 and #65 were merged at `3fe77bbf570e59521633a218288f2144e2159113`.
+The [main push run 46098720010](https://github.com/TravisMa07/DetectBridge/actions/runs/46098720010) passed all 20 applicable jobs on that commit,
+including activation, search, archive, both replay modes, maintenance and required-checks.
+CI-02 #64 remains open for the original search failure. Preserve the first sanitized
+failure artifact on recurrence. Its cause remains unknown.
+
+## Earlier checkpoints
+
 Current prerequisite gate: actual merged-main push run 44472864062 attempt 1
 passed on f44403e. All nineteen applicable jobs and required-checks passed;
 five explicit opt-ins were skipped. The earlier pending status below records

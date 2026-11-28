@@ -64,6 +64,13 @@
           ]
         },
         {
+          "lockfile": "packages/lifecycle-archive/gradle.lockfile",
+          "configurations": [
+            "runtimeClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/lifecycle-job/gradle.lockfile",
           "configurations": [
             "compileClasspath",
@@ -268,6 +275,15 @@
           ]
         },
         {
+          "lockfile": "packages/lifecycle-archive/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/lifecycle-job/gradle.lockfile",
           "configurations": [
             "compileClasspath",
@@ -380,6 +396,15 @@
           "lockfile": "packages/integration-writer/gradle.lockfile",
           "configurations": [
             "compileClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/lifecycle-archive/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
           ]
         },
         {
@@ -669,6 +694,13 @@
           ]
         },
         {
+          "lockfile": "packages/lifecycle-archive/gradle.lockfile",
+          "configurations": [
+            "runtimeClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/lifecycle-job/gradle.lockfile",
           "configurations": [
             "testRuntimeClasspath"
@@ -791,6 +823,15 @@
           "lockfile": "packages/integration-writer/gradle.lockfile",
           "configurations": [
             "compileClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/lifecycle-archive/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
           ]
         },
         {
@@ -1954,6 +1995,15 @@
           ]
         },
         {
+          "lockfile": "packages/lifecycle-archive/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/lifecycle-job/gradle.lockfile",
           "configurations": [
             "compileClasspath",
@@ -2032,6 +2082,12 @@
       "uses": [
         {
           "lockfile": "packages/integration-job/gradle.lockfile",
+          "configurations": [
+            "testCompileClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/lifecycle-archive/gradle.lockfile",
           "configurations": [
             "testCompileClasspath"
           ]
@@ -2121,6 +2177,13 @@
           ]
         },
         {
+          "lockfile": "packages/lifecycle-archive/gradle.lockfile",
+          "configurations": [
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/lifecycle-job/gradle.lockfile",
           "configurations": [
             "testCompileClasspath",
@@ -2174,6 +2237,12 @@
           ]
         },
         {
+          "lockfile": "packages/lifecycle-archive/gradle.lockfile",
+          "configurations": [
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/lifecycle-job/gradle.lockfile",
           "configurations": [
             "testRuntimeClasspath"
@@ -2216,6 +2285,13 @@
       "uses": [
         {
           "lockfile": "packages/integration-job/gradle.lockfile",
+          "configurations": [
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/lifecycle-archive/gradle.lockfile",
           "configurations": [
             "testCompileClasspath",
             "testRuntimeClasspath"
@@ -2276,6 +2352,13 @@
           ]
         },
         {
+          "lockfile": "packages/lifecycle-archive/gradle.lockfile",
+          "configurations": [
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/lifecycle-job/gradle.lockfile",
           "configurations": [
             "testCompileClasspath",
@@ -2324,6 +2407,13 @@
       "uses": [
         {
           "lockfile": "packages/integration-job/gradle.lockfile",
+          "configurations": [
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/lifecycle-archive/gradle.lockfile",
           "configurations": [
             "testCompileClasspath",
             "testRuntimeClasspath"
@@ -2383,6 +2473,12 @@
           ]
         },
         {
+          "lockfile": "packages/lifecycle-archive/gradle.lockfile",
+          "configurations": [
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/lifecycle-job/gradle.lockfile",
           "configurations": [
             "testRuntimeClasspath"
@@ -2430,6 +2526,12 @@
           ]
         },
         {
+          "lockfile": "packages/lifecycle-archive/gradle.lockfile",
+          "configurations": [
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/lifecycle-job/gradle.lockfile",
           "configurations": [
             "testRuntimeClasspath"
@@ -2472,6 +2574,13 @@
       "uses": [
         {
           "lockfile": "packages/integration-job/gradle.lockfile",
+          "configurations": [
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/lifecycle-archive/gradle.lockfile",
           "configurations": [
             "testCompileClasspath",
             "testRuntimeClasspath"
@@ -2568,6 +2677,13 @@
           ]
         },
         {
+          "lockfile": "packages/lifecycle-archive/gradle.lockfile",
+          "configurations": [
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/lifecycle-job/gradle.lockfile",
           "configurations": [
             "testCompileClasspath",
@@ -2654,6 +2770,15 @@
           ]
         },
         {
+          "lockfile": "packages/lifecycle-archive/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/lifecycle-job/gradle.lockfile",
           "configurations": [
             "compileClasspath",
@@ -2737,6 +2862,13 @@
           ]
         },
         {
+          "lockfile": "packages/lifecycle-archive/gradle.lockfile",
+          "configurations": [
+            "runtimeClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/lifecycle-job/gradle.lockfile",
           "configurations": [
             "testCompileClasspath",
@@ -2800,6 +2932,15 @@
           "lockfile": "packages/integration-writer/gradle.lockfile",
           "configurations": [
             "compileClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/lifecycle-archive/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
           ]
         },
         {
@@ -2893,6 +3034,13 @@
             "compileClasspath",
             "runtimeClasspath",
             "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/lifecycle-archive/gradle.lockfile",
+          "configurations": [
+            "runtimeClasspath",
             "testRuntimeClasspath"
           ]
         },
@@ -3003,6 +3151,15 @@
           "lockfile": "packages/integration-writer/gradle.lockfile",
           "configurations": [
             "compileClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/lifecycle-archive/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
           ]
         },
         {
@@ -3125,6 +3282,15 @@
           ]
         },
         {
+          "lockfile": "packages/lifecycle-archive/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
+          ]
+        },
+        {
           "lockfile": "packages/lifecycle-job/gradle.lockfile",
           "configurations": [
             "compileClasspath",
@@ -3228,6 +3394,15 @@
           "lockfile": "packages/integration-writer/gradle.lockfile",
           "configurations": [
             "compileClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/lifecycle-archive/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
           ]
         },
         {
@@ -3343,6 +3518,15 @@
           "lockfile": "packages/integration-writer/gradle.lockfile",
           "configurations": [
             "compileClasspath"
+          ]
+        },
+        {
+          "lockfile": "packages/lifecycle-archive/gradle.lockfile",
+          "configurations": [
+            "compileClasspath",
+            "runtimeClasspath",
+            "testCompileClasspath",
+            "testRuntimeClasspath"
           ]
         },
         {

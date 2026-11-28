@@ -1,5 +1,18 @@
 # P10–P15 implementation ledger
 
+## Merged-main reconciliation
+
+On 2026-11-27, #61 and #65 were merged at `3fe77bbf570e59521633a218288f2144e2159113`.
+The [main push run 46098720010](https://github.com/TravisMa07/DetectBridge/actions/runs/46098720010) passed all 20 applicable jobs on that commit,
+including activation, search, archive, both replay modes, maintenance and required-checks.
+CI-02 #64 remains open for the original search failure. Preserve the first sanitized
+failure artifact on recurrence. Its cause remains unknown.
+
+The [P15b2 qualification ledger](p15b2-ledger.md) tracks the lifecycle archive
+and replay work on the independently frozen design and expectations.
+
+## Earlier checkpoints
+
 Current CI integration: owner-merged CI-01 #63 is exact e2bec696; native44667068167
 passed all14/103 admissions/232 logical/233 physical, owned stopped. Issue62 is
 closed/Done only in approved feature-integration scope. CI-02 implementation agent

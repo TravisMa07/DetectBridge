@@ -309,8 +309,11 @@ with original YAML. The separately frozen [validator boundary](p15b-validator-de
 uses the same pinned compiler in a bounded per-worker service, called over a private
 Unix socket before bundle installation. Its packet and actual image identities
 join the runtime/checkpoint binding; it performs no event-time Python evaluation.
-This records the design and owner decision, not runtime qualification. P15b2 still
-owns the new archive/replay graph before full P15 acceptance or dependent P16 work.
+The [P15b1 ledger](p15b1-ledger.md) records worker qualification on merged main.
+[P15b2](p15b2-design.md) applies A05/A06 using a separate inventory, immutable
+segment chain and permanently retained lifecycle graph. Each replay resolves
+the command, original membership and pinned executable in an isolated workspace.
+The [acceptance map](p15-acceptance.md) records the remaining milestone gates.
 
 [ADR 0015](decisions/0015-qualification-artifact-preparation.md) records the owner's
 CI-01-only artifact preparation boundary: an ephemeral qualification capability

@@ -314,9 +314,22 @@ def needs_assembly(paths):
     )
 
 
+def lifecycle_archive_source(paths):
+    prefixes = (
+        "packages/lifecycle-archive/",
+        "tools/lifecycle_archive",
+        "tools/lifecycle_replay",
+        "tools/LifecycleArchive",
+        "tools/tests/test_lifecycle_archive",
+        "tools/tests/test_lifecycle_replay",
+    )
+    return any(p.startswith(prefixes) for p in paths if not p.endswith(".md"))
+
+
 def needs_integration(paths):
     return (
-        needs_assembly(paths)
+        lifecycle_archive_source(paths)
+        or needs_assembly(paths)
         or needs_windows(paths)
         or any(
             p.startswith(
@@ -376,7 +389,7 @@ def needs_archive(paths):
         "tools/dependency_inventory.py",
         "docs/transport-dependencies.json",
     }
-    return any(
+    return lifecycle_archive_source(paths) or any(
         p in shared
         or p.startswith(
             (
@@ -440,7 +453,9 @@ def needs_historical(paths):
         "deploy/local/",
         ".github/workflows/",
     )
-    return any(p in shared or p.startswith(prefixes) for p in paths if not p.endswith(".md"))
+    return lifecycle_archive_source(paths) or any(
+        p in shared or p.startswith(prefixes) for p in paths if not p.endswith(".md")
+    )
 
 
 def needs_current(paths):
@@ -492,7 +507,9 @@ def needs_current(paths):
         "deploy/local/",
         ".github/workflows/",
     )
-    return any(p in shared or p.startswith(prefixes) for p in paths if not p.endswith(".md"))
+    return lifecycle_archive_source(paths) or any(
+        p in shared or p.startswith(prefixes) for p in paths if not p.endswith(".md")
+    )
 
 
 def needs_maintenance(paths):
@@ -570,6 +587,8 @@ if __name__ == "__main__":
         )
     value = str(needs_toolchains([p for p in paths if p])).lower()
     with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+        archive_profile = needs_activation(paths) or needs_maintenance(paths)
+        output.write(f"lifecycle_archive={str(archive_profile).lower()}\n")
         output.write(f"toolchains={value}\n")
         output.write(f"detection={str(needs_detection([p for p in paths if p])).lower()}\n")
         output.write(f"stack={str(needs_stack([p for p in paths if p])).lower()}\n")

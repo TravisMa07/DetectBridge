@@ -339,8 +339,9 @@ Historical CI-01 snapshot (superseded by integration status above):
   production code. P15b1 is implemented with fourteen bounded synthetic ARM64
   runtime scenarios passed; [merged-main qualification](p15b1-ledger.md) passed on 3fe77bb.
   The [P15b2 design](p15b2-design.md) owns the lifecycle archive and replay boundary.
-  The [P15 acceptance map](p15-acceptance.md) tracks the remaining P15b2
-  qualification and owner gates before P16 implementation.
+  The [P15b2 qualification ledger](p15b2-ledger.md) records passing ARM64 and
+  native AMD64 public synthetic archive and replay runs. The [P15 acceptance
+  map](p15-acceptance.md) is ready for owner reconciliation before P16 implementation.
 - Depends on: P10, P13, P14.
 - Deliver: immutable bundles, staging, worker acknowledgments, convergence state,
   rollback and version attribution. No exposed unauthenticated management endpoint.

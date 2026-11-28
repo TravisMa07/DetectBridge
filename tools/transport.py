@@ -1111,14 +1111,18 @@ class Transport:
                 phase = stage("quarantine_checkpoint_restore")
                 submitted = test.start(restore=recovery_checkpoint["external_path"])
                 test.await_accounted(expected, rejected)
-                phase = stage("jobmanager_restore")
-                checkpoint = test.wait_checkpoint(submitted["job_id"])
+                phase = stage("jobmanager_checkpoint_retention")
+                checkpoint = test.retained_checkpoint(submitted["job_id"])
                 path = checkpoint["external_path"]
                 if path.startswith("file:/") and not path.startswith("file:///"):
                     path = "file:///" + path[len("file:/") :]
+                phase = stage("jobmanager_shutdown")
                 test.stack.down()
+                phase = stage("jobmanager_startup")
                 test.stack.up("core")
+                phase = stage("jobmanager_restore_submission")
                 test.start(restore=path)
+                phase = stage("jobmanager_result_accounting")
                 accounting = test.await_accounted(expected, rejected)
                 phase = stage("metrics_and_logs")
                 metrics = test.metrics()

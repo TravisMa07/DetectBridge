@@ -84,8 +84,7 @@ authorized regular merge #57 as `f44403e`; actual merged-main push run 444728640
 [independent expectations](docs/p15b-expectations.md) were frozen in `0a41ee4`
 before production code. [P15b1 worker activation](docs/worker-activation.md) is
 implemented with all fourteen bounded synthetic ARM64 runtime scenarios passed;
-[qualification evidence](docs/p15b1-ledger.md) separates native PR CI and owner
-review gates, which remain open. P15b2 owns the dependent archive/replay profile;
+[merged-main qualification](docs/p15b1-ledger.md) passed on 3fe77bb. P15b2 owns the dependent archive/replay profile;
 P15 and P16 are not complete.
 Management API and UI remain future work.
 P06 provides local Kafka/Flink infrastructure and optional authenticated OpenSearch.

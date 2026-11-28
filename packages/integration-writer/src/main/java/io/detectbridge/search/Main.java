@@ -401,7 +401,155 @@ public final class Main {
         .enable(tools.jackson.databind.DeserializationFeature.FAIL_ON_TRAILING_TOKENS).build().readTree(bytes);
   }
 
+  // Closed first-party diagnostic state. Never retain input values or exception text.
+  static final class PolicyTrace {
+    String intent = "unavailable", phase = "parse_intent", alter = "not_started";
+    String readback = "not_started", observed = "not_observed", known = "none";
+    String failure = "none", close = "not_started";
+    Boolean matches;
+
+    void failed(Exception ex) {
+      if (!failure.equals("none")) return;
+      failure = ex instanceof java.util.concurrent.TimeoutException ? "timeout"
+          : ex instanceof java.util.concurrent.ExecutionException ? "execution"
+          : ex instanceof IllegalStateException ? "illegal_state"
+          : ex instanceof IllegalArgumentException ? "illegal_argument" : "other";
+      if (known.equals("none")) known = "unclassified";
+    }
+
+    Map<String, Object> snapshot() {
+      var value = new LinkedHashMap<String, Object>();
+      value.put("version", "1.0.0"); value.put("operation", "failure_policy");
+      value.put("intent", intent); value.put("phase", phase);
+      value.put("alter_state", alter); value.put("readback_state", readback);
+      value.put("observed_policy", observed); value.put("readback_matches_intent", matches);
+      value.put("known_throw", known); value.put("failure_type", failure);
+      value.put("close_state", close);
+      return value;
+    }
+  }
+
+  static final class PolicyAdmin implements AutoCloseable {
+    final org.apache.kafka.clients.admin.Admin admin;
+    final PolicyTrace trace;
+    PolicyAdmin(org.apache.kafka.clients.admin.Admin admin, PolicyTrace trace) {
+      this.admin = admin; this.trace = trace;
+    }
+    public void close() {
+      trace.close = "entered";
+      if (trace.failure.equals("none")) trace.phase = "admin_close";
+      try {
+        admin.close();
+        trace.close = "closed";
+      } catch (Exception ex) {
+        trace.close = "failed";
+        trace.failed(ex);
+        throw ex;
+      }
+    }
+  }
+
+  static void configurePolicy(JsonNode input, PolicyTrace trace,
+      java.util.function.Supplier<org.apache.kafka.clients.admin.Admin> factory,
+      java.io.PrintStream output) throws Exception {
+    try {
+      String requested = input.path("value").asString();
+      // Attribute only the own allowlist throw, never a foreign matching message.
+      if (!requested.equals("block") && !requested.equals("healthy")) trace.known = "fault_scope";
+      String value = failurePolicy(requested);
+      trace.intent = requested;
+      trace.phase = "admin_create";
+      try (var owned = new PolicyAdmin(factory.get(), trace)) {
+        try {
+          var admin = owned.admin;
+          var resource = new org.apache.kafka.common.config.ConfigResource(
+              org.apache.kafka.common.config.ConfigResource.Type.TOPIC, Projection.FAILURES);
+          trace.phase = "alter_submit";
+          var alteration = admin.incrementalAlterConfigs(Map.of(resource, List.of(
+              new org.apache.kafka.clients.admin.AlterConfigOp(
+                  new org.apache.kafka.clients.admin.ConfigEntry("max.message.bytes", value),
+                  org.apache.kafka.clients.admin.AlterConfigOp.OpType.SET))));
+          trace.alter = "submitted";
+          trace.phase = "alter_wait";
+          alteration.all().get(15, TimeUnit.SECONDS);
+          trace.alter = "acknowledged";
+          trace.phase = "describe_submit";
+          var description = admin.describeConfigs(List.of(resource));
+          trace.readback = "submitted";
+          trace.phase = "describe_wait";
+          var configs = description.all().get(15, TimeUnit.SECONDS);
+          trace.readback = "received";
+          trace.phase = "readback_compare";
+          var config = configs.get(resource);
+          trace.observed = config == null ? "missing_resource" : "missing_entry";
+          var entry = config.get("max.message.bytes");
+          trace.observed = entry == null ? "missing_entry" : "null_value";
+          var actual = entry.value();
+          if (actual != null) {
+            trace.observed = actual.equals("1") ? "block"
+                : actual.equals(Broker.TOPIC_CONFIG.get("max.message.bytes")) ? "healthy" : "other";
+            trace.matches = actual.equals(value);
+          }
+          // Keep the original null dereference and exact own mismatch exception.
+          if (!actual.equals(value)) {
+            trace.known = "fault_readback";
+            throw new IllegalStateException("fault_readback");
+          }
+          output.println("{\"status\":\"configured\"}");
+        } catch (Exception ex) {
+          trace.failed(ex);
+          throw ex;
+        }
+      }
+      trace.phase = "completed";
+    } catch (Exception ex) {
+      trace.failed(ex);
+      throw ex;
+    }
+  }
+
+  static Map<String, Object> failureDetail(Exception ex, PolicyTrace trace) {
+    String category = ex instanceof SearchClient.Failure f ? f.category : "writer_failed";
+    if (ex instanceof IllegalStateException
+        && ex.getMessage() != null
+        && Set.of(
+                "membership_assignment_timeout",
+                "writer_role_drift",
+                "writer_user_drift",
+                "writer_role_mapping_drift",
+                "template_drift",
+                "index_mapping_drift",
+                "alias_drift",
+                "topic_topology_changed",
+                "topic_policy_changed",
+                "topic_recreated",
+                "kafka_cluster_changed",
+                "writer_group_active",
+                "partial_group_offsets_require_review",
+                "writer_role_missing",
+                "writer_user_missing",
+                "writer_mapping_missing",
+                "template_missing",
+                "index_missing",
+                "alias_read_failed")
+            .contains(ex.getMessage())) category = ex.getMessage();
+    var detail = new LinkedHashMap<String, Object>();
+    detail.put("status", "failed"); detail.put("category", category);
+    detail.put("reason_type", ex.getClass().getSimpleName());
+    if (trace != null) {
+      String reason = ex.getClass().getSimpleName();
+      detail.put("reason_type", Set.of("IllegalStateException", "IllegalArgumentException",
+          "NullPointerException", "ExecutionException", "TimeoutException", "InterruptedException",
+          "KafkaException", "ConfigException", "IOException", "UncheckedIOException").contains(reason)
+          ? reason : "unknown");
+      trace.failed(ex);
+      detail.put("failure_policy", trace.snapshot());
+    }
+    return detail;
+  }
+
   public static void main(String[] args) {
+    PolicyTrace policyTrace = args.length > 0 && args[0].equals("failure-policy") ? new PolicyTrace() : null;
     try {
       if (args.length != 2) throw new IllegalArgumentException("arguments");
       Path directory = Path.of(args[1]);
@@ -479,14 +627,11 @@ public final class Main {
         }
         case "failure-policy" -> {
           var input=Json.read(System.in.readNBytes(1025));
-          String value=failurePolicy(input.path("value").asString());
-          try(var admin=org.apache.kafka.clients.admin.Admin.create(Broker.properties("kafka:9092"))) {
-            var resource=new org.apache.kafka.common.config.ConfigResource(org.apache.kafka.common.config.ConfigResource.Type.TOPIC,Projection.FAILURES);
-            admin.incrementalAlterConfigs(Map.of(resource,List.of(new org.apache.kafka.clients.admin.AlterConfigOp(
-                new org.apache.kafka.clients.admin.ConfigEntry("max.message.bytes",value),org.apache.kafka.clients.admin.AlterConfigOp.OpType.SET)))).all().get(15,TimeUnit.SECONDS);
-            if(!admin.describeConfigs(List.of(resource)).all().get(15,TimeUnit.SECONDS).get(resource).get("max.message.bytes").value().equals(value)) throw new IllegalStateException("fault_readback");
-            System.out.println("{\"status\":\"configured\"}");
-          }
+          configurePolicy(input, policyTrace,
+              () -> org.apache.kafka.clients.admin.Admin.create(Broker.properties("kafka:9092")),
+              System.out);
+          System.err.println(Json.MAPPER.writeValueAsString(
+              Map.of("status", "diagnostic", "failure_policy", policyTrace.snapshot())));
         }
         case "membership" -> {
           var config =
@@ -559,38 +704,7 @@ public final class Main {
       }
     } catch (Exception ex) {
       STATE.set("FATAL");
-      String category = ex instanceof SearchClient.Failure f ? f.category : "writer_failed";
-      if (ex instanceof IllegalStateException
-          && Set.of(
-                  "membership_assignment_timeout",
-                  "writer_role_drift",
-                  "writer_user_drift",
-                  "writer_role_mapping_drift",
-                  "template_drift",
-                  "index_mapping_drift",
-                  "alias_drift",
-                  "topic_topology_changed",
-                  "topic_policy_changed",
-                  "topic_recreated",
-                  "kafka_cluster_changed",
-                  "writer_group_active",
-                  "partial_group_offsets_require_review",
-                  "writer_role_missing",
-                  "writer_user_missing",
-                  "writer_mapping_missing",
-                  "template_missing",
-                  "index_missing",
-                  "alias_read_failed")
-              .contains(ex.getMessage())) category = ex.getMessage();
-      System.err.println(
-          Json.MAPPER.writeValueAsString(
-              Map.of(
-                  "status",
-                  "failed",
-                  "category",
-                  category,
-                  "reason_type",
-                  ex.getClass().getSimpleName())));
+      System.err.println(Json.MAPPER.writeValueAsString(failureDetail(ex, policyTrace)));
       System.exit(1);
     }
   }

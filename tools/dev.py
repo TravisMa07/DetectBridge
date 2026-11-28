@@ -171,6 +171,7 @@ def doctor():
     run(["uv", "run", "--locked", "python", "tools/check_historical.py"])
     run(["uv", "run", "--locked", "python", "tools/check_current_replay.py"])
     run(["uv", "run", "--locked", "python", "tools/check_archive_maintenance.py"])
+    run(["uv", "run", "--locked", "python", "tools/check_lifecycle_runtime.py"])
     run(["uv", "run", "--locked", "python", "tools/check_detection.py"])
 
 
@@ -361,6 +362,7 @@ def check():
     run(["uv", "run", "--locked", "python", "tools/check_historical.py"])
     run(["uv", "run", "--locked", "python", "tools/check_current_replay.py"])
     run(["uv", "run", "--locked", "python", "tools/check_archive_maintenance.py"])
+    run(["uv", "run", "--locked", "python", "tools/check_lifecycle_runtime.py"])
     run(["uv", "run", "--locked", "python", "tools/check_detection.py"])
     run(["uv", "run", "--locked", "python", "tools/check_datasets.py"])
     run(["uv", "run", "--locked", "python", "tools/check_contracts.py"])
@@ -407,6 +409,9 @@ def java():
             ":linux-assembly-job:shadowJar",
             ":integration-job:test",
             ":integration-job:shadowJar",
+            ":lifecycle-job:test",
+            ":lifecycle-job:jar",
+            ":lifecycle-job:qualificationJar",
             ":integration-writer:test",
             ":integration-writer:shadowJar",
             ":linux-adapters:jar",

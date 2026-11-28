@@ -1,0 +1,2699 @@
+{
+  "version": "1.0.0",
+  "cases": [
+    {
+      "id": "security-alice",
+      "basis": {
+        "path": "packages/windows-adapters/profiles/security.expected.json",
+        "file_sha256": "fdf33576b87e755743a10588720d30bebf75ac6b02921b2a3abb3570491e669f"
+      },
+      "admissions": [
+        {
+          "version": "1.0.0",
+          "kind": "windows_record",
+          "raw": {
+            "record_id": "sha256:88049e46bdde52aeb9452aeba0908da47366143eefcb7004abafeb65befa4426",
+            "evidence": {
+              "sha256": "1835aec8c474500680746ef7f4950e16fc301763b355b971642cdc5da819052c",
+              "media_type": "application/xml",
+              "encoding": "utf-8",
+              "inline": "<Event xmlns=\"http://schemas.microsoft.com/win/2004/08/events/event\"><System><Provider Name=\"Microsoft-Windows-Security-Auditing\"/><EventID>4688</EventID><Version>2</Version><TimeCreated SystemTime=\"2026-11-12T12:00:00.123456789123Z\"/><Channel>Security</Channel><Computer>SYNTHETIC-HOST</Computer></System><EventData><Data Name=\"NewProcessName\">C:\\synthetic.exe</Data><Data Name=\"NewProcessId\">0x10</Data><Data Name=\"ProcessId\">0x20</Data><Data Name=\"CommandLine\">synthetic.exe &quot;α 😀&quot;</Data><Data Name=\"SubjectUserName\">Alice</Data><Data Name=\"SubjectDomainName\">LAB</Data><Data Name=\"SubjectUserSid\">S-1-5-21-123</Data><Data Name=\"TargetUserName\">Bob</Data></EventData></Event>\n"
+            },
+            "contract_version": "1.0.0",
+            "source": {
+              "namespace": "synthetic-p11",
+              "instance": "synthetic-origin"
+            },
+            "first_observed": "2026-11-12T12:00:01.123456789123Z",
+            "cursor": {
+              "kind": "native",
+              "value": "p15b-security-alice"
+            }
+          },
+          "context": {
+            "version": "1.0.0",
+            "run_id": "715b0000-0000-4000-8000-000000000101",
+            "source": {
+              "namespace": "synthetic-p11",
+              "instance": "synthetic-origin"
+            },
+            "first_observed": "2026-11-12T12:00:01.123456789123Z",
+            "source_contract": {
+              "id": "windows-security-4688-xml",
+              "version": "1.0.0",
+              "sha256": "f454d09097f84c865356c51dbadb001b39f871bb5a9d6b35deea9a2b57261696",
+              "snapshot": {
+                "contract_version": "1.0.0",
+                "id": "windows-security-4688-xml",
+                "version": "1.0.0",
+                "ecs_version": "9.5.0",
+                "formats": [
+                  "Windows Security XML event version 2"
+                ],
+                "provider_versions": [
+                  "Microsoft-Windows-Security-Auditing / Security / 4688 v2"
+                ],
+                "references": [
+                  "https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/auditing/event-4688"
+                ],
+                "classification": {
+                  "kind": "event",
+                  "category": [
+                    "process"
+                  ],
+                  "type": [
+                    "start"
+                  ]
+                },
+                "sigma": {
+                  "product": "windows",
+                  "category": "process_creation",
+                  "service": "security"
+                },
+                "framing": "lf-byte-records-v1; UTF-8 one XML event per record",
+                "assembly_mode": "standalone",
+                "requires_host_id": true,
+                "required_fields": [
+                  "host.id",
+                  "process.executable"
+                ],
+                "mappings": [
+                  {
+                    "source_path": "/NewProcessName",
+                    "target_path": "process.executable",
+                    "capability": "available"
+                  },
+                  {
+                    "source_path": "/CommandLine",
+                    "target_path": "process.command_line",
+                    "capability": "conditional"
+                  },
+                  {
+                    "source_path": "/NewProcessId",
+                    "target_path": "process.pid",
+                    "capability": "conditional"
+                  },
+                  {
+                    "source_path": "/SubjectUserName",
+                    "target_path": "user.name",
+                    "capability": "conditional"
+                  }
+                ],
+                "quality_policy": {
+                  "blocking_codes": [
+                    "assembly_insufficient",
+                    "extraction_failed",
+                    "conflicting",
+                    "identity_missing",
+                    "unsupported_source"
+                  ],
+                  "warning_codes": [
+                    "legitimately_absent",
+                    "unmapped",
+                    "truncated",
+                    "capture_unavailable",
+                    "timestamp_missing",
+                    "timestamp_unparseable",
+                    "timestamp_timezone_ambiguous"
+                  ]
+                },
+                "fixtures": [
+                  {
+                    "path": "security.expected.json",
+                    "expected_integrity": "sufficient",
+                    "expected_eligibility": "eligible"
+                  }
+                ]
+              }
+            },
+            "mapping_profile": {
+              "id": "windows-security-4688-xml-mapping",
+              "version": "1.0.0",
+              "sha256": "dd27aa53f243f4f5d14746fd4f78342e3d7e122ae1affa3e37dcf488eab5f5ae",
+              "declaration": {
+                "version": "1.0.0",
+                "id": "windows-security-4688-xml-mapping",
+                "source": {
+                  "id": "windows-security-4688-xml",
+                  "version": "1.0.0",
+                  "sha256": "f454d09097f84c865356c51dbadb001b39f871bb5a9d6b35deea9a2b57261696"
+                },
+                "fields": [
+                  {
+                    "alias": "Image",
+                    "target": "process.executable",
+                    "source_path": "/NewProcessName",
+                    "capability": "available",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "transform": "identity-string/1.0.0"
+                  },
+                  {
+                    "alias": "CommandLine",
+                    "target": "process.command_line",
+                    "source_path": "/CommandLine",
+                    "capability": "conditional",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "transform": "identity-string/1.0.0"
+                  },
+                  {
+                    "alias": "ProcessId",
+                    "target": "process.pid",
+                    "source_path": "/NewProcessId",
+                    "capability": "conditional",
+                    "type": "integer",
+                    "cardinality": "scalar",
+                    "transform": "hex-integer/1.0.0"
+                  },
+                  {
+                    "alias": "User",
+                    "target": "user.name",
+                    "source_path": "/SubjectUserName",
+                    "capability": "conditional",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "transform": "identity-string/1.0.0"
+                  }
+                ],
+                "sha256": "dd27aa53f243f4f5d14746fd4f78342e3d7e122ae1affa3e37dcf488eab5f5ae"
+              }
+            },
+            "parser": {
+              "id": "windows-xml",
+              "version": "1.0.0"
+            },
+            "host_binding": {
+              "host_id": "synthetic-host-id",
+              "computer": "SYNTHETIC-HOST",
+              "source": {
+                "namespace": "synthetic-p11",
+                "instance": "synthetic-origin"
+              },
+              "revision": "synthetic-1",
+              "provenance": [
+                "original synthetic fixture; P15b explicit source-mutation fixture"
+              ],
+              "kind": "synthetic",
+              "sha256": "3f580dc12a5f69562a94e094eb2ffa8e35fa4cd925966ba53038b1062a65caac"
+            }
+          }
+        }
+      ],
+      "expected": {
+        "user_name": "Alice",
+        "event_id": "sha256:e71956dcadd561f4805c39154a6bb4717677e84c7eb5f40b262dbb5061bfaf30",
+        "member_ids": [
+          "sha256:88049e46bdde52aeb9452aeba0908da47366143eefcb7004abafeb65befa4426"
+        ],
+        "eligibility": "eligible",
+        "closure": "not_required"
+      },
+      "worker_id": "71500000-0000-4000-8000-000000000020"
+    },
+    {
+      "id": "security-bob",
+      "basis": {
+        "path": "packages/windows-adapters/profiles/security.expected.json",
+        "file_sha256": "fdf33576b87e755743a10588720d30bebf75ac6b02921b2a3abb3570491e669f"
+      },
+      "admissions": [
+        {
+          "version": "1.0.0",
+          "kind": "windows_record",
+          "raw": {
+            "record_id": "sha256:e6600bdb5f16472e10eee0d606b7ae05204b544e166ce2cc10e991771559abf5",
+            "evidence": {
+              "sha256": "f6b24ccb1f2711949fe8c847eaf19b648c17d07ca1bf7f045d725a7653c3bdd8",
+              "media_type": "application/xml",
+              "encoding": "utf-8",
+              "inline": "<Event xmlns=\"http://schemas.microsoft.com/win/2004/08/events/event\"><System><Provider Name=\"Microsoft-Windows-Security-Auditing\"/><EventID>4688</EventID><Version>2</Version><TimeCreated SystemTime=\"2026-11-12T12:00:00.123456789123Z\"/><Channel>Security</Channel><Computer>SYNTHETIC-HOST</Computer></System><EventData><Data Name=\"NewProcessName\">C:\\synthetic.exe</Data><Data Name=\"NewProcessId\">0x10</Data><Data Name=\"ProcessId\">0x20</Data><Data Name=\"CommandLine\">synthetic.exe &quot;α 😀&quot;</Data><Data Name=\"SubjectUserName\">Bob</Data><Data Name=\"SubjectDomainName\">LAB</Data><Data Name=\"SubjectUserSid\">S-1-5-21-123</Data><Data Name=\"TargetUserName\">Bob</Data></EventData></Event>\n"
+            },
+            "contract_version": "1.0.0",
+            "source": {
+              "namespace": "synthetic-p11",
+              "instance": "synthetic-origin"
+            },
+            "first_observed": "2026-11-12T12:00:01.123456789123Z",
+            "cursor": {
+              "kind": "native",
+              "value": "p15b-security-bob"
+            }
+          },
+          "context": {
+            "version": "1.0.0",
+            "run_id": "715b0000-0000-4000-8000-000000000101",
+            "source": {
+              "namespace": "synthetic-p11",
+              "instance": "synthetic-origin"
+            },
+            "first_observed": "2026-11-12T12:00:01.123456789123Z",
+            "source_contract": {
+              "id": "windows-security-4688-xml",
+              "version": "1.0.0",
+              "sha256": "f454d09097f84c865356c51dbadb001b39f871bb5a9d6b35deea9a2b57261696",
+              "snapshot": {
+                "contract_version": "1.0.0",
+                "id": "windows-security-4688-xml",
+                "version": "1.0.0",
+                "ecs_version": "9.5.0",
+                "formats": [
+                  "Windows Security XML event version 2"
+                ],
+                "provider_versions": [
+                  "Microsoft-Windows-Security-Auditing / Security / 4688 v2"
+                ],
+                "references": [
+                  "https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/auditing/event-4688"
+                ],
+                "classification": {
+                  "kind": "event",
+                  "category": [
+                    "process"
+                  ],
+                  "type": [
+                    "start"
+                  ]
+                },
+                "sigma": {
+                  "product": "windows",
+                  "category": "process_creation",
+                  "service": "security"
+                },
+                "framing": "lf-byte-records-v1; UTF-8 one XML event per record",
+                "assembly_mode": "standalone",
+                "requires_host_id": true,
+                "required_fields": [
+                  "host.id",
+                  "process.executable"
+                ],
+                "mappings": [
+                  {
+                    "source_path": "/NewProcessName",
+                    "target_path": "process.executable",
+                    "capability": "available"
+                  },
+                  {
+                    "source_path": "/CommandLine",
+                    "target_path": "process.command_line",
+                    "capability": "conditional"
+                  },
+                  {
+                    "source_path": "/NewProcessId",
+                    "target_path": "process.pid",
+                    "capability": "conditional"
+                  },
+                  {
+                    "source_path": "/SubjectUserName",
+                    "target_path": "user.name",
+                    "capability": "conditional"
+                  }
+                ],
+                "quality_policy": {
+                  "blocking_codes": [
+                    "assembly_insufficient",
+                    "extraction_failed",
+                    "conflicting",
+                    "identity_missing",
+                    "unsupported_source"
+                  ],
+                  "warning_codes": [
+                    "legitimately_absent",
+                    "unmapped",
+                    "truncated",
+                    "capture_unavailable",
+                    "timestamp_missing",
+                    "timestamp_unparseable",
+                    "timestamp_timezone_ambiguous"
+                  ]
+                },
+                "fixtures": [
+                  {
+                    "path": "security.expected.json",
+                    "expected_integrity": "sufficient",
+                    "expected_eligibility": "eligible"
+                  }
+                ]
+              }
+            },
+            "mapping_profile": {
+              "id": "windows-security-4688-xml-mapping",
+              "version": "1.0.0",
+              "sha256": "dd27aa53f243f4f5d14746fd4f78342e3d7e122ae1affa3e37dcf488eab5f5ae",
+              "declaration": {
+                "version": "1.0.0",
+                "id": "windows-security-4688-xml-mapping",
+                "source": {
+                  "id": "windows-security-4688-xml",
+                  "version": "1.0.0",
+                  "sha256": "f454d09097f84c865356c51dbadb001b39f871bb5a9d6b35deea9a2b57261696"
+                },
+                "fields": [
+                  {
+                    "alias": "Image",
+                    "target": "process.executable",
+                    "source_path": "/NewProcessName",
+                    "capability": "available",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "transform": "identity-string/1.0.0"
+                  },
+                  {
+                    "alias": "CommandLine",
+                    "target": "process.command_line",
+                    "source_path": "/CommandLine",
+                    "capability": "conditional",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "transform": "identity-string/1.0.0"
+                  },
+                  {
+                    "alias": "ProcessId",
+                    "target": "process.pid",
+                    "source_path": "/NewProcessId",
+                    "capability": "conditional",
+                    "type": "integer",
+                    "cardinality": "scalar",
+                    "transform": "hex-integer/1.0.0"
+                  },
+                  {
+                    "alias": "User",
+                    "target": "user.name",
+                    "source_path": "/SubjectUserName",
+                    "capability": "conditional",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "transform": "identity-string/1.0.0"
+                  }
+                ],
+                "sha256": "dd27aa53f243f4f5d14746fd4f78342e3d7e122ae1affa3e37dcf488eab5f5ae"
+              }
+            },
+            "parser": {
+              "id": "windows-xml",
+              "version": "1.0.0"
+            },
+            "host_binding": {
+              "host_id": "synthetic-host-id",
+              "computer": "SYNTHETIC-HOST",
+              "source": {
+                "namespace": "synthetic-p11",
+                "instance": "synthetic-origin"
+              },
+              "revision": "synthetic-1",
+              "provenance": [
+                "original synthetic fixture; P15b explicit source-mutation fixture"
+              ],
+              "kind": "synthetic",
+              "sha256": "3f580dc12a5f69562a94e094eb2ffa8e35fa4cd925966ba53038b1062a65caac"
+            }
+          }
+        }
+      ],
+      "expected": {
+        "user_name": "Bob",
+        "event_id": "sha256:b83097a4ca34933784fb2679198435e1a64b5a94912481ade19833827bcaee15",
+        "member_ids": [
+          "sha256:e6600bdb5f16472e10eee0d606b7ae05204b544e166ce2cc10e991771559abf5"
+        ],
+        "eligibility": "eligible",
+        "closure": "not_required"
+      },
+      "worker_id": "71500000-0000-4000-8000-000000000020"
+    },
+    {
+      "id": "audit-whoami",
+      "basis": {
+        "path": "tools/linux_assembly_cases.py",
+        "file_sha256": "9c0220af6310775bcf575c7fe051d8c02c846e0f7af97ce2ee697dde3f5dee57",
+        "specification": "PARTS/audit/record/context original synthetic recipe; explicit cursor and serial substitutions below"
+      },
+      "admissions": [
+        {
+          "version": "1.0.0",
+          "kind": "record",
+          "raw": {
+            "contract_version": "1.0.0",
+            "source": {
+              "namespace": "original-p12b-synthetic",
+              "instance": "a"
+            },
+            "first_observed": "2026-01-01T00:00:01Z",
+            "cursor": {
+              "kind": "native",
+              "value": "p15b-audit-whoami-0"
+            },
+            "evidence": {
+              "sha256": "4554fb95fca6d5ed7e8f3ba562cf89bf8cec09586c526e0f6e228d59f8a5006f",
+              "encoding": "utf-8",
+              "media_type": "text/plain",
+              "inline": "type=SYSCALL msg=audit(1767225600.001:7): arch=c000003e syscall=59 success=yes exit=0 pid=42 items=2 exe=\"/usr/bin/whoami\"\n"
+            },
+            "record_id": "sha256:7d0d11479adccd5f3dfb88f7c438a96c5f4aac215580f5e1372b501b5758b092"
+          },
+          "context": {
+            "version": "1.0.0",
+            "run_id": "715b0000-0000-4000-8000-000000000201",
+            "source": {
+              "namespace": "original-p12b-synthetic",
+              "instance": "a"
+            },
+            "first_observed": "2026-01-01T00:00:01Z",
+            "host_binding": {
+              "host_id": "host-a",
+              "source": {
+                "namespace": "original-p12b-synthetic",
+                "instance": "a"
+              },
+              "revision": "synthetic-1",
+              "kind": "synthetic",
+              "provenance": [
+                "synthetic:p12b-binding; original P15b synthetic source mutation"
+              ],
+              "sha256": "6412f42278274a9bd5d71ffc0f4c69a19da6d944d063ba61b3e705409b78cd70"
+            },
+            "source_generation": {
+              "id": "boot-a",
+              "provenance": [
+                "synthetic:p12b-generation"
+              ]
+            },
+            "source_contract": {
+              "id": "linux-audit-execution-p12a",
+              "version": "1.0.0",
+              "sha256": "89b2989949d08463721e14321394a2bf199e5a236928da569ba6a279b6fd4f4e",
+              "snapshot": {
+                "contract_version": "1.0.0",
+                "id": "linux-audit-execution-p12a",
+                "version": "1.0.0",
+                "ecs_version": "9.5.0",
+                "formats": [
+                  "LF raw audit SYSCALL/EXECVE/CWD/PATH/PROCTITLE/EOE; P12a offline scope"
+                ],
+                "provider_versions": [
+                  "Linux v6.12 reference: x86-64/i386/AArch64 execution pairs; recorded qualification pending"
+                ],
+                "references": [
+                  "https://github.com/linux-audit/audit-userspace"
+                ],
+                "classification": {
+                  "kind": "event",
+                  "category": [
+                    "process"
+                  ],
+                  "type": [
+                    "start"
+                  ]
+                },
+                "sigma": {
+                  "product": "linux",
+                  "category": "process_creation",
+                  "service": "auditd"
+                },
+                "framing": "audit records grouped by originating host, audit timestamp and serial",
+                "assembly_mode": "assembly_required",
+                "requires_host_id": true,
+                "required_fields": [
+                  "host.id",
+                  "process.executable"
+                ],
+                "mappings": [
+                  {
+                    "source_path": "/exe",
+                    "target_path": "process.executable",
+                    "capability": "available"
+                  },
+                  {
+                    "source_path": "/arguments",
+                    "target_path": "process.args",
+                    "capability": "conditional"
+                  }
+                ],
+                "quality_policy": {
+                  "blocking_codes": [
+                    "assembly_insufficient",
+                    "extraction_failed",
+                    "conflicting",
+                    "identity_missing",
+                    "unsupported_source"
+                  ],
+                  "warning_codes": [
+                    "legitimately_absent",
+                    "unmapped",
+                    "truncated",
+                    "capture_unavailable",
+                    "timestamp_missing",
+                    "timestamp_unparseable",
+                    "timestamp_timezone_ambiguous"
+                  ]
+                },
+                "fixtures": [
+                  {
+                    "path": "linux-audit-execution-p12a.contract-example.event.json",
+                    "expected_integrity": "sufficient",
+                    "expected_eligibility": "eligible"
+                  }
+                ]
+              }
+            },
+            "mapping_profile": {
+              "id": "linux-audit-execution-p12a",
+              "version": "1.0.0",
+              "sha256": "eea3f4bbbc200b07353962882d4f752687d1fdbdc49b9f9c2852b06f2ce576ee",
+              "declaration": {
+                "version": "1.0.0",
+                "id": "linux-audit-execution-p12a",
+                "source": {
+                  "id": "linux-audit-execution-p12a",
+                  "version": "1.0.0",
+                  "sha256": "89b2989949d08463721e14321394a2bf199e5a236928da569ba6a279b6fd4f4e"
+                },
+                "fields": [
+                  {
+                    "alias": "Image",
+                    "target": "process.executable",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "available",
+                    "transform": "identity-string/1.0.0",
+                    "source_path": "/exe"
+                  },
+                  {
+                    "alias": "CommandLine",
+                    "target": "process.command_line",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "identity-string/1.0.0"
+                  },
+                  {
+                    "alias": "ProcessId",
+                    "target": "process.pid",
+                    "type": "integer",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "decimal-integer/1.0.0"
+                  },
+                  {
+                    "alias": "User",
+                    "target": "user.name",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "identity-string/1.0.0"
+                  }
+                ],
+                "sha256": "eea3f4bbbc200b07353962882d4f752687d1fdbdc49b9f9c2852b06f2ce576ee"
+              }
+            },
+            "parser": {
+              "id": "linux-audit",
+              "version": "1.0.0"
+            }
+          }
+        },
+        {
+          "version": "1.0.0",
+          "kind": "record",
+          "raw": {
+            "contract_version": "1.0.0",
+            "source": {
+              "namespace": "original-p12b-synthetic",
+              "instance": "a"
+            },
+            "first_observed": "2026-01-01T00:00:01Z",
+            "cursor": {
+              "kind": "native",
+              "value": "p15b-audit-whoami-1"
+            },
+            "evidence": {
+              "sha256": "e8036441070563d06d2be9ba3a48367b64123810dcf88200adff9d0758030c33",
+              "encoding": "utf-8",
+              "media_type": "text/plain",
+              "inline": "type=EXECVE msg=audit(1767225600.001:7): argc=3 a0=\"whoami\" a1=\"\" a2=\"whoami\"\n"
+            },
+            "record_id": "sha256:e09e70c1cfdc5fe7cd5e317ab3696e3db3991a2924bae6c513f8b552984a6168"
+          },
+          "context": {
+            "version": "1.0.0",
+            "run_id": "715b0000-0000-4000-8000-000000000201",
+            "source": {
+              "namespace": "original-p12b-synthetic",
+              "instance": "a"
+            },
+            "first_observed": "2026-01-01T00:00:01Z",
+            "host_binding": {
+              "host_id": "host-a",
+              "source": {
+                "namespace": "original-p12b-synthetic",
+                "instance": "a"
+              },
+              "revision": "synthetic-1",
+              "kind": "synthetic",
+              "provenance": [
+                "synthetic:p12b-binding; original P15b synthetic source mutation"
+              ],
+              "sha256": "6412f42278274a9bd5d71ffc0f4c69a19da6d944d063ba61b3e705409b78cd70"
+            },
+            "source_generation": {
+              "id": "boot-a",
+              "provenance": [
+                "synthetic:p12b-generation"
+              ]
+            },
+            "source_contract": {
+              "id": "linux-audit-execution-p12a",
+              "version": "1.0.0",
+              "sha256": "89b2989949d08463721e14321394a2bf199e5a236928da569ba6a279b6fd4f4e",
+              "snapshot": {
+                "contract_version": "1.0.0",
+                "id": "linux-audit-execution-p12a",
+                "version": "1.0.0",
+                "ecs_version": "9.5.0",
+                "formats": [
+                  "LF raw audit SYSCALL/EXECVE/CWD/PATH/PROCTITLE/EOE; P12a offline scope"
+                ],
+                "provider_versions": [
+                  "Linux v6.12 reference: x86-64/i386/AArch64 execution pairs; recorded qualification pending"
+                ],
+                "references": [
+                  "https://github.com/linux-audit/audit-userspace"
+                ],
+                "classification": {
+                  "kind": "event",
+                  "category": [
+                    "process"
+                  ],
+                  "type": [
+                    "start"
+                  ]
+                },
+                "sigma": {
+                  "product": "linux",
+                  "category": "process_creation",
+                  "service": "auditd"
+                },
+                "framing": "audit records grouped by originating host, audit timestamp and serial",
+                "assembly_mode": "assembly_required",
+                "requires_host_id": true,
+                "required_fields": [
+                  "host.id",
+                  "process.executable"
+                ],
+                "mappings": [
+                  {
+                    "source_path": "/exe",
+                    "target_path": "process.executable",
+                    "capability": "available"
+                  },
+                  {
+                    "source_path": "/arguments",
+                    "target_path": "process.args",
+                    "capability": "conditional"
+                  }
+                ],
+                "quality_policy": {
+                  "blocking_codes": [
+                    "assembly_insufficient",
+                    "extraction_failed",
+                    "conflicting",
+                    "identity_missing",
+                    "unsupported_source"
+                  ],
+                  "warning_codes": [
+                    "legitimately_absent",
+                    "unmapped",
+                    "truncated",
+                    "capture_unavailable",
+                    "timestamp_missing",
+                    "timestamp_unparseable",
+                    "timestamp_timezone_ambiguous"
+                  ]
+                },
+                "fixtures": [
+                  {
+                    "path": "linux-audit-execution-p12a.contract-example.event.json",
+                    "expected_integrity": "sufficient",
+                    "expected_eligibility": "eligible"
+                  }
+                ]
+              }
+            },
+            "mapping_profile": {
+              "id": "linux-audit-execution-p12a",
+              "version": "1.0.0",
+              "sha256": "eea3f4bbbc200b07353962882d4f752687d1fdbdc49b9f9c2852b06f2ce576ee",
+              "declaration": {
+                "version": "1.0.0",
+                "id": "linux-audit-execution-p12a",
+                "source": {
+                  "id": "linux-audit-execution-p12a",
+                  "version": "1.0.0",
+                  "sha256": "89b2989949d08463721e14321394a2bf199e5a236928da569ba6a279b6fd4f4e"
+                },
+                "fields": [
+                  {
+                    "alias": "Image",
+                    "target": "process.executable",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "available",
+                    "transform": "identity-string/1.0.0",
+                    "source_path": "/exe"
+                  },
+                  {
+                    "alias": "CommandLine",
+                    "target": "process.command_line",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "identity-string/1.0.0"
+                  },
+                  {
+                    "alias": "ProcessId",
+                    "target": "process.pid",
+                    "type": "integer",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "decimal-integer/1.0.0"
+                  },
+                  {
+                    "alias": "User",
+                    "target": "user.name",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "identity-string/1.0.0"
+                  }
+                ],
+                "sha256": "eea3f4bbbc200b07353962882d4f752687d1fdbdc49b9f9c2852b06f2ce576ee"
+              }
+            },
+            "parser": {
+              "id": "linux-audit",
+              "version": "1.0.0"
+            }
+          }
+        },
+        {
+          "version": "1.0.0",
+          "kind": "record",
+          "raw": {
+            "contract_version": "1.0.0",
+            "source": {
+              "namespace": "original-p12b-synthetic",
+              "instance": "a"
+            },
+            "first_observed": "2026-01-01T00:00:01Z",
+            "cursor": {
+              "kind": "native",
+              "value": "p15b-audit-whoami-2"
+            },
+            "evidence": {
+              "sha256": "090d72ccfff5ab65c21e9196e5cbf37b389fb608263963e24dfb68d4dd5e8b03",
+              "encoding": "utf-8",
+              "media_type": "text/plain",
+              "inline": "type=CWD msg=audit(1767225600.001:7): cwd=\"/tmp\"\n"
+            },
+            "record_id": "sha256:08faeea1f6c39c6df282d6443dd52e701dc10f26263a386041e95ccfbbf9576c"
+          },
+          "context": {
+            "version": "1.0.0",
+            "run_id": "715b0000-0000-4000-8000-000000000201",
+            "source": {
+              "namespace": "original-p12b-synthetic",
+              "instance": "a"
+            },
+            "first_observed": "2026-01-01T00:00:01Z",
+            "host_binding": {
+              "host_id": "host-a",
+              "source": {
+                "namespace": "original-p12b-synthetic",
+                "instance": "a"
+              },
+              "revision": "synthetic-1",
+              "kind": "synthetic",
+              "provenance": [
+                "synthetic:p12b-binding; original P15b synthetic source mutation"
+              ],
+              "sha256": "6412f42278274a9bd5d71ffc0f4c69a19da6d944d063ba61b3e705409b78cd70"
+            },
+            "source_generation": {
+              "id": "boot-a",
+              "provenance": [
+                "synthetic:p12b-generation"
+              ]
+            },
+            "source_contract": {
+              "id": "linux-audit-execution-p12a",
+              "version": "1.0.0",
+              "sha256": "89b2989949d08463721e14321394a2bf199e5a236928da569ba6a279b6fd4f4e",
+              "snapshot": {
+                "contract_version": "1.0.0",
+                "id": "linux-audit-execution-p12a",
+                "version": "1.0.0",
+                "ecs_version": "9.5.0",
+                "formats": [
+                  "LF raw audit SYSCALL/EXECVE/CWD/PATH/PROCTITLE/EOE; P12a offline scope"
+                ],
+                "provider_versions": [
+                  "Linux v6.12 reference: x86-64/i386/AArch64 execution pairs; recorded qualification pending"
+                ],
+                "references": [
+                  "https://github.com/linux-audit/audit-userspace"
+                ],
+                "classification": {
+                  "kind": "event",
+                  "category": [
+                    "process"
+                  ],
+                  "type": [
+                    "start"
+                  ]
+                },
+                "sigma": {
+                  "product": "linux",
+                  "category": "process_creation",
+                  "service": "auditd"
+                },
+                "framing": "audit records grouped by originating host, audit timestamp and serial",
+                "assembly_mode": "assembly_required",
+                "requires_host_id": true,
+                "required_fields": [
+                  "host.id",
+                  "process.executable"
+                ],
+                "mappings": [
+                  {
+                    "source_path": "/exe",
+                    "target_path": "process.executable",
+                    "capability": "available"
+                  },
+                  {
+                    "source_path": "/arguments",
+                    "target_path": "process.args",
+                    "capability": "conditional"
+                  }
+                ],
+                "quality_policy": {
+                  "blocking_codes": [
+                    "assembly_insufficient",
+                    "extraction_failed",
+                    "conflicting",
+                    "identity_missing",
+                    "unsupported_source"
+                  ],
+                  "warning_codes": [
+                    "legitimately_absent",
+                    "unmapped",
+                    "truncated",
+                    "capture_unavailable",
+                    "timestamp_missing",
+                    "timestamp_unparseable",
+                    "timestamp_timezone_ambiguous"
+                  ]
+                },
+                "fixtures": [
+                  {
+                    "path": "linux-audit-execution-p12a.contract-example.event.json",
+                    "expected_integrity": "sufficient",
+                    "expected_eligibility": "eligible"
+                  }
+                ]
+              }
+            },
+            "mapping_profile": {
+              "id": "linux-audit-execution-p12a",
+              "version": "1.0.0",
+              "sha256": "eea3f4bbbc200b07353962882d4f752687d1fdbdc49b9f9c2852b06f2ce576ee",
+              "declaration": {
+                "version": "1.0.0",
+                "id": "linux-audit-execution-p12a",
+                "source": {
+                  "id": "linux-audit-execution-p12a",
+                  "version": "1.0.0",
+                  "sha256": "89b2989949d08463721e14321394a2bf199e5a236928da569ba6a279b6fd4f4e"
+                },
+                "fields": [
+                  {
+                    "alias": "Image",
+                    "target": "process.executable",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "available",
+                    "transform": "identity-string/1.0.0",
+                    "source_path": "/exe"
+                  },
+                  {
+                    "alias": "CommandLine",
+                    "target": "process.command_line",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "identity-string/1.0.0"
+                  },
+                  {
+                    "alias": "ProcessId",
+                    "target": "process.pid",
+                    "type": "integer",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "decimal-integer/1.0.0"
+                  },
+                  {
+                    "alias": "User",
+                    "target": "user.name",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "identity-string/1.0.0"
+                  }
+                ],
+                "sha256": "eea3f4bbbc200b07353962882d4f752687d1fdbdc49b9f9c2852b06f2ce576ee"
+              }
+            },
+            "parser": {
+              "id": "linux-audit",
+              "version": "1.0.0"
+            }
+          }
+        },
+        {
+          "version": "1.0.0",
+          "kind": "record",
+          "raw": {
+            "contract_version": "1.0.0",
+            "source": {
+              "namespace": "original-p12b-synthetic",
+              "instance": "a"
+            },
+            "first_observed": "2026-01-01T00:00:01Z",
+            "cursor": {
+              "kind": "native",
+              "value": "p15b-audit-whoami-3"
+            },
+            "evidence": {
+              "sha256": "50b8f37ecc4f20ea3814b43056c269e3c4ae769451c03c45aa7980a8535dbbce",
+              "encoding": "utf-8",
+              "media_type": "text/plain",
+              "inline": "type=PATH msg=audit(1767225600.001:7): item=0 name=\"/usr/bin/whoami\"\n"
+            },
+            "record_id": "sha256:7d6487562dd127107a6e5e9db646572e7b075b4673bfca56d34101c3ec292582"
+          },
+          "context": {
+            "version": "1.0.0",
+            "run_id": "715b0000-0000-4000-8000-000000000201",
+            "source": {
+              "namespace": "original-p12b-synthetic",
+              "instance": "a"
+            },
+            "first_observed": "2026-01-01T00:00:01Z",
+            "host_binding": {
+              "host_id": "host-a",
+              "source": {
+                "namespace": "original-p12b-synthetic",
+                "instance": "a"
+              },
+              "revision": "synthetic-1",
+              "kind": "synthetic",
+              "provenance": [
+                "synthetic:p12b-binding; original P15b synthetic source mutation"
+              ],
+              "sha256": "6412f42278274a9bd5d71ffc0f4c69a19da6d944d063ba61b3e705409b78cd70"
+            },
+            "source_generation": {
+              "id": "boot-a",
+              "provenance": [
+                "synthetic:p12b-generation"
+              ]
+            },
+            "source_contract": {
+              "id": "linux-audit-execution-p12a",
+              "version": "1.0.0",
+              "sha256": "89b2989949d08463721e14321394a2bf199e5a236928da569ba6a279b6fd4f4e",
+              "snapshot": {
+                "contract_version": "1.0.0",
+                "id": "linux-audit-execution-p12a",
+                "version": "1.0.0",
+                "ecs_version": "9.5.0",
+                "formats": [
+                  "LF raw audit SYSCALL/EXECVE/CWD/PATH/PROCTITLE/EOE; P12a offline scope"
+                ],
+                "provider_versions": [
+                  "Linux v6.12 reference: x86-64/i386/AArch64 execution pairs; recorded qualification pending"
+                ],
+                "references": [
+                  "https://github.com/linux-audit/audit-userspace"
+                ],
+                "classification": {
+                  "kind": "event",
+                  "category": [
+                    "process"
+                  ],
+                  "type": [
+                    "start"
+                  ]
+                },
+                "sigma": {
+                  "product": "linux",
+                  "category": "process_creation",
+                  "service": "auditd"
+                },
+                "framing": "audit records grouped by originating host, audit timestamp and serial",
+                "assembly_mode": "assembly_required",
+                "requires_host_id": true,
+                "required_fields": [
+                  "host.id",
+                  "process.executable"
+                ],
+                "mappings": [
+                  {
+                    "source_path": "/exe",
+                    "target_path": "process.executable",
+                    "capability": "available"
+                  },
+                  {
+                    "source_path": "/arguments",
+                    "target_path": "process.args",
+                    "capability": "conditional"
+                  }
+                ],
+                "quality_policy": {
+                  "blocking_codes": [
+                    "assembly_insufficient",
+                    "extraction_failed",
+                    "conflicting",
+                    "identity_missing",
+                    "unsupported_source"
+                  ],
+                  "warning_codes": [
+                    "legitimately_absent",
+                    "unmapped",
+                    "truncated",
+                    "capture_unavailable",
+                    "timestamp_missing",
+                    "timestamp_unparseable",
+                    "timestamp_timezone_ambiguous"
+                  ]
+                },
+                "fixtures": [
+                  {
+                    "path": "linux-audit-execution-p12a.contract-example.event.json",
+                    "expected_integrity": "sufficient",
+                    "expected_eligibility": "eligible"
+                  }
+                ]
+              }
+            },
+            "mapping_profile": {
+              "id": "linux-audit-execution-p12a",
+              "version": "1.0.0",
+              "sha256": "eea3f4bbbc200b07353962882d4f752687d1fdbdc49b9f9c2852b06f2ce576ee",
+              "declaration": {
+                "version": "1.0.0",
+                "id": "linux-audit-execution-p12a",
+                "source": {
+                  "id": "linux-audit-execution-p12a",
+                  "version": "1.0.0",
+                  "sha256": "89b2989949d08463721e14321394a2bf199e5a236928da569ba6a279b6fd4f4e"
+                },
+                "fields": [
+                  {
+                    "alias": "Image",
+                    "target": "process.executable",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "available",
+                    "transform": "identity-string/1.0.0",
+                    "source_path": "/exe"
+                  },
+                  {
+                    "alias": "CommandLine",
+                    "target": "process.command_line",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "identity-string/1.0.0"
+                  },
+                  {
+                    "alias": "ProcessId",
+                    "target": "process.pid",
+                    "type": "integer",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "decimal-integer/1.0.0"
+                  },
+                  {
+                    "alias": "User",
+                    "target": "user.name",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "identity-string/1.0.0"
+                  }
+                ],
+                "sha256": "eea3f4bbbc200b07353962882d4f752687d1fdbdc49b9f9c2852b06f2ce576ee"
+              }
+            },
+            "parser": {
+              "id": "linux-audit",
+              "version": "1.0.0"
+            }
+          }
+        },
+        {
+          "version": "1.0.0",
+          "kind": "record",
+          "raw": {
+            "contract_version": "1.0.0",
+            "source": {
+              "namespace": "original-p12b-synthetic",
+              "instance": "a"
+            },
+            "first_observed": "2026-01-01T00:00:01Z",
+            "cursor": {
+              "kind": "native",
+              "value": "p15b-audit-whoami-4"
+            },
+            "evidence": {
+              "sha256": "f6af578e73ec5b410063d310de3fad125dda17d5d3fea36cf28d8689f385a3fd",
+              "encoding": "utf-8",
+              "media_type": "text/plain",
+              "inline": "type=PATH msg=audit(1767225600.001:7): item=1 name=\"/lib/ld.so\"\n"
+            },
+            "record_id": "sha256:8ac881847e32560f57629deaeb5bfc668e121f49fe29e88f1020f0a7e68c9726"
+          },
+          "context": {
+            "version": "1.0.0",
+            "run_id": "715b0000-0000-4000-8000-000000000201",
+            "source": {
+              "namespace": "original-p12b-synthetic",
+              "instance": "a"
+            },
+            "first_observed": "2026-01-01T00:00:01Z",
+            "host_binding": {
+              "host_id": "host-a",
+              "source": {
+                "namespace": "original-p12b-synthetic",
+                "instance": "a"
+              },
+              "revision": "synthetic-1",
+              "kind": "synthetic",
+              "provenance": [
+                "synthetic:p12b-binding; original P15b synthetic source mutation"
+              ],
+              "sha256": "6412f42278274a9bd5d71ffc0f4c69a19da6d944d063ba61b3e705409b78cd70"
+            },
+            "source_generation": {
+              "id": "boot-a",
+              "provenance": [
+                "synthetic:p12b-generation"
+              ]
+            },
+            "source_contract": {
+              "id": "linux-audit-execution-p12a",
+              "version": "1.0.0",
+              "sha256": "89b2989949d08463721e14321394a2bf199e5a236928da569ba6a279b6fd4f4e",
+              "snapshot": {
+                "contract_version": "1.0.0",
+                "id": "linux-audit-execution-p12a",
+                "version": "1.0.0",
+                "ecs_version": "9.5.0",
+                "formats": [
+                  "LF raw audit SYSCALL/EXECVE/CWD/PATH/PROCTITLE/EOE; P12a offline scope"
+                ],
+                "provider_versions": [
+                  "Linux v6.12 reference: x86-64/i386/AArch64 execution pairs; recorded qualification pending"
+                ],
+                "references": [
+                  "https://github.com/linux-audit/audit-userspace"
+                ],
+                "classification": {
+                  "kind": "event",
+                  "category": [
+                    "process"
+                  ],
+                  "type": [
+                    "start"
+                  ]
+                },
+                "sigma": {
+                  "product": "linux",
+                  "category": "process_creation",
+                  "service": "auditd"
+                },
+                "framing": "audit records grouped by originating host, audit timestamp and serial",
+                "assembly_mode": "assembly_required",
+                "requires_host_id": true,
+                "required_fields": [
+                  "host.id",
+                  "process.executable"
+                ],
+                "mappings": [
+                  {
+                    "source_path": "/exe",
+                    "target_path": "process.executable",
+                    "capability": "available"
+                  },
+                  {
+                    "source_path": "/arguments",
+                    "target_path": "process.args",
+                    "capability": "conditional"
+                  }
+                ],
+                "quality_policy": {
+                  "blocking_codes": [
+                    "assembly_insufficient",
+                    "extraction_failed",
+                    "conflicting",
+                    "identity_missing",
+                    "unsupported_source"
+                  ],
+                  "warning_codes": [
+                    "legitimately_absent",
+                    "unmapped",
+                    "truncated",
+                    "capture_unavailable",
+                    "timestamp_missing",
+                    "timestamp_unparseable",
+                    "timestamp_timezone_ambiguous"
+                  ]
+                },
+                "fixtures": [
+                  {
+                    "path": "linux-audit-execution-p12a.contract-example.event.json",
+                    "expected_integrity": "sufficient",
+                    "expected_eligibility": "eligible"
+                  }
+                ]
+              }
+            },
+            "mapping_profile": {
+              "id": "linux-audit-execution-p12a",
+              "version": "1.0.0",
+              "sha256": "eea3f4bbbc200b07353962882d4f752687d1fdbdc49b9f9c2852b06f2ce576ee",
+              "declaration": {
+                "version": "1.0.0",
+                "id": "linux-audit-execution-p12a",
+                "source": {
+                  "id": "linux-audit-execution-p12a",
+                  "version": "1.0.0",
+                  "sha256": "89b2989949d08463721e14321394a2bf199e5a236928da569ba6a279b6fd4f4e"
+                },
+                "fields": [
+                  {
+                    "alias": "Image",
+                    "target": "process.executable",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "available",
+                    "transform": "identity-string/1.0.0",
+                    "source_path": "/exe"
+                  },
+                  {
+                    "alias": "CommandLine",
+                    "target": "process.command_line",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "identity-string/1.0.0"
+                  },
+                  {
+                    "alias": "ProcessId",
+                    "target": "process.pid",
+                    "type": "integer",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "decimal-integer/1.0.0"
+                  },
+                  {
+                    "alias": "User",
+                    "target": "user.name",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "identity-string/1.0.0"
+                  }
+                ],
+                "sha256": "eea3f4bbbc200b07353962882d4f752687d1fdbdc49b9f9c2852b06f2ce576ee"
+              }
+            },
+            "parser": {
+              "id": "linux-audit",
+              "version": "1.0.0"
+            }
+          }
+        },
+        {
+          "version": "1.0.0",
+          "kind": "record",
+          "raw": {
+            "contract_version": "1.0.0",
+            "source": {
+              "namespace": "original-p12b-synthetic",
+              "instance": "a"
+            },
+            "first_observed": "2026-01-01T00:00:01Z",
+            "cursor": {
+              "kind": "native",
+              "value": "p15b-audit-whoami-5"
+            },
+            "evidence": {
+              "sha256": "578d25fafc8c90c19d7d2b748c0017f3c17a6e0a86b5cdb6fe44b5e5c6dd953d",
+              "encoding": "utf-8",
+              "media_type": "text/plain",
+              "inline": "type=EOE msg=audit(1767225600.001:7):\n"
+            },
+            "record_id": "sha256:3ad5dcf64ca8f4897ddb8b28a5136a2bbcb5a8e3df93b37196a9f4a4cbd3401f"
+          },
+          "context": {
+            "version": "1.0.0",
+            "run_id": "715b0000-0000-4000-8000-000000000201",
+            "source": {
+              "namespace": "original-p12b-synthetic",
+              "instance": "a"
+            },
+            "first_observed": "2026-01-01T00:00:01Z",
+            "host_binding": {
+              "host_id": "host-a",
+              "source": {
+                "namespace": "original-p12b-synthetic",
+                "instance": "a"
+              },
+              "revision": "synthetic-1",
+              "kind": "synthetic",
+              "provenance": [
+                "synthetic:p12b-binding; original P15b synthetic source mutation"
+              ],
+              "sha256": "6412f42278274a9bd5d71ffc0f4c69a19da6d944d063ba61b3e705409b78cd70"
+            },
+            "source_generation": {
+              "id": "boot-a",
+              "provenance": [
+                "synthetic:p12b-generation"
+              ]
+            },
+            "source_contract": {
+              "id": "linux-audit-execution-p12a",
+              "version": "1.0.0",
+              "sha256": "89b2989949d08463721e14321394a2bf199e5a236928da569ba6a279b6fd4f4e",
+              "snapshot": {
+                "contract_version": "1.0.0",
+                "id": "linux-audit-execution-p12a",
+                "version": "1.0.0",
+                "ecs_version": "9.5.0",
+                "formats": [
+                  "LF raw audit SYSCALL/EXECVE/CWD/PATH/PROCTITLE/EOE; P12a offline scope"
+                ],
+                "provider_versions": [
+                  "Linux v6.12 reference: x86-64/i386/AArch64 execution pairs; recorded qualification pending"
+                ],
+                "references": [
+                  "https://github.com/linux-audit/audit-userspace"
+                ],
+                "classification": {
+                  "kind": "event",
+                  "category": [
+                    "process"
+                  ],
+                  "type": [
+                    "start"
+                  ]
+                },
+                "sigma": {
+                  "product": "linux",
+                  "category": "process_creation",
+                  "service": "auditd"
+                },
+                "framing": "audit records grouped by originating host, audit timestamp and serial",
+                "assembly_mode": "assembly_required",
+                "requires_host_id": true,
+                "required_fields": [
+                  "host.id",
+                  "process.executable"
+                ],
+                "mappings": [
+                  {
+                    "source_path": "/exe",
+                    "target_path": "process.executable",
+                    "capability": "available"
+                  },
+                  {
+                    "source_path": "/arguments",
+                    "target_path": "process.args",
+                    "capability": "conditional"
+                  }
+                ],
+                "quality_policy": {
+                  "blocking_codes": [
+                    "assembly_insufficient",
+                    "extraction_failed",
+                    "conflicting",
+                    "identity_missing",
+                    "unsupported_source"
+                  ],
+                  "warning_codes": [
+                    "legitimately_absent",
+                    "unmapped",
+                    "truncated",
+                    "capture_unavailable",
+                    "timestamp_missing",
+                    "timestamp_unparseable",
+                    "timestamp_timezone_ambiguous"
+                  ]
+                },
+                "fixtures": [
+                  {
+                    "path": "linux-audit-execution-p12a.contract-example.event.json",
+                    "expected_integrity": "sufficient",
+                    "expected_eligibility": "eligible"
+                  }
+                ]
+              }
+            },
+            "mapping_profile": {
+              "id": "linux-audit-execution-p12a",
+              "version": "1.0.0",
+              "sha256": "eea3f4bbbc200b07353962882d4f752687d1fdbdc49b9f9c2852b06f2ce576ee",
+              "declaration": {
+                "version": "1.0.0",
+                "id": "linux-audit-execution-p12a",
+                "source": {
+                  "id": "linux-audit-execution-p12a",
+                  "version": "1.0.0",
+                  "sha256": "89b2989949d08463721e14321394a2bf199e5a236928da569ba6a279b6fd4f4e"
+                },
+                "fields": [
+                  {
+                    "alias": "Image",
+                    "target": "process.executable",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "available",
+                    "transform": "identity-string/1.0.0",
+                    "source_path": "/exe"
+                  },
+                  {
+                    "alias": "CommandLine",
+                    "target": "process.command_line",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "identity-string/1.0.0"
+                  },
+                  {
+                    "alias": "ProcessId",
+                    "target": "process.pid",
+                    "type": "integer",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "decimal-integer/1.0.0"
+                  },
+                  {
+                    "alias": "User",
+                    "target": "user.name",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "identity-string/1.0.0"
+                  }
+                ],
+                "sha256": "eea3f4bbbc200b07353962882d4f752687d1fdbdc49b9f9c2852b06f2ce576ee"
+              }
+            },
+            "parser": {
+              "id": "linux-audit",
+              "version": "1.0.0"
+            }
+          }
+        }
+      ],
+      "expected": {
+        "executable": "/usr/bin/whoami",
+        "args": [
+          "whoami",
+          "",
+          "whoami"
+        ],
+        "path_items": [
+          0,
+          1
+        ],
+        "member_ids": [
+          "sha256:08faeea1f6c39c6df282d6443dd52e701dc10f26263a386041e95ccfbbf9576c",
+          "sha256:3ad5dcf64ca8f4897ddb8b28a5136a2bbcb5a8e3df93b37196a9f4a4cbd3401f",
+          "sha256:7d0d11479adccd5f3dfb88f7c438a96c5f4aac215580f5e1372b501b5758b092",
+          "sha256:7d6487562dd127107a6e5e9db646572e7b075b4673bfca56d34101c3ec292582",
+          "sha256:8ac881847e32560f57629deaeb5bfc668e121f49fe29e88f1020f0a7e68c9726",
+          "sha256:e09e70c1cfdc5fe7cd5e317ab3696e3db3991a2924bae6c513f8b552984a6168"
+        ],
+        "event_id": "sha256:4461669b568b6bcb62155b2165b0bfe00a75b2203ef3c2a8912ecf8ecb8ac68c",
+        "closure": "source_boundary",
+        "eligibility": "eligible"
+      },
+      "worker_id": "71500000-0000-4000-8000-000000000021"
+    },
+    {
+      "id": "audit-false",
+      "basis": {
+        "path": "tools/linux_assembly_cases.py",
+        "file_sha256": "9c0220af6310775bcf575c7fe051d8c02c846e0f7af97ce2ee697dde3f5dee57",
+        "specification": "PARTS/audit/record/context original synthetic recipe; explicit cursor and serial substitutions below"
+      },
+      "admissions": [
+        {
+          "version": "1.0.0",
+          "kind": "record",
+          "raw": {
+            "contract_version": "1.0.0",
+            "source": {
+              "namespace": "original-p12b-synthetic",
+              "instance": "a"
+            },
+            "first_observed": "2026-01-01T00:00:01Z",
+            "cursor": {
+              "kind": "native",
+              "value": "p15b-audit-false-0"
+            },
+            "evidence": {
+              "sha256": "b134603f1a44ff82973d20836ffdd87c3775702d90f617df8f800029c95b5606",
+              "encoding": "utf-8",
+              "media_type": "text/plain",
+              "inline": "type=SYSCALL msg=audit(1767225600.001:8): arch=c000003e syscall=59 success=yes exit=0 pid=42 items=2 exe=\"/bin/false\"\n"
+            },
+            "record_id": "sha256:c9bd476c2fb36cb6b3a750f8f1f8176a97726172bcff12598c73d9ec305401e8"
+          },
+          "context": {
+            "version": "1.0.0",
+            "run_id": "715b0000-0000-4000-8000-000000000201",
+            "source": {
+              "namespace": "original-p12b-synthetic",
+              "instance": "a"
+            },
+            "first_observed": "2026-01-01T00:00:01Z",
+            "host_binding": {
+              "host_id": "host-a",
+              "source": {
+                "namespace": "original-p12b-synthetic",
+                "instance": "a"
+              },
+              "revision": "synthetic-1",
+              "kind": "synthetic",
+              "provenance": [
+                "synthetic:p12b-binding; original P15b synthetic source mutation"
+              ],
+              "sha256": "6412f42278274a9bd5d71ffc0f4c69a19da6d944d063ba61b3e705409b78cd70"
+            },
+            "source_generation": {
+              "id": "boot-a",
+              "provenance": [
+                "synthetic:p12b-generation"
+              ]
+            },
+            "source_contract": {
+              "id": "linux-audit-execution-p12a",
+              "version": "1.0.0",
+              "sha256": "89b2989949d08463721e14321394a2bf199e5a236928da569ba6a279b6fd4f4e",
+              "snapshot": {
+                "contract_version": "1.0.0",
+                "id": "linux-audit-execution-p12a",
+                "version": "1.0.0",
+                "ecs_version": "9.5.0",
+                "formats": [
+                  "LF raw audit SYSCALL/EXECVE/CWD/PATH/PROCTITLE/EOE; P12a offline scope"
+                ],
+                "provider_versions": [
+                  "Linux v6.12 reference: x86-64/i386/AArch64 execution pairs; recorded qualification pending"
+                ],
+                "references": [
+                  "https://github.com/linux-audit/audit-userspace"
+                ],
+                "classification": {
+                  "kind": "event",
+                  "category": [
+                    "process"
+                  ],
+                  "type": [
+                    "start"
+                  ]
+                },
+                "sigma": {
+                  "product": "linux",
+                  "category": "process_creation",
+                  "service": "auditd"
+                },
+                "framing": "audit records grouped by originating host, audit timestamp and serial",
+                "assembly_mode": "assembly_required",
+                "requires_host_id": true,
+                "required_fields": [
+                  "host.id",
+                  "process.executable"
+                ],
+                "mappings": [
+                  {
+                    "source_path": "/exe",
+                    "target_path": "process.executable",
+                    "capability": "available"
+                  },
+                  {
+                    "source_path": "/arguments",
+                    "target_path": "process.args",
+                    "capability": "conditional"
+                  }
+                ],
+                "quality_policy": {
+                  "blocking_codes": [
+                    "assembly_insufficient",
+                    "extraction_failed",
+                    "conflicting",
+                    "identity_missing",
+                    "unsupported_source"
+                  ],
+                  "warning_codes": [
+                    "legitimately_absent",
+                    "unmapped",
+                    "truncated",
+                    "capture_unavailable",
+                    "timestamp_missing",
+                    "timestamp_unparseable",
+                    "timestamp_timezone_ambiguous"
+                  ]
+                },
+                "fixtures": [
+                  {
+                    "path": "linux-audit-execution-p12a.contract-example.event.json",
+                    "expected_integrity": "sufficient",
+                    "expected_eligibility": "eligible"
+                  }
+                ]
+              }
+            },
+            "mapping_profile": {
+              "id": "linux-audit-execution-p12a",
+              "version": "1.0.0",
+              "sha256": "eea3f4bbbc200b07353962882d4f752687d1fdbdc49b9f9c2852b06f2ce576ee",
+              "declaration": {
+                "version": "1.0.0",
+                "id": "linux-audit-execution-p12a",
+                "source": {
+                  "id": "linux-audit-execution-p12a",
+                  "version": "1.0.0",
+                  "sha256": "89b2989949d08463721e14321394a2bf199e5a236928da569ba6a279b6fd4f4e"
+                },
+                "fields": [
+                  {
+                    "alias": "Image",
+                    "target": "process.executable",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "available",
+                    "transform": "identity-string/1.0.0",
+                    "source_path": "/exe"
+                  },
+                  {
+                    "alias": "CommandLine",
+                    "target": "process.command_line",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "identity-string/1.0.0"
+                  },
+                  {
+                    "alias": "ProcessId",
+                    "target": "process.pid",
+                    "type": "integer",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "decimal-integer/1.0.0"
+                  },
+                  {
+                    "alias": "User",
+                    "target": "user.name",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "identity-string/1.0.0"
+                  }
+                ],
+                "sha256": "eea3f4bbbc200b07353962882d4f752687d1fdbdc49b9f9c2852b06f2ce576ee"
+              }
+            },
+            "parser": {
+              "id": "linux-audit",
+              "version": "1.0.0"
+            }
+          }
+        },
+        {
+          "version": "1.0.0",
+          "kind": "record",
+          "raw": {
+            "contract_version": "1.0.0",
+            "source": {
+              "namespace": "original-p12b-synthetic",
+              "instance": "a"
+            },
+            "first_observed": "2026-01-01T00:00:01Z",
+            "cursor": {
+              "kind": "native",
+              "value": "p15b-audit-false-1"
+            },
+            "evidence": {
+              "sha256": "3ff07ae51876c1f326e883bc819fc2d71a8fb5c8f2cb16c486e7f0b044425c9c",
+              "encoding": "utf-8",
+              "media_type": "text/plain",
+              "inline": "type=EXECVE msg=audit(1767225600.001:8): argc=3 a0=\"false\" a1=\"\" a2=\"false\"\n"
+            },
+            "record_id": "sha256:ada1ae04a05fa565560047260ed8c602a6bbc4bf9e8b2de1ab526dc65608a1a5"
+          },
+          "context": {
+            "version": "1.0.0",
+            "run_id": "715b0000-0000-4000-8000-000000000201",
+            "source": {
+              "namespace": "original-p12b-synthetic",
+              "instance": "a"
+            },
+            "first_observed": "2026-01-01T00:00:01Z",
+            "host_binding": {
+              "host_id": "host-a",
+              "source": {
+                "namespace": "original-p12b-synthetic",
+                "instance": "a"
+              },
+              "revision": "synthetic-1",
+              "kind": "synthetic",
+              "provenance": [
+                "synthetic:p12b-binding; original P15b synthetic source mutation"
+              ],
+              "sha256": "6412f42278274a9bd5d71ffc0f4c69a19da6d944d063ba61b3e705409b78cd70"
+            },
+            "source_generation": {
+              "id": "boot-a",
+              "provenance": [
+                "synthetic:p12b-generation"
+              ]
+            },
+            "source_contract": {
+              "id": "linux-audit-execution-p12a",
+              "version": "1.0.0",
+              "sha256": "89b2989949d08463721e14321394a2bf199e5a236928da569ba6a279b6fd4f4e",
+              "snapshot": {
+                "contract_version": "1.0.0",
+                "id": "linux-audit-execution-p12a",
+                "version": "1.0.0",
+                "ecs_version": "9.5.0",
+                "formats": [
+                  "LF raw audit SYSCALL/EXECVE/CWD/PATH/PROCTITLE/EOE; P12a offline scope"
+                ],
+                "provider_versions": [
+                  "Linux v6.12 reference: x86-64/i386/AArch64 execution pairs; recorded qualification pending"
+                ],
+                "references": [
+                  "https://github.com/linux-audit/audit-userspace"
+                ],
+                "classification": {
+                  "kind": "event",
+                  "category": [
+                    "process"
+                  ],
+                  "type": [
+                    "start"
+                  ]
+                },
+                "sigma": {
+                  "product": "linux",
+                  "category": "process_creation",
+                  "service": "auditd"
+                },
+                "framing": "audit records grouped by originating host, audit timestamp and serial",
+                "assembly_mode": "assembly_required",
+                "requires_host_id": true,
+                "required_fields": [
+                  "host.id",
+                  "process.executable"
+                ],
+                "mappings": [
+                  {
+                    "source_path": "/exe",
+                    "target_path": "process.executable",
+                    "capability": "available"
+                  },
+                  {
+                    "source_path": "/arguments",
+                    "target_path": "process.args",
+                    "capability": "conditional"
+                  }
+                ],
+                "quality_policy": {
+                  "blocking_codes": [
+                    "assembly_insufficient",
+                    "extraction_failed",
+                    "conflicting",
+                    "identity_missing",
+                    "unsupported_source"
+                  ],
+                  "warning_codes": [
+                    "legitimately_absent",
+                    "unmapped",
+                    "truncated",
+                    "capture_unavailable",
+                    "timestamp_missing",
+                    "timestamp_unparseable",
+                    "timestamp_timezone_ambiguous"
+                  ]
+                },
+                "fixtures": [
+                  {
+                    "path": "linux-audit-execution-p12a.contract-example.event.json",
+                    "expected_integrity": "sufficient",
+                    "expected_eligibility": "eligible"
+                  }
+                ]
+              }
+            },
+            "mapping_profile": {
+              "id": "linux-audit-execution-p12a",
+              "version": "1.0.0",
+              "sha256": "eea3f4bbbc200b07353962882d4f752687d1fdbdc49b9f9c2852b06f2ce576ee",
+              "declaration": {
+                "version": "1.0.0",
+                "id": "linux-audit-execution-p12a",
+                "source": {
+                  "id": "linux-audit-execution-p12a",
+                  "version": "1.0.0",
+                  "sha256": "89b2989949d08463721e14321394a2bf199e5a236928da569ba6a279b6fd4f4e"
+                },
+                "fields": [
+                  {
+                    "alias": "Image",
+                    "target": "process.executable",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "available",
+                    "transform": "identity-string/1.0.0",
+                    "source_path": "/exe"
+                  },
+                  {
+                    "alias": "CommandLine",
+                    "target": "process.command_line",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "identity-string/1.0.0"
+                  },
+                  {
+                    "alias": "ProcessId",
+                    "target": "process.pid",
+                    "type": "integer",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "decimal-integer/1.0.0"
+                  },
+                  {
+                    "alias": "User",
+                    "target": "user.name",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "identity-string/1.0.0"
+                  }
+                ],
+                "sha256": "eea3f4bbbc200b07353962882d4f752687d1fdbdc49b9f9c2852b06f2ce576ee"
+              }
+            },
+            "parser": {
+              "id": "linux-audit",
+              "version": "1.0.0"
+            }
+          }
+        },
+        {
+          "version": "1.0.0",
+          "kind": "record",
+          "raw": {
+            "contract_version": "1.0.0",
+            "source": {
+              "namespace": "original-p12b-synthetic",
+              "instance": "a"
+            },
+            "first_observed": "2026-01-01T00:00:01Z",
+            "cursor": {
+              "kind": "native",
+              "value": "p15b-audit-false-2"
+            },
+            "evidence": {
+              "sha256": "4883f6bf60665d00c1fdd048f6eab1bec9ab4464fbf70c30905e5a8d59f27d7b",
+              "encoding": "utf-8",
+              "media_type": "text/plain",
+              "inline": "type=CWD msg=audit(1767225600.001:8): cwd=\"/tmp\"\n"
+            },
+            "record_id": "sha256:010c5c1984c1cfba4c3e9da3e5a024418a8ebde7110a9aa97d51ee50aded851a"
+          },
+          "context": {
+            "version": "1.0.0",
+            "run_id": "715b0000-0000-4000-8000-000000000201",
+            "source": {
+              "namespace": "original-p12b-synthetic",
+              "instance": "a"
+            },
+            "first_observed": "2026-01-01T00:00:01Z",
+            "host_binding": {
+              "host_id": "host-a",
+              "source": {
+                "namespace": "original-p12b-synthetic",
+                "instance": "a"
+              },
+              "revision": "synthetic-1",
+              "kind": "synthetic",
+              "provenance": [
+                "synthetic:p12b-binding; original P15b synthetic source mutation"
+              ],
+              "sha256": "6412f42278274a9bd5d71ffc0f4c69a19da6d944d063ba61b3e705409b78cd70"
+            },
+            "source_generation": {
+              "id": "boot-a",
+              "provenance": [
+                "synthetic:p12b-generation"
+              ]
+            },
+            "source_contract": {
+              "id": "linux-audit-execution-p12a",
+              "version": "1.0.0",
+              "sha256": "89b2989949d08463721e14321394a2bf199e5a236928da569ba6a279b6fd4f4e",
+              "snapshot": {
+                "contract_version": "1.0.0",
+                "id": "linux-audit-execution-p12a",
+                "version": "1.0.0",
+                "ecs_version": "9.5.0",
+                "formats": [
+                  "LF raw audit SYSCALL/EXECVE/CWD/PATH/PROCTITLE/EOE; P12a offline scope"
+                ],
+                "provider_versions": [
+                  "Linux v6.12 reference: x86-64/i386/AArch64 execution pairs; recorded qualification pending"
+                ],
+                "references": [
+                  "https://github.com/linux-audit/audit-userspace"
+                ],
+                "classification": {
+                  "kind": "event",
+                  "category": [
+                    "process"
+                  ],
+                  "type": [
+                    "start"
+                  ]
+                },
+                "sigma": {
+                  "product": "linux",
+                  "category": "process_creation",
+                  "service": "auditd"
+                },
+                "framing": "audit records grouped by originating host, audit timestamp and serial",
+                "assembly_mode": "assembly_required",
+                "requires_host_id": true,
+                "required_fields": [
+                  "host.id",
+                  "process.executable"
+                ],
+                "mappings": [
+                  {
+                    "source_path": "/exe",
+                    "target_path": "process.executable",
+                    "capability": "available"
+                  },
+                  {
+                    "source_path": "/arguments",
+                    "target_path": "process.args",
+                    "capability": "conditional"
+                  }
+                ],
+                "quality_policy": {
+                  "blocking_codes": [
+                    "assembly_insufficient",
+                    "extraction_failed",
+                    "conflicting",
+                    "identity_missing",
+                    "unsupported_source"
+                  ],
+                  "warning_codes": [
+                    "legitimately_absent",
+                    "unmapped",
+                    "truncated",
+                    "capture_unavailable",
+                    "timestamp_missing",
+                    "timestamp_unparseable",
+                    "timestamp_timezone_ambiguous"
+                  ]
+                },
+                "fixtures": [
+                  {
+                    "path": "linux-audit-execution-p12a.contract-example.event.json",
+                    "expected_integrity": "sufficient",
+                    "expected_eligibility": "eligible"
+                  }
+                ]
+              }
+            },
+            "mapping_profile": {
+              "id": "linux-audit-execution-p12a",
+              "version": "1.0.0",
+              "sha256": "eea3f4bbbc200b07353962882d4f752687d1fdbdc49b9f9c2852b06f2ce576ee",
+              "declaration": {
+                "version": "1.0.0",
+                "id": "linux-audit-execution-p12a",
+                "source": {
+                  "id": "linux-audit-execution-p12a",
+                  "version": "1.0.0",
+                  "sha256": "89b2989949d08463721e14321394a2bf199e5a236928da569ba6a279b6fd4f4e"
+                },
+                "fields": [
+                  {
+                    "alias": "Image",
+                    "target": "process.executable",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "available",
+                    "transform": "identity-string/1.0.0",
+                    "source_path": "/exe"
+                  },
+                  {
+                    "alias": "CommandLine",
+                    "target": "process.command_line",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "identity-string/1.0.0"
+                  },
+                  {
+                    "alias": "ProcessId",
+                    "target": "process.pid",
+                    "type": "integer",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "decimal-integer/1.0.0"
+                  },
+                  {
+                    "alias": "User",
+                    "target": "user.name",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "identity-string/1.0.0"
+                  }
+                ],
+                "sha256": "eea3f4bbbc200b07353962882d4f752687d1fdbdc49b9f9c2852b06f2ce576ee"
+              }
+            },
+            "parser": {
+              "id": "linux-audit",
+              "version": "1.0.0"
+            }
+          }
+        },
+        {
+          "version": "1.0.0",
+          "kind": "record",
+          "raw": {
+            "contract_version": "1.0.0",
+            "source": {
+              "namespace": "original-p12b-synthetic",
+              "instance": "a"
+            },
+            "first_observed": "2026-01-01T00:00:01Z",
+            "cursor": {
+              "kind": "native",
+              "value": "p15b-audit-false-3"
+            },
+            "evidence": {
+              "sha256": "177241bf569a9b79f336deeb92fd9001d275f1974eae283dcb6999eb8689ec8a",
+              "encoding": "utf-8",
+              "media_type": "text/plain",
+              "inline": "type=PATH msg=audit(1767225600.001:8): item=0 name=\"/bin/false\"\n"
+            },
+            "record_id": "sha256:4c13961258ab92563d801fe36c4ec81b0c7aab157a347928cd97f91d25ebcf72"
+          },
+          "context": {
+            "version": "1.0.0",
+            "run_id": "715b0000-0000-4000-8000-000000000201",
+            "source": {
+              "namespace": "original-p12b-synthetic",
+              "instance": "a"
+            },
+            "first_observed": "2026-01-01T00:00:01Z",
+            "host_binding": {
+              "host_id": "host-a",
+              "source": {
+                "namespace": "original-p12b-synthetic",
+                "instance": "a"
+              },
+              "revision": "synthetic-1",
+              "kind": "synthetic",
+              "provenance": [
+                "synthetic:p12b-binding; original P15b synthetic source mutation"
+              ],
+              "sha256": "6412f42278274a9bd5d71ffc0f4c69a19da6d944d063ba61b3e705409b78cd70"
+            },
+            "source_generation": {
+              "id": "boot-a",
+              "provenance": [
+                "synthetic:p12b-generation"
+              ]
+            },
+            "source_contract": {
+              "id": "linux-audit-execution-p12a",
+              "version": "1.0.0",
+              "sha256": "89b2989949d08463721e14321394a2bf199e5a236928da569ba6a279b6fd4f4e",
+              "snapshot": {
+                "contract_version": "1.0.0",
+                "id": "linux-audit-execution-p12a",
+                "version": "1.0.0",
+                "ecs_version": "9.5.0",
+                "formats": [
+                  "LF raw audit SYSCALL/EXECVE/CWD/PATH/PROCTITLE/EOE; P12a offline scope"
+                ],
+                "provider_versions": [
+                  "Linux v6.12 reference: x86-64/i386/AArch64 execution pairs; recorded qualification pending"
+                ],
+                "references": [
+                  "https://github.com/linux-audit/audit-userspace"
+                ],
+                "classification": {
+                  "kind": "event",
+                  "category": [
+                    "process"
+                  ],
+                  "type": [
+                    "start"
+                  ]
+                },
+                "sigma": {
+                  "product": "linux",
+                  "category": "process_creation",
+                  "service": "auditd"
+                },
+                "framing": "audit records grouped by originating host, audit timestamp and serial",
+                "assembly_mode": "assembly_required",
+                "requires_host_id": true,
+                "required_fields": [
+                  "host.id",
+                  "process.executable"
+                ],
+                "mappings": [
+                  {
+                    "source_path": "/exe",
+                    "target_path": "process.executable",
+                    "capability": "available"
+                  },
+                  {
+                    "source_path": "/arguments",
+                    "target_path": "process.args",
+                    "capability": "conditional"
+                  }
+                ],
+                "quality_policy": {
+                  "blocking_codes": [
+                    "assembly_insufficient",
+                    "extraction_failed",
+                    "conflicting",
+                    "identity_missing",
+                    "unsupported_source"
+                  ],
+                  "warning_codes": [
+                    "legitimately_absent",
+                    "unmapped",
+                    "truncated",
+                    "capture_unavailable",
+                    "timestamp_missing",
+                    "timestamp_unparseable",
+                    "timestamp_timezone_ambiguous"
+                  ]
+                },
+                "fixtures": [
+                  {
+                    "path": "linux-audit-execution-p12a.contract-example.event.json",
+                    "expected_integrity": "sufficient",
+                    "expected_eligibility": "eligible"
+                  }
+                ]
+              }
+            },
+            "mapping_profile": {
+              "id": "linux-audit-execution-p12a",
+              "version": "1.0.0",
+              "sha256": "eea3f4bbbc200b07353962882d4f752687d1fdbdc49b9f9c2852b06f2ce576ee",
+              "declaration": {
+                "version": "1.0.0",
+                "id": "linux-audit-execution-p12a",
+                "source": {
+                  "id": "linux-audit-execution-p12a",
+                  "version": "1.0.0",
+                  "sha256": "89b2989949d08463721e14321394a2bf199e5a236928da569ba6a279b6fd4f4e"
+                },
+                "fields": [
+                  {
+                    "alias": "Image",
+                    "target": "process.executable",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "available",
+                    "transform": "identity-string/1.0.0",
+                    "source_path": "/exe"
+                  },
+                  {
+                    "alias": "CommandLine",
+                    "target": "process.command_line",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "identity-string/1.0.0"
+                  },
+                  {
+                    "alias": "ProcessId",
+                    "target": "process.pid",
+                    "type": "integer",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "decimal-integer/1.0.0"
+                  },
+                  {
+                    "alias": "User",
+                    "target": "user.name",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "identity-string/1.0.0"
+                  }
+                ],
+                "sha256": "eea3f4bbbc200b07353962882d4f752687d1fdbdc49b9f9c2852b06f2ce576ee"
+              }
+            },
+            "parser": {
+              "id": "linux-audit",
+              "version": "1.0.0"
+            }
+          }
+        },
+        {
+          "version": "1.0.0",
+          "kind": "record",
+          "raw": {
+            "contract_version": "1.0.0",
+            "source": {
+              "namespace": "original-p12b-synthetic",
+              "instance": "a"
+            },
+            "first_observed": "2026-01-01T00:00:01Z",
+            "cursor": {
+              "kind": "native",
+              "value": "p15b-audit-false-4"
+            },
+            "evidence": {
+              "sha256": "84d75ef2fd3fd2620b663f871062c1f99e5523d8bcf9263a4adc3ae68662445b",
+              "encoding": "utf-8",
+              "media_type": "text/plain",
+              "inline": "type=PATH msg=audit(1767225600.001:8): item=1 name=\"/lib/ld.so\"\n"
+            },
+            "record_id": "sha256:8f000d60145dec56e39bbe55344cc80911cef802f57f763a66220ad6d71d9de9"
+          },
+          "context": {
+            "version": "1.0.0",
+            "run_id": "715b0000-0000-4000-8000-000000000201",
+            "source": {
+              "namespace": "original-p12b-synthetic",
+              "instance": "a"
+            },
+            "first_observed": "2026-01-01T00:00:01Z",
+            "host_binding": {
+              "host_id": "host-a",
+              "source": {
+                "namespace": "original-p12b-synthetic",
+                "instance": "a"
+              },
+              "revision": "synthetic-1",
+              "kind": "synthetic",
+              "provenance": [
+                "synthetic:p12b-binding; original P15b synthetic source mutation"
+              ],
+              "sha256": "6412f42278274a9bd5d71ffc0f4c69a19da6d944d063ba61b3e705409b78cd70"
+            },
+            "source_generation": {
+              "id": "boot-a",
+              "provenance": [
+                "synthetic:p12b-generation"
+              ]
+            },
+            "source_contract": {
+              "id": "linux-audit-execution-p12a",
+              "version": "1.0.0",
+              "sha256": "89b2989949d08463721e14321394a2bf199e5a236928da569ba6a279b6fd4f4e",
+              "snapshot": {
+                "contract_version": "1.0.0",
+                "id": "linux-audit-execution-p12a",
+                "version": "1.0.0",
+                "ecs_version": "9.5.0",
+                "formats": [
+                  "LF raw audit SYSCALL/EXECVE/CWD/PATH/PROCTITLE/EOE; P12a offline scope"
+                ],
+                "provider_versions": [
+                  "Linux v6.12 reference: x86-64/i386/AArch64 execution pairs; recorded qualification pending"
+                ],
+                "references": [
+                  "https://github.com/linux-audit/audit-userspace"
+                ],
+                "classification": {
+                  "kind": "event",
+                  "category": [
+                    "process"
+                  ],
+                  "type": [
+                    "start"
+                  ]
+                },
+                "sigma": {
+                  "product": "linux",
+                  "category": "process_creation",
+                  "service": "auditd"
+                },
+                "framing": "audit records grouped by originating host, audit timestamp and serial",
+                "assembly_mode": "assembly_required",
+                "requires_host_id": true,
+                "required_fields": [
+                  "host.id",
+                  "process.executable"
+                ],
+                "mappings": [
+                  {
+                    "source_path": "/exe",
+                    "target_path": "process.executable",
+                    "capability": "available"
+                  },
+                  {
+                    "source_path": "/arguments",
+                    "target_path": "process.args",
+                    "capability": "conditional"
+                  }
+                ],
+                "quality_policy": {
+                  "blocking_codes": [
+                    "assembly_insufficient",
+                    "extraction_failed",
+                    "conflicting",
+                    "identity_missing",
+                    "unsupported_source"
+                  ],
+                  "warning_codes": [
+                    "legitimately_absent",
+                    "unmapped",
+                    "truncated",
+                    "capture_unavailable",
+                    "timestamp_missing",
+                    "timestamp_unparseable",
+                    "timestamp_timezone_ambiguous"
+                  ]
+                },
+                "fixtures": [
+                  {
+                    "path": "linux-audit-execution-p12a.contract-example.event.json",
+                    "expected_integrity": "sufficient",
+                    "expected_eligibility": "eligible"
+                  }
+                ]
+              }
+            },
+            "mapping_profile": {
+              "id": "linux-audit-execution-p12a",
+              "version": "1.0.0",
+              "sha256": "eea3f4bbbc200b07353962882d4f752687d1fdbdc49b9f9c2852b06f2ce576ee",
+              "declaration": {
+                "version": "1.0.0",
+                "id": "linux-audit-execution-p12a",
+                "source": {
+                  "id": "linux-audit-execution-p12a",
+                  "version": "1.0.0",
+                  "sha256": "89b2989949d08463721e14321394a2bf199e5a236928da569ba6a279b6fd4f4e"
+                },
+                "fields": [
+                  {
+                    "alias": "Image",
+                    "target": "process.executable",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "available",
+                    "transform": "identity-string/1.0.0",
+                    "source_path": "/exe"
+                  },
+                  {
+                    "alias": "CommandLine",
+                    "target": "process.command_line",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "identity-string/1.0.0"
+                  },
+                  {
+                    "alias": "ProcessId",
+                    "target": "process.pid",
+                    "type": "integer",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "decimal-integer/1.0.0"
+                  },
+                  {
+                    "alias": "User",
+                    "target": "user.name",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "identity-string/1.0.0"
+                  }
+                ],
+                "sha256": "eea3f4bbbc200b07353962882d4f752687d1fdbdc49b9f9c2852b06f2ce576ee"
+              }
+            },
+            "parser": {
+              "id": "linux-audit",
+              "version": "1.0.0"
+            }
+          }
+        },
+        {
+          "version": "1.0.0",
+          "kind": "record",
+          "raw": {
+            "contract_version": "1.0.0",
+            "source": {
+              "namespace": "original-p12b-synthetic",
+              "instance": "a"
+            },
+            "first_observed": "2026-01-01T00:00:01Z",
+            "cursor": {
+              "kind": "native",
+              "value": "p15b-audit-false-5"
+            },
+            "evidence": {
+              "sha256": "86c4389043703c9b75da2bbc088f34973b2a21289c7a555fb75949d02c3c1566",
+              "encoding": "utf-8",
+              "media_type": "text/plain",
+              "inline": "type=EOE msg=audit(1767225600.001:8):\n"
+            },
+            "record_id": "sha256:ba278608fd3b5cb918b424f1095efba106e36fede5e88adab655065ead8c019b"
+          },
+          "context": {
+            "version": "1.0.0",
+            "run_id": "715b0000-0000-4000-8000-000000000201",
+            "source": {
+              "namespace": "original-p12b-synthetic",
+              "instance": "a"
+            },
+            "first_observed": "2026-01-01T00:00:01Z",
+            "host_binding": {
+              "host_id": "host-a",
+              "source": {
+                "namespace": "original-p12b-synthetic",
+                "instance": "a"
+              },
+              "revision": "synthetic-1",
+              "kind": "synthetic",
+              "provenance": [
+                "synthetic:p12b-binding; original P15b synthetic source mutation"
+              ],
+              "sha256": "6412f42278274a9bd5d71ffc0f4c69a19da6d944d063ba61b3e705409b78cd70"
+            },
+            "source_generation": {
+              "id": "boot-a",
+              "provenance": [
+                "synthetic:p12b-generation"
+              ]
+            },
+            "source_contract": {
+              "id": "linux-audit-execution-p12a",
+              "version": "1.0.0",
+              "sha256": "89b2989949d08463721e14321394a2bf199e5a236928da569ba6a279b6fd4f4e",
+              "snapshot": {
+                "contract_version": "1.0.0",
+                "id": "linux-audit-execution-p12a",
+                "version": "1.0.0",
+                "ecs_version": "9.5.0",
+                "formats": [
+                  "LF raw audit SYSCALL/EXECVE/CWD/PATH/PROCTITLE/EOE; P12a offline scope"
+                ],
+                "provider_versions": [
+                  "Linux v6.12 reference: x86-64/i386/AArch64 execution pairs; recorded qualification pending"
+                ],
+                "references": [
+                  "https://github.com/linux-audit/audit-userspace"
+                ],
+                "classification": {
+                  "kind": "event",
+                  "category": [
+                    "process"
+                  ],
+                  "type": [
+                    "start"
+                  ]
+                },
+                "sigma": {
+                  "product": "linux",
+                  "category": "process_creation",
+                  "service": "auditd"
+                },
+                "framing": "audit records grouped by originating host, audit timestamp and serial",
+                "assembly_mode": "assembly_required",
+                "requires_host_id": true,
+                "required_fields": [
+                  "host.id",
+                  "process.executable"
+                ],
+                "mappings": [
+                  {
+                    "source_path": "/exe",
+                    "target_path": "process.executable",
+                    "capability": "available"
+                  },
+                  {
+                    "source_path": "/arguments",
+                    "target_path": "process.args",
+                    "capability": "conditional"
+                  }
+                ],
+                "quality_policy": {
+                  "blocking_codes": [
+                    "assembly_insufficient",
+                    "extraction_failed",
+                    "conflicting",
+                    "identity_missing",
+                    "unsupported_source"
+                  ],
+                  "warning_codes": [
+                    "legitimately_absent",
+                    "unmapped",
+                    "truncated",
+                    "capture_unavailable",
+                    "timestamp_missing",
+                    "timestamp_unparseable",
+                    "timestamp_timezone_ambiguous"
+                  ]
+                },
+                "fixtures": [
+                  {
+                    "path": "linux-audit-execution-p12a.contract-example.event.json",
+                    "expected_integrity": "sufficient",
+                    "expected_eligibility": "eligible"
+                  }
+                ]
+              }
+            },
+            "mapping_profile": {
+              "id": "linux-audit-execution-p12a",
+              "version": "1.0.0",
+              "sha256": "eea3f4bbbc200b07353962882d4f752687d1fdbdc49b9f9c2852b06f2ce576ee",
+              "declaration": {
+                "version": "1.0.0",
+                "id": "linux-audit-execution-p12a",
+                "source": {
+                  "id": "linux-audit-execution-p12a",
+                  "version": "1.0.0",
+                  "sha256": "89b2989949d08463721e14321394a2bf199e5a236928da569ba6a279b6fd4f4e"
+                },
+                "fields": [
+                  {
+                    "alias": "Image",
+                    "target": "process.executable",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "available",
+                    "transform": "identity-string/1.0.0",
+                    "source_path": "/exe"
+                  },
+                  {
+                    "alias": "CommandLine",
+                    "target": "process.command_line",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "identity-string/1.0.0"
+                  },
+                  {
+                    "alias": "ProcessId",
+                    "target": "process.pid",
+                    "type": "integer",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "decimal-integer/1.0.0"
+                  },
+                  {
+                    "alias": "User",
+                    "target": "user.name",
+                    "type": "string",
+                    "cardinality": "scalar",
+                    "capability": "unsupported",
+                    "transform": "identity-string/1.0.0"
+                  }
+                ],
+                "sha256": "eea3f4bbbc200b07353962882d4f752687d1fdbdc49b9f9c2852b06f2ce576ee"
+              }
+            },
+            "parser": {
+              "id": "linux-audit",
+              "version": "1.0.0"
+            }
+          }
+        }
+      ],
+      "expected": {
+        "executable": "/bin/false",
+        "args": [
+          "false",
+          "",
+          "false"
+        ],
+        "path_items": [
+          0,
+          1
+        ],
+        "member_ids": [
+          "sha256:010c5c1984c1cfba4c3e9da3e5a024418a8ebde7110a9aa97d51ee50aded851a",
+          "sha256:4c13961258ab92563d801fe36c4ec81b0c7aab157a347928cd97f91d25ebcf72",
+          "sha256:8f000d60145dec56e39bbe55344cc80911cef802f57f763a66220ad6d71d9de9",
+          "sha256:ada1ae04a05fa565560047260ed8c602a6bbc4bf9e8b2de1ab526dc65608a1a5",
+          "sha256:ba278608fd3b5cb918b424f1095efba106e36fede5e88adab655065ead8c019b",
+          "sha256:c9bd476c2fb36cb6b3a750f8f1f8176a97726172bcff12598c73d9ec305401e8"
+        ],
+        "event_id": "sha256:0cea10f8d1cf66ff49def818762b7d989ab259c9ca5fed781e357ad96068cc49",
+        "closure": "source_boundary",
+        "eligibility": "eligible"
+      },
+      "worker_id": "71500000-0000-4000-8000-000000000021"
+    }
+  ],
+  "worker_runs": [
+    {
+      "worker_id": "71500000-0000-4000-8000-000000000020",
+      "run_id": "715b0000-0000-4000-8000-000000000101"
+    },
+    {
+      "worker_id": "71500000-0000-4000-8000-000000000021",
+      "run_id": "715b0000-0000-4000-8000-000000000201"
+    }
+  ]
+}

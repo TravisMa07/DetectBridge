@@ -1,6 +1,34 @@
 # P10–P15 implementation ledger
 
-Current P15 coordination (2026-11-19): the owner explicitly accepted bounded P14
+Current CI integration: owner-merged CI-01 #63 is exact e2bec696; native44667068167
+passed all14/103 admissions/232 logical/233 physical, owned stopped. Issue62 is
+closed/Done only in approved feature-integration scope. CI-02 implementation agent
+owns search helper diagnostics/tests and status on `t3/ci02-failure-diagnostics`,
+base e2 and target `feat/p15b-worker-activation`; read-only native agents own
+independent expectations/review. [Design](ci-02-design.md) and
+[ledger](ci-02-ledger.md) retain separate open gates. Heavy qualification is
+serialized. Bounded diagnostics/component checks are implemented; the single local
+runtime attempt failed initialization before policy calls. Native/D12 and actual
+cause/stabilization remain open. #61 remains Draft/parked/unmerged; no P15/P16
+feature continuation.
+
+Earlier entries below retain historical checkpoint claims.
+
+P15b implementation checkpoint: owner-authorized merge #57 is f44403e; actual
+merged-main push run 44472864062 attempt 1 passed all nineteen applicable jobs and required-checks. Primary owns integration/contracts/CI
+on `feat/p15b-worker-activation` from that merge. The exact merged-main CI and
+pre-implementation freeze `0a41ee4` prerequisites passed. Runtime, controller and
+independent qualification agents implemented and reviewed disjoint file sets.
+All fourteen bounded synthetic ARM64 runtime scenarios passed on the recorded
+artifacts; [native PR CI and owner review](p15b1-ledger.md) remain open. The frozen
+[design](p15b-design.md), [matrix](p15b-expectations.md) and
+[prerequisites](p15b-prerequisites.md) establish scope, not qualification claims.
+Native P15a completion edits are preserved in the original stash and local copy;
+all older handoffs remain uncommitted. P15b1 runtime/control and P15b2 archive/replay
+must both pass before complete P15 acceptance/P16 dependent implementation.
+
+Historical P15a coordination checkpoint (2026-11-19), superseded by its
+[merged-main ledger](p15a-ledger.md): the owner explicitly accepted bounded P14
 completion after exact merged-main audit on f44c9f9. Issue #14/project are Done;
 M5 remains open. Primary owns integration/contracts/CI/status on
 `feat/p15-rule-lifecycle`, based on qualified f44c9f9. Interface/design,
@@ -322,3 +350,29 @@ literal vectors preceded implementation. The separate writer mode preserves P08
 and P13b state/contracts; [design](p13c-design.md) and [ledger](p13c-ledger.md) record
 actual projection, permission, delivery/failure and qualification boundaries.
 Recorded source-to-search/full P13 acceptance and owner merge remain separate.
+
+## CI-01 activation qualification diagnosis
+
+CI-01 owns only the separate [RCA diagnostic delivery](ci-01-design.md), based on
+frozen P15b6e1ed1c with PR base `feat/p15b-worker-activation`. The CI-01
+implementation agent owns controller instrumentation, qualifier, CI/cache wiring
+and status integration; a read-only independent agent reviewed expectations and
+the actual diagnostic diff. Heavy runtime qualification remains serialized.
+[Evidence and pending gates](ci-01-ledger.md) are separate from P15/#15/#61,
+which remain parked/dependent. No production contracts, artifacts or architecture
+decisions are changed and no owner acceptance, merge or release is inferred.
+
+CI-01 continuation uses native44641731135 stage evidence and independently
+checked101-wire ACK-only mechanics to select the existing128 qualification bound.
+The optional native diagnostic job serializes both mechanics cases and actual
+production faults; default all14 and strict120s/exact-checkpoint proofs remain.
+Local mechanics and review are attributed in the owning ledger; native improvement
+is unclaimed until the corrected exact source is qualified.
+
+The owner approved CI-01 option A after freeze4339ff4; ADR 0015 owns the accepted
+qualification preparation boundary. Integration owns runtime/helper/qualifier/CI
+edits. A separate agent authored independent guard tests; read-only implementation
+review found token/intent/early-error gaps that were fixed. Heavy actual worker
+qualification remains serialized and private evidence stays outside upload globs.
+The same-head search failure remains a separate diagnostic concern, not a P13
+semantic change in this PR. CI-01/PR63 stay gated on fresh native/repeatability.

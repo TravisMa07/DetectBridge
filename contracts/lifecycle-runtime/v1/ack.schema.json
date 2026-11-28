@@ -1,0 +1,182 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:lifecycle-runtime:1.0.0:ack",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": "1.0.0"
+    },
+    "key_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": "1.0.0"
+        },
+        "ack_id": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "deployment_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "authority_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "worker_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "incarnation": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        "command_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "bundle_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "compatibility_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "phase": {
+          "enum": [
+            "observed",
+            "rejected",
+            "applied",
+            "durable"
+          ]
+        },
+        "checkpoint_id": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "category": {
+          "enum": [
+            "ok",
+            "artifact_missing",
+            "artifact_invalid",
+            "incompatible_profile",
+            "membership_missing",
+            "not_current_incarnation",
+            "resource_exhausted",
+            "checkpoint_aborted",
+            "application_failed"
+          ]
+        }
+      },
+      "required": [
+        "version",
+        "ack_id",
+        "deployment_id",
+        "authority_id",
+        "worker_id",
+        "incarnation",
+        "revision",
+        "command_sha256",
+        "bundle_sha256",
+        "compatibility_sha256",
+        "phase",
+        "checkpoint_id",
+        "category"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "phase": {
+                "const": "durable"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "checkpoint_id": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9223372036854775807
+              },
+              "category": {
+                "const": "ok"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "phase": {
+                "enum": [
+                  "observed",
+                  "applied"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "checkpoint_id": {
+                "type": "null"
+              },
+              "category": {
+                "const": "ok"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "phase": {
+                "const": "rejected"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "category": {
+                "not": {
+                  "const": "ok"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "signature": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9+/]{86}==$"
+    }
+  },
+  "required": [
+    "version",
+    "key_sha256",
+    "payload",
+    "signature"
+  ],
+  "additionalProperties": false
+}

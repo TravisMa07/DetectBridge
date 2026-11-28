@@ -1,0 +1,212 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:detectbridge:lifecycle-runtime:1.0.0:state",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": "1.0.0"
+    },
+    "deployment_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "worker_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "runtime_binding_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "checkpoint_id": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9223372036854775807
+    },
+    "control_cursor": {
+      "$ref": "urn:detectbridge:lifecycle-runtime:1.0.0:common#/$defs/cursor"
+    },
+    "artifact_cursor": {
+      "$ref": "urn:detectbridge:lifecycle-runtime:1.0.0:common#/$defs/cursor"
+    },
+    "observed_head": {
+      "type": "object",
+      "properties": {
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "command_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "journal_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "revision",
+        "command_sha256",
+        "journal_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "selection": {
+      "anyOf": [
+        {
+          "$ref": "urn:detectbridge:lifecycle-runtime:1.0.0:common#/$defs/selection"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "core": {
+      "type": "object"
+    },
+    "provenance": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "sequence": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9223372036854775807
+          },
+          "selection": {
+            "$ref": "urn:detectbridge:lifecycle-runtime:1.0.0:common#/$defs/selection"
+          },
+          "output_id": {
+            "type": "string",
+            "pattern": "^sha256:[a-f0-9]{64}$"
+          },
+          "document_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "semantic_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "sequence",
+          "selection",
+          "output_id",
+          "document_sha256",
+          "semantic_sha256"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0,
+      "maxItems": 128
+    },
+    "durable_ack_candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "checkpoint_id": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9223372036854775807
+          },
+          "ack": {
+            "$ref": "urn:detectbridge:lifecycle-runtime:1.0.0:ack"
+          }
+        },
+        "required": [
+          "checkpoint_id",
+          "ack"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0,
+      "maxItems": 2
+    },
+    "artifact_references": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-f0-9]{64}$"
+      },
+      "minItems": 0,
+      "maxItems": 64,
+      "uniqueItems": true
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "worker_checkpoint_binding_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "raw_cursor": {
+      "$ref": "urn:detectbridge:lifecycle-runtime:1.0.0:common#/$defs/cursor"
+    },
+    "rejection_head": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4096
+        },
+        "sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "count",
+        "sha256"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "version",
+    "deployment_id",
+    "worker_id",
+    "runtime_binding_sha256",
+    "checkpoint_id",
+    "control_cursor",
+    "artifact_cursor",
+    "observed_head",
+    "selection",
+    "core",
+    "provenance",
+    "durable_ack_candidates",
+    "artifact_references",
+    "sha256",
+    "worker_checkpoint_binding_sha256",
+    "raw_cursor",
+    "rejection_head"
+  ],
+  "additionalProperties": false
+}

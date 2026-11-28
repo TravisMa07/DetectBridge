@@ -279,6 +279,44 @@ is recorded in the acceptance map; P13 acceptance is not implied.
   archives; historical pinned results reproduce on qualified fixtures; current
   replay remains isolated. Document unsupported reproduction limits explicitly.
 
+### CI integration status — 2026-11-20
+
+CI-01 [#62](https://github.com/TravisMa07/DetectBridge/issues/62) is closed/Done
+in its approved feature-integration scope. Owner-merged #63 is e2bec696; direct
+native44667068167 passed all14,103 admissions,232 logical/233 physical and owned
+stopped. PR61 testmerge44667000920 passed separately; no main/P15 merge follows.
+
+CI-02 [#64](https://github.com/TravisMa07/DetectBridge/issues/64), project4,
+In progress, owns separate search-policy diagnostics on e2, targeting
+`feat/p15b-worker-activation`. [Design](ci-02-design.md),
+[expectations](ci-02-expectations.md) and [ledger](ci-02-ledger.md) separate
+observability from an unproved behavioral fix. #61 remains Draft/parked;
+P15/P16 feature work is not resumed. Bounded diagnostics and component checks are
+implemented; one local runtime attempt failed initialization before policy calls.
+Final-artifact native/D12 qualification and cause/stabilization remain open.
+
+Historical CI-01 snapshot (superseded by integration status above):
+
+### CI-01 — Native activation CI diagnosis and stabilization
+
+- [Issue #62](https://github.com/TravisMa07/DetectBridge/issues/62), In progress,
+  blocks P15b #61 (Draft/parked) and dependent P15/P16 continuation.
+- Owns native stage measurements, controlled authenticated finite-backlog mechanics
+  and only a demonstrated CI correction. [RCA design](ci-01-design.md) and
+  [evidence ledger](ci-01-ledger.md) preserve the unchanged120s/all14 gate.
+- Separate PR targets frozen P15b branch `feat/p15b-worker-activation` at6e1ed1c;
+  native qualification, owner acceptance/merge and merged-main remain open.
+- Native diagnostic run44641731135 measured repeated drain/commit round trips
+  dominating small-prefix observation. Frozen signed-backlog mechanics support
+  amortizing those calls at the existing128 bound; exact native correction
+  qualification remains pending. P15b stays parked.
+- c42 native PR all14 passed, but the same-source dispatch failed the real30s
+  open-group closure schedule. A new publication-preparation boundary is proposed
+  and owner-approved in ADR 0015. Its scoped A preparation is implemented, with
+  guard/focused qualification and fresh native repeatability gates tracked in the
+  ledger. PR63 remains Draft, with no CI stability/readiness claim.
+  Independent search failure needs a separate CI diagnostic item.
+
 ### P15 — Rule lifecycle, activation and rollback
 
 - Readiness: P10/P13 and bounded owner-accepted P14 are complete.
@@ -286,7 +324,14 @@ is recorded in the acceptance map; P13 acceptance is not implied.
   precede production code. P15a owns candidate lifecycle/control preparation;
   P15b owns actual worker activation/convergence/rollback after P15a merged gates.
   P15a [candidate lifecycle](rule-lifecycle.md) is implemented with passing
-  [local qualification](p15a-ledger.md); actual native/review/owner/merged gates remain.
+  [local and native PR qualification](p15a-ledger.md). Owner-authorized regular
+  merge #57 is f44403e; actual merged-main push run 44472864062 attempt 1 passed all nineteen applicable jobs and required-checks.
+  [P15b design](p15b-design.md), closed contracts and
+  [independent cases](p15b-expectations.md) were frozen in `0a41ee4` before
+  production code. P15b1 is implemented with fourteen bounded synthetic ARM64
+  runtime scenarios passed; [native PR qualification and review](p15b1-ledger.md)
+  remain open.
+  P15b2 owns the dependent new archive/replay artifact boundary.
   P15 is not complete; P16 implementation remains dependent.
 - Depends on: P10, P13, P14.
 - Deliver: immutable bundles, staging, worker acknowledgments, convergence state,

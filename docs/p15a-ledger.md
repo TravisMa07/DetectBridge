@@ -1,8 +1,24 @@
 # P15a candidate lifecycle qualification
 
-Status: implemented and locally qualified for private candidate preparation.
-Native PR qualification, owner review, authorized merge and actual merged-commit
-checks remain separate. P15 is not complete. P15b dependent implementation waits
+Current P15a disposition: owner-authorized regular merge #57 f44403e and
+actual merged-main push run 44472864062 attempt 1 both complete. All nineteen
+applicable jobs and required-checks passed; five explicit opt-ins were skipped.
+The historical pending checkpoints below remain retained. P15b implementation
+is authorized after its own pre-code freeze; complete P15 acceptance remains open.
+
+Current P15a merge checkpoint: the owner explicitly authorized regular merge #57
+and continuation with P15b. Merge was performed as
+`f44403e2975db46554c9c5033f87886d880c4087`, with original three commits intact.
+Actual merged-main push run 44472864062 is in progress; its eventual outcome must
+be independently verified before P15b production code. PR run 44466077762 is not
+substituted for that gate. The original uncommitted native-completion addition
+was preserved in Git stash and copied before this reconciliation; neither was
+removed. No P15b merge or release authorization is inferred.
+
+Status: implemented, locally qualified and native PR-qualified for private candidate
+preparation. Owner review, authorized merge and actual merged-commit checks remain
+separate. The native completion addition remains uncommitted for the consolidated
+owner-disposition boundary; published head cc31eab is unchanged. P15 is not complete. P15b dependent implementation waits
 for this slice's qualified owner merge; P16 implementation waits for P14/P15.
 
 ## Ownership, freeze and prerequisites
@@ -165,3 +181,61 @@ retained artifact and runs required no-skip tests. Classifier propagation includ
 candidate inputs and all integration consumers; the aggregate rejects missing,
 failed, cancelled or unexpectedly skipped lifecycle checks. Owner acceptance,
 merge authorization, actual merged checks and release remain distinct.
+
+## Native PR qualification passed — 2026-11-19
+
+[Run 44466077762](https://github.com/TravisMa07/DetectBridge/actions/runs/44466077762),
+attempt 1, associated head `cc31eab5dc87311bc54c05068a2b21fcce089d68`, passed
+all nineteen applicable jobs and required-checks. Five explicit acquisition/recording
+opt-ins were skipped. Aggregate job 135376720297 completed at 06:08:23 UTC.
+Actual checkout was PR test merge `f1c078e9273adef7bc24e5002f2875654a709a8b`,
+merging cc31eab into f44c9f9. This is not actual merged-main qualification.
+
+Lifecycle job 135364841542 passed all 30 checks with zero skips on
+`Linux-7.0.0-1014-aws-x86_64-with-glibc2.39`. Source was clean at f1c078e;
+all seven implementation/test/fixture hashes match final local evidence above.
+Exact original evaluator `51a984de`, logging `7e144649`, plan `cb566e7d`, bundle `7bc15c1a`
+and compatibility `9c72f903` match the attributed local identities. Other applicable
+legacy detection/source/assembly/integration/search/archive/historical/current/
+maintenance consumers also passed on their actual native artifacts. The lifecycle
+consumer restored the exact prepared dependency cache before bootstrap.
+
+Metadata, complete run log and original downloaded lifecycle artifact remain under
+`.cache/p15a-native-44466077762/`. SHA-256 identities:
+
+- `run.json`: `81144924d9f434c7e4c385ecae4532b33a150bdf71b215f76cc08e44d99c2adb`.
+- `run.log`: `282aaf9dc4f5c86ba4fa8164a8e01c80f8cbe0c505069efe2620d2986fb75fbe`.
+- `artifact/summary.json`: `4d96f498a9beb83e19b3392f0d803086680ff3cfe37aef5e35c92ad97bd91c9b`.
+- `artifact/build.log`: `19678b7db2dbc1d669acfe7bdec7a4332a65b0ca1af08681d8ef17bf77bc7f9e`.
+- `artifact/tests.log`: `f866a36e9930a62004ae8775f75d899f8eff04dcd7b37e5cfd538f2b9e12c1a3`.
+
+Refreshed comments, submitted reviews and inline review threads are empty. PR #57
+is clean/mergeable with checks passed. Owner semantic/completeness review,
+explicit merge authorization and actual merged-main qualification remain open.
+This native result establishes P15a candidate preparation only; all P15b/P16,
+private-recording, HA, disk-loss, unbounded-outage and throughput limits remain.
+The PR description and issue #15 record this exact native result without an
+incidental evidence-only push. No merge or release was performed.
+
+## Actual merged-main qualification passed
+
+[Run 44472864062](https://github.com/TravisMa07/DetectBridge/actions/runs/44472864062),
+attempt 1, is an actual push on regular merge
+`f44403e2975db46554c9c5033f87886d880c4087`, not the earlier PR test merge.
+All nineteen applicable jobs and required aggregate135396305876 passed; five
+explicit acquisition/recording opt-ins were skipped. Lifecycle job135387101572
+passed all30 checks with zero skips, sourceclean at f44403e on
+`Linux-7.0.0-1017-azure-x86_64-with-glibc2.39`. Original evaluator51a984de,
+logging7e144649, fixture plan cb566e7d, lifecycle bundle7bc15c1a and
+compatibility9c72f903 match their exact existing hashes; all seven runtime/test/
+fixture source hashes match the prior attributed source set. Other applicable
+source/integration/archive/replay consumers passed independently on this merge.
+
+Raw metadata, complete log and original downloaded lifecycle artifact remain in
+`.cache/p15a-main-44472864062/`. SHA-256: metadata
+`951c5f711166989aa89ae2c35ba8a7aad536224cd18fb994431c324f6b9f4f21`; log
+`adf485150ffa678531bcd4ac988071f344035ebef088b8ad2ba12232b74d50dd`;
+summary`f795da42f82af610744c2379c3c60a689c0e8aed70d612bdd5fc92696c018f41`.
+This clears the exact merged-revision prerequisite for P15b; no P15b runtime
+pass or full P15/P16 completion follows. Original stashed native-completion
+notes and all older uncommitted handoffs remain preserved.

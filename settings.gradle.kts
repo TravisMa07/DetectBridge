@@ -2,7 +2,18 @@
 pluginManagement {
     repositories {
         mavenCentral {
-            content { excludeModule("com.gradleup.shadow", "com.gradleup.shadow.gradle.plugin") }
+            content { includeModule("com.gradleup.shadow", "shadow-gradle-plugin") }
+            // Resolve the already verified module directly, without requiring POM discovery.
+            metadataSources {
+                gradleMetadata()
+                mavenPom()
+            }
+        }
+        mavenCentral {
+            content {
+                excludeModule("com.gradleup.shadow", "com.gradleup.shadow.gradle.plugin")
+                excludeModule("com.gradleup.shadow", "shadow-gradle-plugin")
+            }
         }
         gradlePluginPortal {
             content { includeModule("com.gradleup.shadow", "com.gradleup.shadow.gradle.plugin") }
@@ -44,3 +55,6 @@ project(":current-replay").projectDir = file("packages/current-replay")
 
 include("archive-maintenance")
 project(":archive-maintenance").projectDir = file("packages/archive-maintenance")
+
+include("lifecycle-job")
+project(":lifecycle-job").projectDir = file("packages/lifecycle-job")

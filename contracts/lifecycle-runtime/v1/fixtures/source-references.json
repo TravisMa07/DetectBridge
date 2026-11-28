@@ -1,0 +1,66 @@
+{
+  "version": "1.0.0",
+  "base_revision": "f44403e2975db46554c9c5033f87886d880c4087",
+  "sources": [
+    {
+      "family": "security",
+      "source": {
+        "path": "packages/windows-adapters/profiles/security.source.json",
+        "file_sha256": "ee351e13c227fb3b414f1db578f3626bacf476b2cb6b2a7580821dadf320e7bc",
+        "canonical_sha256": "f454d09097f84c865356c51dbadb001b39f871bb5a9d6b35deea9a2b57261696",
+        "bytes": 1939
+      },
+      "mapping": {
+        "path": "packages/windows-adapters/profiles/security.mapping.json",
+        "file_sha256": "380ed63d6ee781c3df37675cbb3c5dd5052e30cacea2cf927aaabdd80fde536c",
+        "canonical_sha256": "471098b01535833ed2fcb07143ea155896d5d763bd3d963804d30df6afe946cd",
+        "bytes": 1309
+      }
+    },
+    {
+      "family": "sysmon",
+      "source": {
+        "path": "packages/windows-adapters/profiles/sysmon.source.json",
+        "file_sha256": "e493728f821b027d9b6b20d4857295c7d026159974921da79b794634b7da2793",
+        "canonical_sha256": "216441d0d9fe9d1c257dbf7f576e3e8b384a93c0ba8db5165962b20453a1a564",
+        "bytes": 1861
+      },
+      "mapping": {
+        "path": "packages/windows-adapters/profiles/sysmon.mapping.json",
+        "file_sha256": "2165f614373e00573b29307a25a9276a9d33ae83f72fc8554aefc72471090ae5",
+        "canonical_sha256": "620d3870bd7d20593e360a5a4711abb88c67710f4dc160bc39f11f8cb3ebc73e",
+        "bytes": 1292
+      }
+    },
+    {
+      "family": "linux-audit-execution-p12a",
+      "source": {
+        "path": "packages/linux-adapters/contracts/linux-audit-execution-p12a.source.json",
+        "file_sha256": "58b0324c9f1dcbb5b329550a95e802ab3c2758bf411aa23e35b59050a5c7bc5c",
+        "canonical_sha256": "89b2989949d08463721e14321394a2bf199e5a236928da569ba6a279b6fd4f4e",
+        "bytes": 1720
+      },
+      "mapping": {
+        "path": "packages/linux-adapters/contracts/linux-audit-execution-p12a.mapping.json",
+        "file_sha256": "d505b27b9057c1a72d59c9b0c62ca58bcc52e1e3cd5e92b06d49608b546e6a63",
+        "canonical_sha256": "1d7470c8740d8b28ed3a95f4f4a35c7226af31ac65c4bce4eb31ee4df60f043e",
+        "bytes": 1180
+      }
+    },
+    {
+      "family": "openssh-authentication-p12a",
+      "source": {
+        "path": "packages/linux-adapters/contracts/openssh-authentication-p12a.source.json",
+        "file_sha256": "2682ebbc88a76c836bd044f0965abca60afc2779fa5b2d5e859ec8f5112d02da",
+        "canonical_sha256": "e5c86909e6b464f962d941f58b227377b84a99d77cc9d63c456a3c110fc27100",
+        "bytes": 1610
+      },
+      "mapping": {
+        "path": "packages/linux-adapters/contracts/openssh-authentication-p12a.mapping.json",
+        "file_sha256": "a2ba8a666c06944948f097f0c8a7be365ccb664997053d3ef14b9e2342aaa33f",
+        "canonical_sha256": "d8151ede4f32d8b8d0295a585030635a76420bfe48747d6dff864d0f0680e7fb",
+        "bytes": 1183
+      }
+    }
+  ]
+}

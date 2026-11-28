@@ -110,3 +110,51 @@ incompatible bundle, modified pinned artifact, signed S12 invalid plan, fresh
 identity and interrupted and corrupted resumes. Independent source-derived
 expectations own semantic predictions. The ledger must identify actual platform
 and artifacts for every runtime claim.
+
+## Running the lifecycle replay controller
+
+Build the lifecycle archive fat JAR and both pinned semantic helpers in the
+qualified toolchain. Build and retain the exact worker validator image on the
+same Docker engine. Prepare a request using the archive reader's verified export
+and the physical references for each original worker/run. For audit units use
+the manifest's original member order. Include each semantic output from that
+decision; the controller locates the separate source receipts. A changed
+receipt, incomplete decision or swapped member fails verification. The replay
+controller reads the original producer binary from the archive.
+
+Run historical replay with the following arguments. Supply the trusted archive
+reader SHA from the build/qualification record. Use a previously unused UUID
+and a private workspace whose parent already exists.
+
+```sh
+uv run --locked python tools/lifecycle_replay.py run \
+  --archive /private/lifecycle-archive \
+  --workspace /private/lifecycle-replays \
+  --request /private/requests/historical.json \
+  --run-id "$REPLAY_UUID" \
+  --reader packages/lifecycle-archive/build/libs/lifecycle-archive.jar \
+  --reader-sha256 "$ARCHIVE_READER_SHA256" \
+  --historical-jar packages/historical-replay/build/libs/historical-replay.jar \
+  --current-jar packages/current-replay/build/libs/current-replay.jar
+```
+
+For current replay, set `mode` to `current`, retain the original unit selection
+and add the explicit `bundle_sha256` and ordered `schedule`. Select another new
+UUID. Each `input` schedule step carries its selected physical reference and an
+integer `at_ms`; `tick` and final `end` steps carry `input: null`. After a
+process interruption repeat the original command with `resume` and identical
+arguments. If the initial run specification was never published, repeat `run`.
+The complete exported prefix is bound, so new archive appends require a new
+run against the updated snapshot.
+
+The successful command reports `mode`, `run_id`, `units` and `status`.
+Historical `units` counts selected semantic units; current `units` counts
+schedule transitions. Inspect `runs/UUID/run.json` for the artifact bindings,
+original request, archive heads and exact prefix hash. Each numbered
+`units/NNNNNN/result.json` stores derived outputs. Historical results include
+their original physical references and worker attribution. Current results
+carry the selected bundle/plan, schedule step and isolated post-step state.
+The adjacent `commit.json` binds exact result bytes and the previous commit.
+
+Run the focused component cases with
+`uv run --locked python -m unittest discover -s tools/tests -p test_lifecycle_replay.py`.

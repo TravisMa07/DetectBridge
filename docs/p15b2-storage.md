@@ -122,3 +122,35 @@ segment, malformed wire retention, post-publication/pre-commit interruption,
 independent cuts of known and unknown retained evidence, and original legacy
 inventory rejection. Actual Kafka evidence must show the group position and
 durable archive prefix separately across interruption and recovery.
+
+## Operator commands
+
+Build the Java 17 executable with the repository toolchain. Record its SHA-256
+as the trusted reader for this archive. Supply the worker deployment, exact
+LocalEvidence registration, its content-addressed originals and original
+provenance files to the controller's preparation command. B1 synthetic workers
+use the canonical registry `{"objects":[],"version":"1.0.0"}` with no terminal
+newline and an empty originals directory.
+
+```sh
+./gradlew :lifecycle-archive:test :lifecycle-archive:shadowJar
+reader=packages/lifecycle-archive/build/libs/lifecycle-archive.jar
+uv run --locked python tools/lifecycle_archive_graph.py prepare "$deployment" "$packet" \
+    --registry "$registration" --originals "$originals" --provenance "$provenance"
+java -jar "$reader" init "$archive" "$packet/manifest.json" "$packet/objects"
+java -jar "$reader" drain "$archive" "$bootstrap"
+java -jar "$reader" status "$archive" "$bootstrap"
+java -jar "$reader" inspect "$archive"
+uv run --locked python tools/lifecycle_archive_maintenance.py "$archive" \
+    --reader "$reader" --reader-sha256 "$trusted_reader_sha256"
+```
+
+Run broker commands on the private deployment network where the Kafka advertised
+address resolves. `status` returns both verified durable heads and current group
+commits. After a process interruption use the same archive, JAR, broker and
+group. `drain` verifies existing data and reconciles positions before consuming.
+Retention of a valid archive returns exit 2 with
+`lifecycle_archive_permanent_hold`. A caller can inspect an exact original via
+`object ROOT SHA` or consume the verified structured stream via `export ROOT`.
+Both commands can emit private evidence and should write only to a private
+destination.

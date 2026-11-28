@@ -115,6 +115,7 @@ class StackTests(unittest.TestCase):
                             "maintenance": "false",
                             "lifecycle": "false",
                             "activation": "false",
+                            "lifecycle_archive": "false",
                         },
                     },
                     "repository-hygiene": {"result": "success"},
@@ -136,6 +137,7 @@ class StackTests(unittest.TestCase):
                     "archive-maintenance-verification": {"result": "skipped"},
                     "lifecycle-verification": {"result": "skipped"},
                     "activation-verification": {"result": "skipped"},
+                    "lifecycle-archive-verification": {"result": "skipped"},
                     "local-stack-verification": {
                         "result": "success" if selected == "true" else "skipped"
                     },

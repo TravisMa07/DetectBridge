@@ -8,6 +8,9 @@ including activation, search, archive, both replay modes, maintenance and requir
 CI-02 #64 remains open for the original search failure. Preserve the first sanitized
 failure artifact on recurrence. Its cause remains unknown.
 
+The [P15b2 qualification ledger](p15b2-ledger.md) tracks the lifecycle archive
+and replay work on the independently frozen design and expectations.
+
 ## Earlier checkpoints
 
 Current CI integration: owner-merged CI-01 #63 is exact e2bec696; native44667068167

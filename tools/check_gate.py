@@ -4,6 +4,7 @@ import json
 import os
 
 CONDITIONAL = {
+    "lifecycle-archive-verification": "lifecycle_archive",
     "activation-verification": "activation",
     "lifecycle-verification": "lifecycle",
     "archive-maintenance-verification": "maintenance",
